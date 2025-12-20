@@ -1,65 +1,121 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState } from 'react';
+
+// サンプルデータ
+const sampleAnimes = [
+  { id: 1, title: 'ダンダダン', image: '🎃', rating: 5, watched: true },
+  { id: 2, title: '葬送のフリーレン', image: '🧝', rating: 5, watched: true },
+  { id: 3, title: 'ぼっち・ざ・ろっく！', image: '🎸', rating: 5, watched: true },
+];
+
+// 評価ラベル
+const ratingLabels: { [key: number]: { label: string; emoji: string } } = {
+  5: { label: '神作', emoji: '🏆' },
+  4: { label: '円盤級', emoji: '💿' },
+  3: { label: '良作', emoji: '😊' },
+  2: { label: '完走', emoji: '🏃' },
+  1: { label: '虚無', emoji: '😇' },
+};
+
+// アニメの型定義
+type Anime = {
+  id: number;
+  title: string;
+  image: string;
+  rating: number;
+  watched: boolean;
+};
+
+// アニメカード
+function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
+  const rating = ratingLabels[anime.rating];
+  
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div 
+      onClick={onClick}
+      className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl transition-all"
+    >
+      <div className="aspect-[3/4] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-5xl">
+        {anime.image}
+      </div>
+      <div className="p-3">
+        <p className="font-bold text-sm truncate">{anime.title}</p>
+        {rating && (
+          <p className="text-xs text-orange-500 font-bold">
+            {rating.emoji} {rating.label}
           </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// メインページ
+export default function Home() {
+  const [animes] = useState<Anime[]>(sampleAnimes);
+  const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* ヘッダー */}
+      <header className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-md mx-auto px-4 py-3">
+          <h1 className="text-xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            俺のアニメログ
+          </h1>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      </header>
+
+      {/* メインコンテンツ */}
+      <main className="max-w-md mx-auto px-4 py-6">
+        {/* 統計カード */}
+        <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-5 text-white mb-6">
+          <p className="text-white/80 text-sm">視聴済み</p>
+          <p className="text-4xl font-black">{animes.length}作品</p>
+        </div>
+
+        {/* アニメ一覧 */}
+        <h2 className="font-bold text-lg mb-3">2024年秋</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {animes.map((anime) => (
+            <AnimeCard 
+              key={anime.id} 
+              anime={anime}
+              onClick={() => setSelectedAnime(anime)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
         </div>
+
+        {/* 追加ボタン */}
+        <button className="w-full mt-6 py-4 border-2 border-dashed border-indigo-300 rounded-2xl text-indigo-600 font-bold">
+          + アニメを追加
+        </button>
       </main>
+
+      {/* モーダル */}
+      {selectedAnime && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedAnime(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-sm w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-4">
+              <span className="text-6xl">{selectedAnime.image}</span>
+              <h3 className="text-xl font-bold mt-2">{selectedAnime.title}</h3>
+            </div>
+            <button 
+              onClick={() => setSelectedAnime(null)}
+              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
