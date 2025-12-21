@@ -21,6 +21,7 @@ type Anime = {
     op?: { title: string; artist: string; rating: number; isFavorite: boolean };
     ed?: { title: string; artist: string; rating: number; isFavorite: boolean };
   };
+  quotes?: { text: string; character?: string }[];
 };
 
 // タグ一覧
@@ -43,6 +44,54 @@ type Achievement = {
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   condition: number;
 };
+
+// 布教リストの型定義
+type EvangelistList = {
+  id: number;
+  title: string;
+  description: string;
+  animeIds: number[];
+  createdAt: Date;
+};
+
+// 推しキャラの型定義
+type FavoriteCharacter = {
+  id: number;
+  name: string;
+  animeId: number;
+  animeName: string;
+  image: string;
+  category: string;
+  tags: string[];
+};
+
+// プリセットカテゴリ
+const characterCategories = [
+  { emoji: '❤️', label: 'シンプルに好き', value: 'シンプルに好き' },
+  { emoji: '💒', label: '嫁/婿', value: '嫁/婿' },
+  { emoji: '💕', label: '推し', value: '推し' },
+  { emoji: '🛡️', label: '守りたい系', value: '守りたい系' },
+  { emoji: '🔥', label: 'かっこいい系', value: 'かっこいい系' },
+  { emoji: '😇', label: '尊い系', value: '尊い系' },
+  { emoji: '🎭', label: 'ギャップ萌え', value: 'ギャップ萌え' },
+  { emoji: '💀', label: '闇属性', value: '闇属性' },
+  { emoji: '🤡', label: '推せる馬鹿', value: '推せる馬鹿' },
+];
+
+// プリセットタグ
+const characterPresetTags = [
+  'ツンデレ', 'ヤンデレ', 'クーデレ', '天然',
+  '幼馴染', '先輩', '後輩', 'ライバル',
+  'メガネ', '黒髪', '銀髪', 'ケモミミ',
+  'お嬢様', 'ギャル', '清楚', 'ボクっ娘',
+];
+
+// サンプルデータ（推しキャラ）
+const sampleFavoriteCharacters: FavoriteCharacter[] = [
+  { id: 1, name: 'モモ', animeId: 1, animeName: 'ダンダダン', image: '👻', category: '推し', tags: ['ギャル', '天然'] },
+  { id: 2, name: 'フリーレン', animeId: 2, animeName: '葬送のフリーレン', image: '🧝', category: '尊い系', tags: ['クーデレ', '銀髪'] },
+  { id: 3, name: '後藤ひとり', animeId: 4, animeName: 'ぼっち・ざ・ろっく！', image: '🎸', category: '守りたい系', tags: ['黒髪', '天然'] },
+];
 
 // 実績データ
 const achievements: Achievement[] = [
@@ -72,6 +121,9 @@ const sampleSeasons: Season[] = [
           op: { title: 'オトノケ', artist: 'Creepy Nuts', rating: 5, isFavorite: true },
           ed: { title: 'TAIDADA', artist: 'ずっと真夜中でいいのに。', rating: 4, isFavorite: false },
         },
+        quotes: [
+          { text: 'オカルンって呼んでいい？', character: 'モモ' },
+        ],
       },
       {
         id: 2,
@@ -85,6 +137,10 @@ const sampleSeasons: Season[] = [
           op: { title: '勇者', artist: 'YOASOBI', rating: 5, isFavorite: true },
           ed: { title: 'Anytime Anywhere', artist: 'milet', rating: 5, isFavorite: true },
         },
+        quotes: [
+          { text: '人間の寿命は短いね', character: 'フリーレン' },
+          { text: '魔法はイメージだ', character: 'フリーレン' },
+        ],
       },
     ],
   },
@@ -109,6 +165,9 @@ const sampleSeasons: Season[] = [
           op: { title: '青春コンプレックス', artist: '結束バンド', rating: 5, isFavorite: true },
           ed: { title: 'カラカラ', artist: '結束バンド', rating: 5, isFavorite: false },
         },
+        quotes: [
+          { text: 'ギターと友達になれたんだね', character: '虹夏' },
+        ],
       },
     ],
   },
@@ -132,6 +191,11 @@ function ProfileTab({
   isDarkMode,
   setIsDarkMode,
   setShowSettings,
+  evangelistLists,
+  setEvangelistLists,
+  setSelectedAnime,
+  favoriteCharacters,
+  setFavoriteCharacters,
 }: {
   allAnimes: Anime[];
   userName: string;
@@ -140,7 +204,25 @@ function ProfileTab({
   isDarkMode: boolean;
   setIsDarkMode: (value: boolean) => void;
   setShowSettings: (value: boolean) => void;
+  evangelistLists: EvangelistList[];
+  setEvangelistLists: (lists: EvangelistList[]) => void;
+  setSelectedAnime: (anime: Anime | null) => void;
+  favoriteCharacters: FavoriteCharacter[];
+  setFavoriteCharacters: (characters: FavoriteCharacter[]) => void;
 }) {
+  const [showCreateListModal, setShowCreateListModal] = useState(false);
+  const [selectedList, setSelectedList] = useState<EvangelistList | null>(null);
+  const [newListTitle, setNewListTitle] = useState('');
+  const [newListDescription, setNewListDescription] = useState('');
+  const [selectedAnimeIds, setSelectedAnimeIds] = useState<number[]>([]);
+  const [editingList, setEditingList] = useState<EvangelistList | null>(null);
+  const [showAddCharacterModal, setShowAddCharacterModal] = useState(false);
+  const [newCharacterName, setNewCharacterName] = useState('');
+  const [newCharacterAnimeId, setNewCharacterAnimeId] = useState<number | null>(null);
+  const [newCharacterImage, setNewCharacterImage] = useState('👤');
+  const [newCharacterCategory, setNewCharacterCategory] = useState('');
+  const [newCharacterTags, setNewCharacterTags] = useState<string[]>([]);
+  const [newCustomTag, setNewCustomTag] = useState('');
   const watchedCount = allAnimes.filter(a => a.watched).length;
   const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 1), 0);
   
@@ -253,6 +335,140 @@ function ProfileTab({
         </div>
       </div>
       
+      {/* 名言コレクション */}
+      {(() => {
+        const allQuotes: Array<{ text: string; character?: string; animeTitle: string }> = [];
+        allAnimes.forEach((anime) => {
+          anime.quotes?.forEach((quote) => {
+            allQuotes.push({ ...quote, animeTitle: anime.title });
+          });
+        });
+
+        return allQuotes.length > 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+            <h3 className="font-bold text-lg mb-3 dark:text-white">名言コレクション</h3>
+            <div className="space-y-3">
+              {allQuotes.map((quote, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border-l-4 border-indigo-500"
+                >
+                  <p className="text-sm dark:text-white mb-2">「{quote.text}」</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {quote.character ? `${quote.character} / ` : ''}{quote.animeTitle}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      })()}
+
+      {/* 推しキャラ */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-lg dark:text-white">推しキャラ</h3>
+          <button
+            onClick={() => {
+              setNewCharacterName('');
+              setNewCharacterAnimeId(null);
+              setNewCharacterImage('👤');
+              setNewCharacterCategory('');
+              setNewCharacterTags([]);
+              setNewCustomTag('');
+              setShowAddCharacterModal(true);
+            }}
+            className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            + 推しを追加
+          </button>
+        </div>
+        
+        {favoriteCharacters.length > 0 ? (
+          <div className="space-y-4">
+            {characterCategories.map((category) => {
+              const categoryCharacters = favoriteCharacters.filter(char => char.category === category.value);
+              if (categoryCharacters.length === 0) return null;
+              
+              return (
+                <div key={category.value} className="mb-4">
+                  <h4 className="text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">
+                    {category.emoji} {category.label}
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {categoryCharacters.map((character) => (
+                      <div
+                        key={character.id}
+                        className="bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 rounded-xl p-3"
+                      >
+                        <div className="text-center mb-2">
+                          <div className="text-4xl mb-1">{character.image}</div>
+                          <p className="font-bold text-sm dark:text-white">{character.name}</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{character.animeName}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-1 justify-center mt-2">
+                          {character.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="text-xs bg-white/50 dark:bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-700 dark:text-gray-300"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+            推しキャラが登録されていません
+          </p>
+        )}
+      </div>
+
+      {/* 布教リスト */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-lg dark:text-white">布教リスト</h3>
+          <button
+            onClick={() => {
+              setNewListTitle('');
+              setNewListDescription('');
+              setSelectedAnimeIds([]);
+              setEditingList(null);
+              setShowCreateListModal(true);
+            }}
+            className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            + 新しいリストを作成
+          </button>
+        </div>
+        
+        {evangelistLists.length > 0 ? (
+          <div className="space-y-3">
+            {evangelistLists.map((list) => (
+              <button
+                key={list.id}
+                onClick={() => setSelectedList(list)}
+                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 text-white text-left shadow-md hover:shadow-lg transition-all"
+              >
+                <h4 className="font-bold mb-1">{list.title}</h4>
+                <p className="text-sm text-white/80 mb-2">{list.description}</p>
+                <p className="text-xs text-white/70">{list.animeIds.length}作品</p>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+            リストがありません
+          </p>
+        )}
+      </div>
+
       {/* 設定 */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
         <h3 className="font-bold text-lg mb-3 dark:text-white">設定</h3>
@@ -291,6 +507,416 @@ function ProfileTab({
           </button>
         </div>
       </div>
+
+      {/* リスト作成・編集モーダル */}
+      {showCreateListModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowCreateListModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4 dark:text-white">
+              {editingList ? 'リストを編集' : '新しいリストを作成'}
+            </h2>
+            
+            {/* タイトル入力 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                タイトル
+              </label>
+              <input
+                type="text"
+                value={newListTitle}
+                onChange={(e) => setNewListTitle(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="初心者におすすめ5選"
+              />
+            </div>
+
+            {/* 説明入力 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                説明
+              </label>
+              <textarea
+                value={newListDescription}
+                onChange={(e) => setNewListDescription(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="アニメ入門にぴったり"
+                rows={3}
+              />
+            </div>
+
+            {/* アニメ選択 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                アニメを選択
+              </label>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {allAnimes.map((anime) => (
+                  <label
+                    key={anime.id}
+                    className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedAnimeIds.includes(anime.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedAnimeIds([...selectedAnimeIds, anime.id]);
+                        } else {
+                          setSelectedAnimeIds(selectedAnimeIds.filter(id => id !== anime.id));
+                        }
+                      }}
+                      className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                    />
+                    <span className="text-sm dark:text-white">{anime.title}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowCreateListModal(false);
+                  setNewListTitle('');
+                  setNewListDescription('');
+                  setSelectedAnimeIds([]);
+                  setEditingList(null);
+                }}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => {
+                  if (newListTitle.trim() && selectedAnimeIds.length > 0) {
+                    if (editingList) {
+                      // 編集
+                      const updatedLists = evangelistLists.map(list =>
+                        list.id === editingList.id
+                          ? {
+                              ...list,
+                              title: newListTitle.trim(),
+                              description: newListDescription.trim(),
+                              animeIds: selectedAnimeIds,
+                            }
+                          : list
+                      );
+                      setEvangelistLists(updatedLists);
+                    } else {
+                      // 新規作成
+                      const newList: EvangelistList = {
+                        id: Date.now(),
+                        title: newListTitle.trim(),
+                        description: newListDescription.trim(),
+                        animeIds: selectedAnimeIds,
+                        createdAt: new Date(),
+                      };
+                      setEvangelistLists([...evangelistLists, newList]);
+                    }
+                    setShowCreateListModal(false);
+                    setNewListTitle('');
+                    setNewListDescription('');
+                    setSelectedAnimeIds([]);
+                    setEditingList(null);
+                  }
+                }}
+                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+              >
+                {editingList ? '更新' : '作成'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* リスト詳細モーダル */}
+      {selectedList && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedList(null)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-2 dark:text-white">{selectedList.title}</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{selectedList.description}</p>
+            
+            {/* アニメ一覧 */}
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {selectedList.animeIds.length}作品
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                {selectedList.animeIds.map((animeId) => {
+                  const anime = allAnimes.find(a => a.id === animeId);
+                  if (!anime) return null;
+                  return (
+                    <div
+                      key={animeId}
+                      onClick={() => {
+                        setSelectedAnime(anime);
+                        setSelectedList(null);
+                      }}
+                      className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
+                    >
+                      <div className="text-3xl mb-1">{anime.image}</div>
+                      <p className="text-xs font-bold truncate">{anime.title}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {}}
+                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                📤 シェア
+              </button>
+              <button
+                onClick={() => {
+                  setEditingList(selectedList);
+                  setNewListTitle(selectedList.title);
+                  setNewListDescription(selectedList.description);
+                  setSelectedAnimeIds(selectedList.animeIds);
+                  setSelectedList(null);
+                  setShowCreateListModal(true);
+                }}
+                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+              >
+                編集
+              </button>
+              <button
+                onClick={() => {
+                  setEvangelistLists(evangelistLists.filter(list => list.id !== selectedList.id));
+                  setSelectedList(null);
+                }}
+                className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors"
+              >
+                削除
+              </button>
+            </div>
+            
+            <button
+              onClick={() => setSelectedList(null)}
+              className="w-full mt-3 text-gray-500 dark:text-gray-400 text-sm"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 推しキャラ追加モーダル */}
+      {showAddCharacterModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowAddCharacterModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4 dark:text-white">推しを追加</h2>
+            
+            {/* キャラ名入力 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                キャラ名
+              </label>
+              <input
+                type="text"
+                value={newCharacterName}
+                onChange={(e) => setNewCharacterName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="キャラクター名"
+              />
+            </div>
+
+            {/* アニメ選択 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                アニメ
+              </label>
+              <select
+                value={newCharacterAnimeId || ''}
+                onChange={(e) => setNewCharacterAnimeId(Number(e.target.value))}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">選択してください</option>
+                {allAnimes.map((anime) => (
+                  <option key={anime.id} value={anime.id}>
+                    {anime.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* アイコン選択 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                アイコン
+              </label>
+              <div className="grid grid-cols-8 gap-2">
+                {['👤', '👻', '🧝', '🎸', '👑', '🦄', '🌟', '💫', '⚡', '🔥', '💕', '❤️', '🎭', '🛡️', '😇', '🤡', '💀', '🎪', '🎨', '🎯', '🎬', '🎮'].map((icon) => (
+                  <button
+                    key={icon}
+                    onClick={() => setNewCharacterImage(icon)}
+                    className={`text-3xl p-2 rounded-lg transition-all ${
+                      newCharacterImage === icon
+                        ? 'bg-indigo-100 dark:bg-indigo-900 ring-2 ring-indigo-500'
+                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* カテゴリ選択 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                カテゴリ
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {characterCategories.map((category) => (
+                  <button
+                    key={category.value}
+                    onClick={() => setNewCharacterCategory(category.value)}
+                    className={`p-2 rounded-lg text-sm font-medium transition-all ${
+                      newCharacterCategory === category.value
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {category.emoji} {category.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* タグ選択 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                タグ
+              </label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {characterPresetTags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      if (newCharacterTags.includes(tag)) {
+                        setNewCharacterTags(newCharacterTags.filter(t => t !== tag));
+                      } else {
+                        setNewCharacterTags([...newCharacterTags, tag]);
+                      }
+                    }}
+                    className={`px-3 py-1 rounded-full text-sm transition-all ${
+                      newCharacterTags.includes(tag)
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              
+              {/* カスタムタグ追加 */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newCustomTag}
+                  onChange={(e) => setNewCustomTag(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && newCustomTag.trim() && !newCharacterTags.includes(newCustomTag.trim())) {
+                      setNewCharacterTags([...newCharacterTags, newCustomTag.trim()]);
+                      setNewCustomTag('');
+                    }
+                  }}
+                  className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
+                  placeholder="新しいタグを入力してEnter"
+                />
+              </div>
+              
+              {/* 選択中のタグ表示 */}
+              {newCharacterTags.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {newCharacterTags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full text-xs"
+                    >
+                      {tag}
+                      <button
+                        onClick={() => setNewCharacterTags(newCharacterTags.filter((_, i) => i !== index))}
+                        className="hover:text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowAddCharacterModal(false);
+                  setNewCharacterName('');
+                  setNewCharacterAnimeId(null);
+                  setNewCharacterImage('👤');
+                  setNewCharacterCategory('');
+                  setNewCharacterTags([]);
+                  setNewCustomTag('');
+                }}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => {
+                  if (newCharacterName.trim() && newCharacterAnimeId) {
+                    const selectedAnime = allAnimes.find(a => a.id === newCharacterAnimeId);
+                    if (selectedAnime) {
+                      const newCharacter: FavoriteCharacter = {
+                        id: Date.now(),
+                        name: newCharacterName.trim(),
+                        animeId: newCharacterAnimeId,
+                        animeName: selectedAnime.title,
+                        image: newCharacterImage,
+                        category: newCharacterCategory,
+                        tags: newCharacterTags,
+                      };
+                      setFavoriteCharacters([...favoriteCharacters, newCharacter]);
+                      setShowAddCharacterModal(false);
+                      setNewCharacterName('');
+                      setNewCharacterAnimeId(null);
+                      setNewCharacterImage('👤');
+                      setNewCharacterCategory('');
+                      setNewCharacterTags([]);
+                      setNewCustomTag('');
+                    }
+                  }
+                }}
+                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+              >
+                追加
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -432,9 +1058,9 @@ function MusicTab({
 }) {
   // すべての曲を取得
   const allSongs: Array<{
-    title: string;
+  title: string;
     artist: string;
-    rating: number;
+  rating: number;
     isFavorite: boolean;
     animeTitle: string;
     type: 'op' | 'ed';
@@ -625,7 +1251,7 @@ function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
 
 // メインページ
 export default function Home() {
-  const [seasons, setSeasons] = useState<Season[]>(sampleSeasons);
+  const [seasons, setSeasons] = useState<Season[]>([]);
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [count, setCount] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
@@ -638,16 +1264,73 @@ export default function Home() {
   const [userIcon, setUserIcon] = useState<string>('👤');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'home' | 'music' | 'achievements' | 'profile'>('home');
-  const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set([sampleSeasons[0].name]));
+  const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
+  const [evangelistLists, setEvangelistLists] = useState<EvangelistList[]>([]);
+  const [favoriteCharacters, setFavoriteCharacters] = useState<FavoriteCharacter[]>([]);
 
   // localStorageから初期値を読み込む
   useEffect(() => {
-    const savedName = localStorage.getItem('userName');
-    const savedIcon = localStorage.getItem('userIcon');
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedName) setUserName(savedName);
-    if (savedIcon) setUserIcon(savedIcon);
-    if (savedDarkMode === 'true') setIsDarkMode(true);
+    if (typeof window !== 'undefined') {
+      const savedName = localStorage.getItem('userName');
+      const savedIcon = localStorage.getItem('userIcon');
+      const savedDarkMode = localStorage.getItem('darkMode');
+      const savedSeasons = localStorage.getItem('animeSeasons');
+      const savedLists = localStorage.getItem('evangelistLists');
+      const savedCharacters = localStorage.getItem('favoriteCharacters');
+      
+      if (savedName) setUserName(savedName);
+      if (savedIcon) setUserIcon(savedIcon);
+      if (savedDarkMode === 'true') setIsDarkMode(true);
+      
+      // 布教リストを読み込む
+      if (savedLists) {
+        try {
+          const parsedLists = JSON.parse(savedLists);
+          // Date型に変換
+          const listsWithDates = parsedLists.map((list: any) => ({
+            ...list,
+            createdAt: new Date(list.createdAt),
+          }));
+          setEvangelistLists(listsWithDates);
+        } catch (e) {
+          console.error('Failed to parse evangelist lists', e);
+        }
+      }
+      
+      // 推しキャラを読み込む
+      if (savedCharacters) {
+        try {
+          const parsedCharacters = JSON.parse(savedCharacters);
+          setFavoriteCharacters(parsedCharacters);
+        } catch (e) {
+          console.error('Failed to parse favorite characters', e);
+          // エラーの場合はサンプルデータを使用
+          setFavoriteCharacters(sampleFavoriteCharacters);
+        }
+      } else {
+        // 保存データがない場合はサンプルデータを使用
+        setFavoriteCharacters(sampleFavoriteCharacters);
+      }
+      
+      // アニメデータを読み込む（保存済みがあればそれを使い、なければサンプルデータ）
+      if (savedSeasons) {
+        try {
+          const parsedSeasons = JSON.parse(savedSeasons);
+          setSeasons(parsedSeasons);
+          if (parsedSeasons.length > 0) {
+            setExpandedSeasons(new Set([parsedSeasons[0].name]));
+          }
+        } catch (e) {
+          // パースエラーの場合はサンプルデータを使用
+          setSeasons(sampleSeasons);
+          setExpandedSeasons(new Set([sampleSeasons[0].name]));
+        }
+      } else {
+        // 保存データがない場合はサンプルデータを使用
+        setSeasons(sampleSeasons);
+        setExpandedSeasons(new Set([sampleSeasons[0].name]));
+      }
+    }
   }, []);
 
   // ダークモードの適用
@@ -669,6 +1352,27 @@ export default function Home() {
       localStorage.setItem('userIcon', userIcon);
     }
   }, [userName, userIcon]);
+
+  // アニメデータをlocalStorageに保存
+  useEffect(() => {
+    if (typeof window !== 'undefined' && seasons.length > 0) {
+      localStorage.setItem('animeSeasons', JSON.stringify(seasons));
+    }
+  }, [seasons]);
+
+  // 布教リストをlocalStorageに保存
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('evangelistLists', JSON.stringify(evangelistLists));
+    }
+  }, [evangelistLists]);
+
+  // 推しキャラをlocalStorageに保存
+  useEffect(() => {
+    if (typeof window !== 'undefined' && favoriteCharacters.length > 0) {
+      localStorage.setItem('favoriteCharacters', JSON.stringify(favoriteCharacters));
+    }
+  }, [favoriteCharacters]);
 
   // すべてのアニメを取得
   const allAnimes = seasons.flatMap(season => season.animes);
@@ -840,6 +1544,11 @@ export default function Home() {
             isDarkMode={isDarkMode}
             setIsDarkMode={setIsDarkMode}
             setShowSettings={setShowSettings}
+            evangelistLists={evangelistLists}
+            setEvangelistLists={setEvangelistLists}
+            setSelectedAnime={setSelectedAnime}
+            favoriteCharacters={favoriteCharacters}
+            setFavoriteCharacters={setFavoriteCharacters}
           />
         )}
       </main>
@@ -1306,6 +2015,76 @@ export default function Home() {
               </div>
             </div>
 
+            {/* 名言 */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">名言</p>
+                <button
+                  onClick={() => {
+                    const newQuoteText = prompt('セリフを入力してください:');
+                    if (newQuoteText) {
+                      const newQuoteCharacter = prompt('キャラクター名（任意）:') || undefined;
+                      const updatedSeasons = seasons.map(season => ({
+                        ...season,
+                        animes: season.animes.map((anime) =>
+                          anime.id === selectedAnime.id
+                            ? {
+                                ...anime,
+                                quotes: [...(anime.quotes || []), { text: newQuoteText, character: newQuoteCharacter }],
+                              }
+                            : anime
+                        ),
+                      }));
+                      setSeasons(updatedSeasons);
+                      setSelectedAnime({
+                        ...selectedAnime,
+                        quotes: [...(selectedAnime.quotes || []), { text: newQuoteText, character: newQuoteCharacter }],
+                      });
+                    }
+                  }}
+                  className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  + 名言を追加
+                </button>
+              </div>
+              
+              {selectedAnime.quotes && selectedAnime.quotes.length > 0 ? (
+                <div className="space-y-2">
+                  {selectedAnime.quotes.map((quote, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border-l-4 border-indigo-500 relative"
+                    >
+                      <p className="text-sm dark:text-white mb-1">「{quote.text}」</p>
+                      {quote.character && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">— {quote.character}</p>
+                      )}
+                      <button
+                        onClick={() => {
+                          const updatedQuotes = selectedAnime.quotes?.filter((_, i) => i !== index) || [];
+                          const updatedSeasons = seasons.map(season => ({
+                            ...season,
+                            animes: season.animes.map((anime) =>
+                              anime.id === selectedAnime.id
+                                ? { ...anime, quotes: updatedQuotes }
+                                : anime
+                            ),
+                          }));
+                          setSeasons(updatedSeasons);
+                          setSelectedAnime({ ...selectedAnime, quotes: updatedQuotes });
+                        }}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">名言が登録されていません</p>
+              )}
+            </div>
+
             <div className="flex gap-3">
               <button 
                 onClick={() => {
@@ -1323,9 +2102,9 @@ export default function Home() {
             <button 
               onClick={() => setSelectedAnime(null)}
                 className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
-              >
-                閉じる
-              </button>
+            >
+              閉じる
+            </button>
             </div>
           </div>
         </div>
