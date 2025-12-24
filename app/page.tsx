@@ -225,6 +225,26 @@ const ratingLabels: { [key: number]: { label: string; emoji: string } } = {
   1: { label: '虚無', emoji: '😇' },
 };
 
+// 星の評価表示コンポーネント
+function StarRating({ rating, size = 'text-3xl' }: { rating: number; size?: string }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          className={`${size} ${
+            star <= rating
+              ? 'text-yellow-400'
+              : 'text-gray-300 opacity-30'
+          }`}
+        >
+          {star <= rating ? '★' : '☆'}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ジャンル翻訳マップ
 const genreTranslation: { [key: string]: string } = {
   'Action': 'アクション',
@@ -275,7 +295,7 @@ function ProfileTab({
   handleLogout: () => void;
 }) {
   const watchedCount = allAnimes.filter(a => a.watched).length;
-  const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 1), 0);
+  const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
   
   // タグの集計
   const tagCounts: { [key: string]: number } = {};
@@ -328,7 +348,7 @@ function ProfileTab({
       {(() => {
         const allAnimes = seasons.flatMap(s => s.animes);
         const count = allAnimes.filter(a => a.watched).length;
-        const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 1), 0);
+        const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
         const ratings = allAnimes.filter(a => a.rating > 0).map(a => a.rating);
         const averageRating = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : 0;
         
@@ -634,7 +654,7 @@ function AchievementsTab({
   // 実績の解除判定
   const checkAchievement = (achievement: Achievement): boolean => {
     const watchedCount = allAnimes.filter(a => a.watched).length;
-    const maxRewatchCount = Math.max(...allAnimes.map(a => a.rewatchCount ?? 1), 0);
+    const maxRewatchCount = Math.max(...allAnimes.map(a => a.rewatchCount ?? 0), 0);
     const godTasteCount = allAnimes.filter(a => a.rating === 5).length;
     
     switch (achievement.id) {
@@ -1053,9 +1073,7 @@ function MusicTab({
                   <p className="text-xs text-white/80 mb-2">{song.artist}</p>
                   <p className="text-xs text-white/70">{song.animeTitle}</p>
                   <div className="mt-2 flex items-center gap-1">
-                    <span className="text-yellow-300 text-sm">
-                      {'⭐'.repeat(song.rating)}
-                    </span>
+                    <StarRating rating={song.rating} size="text-sm" />
                   </div>
                 </div>
               );
@@ -1088,9 +1106,7 @@ function MusicTab({
                     <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                       {song.type.toUpperCase()}
                     </span>
-                    <span className="text-yellow-400 text-sm">
-                      {'⭐'.repeat(song.rating)}
-                    </span>
+                    <StarRating rating={song.rating} size="text-sm" />
                     {song.isFavorite && <span className="text-red-500">❤️</span>}
                   </div>
                 </div>
@@ -1137,7 +1153,7 @@ function MusicTab({
 // アニメカード
 function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
   const rating = ratingLabels[anime.rating];
-  const rewatchCount = anime.rewatchCount ?? 1;
+  const rewatchCount = anime.rewatchCount ?? 0;
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   
@@ -1201,10 +1217,15 @@ function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
       </div>
       <div className="p-3">
         <p className="font-bold text-sm truncate dark:text-white">{anime.title}</p>
-        {rating && (
-          <p className="text-xs text-orange-500 dark:text-orange-400 font-bold">
-            {rating.emoji} {rating.label}
-          </p>
+        {anime.rating > 0 && (
+          <div className="mt-1">
+            <StarRating rating={anime.rating} size="text-xs" />
+            {rating && (
+              <p className="text-xs text-orange-500 dark:text-orange-400 font-bold mt-0.5">
+                {rating.emoji} {rating.label}
+              </p>
+            )}
+          </div>
         )}
         {/* タグ表示（最大2個まで） */}
         {anime.tags && anime.tags.length > 0 && (
@@ -1578,7 +1599,7 @@ export default function Home() {
       image: anime.image || null,
       rating: anime.rating && anime.rating > 0 ? anime.rating : null, // 0の場合はNULLにする
       watched: anime.watched ?? false,
-      rewatch_count: anime.rewatchCount ?? 1,
+      rewatch_count: anime.rewatchCount ?? 0,
                       tags: (anime.tags && anime.tags.length > 0) ? anime.tags : null,
                       songs: anime.songs || null,
                       quotes: anime.quotes || null,
@@ -1595,7 +1616,7 @@ export default function Home() {
       image: row.image,
       rating: row.rating,
       watched: row.watched,
-      rewatchCount: row.rewatch_count ?? 1,
+      rewatchCount: row.rewatch_count ?? 0,
       tags: row.tags || [],
       songs: row.songs || undefined,
       quotes: row.quotes || undefined,
@@ -1791,6 +1812,9 @@ export default function Home() {
     ? allAnimes.filter(a => a.rating > 0).reduce((sum, a) => sum + a.rating, 0) / allAnimes.filter(a => a.rating > 0).length
     : 0;
 
+  // 累計周回数を計算
+  const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
+
   // カウントアップアニメーション
   useEffect(() => {
     const targetCount = allAnimes.length;
@@ -1895,7 +1919,7 @@ export default function Home() {
                       <p className="text-white/80 text-xs mt-1">作品</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-3xl font-black">12</p>
+                      <p className="text-3xl font-black">{totalRewatchCount}</p>
                       <p className="text-white/80 text-xs mt-1">周</p>
                     </div>
                     <div className="text-center">
@@ -2073,7 +2097,7 @@ export default function Home() {
                 {(() => {
                   // 統計データの計算
                   const totalAnimes = allAnimes.length;
-                  const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 1), 0);
+                  const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
                   // 評価が未登録（rating: 0またはnull）の場合は平均計算から除外
                   const ratedAnimes = allAnimes.filter(a => a.rating && a.rating > 0);
                   const avgRating = ratedAnimes.length > 0
@@ -3211,7 +3235,7 @@ export default function Home() {
                               image: result.coverImage?.large || result.coverImage?.medium || '🎬',
                               rating: 0, // 未評価
                               watched: false,
-                              rewatchCount: 1,
+                              rewatchCount: 0,
                               tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
                               seriesName,
                               studios: result.studios?.nodes?.map((s: any) => s.name) || [],
@@ -3488,10 +3512,10 @@ export default function Home() {
                     className={`text-3xl transition-transform hover:scale-110 ${
                       newAnimeRating >= rating
                         ? 'text-yellow-400'
-                        : 'text-gray-300'
+                        : 'text-gray-300 opacity-30'
                     }`}
                   >
-                    ⭐
+                    {newAnimeRating >= rating ? '★' : '☆'}
                   </button>
                 ))}
               </div>
@@ -4091,11 +4115,11 @@ export default function Home() {
                     className={`text-3xl transition-all hover:scale-110 active:scale-95 ${
                       selectedAnime.rating >= rating
                         ? 'text-yellow-400 drop-shadow-sm'
-                        : 'text-gray-300 hover:text-gray-400'
+                        : 'text-gray-300 opacity-30 hover:opacity-50'
                     }`}
                     title={`${rating}つ星`}
                   >
-                    ⭐
+                    {selectedAnime.rating >= rating ? '★' : '☆'}
                   </button>
                 ))}
               </div>
@@ -4108,6 +4132,88 @@ export default function Home() {
                   評価を選択してください
                 </p>
               )}
+            </div>
+
+            {/* 周回数編集 */}
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">周回数</p>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={async () => {
+                    const currentCount = selectedAnime.rewatchCount ?? 0;
+                    const newCount = Math.max(0, currentCount - 1);
+                    const updatedSeasons = seasons.map(season => ({
+                      ...season,
+                      animes: season.animes.map((anime) =>
+                        anime.id === selectedAnime.id
+                          ? { ...anime, rewatchCount: newCount }
+                          : anime
+                      ),
+                    }));
+                    
+                    // Supabaseを更新（ログイン時のみ）
+                    if (user) {
+                      try {
+                        const { error } = await supabase
+                          .from('animes')
+                          .update({ rewatch_count: newCount })
+                          .eq('id', selectedAnime.id)
+                          .eq('user_id', user.id);
+                        
+                        if (error) throw error;
+                      } catch (error) {
+                        console.error('Failed to update anime rewatch count in Supabase:', error);
+                      }
+                    }
+                    
+                    setSeasons(updatedSeasons);
+                    setSelectedAnime({ ...selectedAnime, rewatchCount: newCount });
+                  }}
+                  className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                  disabled={(selectedAnime.rewatchCount ?? 0) <= 0}
+                >
+                  -
+                </button>
+                <span className="text-2xl font-bold dark:text-white min-w-[60px] text-center">
+                  {(selectedAnime.rewatchCount ?? 0)}周
+                </span>
+                <button
+                  onClick={async () => {
+                    const currentCount = selectedAnime.rewatchCount ?? 0;
+                    const newCount = Math.min(99, currentCount + 1);
+                    const updatedSeasons = seasons.map(season => ({
+                      ...season,
+                      animes: season.animes.map((anime) =>
+                        anime.id === selectedAnime.id
+                          ? { ...anime, rewatchCount: newCount }
+                          : anime
+                      ),
+                    }));
+                    
+                    // Supabaseを更新（ログイン時のみ）
+                    if (user) {
+                      try {
+                        const { error } = await supabase
+                          .from('animes')
+                          .update({ rewatch_count: newCount })
+                          .eq('id', selectedAnime.id)
+                          .eq('user_id', user.id);
+                        
+                        if (error) throw error;
+                      } catch (error) {
+                        console.error('Failed to update anime rewatch count in Supabase:', error);
+                      }
+                    }
+                    
+                    setSeasons(updatedSeasons);
+                    setSelectedAnime({ ...selectedAnime, rewatchCount: newCount });
+                  }}
+                  className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                  disabled={(selectedAnime.rewatchCount ?? 0) >= 99}
+                >
+                  +
+                </button>
+              </div>
             </div>
 
             {/* タグ選択 */}
