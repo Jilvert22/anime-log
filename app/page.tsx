@@ -1356,10 +1356,21 @@ export default function Home() {
       if (savedCharacters) {
         try {
           const parsedCharacters = JSON.parse(savedCharacters);
-          setFavoriteCharacters(parsedCharacters);
+          // サンプルデータを検出（IDが1-3のキャラクターが含まれている場合）
+          const hasSampleData = parsedCharacters.some((char: FavoriteCharacter) =>
+            char.id >= 1 && char.id <= 3
+          );
+          
+          if (hasSampleData) {
+            // サンプルデータが含まれている場合はlocalStorageをクリア
+            localStorage.removeItem('favoriteCharacters');
+            setFavoriteCharacters([]);
+          } else {
+            setFavoriteCharacters(parsedCharacters);
+          }
         } catch (e) {
           console.error('Failed to parse favorite characters', e);
-          // エラーの場合はサンプルデータを使用
+          // エラーの場合は空の配列を使用
           setFavoriteCharacters([]);
         }
       } else {
@@ -1724,9 +1735,20 @@ export default function Home() {
           if (savedSeasons) {
             try {
               const parsedSeasons = JSON.parse(savedSeasons);
-              setSeasons(parsedSeasons);
-              if (parsedSeasons.length > 0) {
-                setExpandedSeasons(new Set([parsedSeasons[0].name]));
+              // サンプルデータを検出（IDが1-4のアニメが含まれている場合）
+              const hasSampleData = parsedSeasons.some((season: Season) =>
+                season.animes.some((anime: Anime) => anime.id >= 1 && anime.id <= 4)
+              );
+              
+              if (hasSampleData) {
+                // サンプルデータが含まれている場合はlocalStorageをクリア
+                localStorage.removeItem('animeSeasons');
+                setSeasons([]);
+              } else {
+                setSeasons(parsedSeasons);
+                if (parsedSeasons.length > 0) {
+                  setExpandedSeasons(new Set([parsedSeasons[0].name]));
+                }
               }
             } catch (e) {
               // パースエラーの場合は空の配列を使用
