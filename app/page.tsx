@@ -697,7 +697,7 @@ function AchievementsTab({
       </div>
       
       {/* バッジグリッド */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {achievements.map((achievement) => {
           const isUnlocked = checkAchievement(achievement);
           const rarityColor = getRarityColor(achievement.rarity);
@@ -731,7 +731,7 @@ function AchievementsTab({
           onClick={() => setSelectedAchievement(null)}
         >
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6"
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
@@ -1816,8 +1816,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* ヘッダー */}
-      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 lg:ml-[200px]">
+        <div className="max-w-md md:max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             俺のアニメログ
           </h1>
@@ -1850,14 +1850,14 @@ export default function Home() {
       </header>
 
       {/* メインコンテンツ */}
-      <main className="max-w-md mx-auto px-4 py-6 pb-24">
+      <main className="max-w-md md:max-w-6xl mx-auto px-4 py-6 pb-24 lg:pb-6 lg:ml-[200px]">
         {activeTab === 'home' && (
           <>
             {/* サブタブ */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-2 md:gap-3 mb-4 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setHomeSubTab('seasons')}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
                   homeSubTab === 'seasons'
                     ? 'bg-indigo-600 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -1867,7 +1867,7 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setHomeSubTab('series')}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
                   homeSubTab === 'series'
                     ? 'bg-indigo-600 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -1889,7 +1889,7 @@ export default function Home() {
                   </div>
                   
                   {/* 統計情報 */}
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     <div className="text-center">
                       <p className="text-3xl font-black">{count}</p>
                       <p className="text-white/80 text-xs mt-1">作品</p>
@@ -1946,7 +1946,7 @@ export default function Home() {
                   </button>
                   
                   {isExpanded && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                       {season.animes.map((anime) => (
             <AnimeCard 
               key={anime.id} 
@@ -2041,7 +2041,7 @@ export default function Home() {
                               全{standaloneAnimes.length}作品
                             </span>
                           </div>
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                             {standaloneAnimes.map((anime) => (
                               <AnimeCard
                                 key={anime.id}
@@ -2159,7 +2159,7 @@ export default function Home() {
                           <span>📊</span>
                           視聴統計サマリー
                         </h3>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
                             <p className="text-white/80 text-xs mb-1">総視聴作品数</p>
                             <p className="text-2xl font-black">{totalAnimes}</p>
@@ -2343,10 +2343,10 @@ export default function Home() {
         {activeTab === 'collection' && (
           <>
             {/* サブタブ */}
-            <div className="flex gap-3 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-3 md:gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setCollectionSubTab('achievements')}
-                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'achievements'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -2356,7 +2356,7 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setCollectionSubTab('characters')}
-                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'characters'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -2366,7 +2366,7 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setCollectionSubTab('quotes')}
-                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'quotes'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -2376,7 +2376,7 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setCollectionSubTab('lists')}
-                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'lists'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -2386,7 +2386,7 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setCollectionSubTab('music')}
-                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'music'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -2396,7 +2396,7 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setCollectionSubTab('voiceActors')}
-                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'voiceActors'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -2910,7 +2910,7 @@ export default function Home() {
 
                 {/* 声優リスト */}
                 {voiceActors.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {voiceActors
                       .filter(va => 
                         voiceActorSearchQuery === '' || 
@@ -3021,7 +3021,7 @@ export default function Home() {
           onClick={() => setShowAddForm(false)}
         >
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 my-4"
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 my-4"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4 dark:text-white">新しいアニメを追加</h2>
@@ -3663,7 +3663,7 @@ export default function Home() {
           onClick={() => setShowReviewModal(false)}
         >
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6"
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4 dark:text-white">感想を投稿</h2>
@@ -3998,7 +3998,7 @@ export default function Home() {
           onClick={() => setSelectedAnime(null)}
         >
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6"
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6"
             onClick={(e) => e.stopPropagation()}
           >
             {/* タブ切り替え */}
@@ -5573,7 +5573,7 @@ export default function Home() {
           onClick={() => setShowAddCharacterModal(false)}
         >
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4 dark:text-white">
@@ -5804,7 +5804,7 @@ export default function Home() {
           }}
         >
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-md lg:max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4 dark:text-white">
@@ -5980,7 +5980,7 @@ export default function Home() {
           }}
         >
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6"
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4 dark:text-white">
@@ -6458,8 +6458,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* ボトムナビゲーション */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 z-10">
+      {/* ボトムナビゲーション（スマホ・タブレット） */}
+      <nav className="block lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 z-10">
         <div className="max-w-md mx-auto px-4 py-2">
           <div className="flex justify-around items-center">
             <button
@@ -6518,6 +6518,59 @@ export default function Home() {
               <span className="text-xs font-medium mt-1">マイページ</span>
             </button>
           </div>
+        </div>
+      </nav>
+
+      {/* サイドバーナビゲーション（PC） */}
+      <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 w-[200px] bg-white dark:bg-gray-800 border-r dark:border-gray-700 z-10 flex-col pt-20">
+        <div className="flex flex-col gap-2 px-2">
+          <button
+            onClick={() => setActiveTab('home')}
+            className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
+              activeTab === 'home'
+                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <span className="text-2xl">📺</span>
+            <span className="font-medium">ホーム</span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('discover')}
+            className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
+              activeTab === 'discover'
+                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <span className="text-2xl">📊</span>
+            <span className="font-medium">統計</span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('collection')}
+            className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
+              activeTab === 'collection'
+                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <span className="text-2xl">🏆</span>
+            <span className="font-medium">コレクション</span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
+              activeTab === 'profile'
+                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <span className="text-2xl">👤</span>
+            <span className="font-medium">マイページ</span>
+          </button>
         </div>
       </nav>
     </div>
