@@ -91,6 +91,16 @@ type FavoriteCharacter = {
   tags: string[];
 };
 
+// 声優の型定義
+type VoiceActor = {
+  id: number;
+  name: string;
+  animeIds: number[]; // 出演したアニメのIDリスト
+  animeNames: string[]; // 出演したアニメの名前リスト
+  image: string; // アイコン（絵文字）
+  notes?: string; // メモ（任意）
+};
+
 // プリセットカテゴリ
 const characterCategories = [
   { emoji: '❤️', label: 'シンプルに好き', value: 'シンプルに好き' },
@@ -1249,10 +1259,11 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'home' | 'discover' | 'collection' | 'profile'>('home');
   const [homeSubTab, setHomeSubTab] = useState<'seasons' | 'series'>('seasons');
   const [discoverSubTab, setDiscoverSubTab] = useState<'trends'>('trends');
-  const [collectionSubTab, setCollectionSubTab] = useState<'achievements' | 'characters' | 'quotes' | 'lists' | 'music'>('achievements');
+  const [collectionSubTab, setCollectionSubTab] = useState<'achievements' | 'characters' | 'quotes' | 'lists' | 'music' | 'voiceActors'>('achievements');
   const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
   const [evangelistLists, setEvangelistLists] = useState<EvangelistList[]>([]);
   const [favoriteCharacters, setFavoriteCharacters] = useState<FavoriteCharacter[]>([]);
+  const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
   const [showCreateListModal, setShowCreateListModal] = useState(false);
   const [selectedList, setSelectedList] = useState<EvangelistList | null>(null);
   const [newListTitle, setNewListTitle] = useState('');
@@ -1268,6 +1279,13 @@ export default function Home() {
   const [newCustomTag, setNewCustomTag] = useState('');
   const [editingCharacter, setEditingCharacter] = useState<FavoriteCharacter | null>(null);
   const [characterFilter, setCharacterFilter] = useState<string | null>(null);
+  const [showAddVoiceActorModal, setShowAddVoiceActorModal] = useState(false);
+  const [newVoiceActorName, setNewVoiceActorName] = useState('');
+  const [newVoiceActorImage, setNewVoiceActorImage] = useState('🎤');
+  const [newVoiceActorAnimeIds, setNewVoiceActorAnimeIds] = useState<number[]>([]);
+  const [newVoiceActorNotes, setNewVoiceActorNotes] = useState('');
+  const [editingVoiceActor, setEditingVoiceActor] = useState<VoiceActor | null>(null);
+  const [voiceActorSearchQuery, setVoiceActorSearchQuery] = useState('');
   const [quoteSearchQuery, setQuoteSearchQuery] = useState('');
   const [quoteFilterType, setQuoteFilterType] = useState<'all' | 'anime' | 'character'>('all');
   const [selectedAnimeForFilter, setSelectedAnimeForFilter] = useState<number | null>(null);
@@ -2376,6 +2394,16 @@ export default function Home() {
               >
                 主題歌
               </button>
+              <button
+                onClick={() => setCollectionSubTab('voiceActors')}
+                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                  collectionSubTab === 'voiceActors'
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
+              >
+                声優
+              </button>
             </div>
 
             {collectionSubTab === 'achievements' && (
@@ -2846,6 +2874,127 @@ export default function Home() {
                 user={user}
                 supabase={supabase}
               />
+            )}
+
+            {collectionSubTab === 'voiceActors' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold dark:text-white">声優リスト</h2>
+                  <button
+                    onClick={() => {
+                      setNewVoiceActorName('');
+                      setNewVoiceActorImage('🎤');
+                      setNewVoiceActorAnimeIds([]);
+                      setNewVoiceActorNotes('');
+                      setEditingVoiceActor(null);
+                      setShowAddVoiceActorModal(true);
+                    }}
+                    className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    + 声優を追加
+                  </button>
+                </div>
+
+                {/* 検索バー */}
+                {voiceActors.length > 0 && (
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      value={voiceActorSearchQuery}
+                      onChange={(e) => setVoiceActorSearchQuery(e.target.value)}
+                      placeholder="声優名で検索..."
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                )}
+
+                {/* 声優リスト */}
+                {voiceActors.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {voiceActors
+                      .filter(va => 
+                        voiceActorSearchQuery === '' || 
+                        va.name.toLowerCase().includes(voiceActorSearchQuery.toLowerCase())
+                      )
+                      .map((voiceActor) => {
+                        const animeList = voiceActor.animeIds
+                          .map(id => allAnimes.find(a => a.id === id))
+                          .filter(Boolean) as Anime[];
+                        
+                        return (
+                          <div
+                            key={voiceActor.id}
+                            className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow relative group"
+                          >
+                            {/* 編集・削除ボタン（ホバー時表示） */}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingVoiceActor(voiceActor);
+                                  setNewVoiceActorName(voiceActor.name);
+                                  setNewVoiceActorImage(voiceActor.image);
+                                  setNewVoiceActorAnimeIds(voiceActor.animeIds);
+                                  setNewVoiceActorNotes(voiceActor.notes || '');
+                                  setShowAddVoiceActorModal(true);
+                                }}
+                                className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-colors text-xs"
+                                title="編集"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm('この声優を削除しますか？')) {
+                                    const updated = voiceActors.filter(va => va.id !== voiceActor.id);
+                                    setVoiceActors(updated);
+                                    if (typeof window !== 'undefined') {
+                                      localStorage.setItem('voiceActors', JSON.stringify(updated));
+                                    }
+                                  }
+                                }}
+                                className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 transition-colors text-xs"
+                                title="削除"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                              <div className="text-4xl">{voiceActor.image}</div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-lg dark:text-white mb-1">{voiceActor.name}</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                                  {voiceActor.animeIds.length}作品に出演
+                                </p>
+                                {animeList.length > 0 && (
+                                  <div className="space-y-1">
+                                    {animeList.slice(0, 3).map((anime) => (
+                                      <div key={anime.id} className="text-xs text-gray-600 dark:text-gray-300">
+                                        • {anime.title}
+                                      </div>
+                                    ))}
+                                    {animeList.length > 3 && (
+                                      <div className="text-xs text-gray-400 dark:text-gray-500">
+                                        +{animeList.length - 3}作品
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {voiceActor.notes && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+                                    {voiceActor.notes}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">声優が登録されていません</p>
+                )}
+              </div>
             )}
           </>
         )}
@@ -5635,6 +5784,183 @@ export default function Home() {
                 className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
               >
                 {editingCharacter ? '更新' : '追加'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 声優追加・編集モーダル */}
+      {showAddVoiceActorModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            setShowAddVoiceActorModal(false);
+            setEditingVoiceActor(null);
+            setNewVoiceActorName('');
+            setNewVoiceActorImage('🎤');
+            setNewVoiceActorAnimeIds([]);
+            setNewVoiceActorNotes('');
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4 dark:text-white">
+              {editingVoiceActor ? '声優を編集' : '声優を追加'}
+            </h2>
+            
+            {/* 声優名入力 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                声優名
+              </label>
+              <input
+                type="text"
+                value={newVoiceActorName}
+                onChange={(e) => setNewVoiceActorName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="声優名"
+              />
+            </div>
+
+            {/* アイコン選択 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                アイコン
+              </label>
+              <div className="grid grid-cols-8 gap-2">
+                {['🎤', '🎭', '🎪', '🎨', '🎯', '🎮', '🎸', '🎵', '🎹', '🎧', '🎺', '🎷', '👤', '⭐', '💫', '✨'].map((icon) => (
+                  <button
+                    key={icon}
+                    onClick={() => setNewVoiceActorImage(icon)}
+                    className={`text-2xl p-2 rounded-lg transition-all ${
+                      newVoiceActorImage === icon
+                        ? 'bg-indigo-100 dark:bg-indigo-900 ring-2 ring-indigo-500'
+                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 出演アニメ選択 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                出演アニメ（複数選択可）
+              </label>
+              <div className="max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-xl p-2 space-y-1">
+                {allAnimes.length > 0 ? (
+                  allAnimes.map((anime) => (
+                    <label
+                      key={anime.id}
+                      className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={newVoiceActorAnimeIds.includes(anime.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setNewVoiceActorAnimeIds([...newVoiceActorAnimeIds, anime.id]);
+                          } else {
+                            setNewVoiceActorAnimeIds(newVoiceActorAnimeIds.filter(id => id !== anime.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                      />
+                      <span className="text-sm dark:text-white">{anime.title}</span>
+                    </label>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-2">アニメが登録されていません</p>
+                )}
+              </div>
+            </div>
+
+            {/* メモ */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                メモ（任意）
+              </label>
+              <textarea
+                value={newVoiceActorNotes}
+                onChange={(e) => setNewVoiceActorNotes(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="メモを入力..."
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowAddVoiceActorModal(false);
+                  setEditingVoiceActor(null);
+                  setNewVoiceActorName('');
+                  setNewVoiceActorImage('🎤');
+                  setNewVoiceActorAnimeIds([]);
+                  setNewVoiceActorNotes('');
+                }}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => {
+                  if (newVoiceActorName.trim()) {
+                    const animeNames = newVoiceActorAnimeIds
+                      .map(id => allAnimes.find(a => a.id === id)?.title)
+                      .filter(Boolean) as string[];
+
+                    if (editingVoiceActor) {
+                      // 編集
+                      const updatedVoiceActor: VoiceActor = {
+                        ...editingVoiceActor,
+                        name: newVoiceActorName.trim(),
+                        image: newVoiceActorImage,
+                        animeIds: newVoiceActorAnimeIds,
+                        animeNames: animeNames,
+                        notes: newVoiceActorNotes.trim() || undefined,
+                      };
+                      const updated = voiceActors.map(va => 
+                        va.id === editingVoiceActor.id ? updatedVoiceActor : va
+                      );
+                      setVoiceActors(updated);
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem('voiceActors', JSON.stringify(updated));
+                      }
+                    } else {
+                      // 新規追加
+                      const maxId = voiceActors.length > 0 ? Math.max(...voiceActors.map(va => va.id)) : 0;
+                      const newVoiceActor: VoiceActor = {
+                        id: maxId + 1,
+                        name: newVoiceActorName.trim(),
+                        image: newVoiceActorImage,
+                        animeIds: newVoiceActorAnimeIds,
+                        animeNames: animeNames,
+                        notes: newVoiceActorNotes.trim() || undefined,
+                      };
+                      const updated = [...voiceActors, newVoiceActor];
+                      setVoiceActors(updated);
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem('voiceActors', JSON.stringify(updated));
+                      }
+                    }
+                    setShowAddVoiceActorModal(false);
+                    setEditingVoiceActor(null);
+                    setNewVoiceActorName('');
+                    setNewVoiceActorImage('🎤');
+                    setNewVoiceActorAnimeIds([]);
+                    setNewVoiceActorNotes('');
+                  }
+                }}
+                disabled={!newVoiceActorName.trim()}
+                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {editingVoiceActor ? '更新' : '追加'}
               </button>
             </div>
           </div>
