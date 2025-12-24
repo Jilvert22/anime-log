@@ -1360,11 +1360,11 @@ export default function Home() {
         } catch (e) {
           console.error('Failed to parse favorite characters', e);
           // エラーの場合はサンプルデータを使用
-          setFavoriteCharacters(sampleFavoriteCharacters);
+          setFavoriteCharacters([]);
         }
       } else {
-        // 保存データがない場合はサンプルデータを使用
-        setFavoriteCharacters(sampleFavoriteCharacters);
+        // 保存データがない場合は空の配列を使用
+        setFavoriteCharacters([]);
       }
       
       // アニメデータを読み込む（未ログイン時のみlocalStorageから、ログイン時はSupabaseから読み込む）
@@ -1729,14 +1729,12 @@ export default function Home() {
                 setExpandedSeasons(new Set([parsedSeasons[0].name]));
               }
             } catch (e) {
-              // パースエラーの場合はサンプルデータを使用
-              setSeasons(sampleSeasons);
-              setExpandedSeasons(new Set([sampleSeasons[0].name]));
+              // パースエラーの場合は空の配列を使用
+              setSeasons([]);
             }
           } else {
-            // 保存データがない場合はサンプルデータを使用
-            setSeasons(sampleSeasons);
-            setExpandedSeasons(new Set([sampleSeasons[0].name]));
+            // 保存データがない場合は空の配列を使用
+            setSeasons([]);
           }
         }
       }
@@ -1869,6 +1867,14 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* 追加ボタン */}
+                <button 
+                  onClick={() => setShowAddForm(true)}
+                  className="w-full mb-6 py-4 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-2xl text-indigo-600 dark:text-indigo-400 font-bold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                >
+                  + アニメを追加
+                </button>
+
                 {/* アニメ一覧 */}
                 {seasons.map((season) => {
               const isExpanded = expandedSeasons.has(season.name);
@@ -1913,14 +1919,6 @@ export default function Home() {
                 </div>
               );
             })}
-
-                {/* 追加ボタン */}
-                <button 
-                  onClick={() => setShowAddForm(true)}
-                  className="w-full mt-6 py-4 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-2xl text-indigo-600 dark:text-indigo-400 font-bold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
-                >
-                  + アニメを追加
-                </button>
               </>
             )}
 
