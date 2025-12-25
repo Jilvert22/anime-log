@@ -114,6 +114,20 @@ const characterCategories = [
   { emoji: '🤡', label: '推せる馬鹿', value: '推せる馬鹿' },
 ];
 
+// オタクタイプの種類
+const otakuTypes = [
+  { emoji: '🔍', label: '考察厨', value: '🔍 考察厨', description: '考察や伏線回収が好き' },
+  { emoji: '😭', label: '感情移入型', value: '😭 感情移入型', description: '感情移入して泣ける作品が好き' },
+  { emoji: '🎨', label: '作画厨', value: '🎨 作画厨', description: '作画のクオリティを重視' },
+  { emoji: '🎵', label: '音響派', value: '🎵 音響派', description: '音楽や音響を重視' },
+  { emoji: '💕', label: 'キャラオタ', value: '💕 キャラオタ', description: 'キャラクターが好き' },
+  { emoji: '🔥', label: '熱血派', value: '🔥 熱血派', description: '熱い展開やバトルが好き' },
+  { emoji: '🎬', label: 'ストーリー重視', value: '🎬 ストーリー重視', description: 'ストーリーの完成度を重視' },
+  { emoji: '🌸', label: '日常系好き', value: '🌸 日常系好き', description: '日常系やほのぼの系が好き' },
+  { emoji: '⚔️', label: 'バトル好き', value: '⚔️ バトル好き', description: 'バトルシーンを重視' },
+  { emoji: '🎪', label: 'エンタメ重視', value: '🎪 エンタメ重視', description: 'エンターテイメント性を重視' },
+];
+
 // プリセットタグ
 const characterPresetTags = [
   'ツンデレ', 'ヤンデレ', 'クーデレ', '天然',
@@ -283,6 +297,10 @@ function ProfileTab({
   setIsDarkMode,
   setShowSettings,
   handleLogout,
+  userOtakuType,
+  favoriteAnimeIds,
+  setFavoriteAnimeIds,
+  setShowFavoriteAnimeModal,
 }: {
   allAnimes: Anime[];
   seasons: Season[];
@@ -293,6 +311,10 @@ function ProfileTab({
   setIsDarkMode: (value: boolean) => void;
   setShowSettings: (value: boolean) => void;
   handleLogout: () => void;
+  userOtakuType: string;
+  favoriteAnimeIds: number[];
+  setFavoriteAnimeIds: (ids: number[]) => void;
+  setShowFavoriteAnimeModal: (show: boolean) => void;
 }) {
   const watchedCount = allAnimes.filter(a => a.watched).length;
   const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
@@ -360,17 +382,23 @@ function ProfileTab({
           });
         });
         
-        let otakuType = '🎵 音響派'; // デフォルト
-        if (tagCounts['考察'] && tagCounts['考察'] >= 3) {
-          otakuType = '🔍 考察厨';
-        } else if (tagCounts['泣ける'] && tagCounts['泣ける'] >= 3) {
-          otakuType = '😭 感情移入型';
-        } else if (tagCounts['作画神'] && tagCounts['作画神'] >= 3) {
-          otakuType = '🎨 作画厨';
-        } else if (tagCounts['音楽最高'] && tagCounts['音楽最高'] >= 3) {
-          otakuType = '🎵 音響派';
-        } else if (tagCounts['キャラ萌え'] && tagCounts['キャラ萌え'] >= 3) {
-          otakuType = '💕 キャラオタ';
+        // ユーザーが設定したオタクタイプを使用、なければ自動判定
+        let otakuType = userOtakuType || '🎵 音響派'; // デフォルト
+        if (!userOtakuType) {
+          // 自動判定
+          if (tagCounts['考察'] && tagCounts['考察'] >= 3) {
+            otakuType = '🔍 考察厨';
+          } else if (tagCounts['泣ける'] && tagCounts['泣ける'] >= 3) {
+            otakuType = '😭 感情移入型';
+          } else if (tagCounts['作画神'] && tagCounts['作画神'] >= 3) {
+            otakuType = '🎨 作画厨';
+          } else if (tagCounts['音楽最高'] && tagCounts['音楽最高'] >= 3) {
+            otakuType = '🎵 音響派';
+          } else if (tagCounts['キャラ萌え'] && tagCounts['キャラ萌え'] >= 3) {
+            otakuType = '💕 キャラオタ';
+          } else if (tagCounts['熱い'] && tagCounts['熱い'] >= 3) {
+            otakuType = '🔥 熱血派';
+          }
         }
         
         // お気に入り曲
@@ -415,15 +443,20 @@ function ProfileTab({
                 </div>
               </div>
               
-              {/* 代表作 */}
+              {/* 最推し作品 */}
               <div className="mb-4">
-                <p className="text-white/90 text-xs font-medium mb-2 text-center">代表作</p>
+                <p className="text-white/90 text-xs font-medium mb-2 text-center">最推し作品</p>
                 <div className="flex justify-center gap-3">
-                  {allAnimes
-                    .filter(a => a.rating > 0)
-                    .sort((a, b) => b.rating - a.rating)
-                    .slice(0, 3)
-                    .map((anime, index) => {
+                  {(favoriteAnimeIds.length > 0
+                    ? favoriteAnimeIds
+                        .map(id => allAnimes.find(a => a.id === id))
+                        .filter((a): a is Anime => a !== undefined)
+                        .slice(0, 3)
+                    : allAnimes
+                        .filter(a => a.rating > 0)
+                        .sort((a, b) => b.rating - a.rating)
+                        .slice(0, 3)
+                  ).map((anime, index) => {
                       const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
                       return (
                         <div
@@ -1258,6 +1291,7 @@ export default function Home() {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [count, setCount] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [showFavoriteAnimeModal, setShowFavoriteAnimeModal] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDNAModal, setShowDNAModal] = useState(false);
   const [newAnimeTitle, setNewAnimeTitle] = useState('');
@@ -1277,6 +1311,8 @@ export default function Home() {
   const [userName, setUserName] = useState<string>('ユーザー');
   const [userIcon, setUserIcon] = useState<string>('👤');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [userOtakuType, setUserOtakuType] = useState<string>('');
+  const [favoriteAnimeIds, setFavoriteAnimeIds] = useState<number[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'discover' | 'collection' | 'profile'>('home');
   const [homeSubTab, setHomeSubTab] = useState<'seasons' | 'series'>('seasons');
   const [discoverSubTab, setDiscoverSubTab] = useState<'trends'>('trends');
@@ -1368,6 +1404,8 @@ export default function Home() {
       const savedName = localStorage.getItem('userName');
       const savedIcon = localStorage.getItem('userIcon');
       const savedDarkMode = localStorage.getItem('darkMode');
+      const savedOtakuType = localStorage.getItem('userOtakuType');
+      const savedFavoriteAnimeIds = localStorage.getItem('favoriteAnimeIds');
       const savedSeasons = localStorage.getItem('animeSeasons');
       const savedLists = localStorage.getItem('evangelistLists');
       const savedCharacters = localStorage.getItem('favoriteCharacters');
@@ -1375,6 +1413,14 @@ export default function Home() {
       if (savedName) setUserName(savedName);
       if (savedIcon) setUserIcon(savedIcon);
       if (savedDarkMode === 'true') setIsDarkMode(true);
+      if (savedOtakuType) setUserOtakuType(savedOtakuType);
+      if (savedFavoriteAnimeIds) {
+        try {
+          setFavoriteAnimeIds(JSON.parse(savedFavoriteAnimeIds));
+        } catch (e) {
+          console.error('Failed to parse favoriteAnimeIds', e);
+        }
+      }
       
       // 布教リストを読み込む
       if (savedLists) {
@@ -1440,8 +1486,14 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('userName', userName);
       localStorage.setItem('userIcon', userIcon);
+      if (userOtakuType) {
+        localStorage.setItem('userOtakuType', userOtakuType);
+      } else {
+        localStorage.removeItem('userOtakuType');
+      }
+      localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
     }
-  }, [userName, userIcon]);
+  }, [userName, userIcon, userOtakuType, favoriteAnimeIds]);
 
   // アニメデータをlocalStorageに保存（未ログイン時のみ）
   useEffect(() => {
@@ -3034,6 +3086,10 @@ export default function Home() {
             setIsDarkMode={setIsDarkMode}
             setShowSettings={setShowSettings}
             handleLogout={handleLogout}
+            userOtakuType={userOtakuType}
+            favoriteAnimeIds={favoriteAnimeIds}
+            setFavoriteAnimeIds={setFavoriteAnimeIds}
+            setShowFavoriteAnimeModal={setShowFavoriteAnimeModal}
           />
         )}
       </main>
@@ -3219,13 +3275,6 @@ export default function Home() {
                           };
                           const seasonName = `${selectedYear}年${seasonNameMap[selectedSeason!]}`;
                           
-                          // 既存のシーズンを探す、なければ作成
-                          let targetSeason = seasons.find(s => s.name === seasonName);
-                          if (!targetSeason) {
-                            targetSeason = { name: seasonName, animes: [] };
-                            setSeasons([...seasons, targetSeason]);
-                          }
-                          
                           // アニメを追加（評価は0、watchedはfalse）
                           const newAnimes: Anime[] = selectedAnimes.map((result, index) => {
                             const seriesName = extractSeriesName(result.title?.native || result.title?.romaji || '');
@@ -3242,11 +3291,21 @@ export default function Home() {
                             };
                           });
                           
-                          const updatedSeasons = seasons.map(season =>
-                            season.name === seasonName
-                              ? { ...season, animes: [...season.animes, ...newAnimes] }
-                              : season
-                          );
+                          // 既存のシーズンを探す、なければ作成してアニメを追加
+                          const existingSeasonIndex = seasons.findIndex(s => s.name === seasonName);
+                          let updatedSeasons: Season[];
+                          
+                          if (existingSeasonIndex === -1) {
+                            // 新しいシーズンを作成
+                            updatedSeasons = [...seasons, { name: seasonName, animes: newAnimes }];
+                          } else {
+                            // 既存のシーズンにアニメを追加
+                            updatedSeasons = seasons.map((season, index) =>
+                              index === existingSeasonIndex
+                                ? { ...season, animes: [...season.animes, ...newAnimes] }
+                                : season
+                            );
+                          }
                           
                           // 新しいシーズンが追加された場合は展開状態にする
                           const newExpandedSeasons = new Set(expandedSeasons);
@@ -3344,7 +3403,7 @@ export default function Home() {
             
             {/* タイトル検索モード */}
             {addModalMode === 'search' && (
-              <div>
+              <div className="space-y-4">
             {/* 検索バー */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -3433,144 +3492,69 @@ export default function Home() {
               </div>
             )}
 
-            {/* タイトル入力（検索結果がない場合または手動入力時） */}
-            {searchResults.length === 0 && !isSearching && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  タイトル
-                </label>
-                <input
-                  type="text"
-                  value={newAnimeTitle}
-                  onChange={(e) => setNewAnimeTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                  placeholder="アニメのタイトルを入力"
-                />
+            {/* 検索結果がない場合のメッセージ */}
+            {searchResults.length === 0 && !isSearching && searchQuery.trim() && (
+              <div className="mb-4 text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400">検索結果が見つかりませんでした</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">別のキーワードで検索してください</p>
               </div>
             )}
 
-            {/* アイコン選択（画像URLが設定されていない場合のみ表示） */}
-            {!(newAnimeIcon && (newAnimeIcon.startsWith('http://') || newAnimeIcon.startsWith('https://'))) && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  アイコン
-                </label>
-                <div className="grid grid-cols-8 gap-2">
-                  {['🎬', '🎭', '🎪', '🎨', '🎯', '🎮', '🎸', '🎵', '🎹', '🎤', '🎧', '🎺', '🎷', '🥁', '🎲', '🎰', '🎃', '🧝', '👻', '🤖', '👽', '🦄', '🐉', '🦁'].map((icon) => (
-                    <button
-                      key={icon}
-                      onClick={() => setNewAnimeIcon(icon)}
-                      className={`text-3xl p-2 rounded-lg transition-all ${
-                        newAnimeIcon === icon
-                          ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
-                          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      {icon}
-                    </button>
-                  ))}
-                </div>
+            {/* 検索前のメッセージ */}
+            {searchResults.length === 0 && !isSearching && !searchQuery.trim() && (
+              <div className="mb-4 text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400">アニメタイトルで検索してください</p>
               </div>
             )}
 
-            {/* 画像プレビュー（画像URLが設定されている場合） */}
-            {newAnimeIcon && (newAnimeIcon.startsWith('http://') || newAnimeIcon.startsWith('https://')) && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  画像プレビュー
-                </label>
-                <div className="relative aspect-3/4 w-32 mx-auto rounded-lg overflow-hidden border-2 border-[#ffc2d1]-300 dark:border-[#ffc2d1]-600">
-                  <img
-                    src={newAnimeIcon}
-                    alt="アニメ画像"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="128" height="171"><rect fill="%23ddd" width="128" height="171"/></svg>';
-                    }}
-                  />
-                  <button
-                    onClick={() => setNewAnimeIcon('🎬')}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                    title="画像を削除"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* 評価選択 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                評価
-              </label>
-              <div className="flex justify-center gap-2">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <button
-                    key={rating}
-                    onClick={() => setNewAnimeRating(rating)}
-                    className={`text-3xl transition-transform hover:scale-110 ${
-                      newAnimeRating >= rating
-                        ? 'text-[#ffd966]'
-                        : 'text-gray-300 opacity-30'
-                    }`}
-                  >
-                    {newAnimeRating >= rating ? '★' : '☆'}
-                  </button>
-                ))}
-              </div>
-              {newAnimeRating > 0 && (
-                <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  {ratingLabels[newAnimeRating]?.emoji} {ratingLabels[newAnimeRating]?.label}
-                </p>
-              )}
-            </div>
-
-            <div className="flex gap-3">
-              <button 
-                onClick={() => {
-                  setShowAddForm(false);
-                  setNewAnimeTitle('');
-                  setNewAnimeIcon('🎬');
-                  setNewAnimeRating(0);
-                  setSearchQuery('');
-                  setSearchResults([]);
-                  setSelectedSearchResult(null);
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button 
-                onClick={async () => {
-                  if (newAnimeTitle.trim()) {
+            {/* 検索結果が選択されている場合のみ追加ボタンを表示 */}
+            {selectedSearchResult && (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewAnimeTitle('');
+                    setNewAnimeIcon('🎬');
+                    setNewAnimeRating(0);
+                    setSearchQuery('');
+                    setSearchResults([]);
+                    setSelectedSearchResult(null);
+                  }}
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  キャンセル
+                </button>
+                <button 
+                  onClick={async () => {
+                    if (!selectedSearchResult) {
+                      alert('アニメを選択してください');
+                      return;
+                    }
+                    
                     const maxId = Math.max(...seasons.flatMap(s => s.animes).map(a => a.id), 0);
                     
-                    // 選択された検索結果からジャンルをタグとして取得
+                    // 選択された検索結果から情報を取得
+                    const title = selectedSearchResult.title?.native || selectedSearchResult.title?.romaji || '';
+                    const image = selectedSearchResult.coverImage?.large || selectedSearchResult.coverImage?.medium || '🎬';
+                    
+                    // ジャンルをタグとして取得
                     const tags: string[] = [];
                     if (selectedSearchResult?.genres && selectedSearchResult.genres.length > 0) {
-                      // ジャンルをタグとして追加（日本語化して利用可能なタグにマッピング）
                       selectedSearchResult.genres.forEach((genre: string) => {
                         const translatedGenre = translateGenre(genre);
-                        // ジャンルを利用可能なタグにマッピング（完全一致する場合は追加）
                         const matchingTag = availableTags.find(t => t.label === translatedGenre);
                         if (matchingTag) {
                           tags.push(matchingTag.value);
                         } else {
-                          // マッチしない場合は翻訳されたジャンルをそのまま追加
                           tags.push(translatedGenre);
                         }
                       });
                     }
                     
-                    // シリーズ名を自動判定（検索結果から）
-                    let seriesName: string | undefined = undefined;
-                    if (selectedSearchResult) {
-                      const title = selectedSearchResult.title?.native || selectedSearchResult.title?.romaji || '';
-                      seriesName = extractSeriesName(title);
-                    }
+                    // シリーズ名を自動判定
+                    const seriesName = extractSeriesName(title);
                     
-                    // 制作会社を取得（検索結果から）
+                    // 制作会社を取得
                     const studios: string[] = [];
                     if (selectedSearchResult?.studios?.nodes && Array.isArray(selectedSearchResult.studios.nodes)) {
                       studios.push(...selectedSearchResult.studios.nodes.map((s: any) => s.name));
@@ -3578,36 +3562,57 @@ export default function Home() {
                     
                     const newAnime: Anime = {
                       id: maxId + 1,
-                      title: newAnimeTitle.trim(),
-                      image: newAnimeIcon,
-                      rating: newAnimeRating,
-                      watched: true,
-                      rewatchCount: 1,
+                      title: title,
+                      image: image,
+                      rating: 0, // デフォルトは未評価
+                      watched: false,
+                      rewatchCount: 0,
                       tags: tags.length > 0 ? tags : undefined,
                       seriesName: seriesName,
                       studios: studios.length > 0 ? studios : undefined,
                     };
                     
-                    // シーズン名を決定（検索結果から取得、または既存のシーズン）
+                    // シーズン名を決定（検索結果から取得）
+                    const seasonNameMap: { [key: string]: string } = {
+                      'SPRING': '春',
+                      'SUMMER': '夏',
+                      'FALL': '秋',
+                      'WINTER': '冬',
+                    };
                     let seasonName = '未分類';
                     if (selectedSearchResult?.seasonYear && selectedSearchResult?.season) {
-                      seasonName = `${selectedSearchResult.seasonYear}年${getSeasonName(selectedSearchResult.season)}`;
-                    } else if (seasons.length > 0 && seasons[0]?.name) {
-                      seasonName = seasons[0].name;
+                      seasonName = `${selectedSearchResult.seasonYear}年${seasonNameMap[selectedSearchResult.season] || ''}`;
+                    } else {
+                      // 現在の日付からシーズンを決定
+                      const now = new Date();
+                      const year = now.getFullYear();
+                      const month = now.getMonth();
+                      if (month >= 0 && month <= 2) {
+                        seasonName = `${year}年冬`;
+                      } else if (month >= 3 && month <= 5) {
+                        seasonName = `${year}年春`;
+                      } else if (month >= 6 && month <= 8) {
+                        seasonName = `${year}年夏`;
+                      } else {
+                        seasonName = `${year}年秋`;
+                      }
                     }
                     
-                    // 最新のシーズン（最初のシーズン）に追加
-                    const updatedSeasons = [...seasons];
+                    // 既存のシーズンを探す、なければ作成
+                    const existingSeasonIndex = seasons.findIndex(s => s.name === seasonName);
+                    let updatedSeasons: Season[];
                     
-                    if (updatedSeasons.length === 0 || !updatedSeasons[0]) {
-                      updatedSeasons.unshift({ name: seasonName, animes: [] });
+                    if (existingSeasonIndex === -1) {
+                      // 新しいシーズンを作成
+                      updatedSeasons = [...seasons, { name: seasonName, animes: [newAnime] }];
+                    } else {
+                      // 既存のシーズンにアニメを追加
+                      updatedSeasons = seasons.map((season, index) =>
+                        index === existingSeasonIndex
+                          ? { ...season, animes: [...season.animes, newAnime] }
+                          : season
+                      );
                     }
-                    
-                    updatedSeasons[0] = {
-                      ...updatedSeasons[0],
-                      name: seasonName,
-                      animes: [...updatedSeasons[0].animes, newAnime],
-                    };
                     
                     // Supabaseに保存（ログイン時のみ）
                     if (user) {
@@ -3641,14 +3646,17 @@ export default function Home() {
                         // Supabaseが生成したIDを使用してアニメを更新
                         if (data) {
                           const savedAnime = supabaseToAnime(data);
-                          updatedSeasons[0].animes[updatedSeasons[0].animes.length - 1] = savedAnime;
+                          const seasonIndex = updatedSeasons.findIndex(s => s.name === seasonName);
+                          if (seasonIndex !== -1) {
+                            const animeIndex = updatedSeasons[seasonIndex].animes.length - 1;
+                            updatedSeasons[seasonIndex].animes[animeIndex] = savedAnime;
+                          }
                         }
                       } catch (error: any) {
                         console.error('Failed to save anime to Supabase');
                         console.error('Error type:', typeof error);
                         console.error('Error constructor:', error?.constructor?.name);
                         console.error('Error as string:', String(error));
-                        console.error('Error as JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
                         if (error) {
                           console.error('Error message:', error.message);
                           console.error('Error details:', error.details);
@@ -3667,13 +3675,13 @@ export default function Home() {
                     setSearchQuery('');
                     setSearchResults([]);
                     setSelectedSearchResult(null);
-                  }
-                }}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
-              >
-                追加
-              </button>
-            </div>
+                  }}
+                  className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
+                >
+                  追加
+                </button>
+              </div>
+            )}
               </div>
             )}
           </div>
@@ -3683,7 +3691,7 @@ export default function Home() {
       {/* 感想投稿モーダル */}
       {showReviewModal && selectedAnime && (
         <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4"
           onClick={() => setShowReviewModal(false)}
         >
           <div 
@@ -3891,12 +3899,193 @@ export default function Home() {
               </div>
             </div>
 
+            {/* オタクタイプ選択 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                オタクタイプ（DNAカードに表示されます）
+              </label>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                <button
+                  onClick={() => setUserOtakuType('')}
+                  className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
+                    !userOtakuType
+                      ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🤖</span>
+                    <div>
+                      <p className="font-medium dark:text-white">自動判定</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">タグから自動で判定されます</p>
+                    </div>
+                  </div>
+                </button>
+                {otakuTypes.map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => setUserOtakuType(type.value)}
+                    className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
+                      userOtakuType === type.value
+                        ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{type.emoji}</span>
+                      <div>
+                        <p className="font-medium dark:text-white">{type.label}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{type.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 最推し作品選択 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                最推し作品（DNAカードに表示されます、最大3作品）
+              </label>
+              <button
+                onClick={() => {
+                  setShowSettings(false);
+                  setShowFavoriteAnimeModal(true);
+                }}
+                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-[#ffc2d1] hover:text-[#ffc2d1] transition-colors"
+              >
+                {favoriteAnimeIds.length > 0
+                  ? `${favoriteAnimeIds.length}作品が設定されています`
+                  : '最推し作品を選択'}
+              </button>
+              {favoriteAnimeIds.length > 0 && (
+                <div className="mt-2 flex gap-2 flex-wrap">
+                  {favoriteAnimeIds.slice(0, 3).map((id) => {
+                    const anime = allAnimes.find(a => a.id === id);
+                    if (!anime) return null;
+                    return (
+                      <div
+                        key={id}
+                        className="flex items-center gap-1 bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 px-2 py-1 rounded-lg text-xs"
+                      >
+                        <span className="dark:text-white">{anime.title}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFavoriteAnimeIds(favoriteAnimeIds.filter(fid => fid !== id));
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <button 
-              onClick={() => setShowSettings(false)}
-              className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold"
+              onClick={() => {
+                if (userOtakuType) {
+                  localStorage.setItem('userOtakuType', userOtakuType);
+                } else {
+                  localStorage.removeItem('userOtakuType');
+                }
+                localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
+                setShowSettings(false);
+              }}
+              className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
             >
               保存
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 最推し作品選択モーダル */}
+      {showFavoriteAnimeModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowFavoriteAnimeModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4 dark:text-white">最推し作品を選択（最大3作品）</h2>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {allAnimes.map((anime) => {
+                const isSelected = favoriteAnimeIds.includes(anime.id);
+                return (
+                  <button
+                    key={anime.id}
+                    onClick={() => {
+                      if (isSelected) {
+                        setFavoriteAnimeIds(favoriteAnimeIds.filter(id => id !== anime.id));
+                      } else {
+                        if (favoriteAnimeIds.length < 3) {
+                          setFavoriteAnimeIds([...favoriteAnimeIds, anime.id]);
+                        } else {
+                          alert('最大3作品まで選択できます');
+                        }
+                      }
+                    }}
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
+                      isSelected
+                        ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
+                    }`}
+                  >
+                    <div className="w-12 h-16 rounded overflow-hidden shrink-0">
+                      {anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://')) ? (
+                        <img
+                          src={anime.image}
+                          alt={anime.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="64"><rect fill="%23ddd" width="48" height="64"/></svg>';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                          <span className="text-2xl">{anime.image || '🎬'}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-bold text-sm dark:text-white">{anime.title}</p>
+                      {anime.rating > 0 && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <StarRating rating={anime.rating} size="text-sm" />
+                        </div>
+                      )}
+                    </div>
+                    {isSelected && (
+                      <span className="text-[#ffc2d1] text-xl">✓</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={() => setShowFavoriteAnimeModal(false)}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                閉じる
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
+                  setShowFavoriteAnimeModal(false);
+                }}
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
+              >
+                保存
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -6493,15 +6682,20 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* 代表作 */}
+              {/* 最推し作品 */}
               <div className="mb-4">
-                <p className="text-white/90 text-xs font-medium mb-2 text-center">代表作</p>
+                <p className="text-white/90 text-xs font-medium mb-2 text-center">最推し作品</p>
                 <div className="flex justify-center gap-3">
-                  {allAnimes
-                    .filter(a => a.rating > 0)
-                    .sort((a, b) => b.rating - a.rating)
-                    .slice(0, 3)
-                    .map((anime, index) => {
+                  {(favoriteAnimeIds.length > 0
+                    ? favoriteAnimeIds
+                        .map(id => allAnimes.find(a => a.id === id))
+                        .filter((a): a is Anime => a !== undefined)
+                        .slice(0, 3)
+                    : allAnimes
+                        .filter(a => a.rating > 0)
+                        .sort((a, b) => b.rating - a.rating)
+                        .slice(0, 3)
+                  ).map((anime, index) => {
                       const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
                       return (
                         <div
