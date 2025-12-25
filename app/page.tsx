@@ -234,7 +234,7 @@ function StarRating({ rating, size = 'text-3xl' }: { rating: number; size?: stri
           key={star}
           className={`${size} ${
             star <= rating
-              ? 'text-yellow-400'
+              ? 'text-[#ffd966]'
               : 'text-gray-300 opacity-30'
           }`}
         >
@@ -331,13 +331,13 @@ function ProfileTab({
       {/* プロフィールカード */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
         <div className="flex flex-col items-center mb-4">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-5xl mb-3 shadow-lg">
+          <div className="w-24 h-24 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl mb-3 shadow-lg">
             {userIcon}
           </div>
-          <h2 className="text-xl font-bold dark:text-white mb-2">{userName}</h2>
+          <h2 className="text-xl font-bold text-[#6b5b6e] dark:text-white mb-2">{userName}</h2>
           <button
             onClick={() => setShowSettings(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors"
+            className="px-4 py-2 bg-[#ffc2d1] text-white rounded-xl font-medium hover:bg-[#ffb07c] transition-colors"
           >
             プロフィール編集
           </button>
@@ -383,7 +383,7 @@ function ProfileTab({
         
         return (
           <>
-            <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 shadow-lg">
+            <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 shadow-lg">
               {/* タイトル */}
               <div className="text-center mb-4">
                 <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA 2024</h2>
@@ -480,7 +480,7 @@ function ProfileTab({
                   // html2canvasで画像保存
                   try {
                     const html2canvas = (await import('html2canvas')).default;
-                    const cardElement = document.querySelector('.bg-gradient-to-br.from-purple-500');
+                    const cardElement = document.querySelector('.bg-linear-to-br.from-purple-500');
                     if (cardElement) {
                       const canvas = await html2canvas(cardElement as HTMLElement);
                       const url = canvas.toDataURL('image/png');
@@ -529,7 +529,7 @@ function ProfileTab({
       {/* お気に入りジャンル */}
       {sortedTags.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-          <h3 className="font-bold text-lg mb-3 dark:text-white">お気に入りジャンル</h3>
+          <h3 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">お気に入りジャンル</h3>
           <div className="space-y-2">
             {sortedTags.map(([tag, count]) => {
               const tagInfo = availableTags.find(t => t.value === tag);
@@ -546,7 +546,7 @@ function ProfileTab({
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
-                        className="bg-indigo-600 h-2 rounded-full transition-all"
+                        className="bg-[#ffc2d1] h-2 rounded-full transition-all"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -560,7 +560,7 @@ function ProfileTab({
       
       {/* 設定 */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-        <h3 className="font-bold text-lg mb-3 dark:text-white">設定</h3>
+        <h3 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">設定</h3>
         <div className="space-y-3">
           {/* ダークモード切り替え */}
           <div className="flex items-center justify-between">
@@ -568,7 +568,7 @@ function ProfileTab({
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                isDarkMode ? 'bg-indigo-600' : 'bg-gray-300'
+                isDarkMode ? 'bg-[#ffc2d1]' : 'bg-gray-300'
               }`}
             >
               <span
@@ -582,7 +582,7 @@ function ProfileTab({
           {/* データをエクスポート */}
           <button
             onClick={() => {}}
-            className="w-full text-left py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            className="w-full text-left py-2 text-gray-700 dark:text-gray-300 hover:text-[#ffc2d1] dark:hover:text-indigo-400 transition-colors"
           >
             データをエクスポート
           </button>
@@ -710,7 +710,7 @@ function AchievementsTab({
         </p>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
           <div
-            className="bg-indigo-600 h-2 rounded-full transition-all"
+            className="bg-[#ffc2d1] h-2 rounded-full transition-all"
             style={{ width: `${(unlockedCount / achievements.length) * 100}%` }}
           />
         </div>
@@ -771,7 +771,7 @@ function AchievementsTab({
             
             <button 
               onClick={() => setSelectedAchievement(null)}
-              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+              className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
             >
               閉じる
             </button>
@@ -895,7 +895,7 @@ function MusicTab({
             setNewSongArtist('');
             setShowSongModal(true);
           }}
-          className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
         >
           + 主題歌を追加
         </button>
@@ -909,7 +909,7 @@ function MusicTab({
             type="text"
             value={musicSearchQuery}
             onChange={(e) => setMusicSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
             placeholder="曲名、アーティスト、アニメで検索..."
           />
           
@@ -922,7 +922,7 @@ function MusicTab({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 musicFilterType === 'all'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-[#ffc2d1] text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -935,7 +935,7 @@ function MusicTab({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 musicFilterType === 'op'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-[#ffc2d1] text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -948,7 +948,7 @@ function MusicTab({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 musicFilterType === 'ed'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-[#ffc2d1] text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -961,7 +961,7 @@ function MusicTab({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 musicFilterType === 'artist'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-[#ffc2d1] text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -974,7 +974,7 @@ function MusicTab({
             <select
               value={selectedArtistForFilter || ''}
               onChange={(e) => setSelectedArtistForFilter(e.target.value || null)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
             >
               <option value="">アーティストを選択...</option>
               {uniqueArtists.map((artist) => (
@@ -990,17 +990,17 @@ function MusicTab({
       {/* お気に入り曲 */}
       {favoriteSongs.length > 0 && (
         <div>
-          <h2 className="font-bold text-lg mb-3 dark:text-white">お気に入り曲</h2>
+          <h2 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">お気に入り曲</h2>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {favoriteSongs.map((song, index) => {
               const anime = allAnimes.find(a => a.id === song.animeId);
               return (
                 <div
                   key={index}
-                  className={`flex-shrink-0 w-48 rounded-xl p-4 text-white shadow-lg relative group ${
+                  className={`shrink-0 w-48 rounded-xl p-4 text-white shadow-lg relative group ${
                     song.type === 'op'
-                      ? 'bg-gradient-to-br from-orange-500 to-red-500'
-                      : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                      ? 'bg-linear-to-br from-orange-500 to-red-500'
+                      : 'bg-linear-to-br from-blue-500 to-purple-600'
                   }`}
                 >
                   {/* 編集・削除ボタン */}
@@ -1085,7 +1085,7 @@ function MusicTab({
       {/* 高評価TOP10 */}
       {filteredSongs.length > 0 && (
         <div>
-          <h2 className="font-bold text-lg mb-3 dark:text-white">高評価 TOP10</h2>
+          <h2 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">高評価 TOP10</h2>
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
             {topRatedSongs.length > 0 ? (
               topRatedSongs.map((song, index) => (
@@ -1120,7 +1120,7 @@ function MusicTab({
 
       {/* よく聴くアーティスト */}
       <div>
-        <h2 className="font-bold text-lg mb-3 dark:text-white">よく聴くアーティスト</h2>
+        <h2 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">よく聴くアーティスト</h2>
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
           {topArtists.length > 0 ? (
             topArtists.map(([artist, count], index) => (
@@ -1176,7 +1176,7 @@ function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
       onClick={onClick}
       className="bg-white dark:bg-gray-800 rounded-2xl shadow-md dark:shadow-gray-900/50 overflow-hidden cursor-pointer hover:scale-105 hover:shadow-2xl transition-all relative"
     >
-      <div className="aspect-[3/4] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-5xl relative overflow-hidden rounded-t-2xl">
+      <div className="aspect-3/4 bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl relative overflow-hidden rounded-t-2xl">
         {/* 周回数バッジ */}
         <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 z-10">
           <span className="text-xs">🔄</span>
@@ -1194,7 +1194,7 @@ function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
         {isImageUrl && !imageError ? (
           <>
             {imageLoading && (
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 animate-pulse" />
+              <div className="absolute inset-0 bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] animate-pulse" />
             )}
             <img
               src={anime.image}
@@ -1838,11 +1838,11 @@ export default function Home() {
   }, [allAnimes.length]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#fef6f0] dark:bg-gray-900">
       {/* ヘッダー */}
       <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 lg:ml-[200px]">
         <div className="max-w-md md:max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-xl font-black bg-linear-to-r from-[#ffc2d1] to-[#ffb07c] bg-clip-text text-transparent">
             俺のアニメログ
           </h1>
           <div className="flex items-center gap-2">
@@ -1864,7 +1864,7 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-colors"
+                className="px-3 py-1.5 rounded-full bg-[#ffc2d1] hover:bg-[#ffb07c] text-white font-bold text-sm transition-colors"
               >
                 ログイン
               </button>
@@ -1881,9 +1881,9 @@ export default function Home() {
             <div className="flex gap-2 md:gap-3 mb-4 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setHomeSubTab('seasons')}
-                className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
+                    className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
                   homeSubTab === 'seasons'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -1891,9 +1891,9 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setHomeSubTab('series')}
-                className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
+                    className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
                   homeSubTab === 'series'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -1904,7 +1904,7 @@ export default function Home() {
             {homeSubTab === 'seasons' && (
               <>
                 {/* 統計カード */}
-                <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-5 text-white mb-6 relative">
+                <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white mb-6 relative">
                   {/* オタクタイプ */}
                   <div className="mb-4 flex items-center justify-between">
                     <p className="text-white/90 text-sm font-medium">
@@ -1934,7 +1934,7 @@ export default function Home() {
                 {/* 追加ボタン */}
                 <button 
                   onClick={() => setShowAddForm(true)}
-                  className="w-full mb-6 py-4 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-2xl text-indigo-600 dark:text-indigo-400 font-bold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                  className="w-full mb-6 py-4 border-2 border-dashed border-[#ffc2d1]-300 dark:border-[#ffc2d1]-600 rounded-2xl text-[#ffc2d1] dark:text-[#ffc2d1] font-bold hover:bg-[#ffc2d1]/10 dark:hover:bg-[#ffc2d1]/10 transition-colors"
                 >
                   + アニメを追加
                 </button>
@@ -2046,7 +2046,7 @@ export default function Home() {
                                 <div
                                   key={anime.id}
                                   onClick={() => setSelectedAnime(anime)}
-                                  className="flex-shrink-0 w-24 cursor-pointer"
+                                  className="shrink-0 w-24 cursor-pointer"
                                 >
                                   <AnimeCard anime={anime} onClick={() => setSelectedAnime(anime)} />
                                 </div>
@@ -2178,7 +2178,7 @@ export default function Home() {
                   return (
                     <>
                       {/* 視聴統計サマリー（統合版、一番上） */}
-                      <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg">
+                      <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                           <span>📊</span>
                           視聴統計サマリー
@@ -2208,7 +2208,7 @@ export default function Home() {
                       </div>
                       
                       {/* あなたの傾向まとめ（サマリーの次） */}
-                      <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl p-5 text-white shadow-lg">
+                      <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
                         <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
                           <span>✨</span>
                           あなたの傾向まとめ
@@ -2235,14 +2235,14 @@ export default function Home() {
                                     <span className="text-sm font-medium dark:text-white">
                                       {tagInfo?.emoji} {tagInfo?.label || tag}
                                     </span>
-                                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                                    <span className="text-sm font-bold text-[#ffc2d1] dark:text-[#ffc2d1]">
                                       {Math.round((count / totalAnimes) * 100)}%
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                                       <div
-                                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all"
+                                        className="bg-linear-to-r from-indigo-500 to-purple-500 h-full transition-all"
                                         style={{ width: `${barWidth}%` }}
                                       />
                                     </div>
@@ -2277,14 +2277,14 @@ export default function Home() {
                                   <span className="text-sm font-medium dark:text-white">
                                     ⭐{rating} {ratingLabel?.label || ''}
                                   </span>
-                                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                                  <span className="text-sm font-bold text-[#ffc2d1] dark:text-[#ffc2d1]">
                                     {count}本
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                                     <div
-                                      className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all"
+                                      className="bg-linear-to-r from-yellow-400 to-orange-500 h-full transition-all"
                                       style={{ width: `${barWidth}%` }}
                                     />
                                   </div>
@@ -2318,14 +2318,14 @@ export default function Home() {
                                 <div key={name} className="space-y-1">
                                   <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium dark:text-white">{name}</span>
-                                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                                    <span className="text-sm font-bold text-[#ffc2d1] dark:text-[#ffc2d1]">
                                       {count}本
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                                       <div
-                                        className="bg-gradient-to-r from-green-400 to-blue-500 h-full transition-all"
+                                        className="bg-linear-to-r from-green-400 to-blue-500 h-full transition-all"
                                         style={{ width: `${barWidth}%` }}
                                       />
                                     </div>
@@ -2372,7 +2372,7 @@ export default function Home() {
                 onClick={() => setCollectionSubTab('achievements')}
                 className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'achievements'
-                    ? 'bg-indigo-600 text-white shadow-md'
+                    ? 'bg-[#ffc2d1] text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
@@ -2382,7 +2382,7 @@ export default function Home() {
                 onClick={() => setCollectionSubTab('characters')}
                 className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'characters'
-                    ? 'bg-indigo-600 text-white shadow-md'
+                    ? 'bg-[#ffc2d1] text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
@@ -2392,7 +2392,7 @@ export default function Home() {
                 onClick={() => setCollectionSubTab('quotes')}
                 className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'quotes'
-                    ? 'bg-indigo-600 text-white shadow-md'
+                    ? 'bg-[#ffc2d1] text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
@@ -2402,7 +2402,7 @@ export default function Home() {
                 onClick={() => setCollectionSubTab('lists')}
                 className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'lists'
-                    ? 'bg-indigo-600 text-white shadow-md'
+                    ? 'bg-[#ffc2d1] text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
@@ -2412,7 +2412,7 @@ export default function Home() {
                 onClick={() => setCollectionSubTab('music')}
                 className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'music'
-                    ? 'bg-indigo-600 text-white shadow-md'
+                    ? 'bg-[#ffc2d1] text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
@@ -2422,7 +2422,7 @@ export default function Home() {
                 onClick={() => setCollectionSubTab('voiceActors')}
                 className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
                   collectionSubTab === 'voiceActors'
-                    ? 'bg-indigo-600 text-white shadow-md'
+                    ? 'bg-[#ffc2d1] text-white shadow-md'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
@@ -2454,7 +2454,7 @@ export default function Home() {
                       setEditingCharacter(null);
                       setShowAddCharacterModal(true);
                     }}
-                    className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
                   >
                     + 推しを追加
                   </button>
@@ -2467,7 +2467,7 @@ export default function Home() {
                       onClick={() => setCharacterFilter(null)}
                       className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                         characterFilter === null
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-[#ffc2d1] text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -2482,7 +2482,7 @@ export default function Home() {
                           onClick={() => setCharacterFilter(category.value)}
                           className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                             characterFilter === category.value
-                              ? 'bg-indigo-600 text-white'
+                              ? 'bg-[#ffc2d1] text-white'
                               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                           }`}
                         >
@@ -2540,7 +2540,7 @@ export default function Home() {
                           <h3 className="font-bold text-sm dark:text-white text-center mb-1">{character.name}</h3>
                           <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-2">{character.animeName}</p>
                           <div className="flex items-center justify-center mb-2">
-                            <span className="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full">
+                            <span className="text-xs bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1] px-2 py-1 rounded-full">
                               {character.category}
                             </span>
                           </div>
@@ -2583,7 +2583,7 @@ export default function Home() {
                       setNewQuoteCharacter('');
                       setShowAddQuoteModal(true);
                     }}
-                    className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
                   >
                     + 名言を追加
                   </button>
@@ -2634,7 +2634,7 @@ export default function Home() {
                             type="text"
                             value={quoteSearchQuery}
                             onChange={(e) => setQuoteSearchQuery(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                             placeholder="名言、アニメ、キャラクターで検索..."
                           />
                           
@@ -2647,7 +2647,7 @@ export default function Home() {
                               }}
                               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                                 quoteFilterType === 'all'
-                                  ? 'bg-indigo-600 text-white'
+                                  ? 'bg-[#ffc2d1] text-white'
                                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                               }`}
                             >
@@ -2660,7 +2660,7 @@ export default function Home() {
                               }}
                               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                                 quoteFilterType === 'anime'
-                                  ? 'bg-indigo-600 text-white'
+                                  ? 'bg-[#ffc2d1] text-white'
                                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                               }`}
                             >
@@ -2673,7 +2673,7 @@ export default function Home() {
                               }}
                               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                                 quoteFilterType === 'character'
-                                  ? 'bg-indigo-600 text-white'
+                                  ? 'bg-[#ffc2d1] text-white'
                                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                               }`}
                             >
@@ -2686,7 +2686,7 @@ export default function Home() {
                             <select
                               value={selectedAnimeForFilter || ''}
                               onChange={(e) => setSelectedAnimeForFilter(Number(e.target.value) || null)}
-                              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                             >
                               <option value="">アニメを選択...</option>
                               {uniqueAnimes.map((anime) => (
@@ -2717,7 +2717,7 @@ export default function Home() {
                             return quoteMap.map(({ quote, animeId, quoteIndex }, index) => (
                               <div
                                 key={`${animeId}-${quoteIndex}`}
-                                className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border-l-4 border-indigo-500 relative group"
+                                className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border-l-4 border-[#ffc2d1]-500 relative group"
                               >
                                 {/* 編集・削除ボタン */}
                                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2808,7 +2808,7 @@ export default function Home() {
                       setEditingList(null);
                       setShowCreateListModal(true);
                     }}
-                    className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
                   >
                     + 新しいリストを作成
                   </button>
@@ -2821,7 +2821,7 @@ export default function Home() {
                       onClick={() => setListSortType('date')}
                       className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                         listSortType === 'date'
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-[#ffc2d1] text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -2831,7 +2831,7 @@ export default function Home() {
                       onClick={() => setListSortType('title')}
                       className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                         listSortType === 'title'
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-[#ffc2d1] text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -2841,7 +2841,7 @@ export default function Home() {
                       onClick={() => setListSortType('count')}
                       className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                         listSortType === 'count'
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-[#ffc2d1] text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -2870,7 +2870,7 @@ export default function Home() {
                         <div
                           key={list.id}
                           onClick={() => setSelectedList(list)}
-                          className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-4 shadow-md cursor-pointer hover:scale-105 transition-transform"
+                          className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-4 shadow-md cursor-pointer hover:scale-105 transition-transform"
                         >
                           <h3 className="font-bold text-white mb-1">{list.title}</h3>
                           <p className="text-white/80 text-sm mb-2">{list.description}</p>
@@ -2913,7 +2913,7 @@ export default function Home() {
                       setEditingVoiceActor(null);
                       setShowAddVoiceActorModal(true);
                     }}
-                    className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
                   >
                     + 声優を追加
                   </button>
@@ -2927,7 +2927,7 @@ export default function Home() {
                       value={voiceActorSearchQuery}
                       onChange={(e) => setVoiceActorSearchQuery(e.target.value)}
                       placeholder="声優名で検索..."
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                     />
                   </div>
                 )}
@@ -2961,7 +2961,7 @@ export default function Home() {
                                   setNewVoiceActorNotes(voiceActor.notes || '');
                                   setShowAddVoiceActorModal(true);
                                 }}
-                                className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-colors text-xs"
+                                className="bg-[#ffc2d1] text-white p-2 rounded-lg hover:bg-[#ffb07c] transition-colors text-xs"
                                 title="編集"
                               >
                                 ✏️
@@ -3056,7 +3056,7 @@ export default function Home() {
                 onClick={() => setAddModalMode('search')}
                 className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
                   addModalMode === 'search'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -3066,7 +3066,7 @@ export default function Home() {
                 onClick={() => setAddModalMode('season')}
                 className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
                   addModalMode === 'season'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -3086,7 +3086,7 @@ export default function Home() {
                     <select
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(Number(e.target.value))}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                     >
                       {Array.from({ length: new Date().getFullYear() - 1970 + 1 }, (_, i) => new Date().getFullYear() - i).map(year => (
                         <option key={year} value={year}>{year}年</option>
@@ -3100,7 +3100,7 @@ export default function Home() {
                     <select
                       value={selectedSeason || ''}
                       onChange={(e) => setSelectedSeason(e.target.value as 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                     >
                       <option value="">選択してください</option>
                       <option value="SPRING">春</option>
@@ -3130,7 +3130,7 @@ export default function Home() {
                     }
                   }}
                   disabled={!selectedSeason || isSeasonSearching}
-                  className="w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-[#ffc2d1] text-white rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   {isSeasonSearching ? '検索中...' : 'クールを検索'}
                 </button>
@@ -3150,7 +3150,7 @@ export default function Home() {
                             setSelectedSeasonAnimeIds(new Set(seasonSearchResults.map(r => r.id)));
                           }
                         }}
-                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                        className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline"
                       >
                         {selectedSeasonAnimeIds.size === seasonSearchResults.length ? 'すべて解除' : 'すべて選択'}
                       </button>
@@ -3164,8 +3164,8 @@ export default function Home() {
                             key={result.id}
                             className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
                               isSelected
-                                ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30'
-                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600'
+                                ? 'border-[#ffc2d1]-600 bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10/30'
+                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]-300 dark:hover:border-[#ffc2d1]-600'
                             }`}
                           >
                             <input
@@ -3180,12 +3180,12 @@ export default function Home() {
                                 }
                                 setSelectedSeasonAnimeIds(newSet);
                               }}
-                              className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                              className="w-5 h-5 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
                             />
                             <img
                               src={result.coverImage?.large || result.coverImage?.medium || '🎬'}
                               alt={result.title?.native || result.title?.romaji}
-                              className="w-16 h-24 object-cover rounded flex-shrink-0"
+                              className="w-16 h-24 object-cover rounded shrink-0"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
                               }}
@@ -3332,7 +3332,7 @@ export default function Home() {
                           setSeasonSearchResults([]);
                           setAddModalMode('search');
                         }}
-                        className="w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                        className="w-full px-4 py-3 bg-[#ffc2d1] text-white rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
                       >
                         {selectedSeasonAnimeIds.size}件のアニメを登録
                       </button>
@@ -3360,13 +3360,13 @@ export default function Home() {
                       handleSearch();
                     }
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                   placeholder="アニメタイトルで検索"
                 />
                 <button
                   onClick={handleSearch}
                   disabled={!searchQuery.trim() || isSearching}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-[#ffc2d1] text-white rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   {isSearching ? '検索中...' : '検索'}
                 </button>
@@ -3376,7 +3376,7 @@ export default function Home() {
             {/* 検索結果 */}
             {isSearching && (
               <div className="mb-4 text-center py-4">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#ffc2d1]-600"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">検索中...</p>
               </div>
             )}
@@ -3391,8 +3391,8 @@ export default function Home() {
                       onClick={() => handleSelectSearchResult(result)}
                       className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
                         selectedSearchResult?.id === result.id
-                          ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30'
-                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600'
+                          ? 'border-[#ffc2d1]-600 bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10/30'
+                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]-300 dark:hover:border-[#ffc2d1]-600'
                       }`}
                     >
                       <img
@@ -3443,7 +3443,7 @@ export default function Home() {
                   type="text"
                   value={newAnimeTitle}
                   onChange={(e) => setNewAnimeTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                   placeholder="アニメのタイトルを入力"
                 />
               </div>
@@ -3462,7 +3462,7 @@ export default function Home() {
                       onClick={() => setNewAnimeIcon(icon)}
                       className={`text-3xl p-2 rounded-lg transition-all ${
                         newAnimeIcon === icon
-                          ? 'bg-indigo-100 dark:bg-indigo-900 ring-2 ring-indigo-500'
+                          ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
                           : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
@@ -3479,7 +3479,7 @@ export default function Home() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   画像プレビュー
                 </label>
-                <div className="relative aspect-[3/4] w-32 mx-auto rounded-lg overflow-hidden border-2 border-indigo-300 dark:border-indigo-600">
+                <div className="relative aspect-3/4 w-32 mx-auto rounded-lg overflow-hidden border-2 border-[#ffc2d1]-300 dark:border-[#ffc2d1]-600">
                   <img
                     src={newAnimeIcon}
                     alt="アニメ画像"
@@ -3511,7 +3511,7 @@ export default function Home() {
                     onClick={() => setNewAnimeRating(rating)}
                     className={`text-3xl transition-transform hover:scale-110 ${
                       newAnimeRating >= rating
-                        ? 'text-yellow-400'
+                        ? 'text-[#ffd966]'
                         : 'text-gray-300 opacity-30'
                     }`}
                   >
@@ -3669,7 +3669,7 @@ export default function Home() {
                     setSelectedSearchResult(null);
                   }
                 }}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
               >
                 追加
               </button>
@@ -3701,7 +3701,7 @@ export default function Home() {
                 }}
                 className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
                   reviewMode === 'overall'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -3711,7 +3711,7 @@ export default function Home() {
                 onClick={() => setReviewMode('episode')}
                 className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
                   reviewMode === 'episode'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -3730,7 +3730,7 @@ export default function Home() {
                   min="1"
                   value={newReviewEpisodeNumber || ''}
                   onChange={(e) => setNewReviewEpisodeNumber(e.target.value ? Number(e.target.value) : undefined)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                   placeholder="例: 1"
                 />
               </div>
@@ -3744,7 +3744,7 @@ export default function Home() {
               <textarea
                 value={newReviewContent}
                 onChange={(e) => setNewReviewContent(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white min-h-[120px]"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white min-h-[120px]"
                 placeholder="感想を入力してください..."
               />
             </div>
@@ -3756,7 +3756,7 @@ export default function Home() {
                   type="checkbox"
                   checked={newReviewContainsSpoiler}
                   onChange={(e) => setNewReviewContainsSpoiler(e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                  className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   ネタバレを含む
@@ -3834,7 +3834,7 @@ export default function Home() {
                   }
                 }}
                 disabled={!newReviewContent.trim() || (reviewMode === 'episode' && !newReviewEpisodeNumber)}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 投稿
               </button>
@@ -3864,7 +3864,7 @@ export default function Home() {
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="ユーザー名を入力"
               />
             </div>
@@ -3881,7 +3881,7 @@ export default function Home() {
                     onClick={() => setUserIcon(icon)}
                     className={`text-3xl p-2 rounded-lg transition-all ${
                       userIcon === icon
-                        ? 'bg-indigo-100 dark:bg-indigo-900 ring-2 ring-indigo-500'
+                        ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
                         : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
@@ -3893,7 +3893,7 @@ export default function Home() {
 
             <button 
               onClick={() => setShowSettings(false)}
-              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold"
+              className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold"
             >
               保存
             </button>
@@ -3929,7 +3929,7 @@ export default function Home() {
                 }}
                 className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
                   authMode === 'login'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -3942,7 +3942,7 @@ export default function Home() {
                 }}
                 className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
                   authMode === 'signup'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -3966,7 +3966,7 @@ export default function Home() {
                 type="email"
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="example@email.com"
               />
             </div>
@@ -3985,7 +3985,7 @@ export default function Home() {
                     handleAuth();
                   }
                 }}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="パスワードを入力"
               />
             </div>
@@ -4006,7 +4006,7 @@ export default function Home() {
               <button
                 onClick={handleAuth}
                 disabled={!authEmail || !authPassword}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {authMode === 'login' ? 'ログイン' : '登録'}
               </button>
@@ -4031,7 +4031,7 @@ export default function Home() {
                 onClick={() => setAnimeDetailTab('info')}
                 className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
                   animeDetailTab === 'info'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -4041,7 +4041,7 @@ export default function Home() {
                 onClick={() => setAnimeDetailTab('reviews')}
                 className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
                   animeDetailTab === 'reviews'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#ffc2d1] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -4114,7 +4114,7 @@ export default function Home() {
                     }}
                     className={`text-3xl transition-all hover:scale-110 active:scale-95 ${
                       selectedAnime.rating >= rating
-                        ? 'text-yellow-400 drop-shadow-sm'
+                        ? 'text-[#ffd966] drop-shadow-sm'
                         : 'text-gray-300 opacity-30 hover:opacity-50'
                     }`}
                     title={`${rating}つ星`}
@@ -4259,7 +4259,7 @@ export default function Home() {
                       }}
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                         isSelected
-                          ? 'bg-indigo-600 text-white dark:bg-indigo-500'
+                          ? 'bg-[#ffc2d1] text-white dark:bg-indigo-500'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                       }`}
                     >
@@ -4310,7 +4310,7 @@ export default function Home() {
                     setSeasons(updatedSeasons);
                   }}
                   placeholder="シリーズ名を入力（任意）"
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
                 />
                 {selectedAnime.seriesName && (
                   <button
@@ -4369,14 +4369,14 @@ export default function Home() {
                         setNewSongArtist('');
                         setShowSongModal(true);
                       }}
-                      className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 transition-colors"
+                      className="text-xs bg-[#ffc2d1] text-white px-3 py-1 rounded-lg hover:bg-[#ffb07c] transition-colors"
                     >
                       + 登録
                     </button>
                   )}
                 </div>
                 {selectedAnime.songs?.op ? (
-                  <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 rounded-lg p-3">
+                  <div className="bg-linear-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1">
                         <p className="font-bold text-sm dark:text-white">{selectedAnime.songs.op.title}</p>
@@ -4563,14 +4563,14 @@ export default function Home() {
                         setNewSongArtist('');
                         setShowSongModal(true);
                       }}
-                      className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 transition-colors"
+                      className="text-xs bg-[#ffc2d1] text-white px-3 py-1 rounded-lg hover:bg-[#ffb07c] transition-colors"
                     >
                       + 登録
                     </button>
                   )}
                 </div>
                 {selectedAnime.songs?.ed ? (
-                  <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-3">
+                  <div className="bg-linear-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1">
                         <p className="font-bold text-sm dark:text-white">{selectedAnime.songs.ed.title}</p>
@@ -4790,7 +4790,7 @@ export default function Home() {
                       });
                     }
                   }}
-                  className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="text-xs bg-[#ffc2d1] text-white px-3 py-1 rounded-lg hover:bg-[#ffb07c] transition-colors"
                 >
                   + 名言を追加
                 </button>
@@ -4801,7 +4801,7 @@ export default function Home() {
                   {selectedAnime.quotes.map((quote, index) => (
                     <div
                       key={index}
-                      className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border-l-4 border-indigo-500 relative"
+                      className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border-l-4 border-[#ffc2d1]-500 relative"
                     >
                       <p className="text-sm dark:text-white mb-1">「{quote.text}」</p>
                       {quote.character && (
@@ -4903,7 +4903,7 @@ export default function Home() {
               </button>
             <button 
               onClick={() => setSelectedAnime(null)}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
             >
               閉じる
             </button>
@@ -4919,7 +4919,7 @@ export default function Home() {
                   <select
                     value={reviewFilter}
                     onChange={(e) => setReviewFilter(e.target.value as 'all' | 'overall' | 'episode')}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
                   >
                     <option value="all">すべて</option>
                     <option value="overall">全体感想のみ</option>
@@ -4928,7 +4928,7 @@ export default function Home() {
                   <select
                     value={reviewSort}
                     onChange={(e) => setReviewSort(e.target.value as 'newest' | 'likes' | 'helpful')}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
                   >
                     <option value="newest">新着順</option>
                     <option value="likes">いいね順</option>
@@ -4943,7 +4943,7 @@ export default function Home() {
                     id="spoilerHidden"
                     checked={userSpoilerHidden}
                     onChange={(e) => setUserSpoilerHidden(e.target.checked)}
-                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                    className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
                   />
                   <label htmlFor="spoilerHidden" className="text-sm text-gray-700 dark:text-gray-300">
                     ネタバレを含む感想を非表示
@@ -4960,7 +4960,7 @@ export default function Home() {
                       setNewReviewEpisodeNumber(undefined);
                       setShowReviewModal(true);
                     }}
-                    className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors mb-4"
+                    className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors mb-4"
                   >
                     + 感想を投稿
                   </button>
@@ -4969,7 +4969,7 @@ export default function Home() {
                 {/* 感想一覧 */}
                 {loadingReviews ? (
                   <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#ffc2d1]-600"></div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">読み込み中...</p>
                   </div>
                 ) : (() => {
@@ -5052,7 +5052,7 @@ export default function Home() {
                                         newSet.add(review.id);
                                         setExpandedSpoilerReviews(newSet);
                                       }}
-                                      className="w-full text-left text-sm text-indigo-600 dark:text-indigo-400 hover:underline py-2"
+                                      className="w-full text-left text-sm text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline py-2"
                                     >
                                       ▶ クリックして展開
                                     </button>
@@ -5174,7 +5174,7 @@ export default function Home() {
                                             setNewReviewEpisodeNumber(review.episodeNumber);
                                             setShowReviewModal(true);
                                           }}
-                                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                                          className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline"
                                         >
                                           編集
                                         </button>
@@ -5255,7 +5255,7 @@ export default function Home() {
                                               newSet.add(review.id);
                                               setExpandedSpoilerReviews(newSet);
                                             }}
-                                            className="w-full text-left text-sm text-indigo-600 dark:text-indigo-400 hover:underline py-2"
+                                            className="w-full text-left text-sm text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline py-2"
                                           >
                                             ▶ クリックして展開
                                           </button>
@@ -5377,7 +5377,7 @@ export default function Home() {
                                                   setNewReviewEpisodeNumber(review.episodeNumber);
                                                   setShowReviewModal(true);
                                                 }}
-                                                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                                                className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline"
                                               >
                                                 編集
                                               </button>
@@ -5447,7 +5447,7 @@ export default function Home() {
                 type="text"
                 value={newListTitle}
                 onChange={(e) => setNewListTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="初心者におすすめ5選"
               />
             </div>
@@ -5460,7 +5460,7 @@ export default function Home() {
               <textarea
                 value={newListDescription}
                 onChange={(e) => setNewListDescription(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="アニメ入門にぴったり"
                 rows={3}
               />
@@ -5487,7 +5487,7 @@ export default function Home() {
                           setSelectedAnimeIds(selectedAnimeIds.filter(id => id !== anime.id));
                         }
                       }}
-                      className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                      className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
                     />
                     <span className="text-sm dark:text-white">{anime.title}</span>
                   </label>
@@ -5542,7 +5542,7 @@ export default function Home() {
                     setEditingList(null);
                   }
                 }}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
               >
                 {editingList ? '更新' : '作成'}
               </button>
@@ -5581,7 +5581,7 @@ export default function Home() {
                         setSelectedAnime(anime);
                         setSelectedList(null);
                       }}
-                      className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
+                      className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
                     >
                       {isImageUrl ? (
                         <img
@@ -5647,7 +5647,7 @@ export default function Home() {
                   setSelectedList(null);
                   setShowCreateListModal(true);
                 }}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
               >
                 編集
               </button>
@@ -5695,7 +5695,7 @@ export default function Home() {
                 type="text"
                 value={newCharacterName}
                 onChange={(e) => setNewCharacterName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="キャラクター名"
               />
             </div>
@@ -5708,7 +5708,7 @@ export default function Home() {
               <select
                 value={newCharacterAnimeId || ''}
                 onChange={(e) => setNewCharacterAnimeId(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
               >
                 <option value="">選択してください</option>
                 {allAnimes.map((anime) => (
@@ -5731,7 +5731,7 @@ export default function Home() {
                     onClick={() => setNewCharacterImage(icon)}
                     className={`text-3xl p-2 rounded-lg transition-all ${
                       newCharacterImage === icon
-                        ? 'bg-indigo-100 dark:bg-indigo-900 ring-2 ring-indigo-500'
+                        ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
                         : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
@@ -5753,7 +5753,7 @@ export default function Home() {
                     onClick={() => setNewCharacterCategory(category.value)}
                     className={`p-2 rounded-lg text-sm font-medium transition-all ${
                       newCharacterCategory === category.value
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-[#ffc2d1] text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
@@ -5781,7 +5781,7 @@ export default function Home() {
                     }}
                     className={`px-3 py-1 rounded-full text-sm transition-all ${
                       newCharacterTags.includes(tag)
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-[#ffc2d1] text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
@@ -5802,7 +5802,7 @@ export default function Home() {
                       setNewCustomTag('');
                     }
                   }}
-                  className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
+                  className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
                   placeholder="新しいタグを入力してEnter"
                 />
               </div>
@@ -5813,7 +5813,7 @@ export default function Home() {
                   {newCharacterTags.map((tag, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full text-xs"
+                      className="inline-flex items-center gap-1 bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1] px-2 py-1 rounded-full text-xs"
                     >
                       {tag}
                       <button
@@ -5887,7 +5887,7 @@ export default function Home() {
                     }
                   }
                 }}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
               >
                 {editingCharacter ? '更新' : '追加'}
               </button>
@@ -5926,7 +5926,7 @@ export default function Home() {
                 type="text"
                 value={newVoiceActorName}
                 onChange={(e) => setNewVoiceActorName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="声優名"
               />
             </div>
@@ -5943,7 +5943,7 @@ export default function Home() {
                     onClick={() => setNewVoiceActorImage(icon)}
                     className={`text-2xl p-2 rounded-lg transition-all ${
                       newVoiceActorImage === icon
-                        ? 'bg-indigo-100 dark:bg-indigo-900 ring-2 ring-indigo-500'
+                        ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
                         : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
@@ -5975,7 +5975,7 @@ export default function Home() {
                             setNewVoiceActorAnimeIds(newVoiceActorAnimeIds.filter(id => id !== anime.id));
                           }
                         }}
-                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                        className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
                       />
                       <span className="text-sm dark:text-white">{anime.title}</span>
                     </label>
@@ -5994,7 +5994,7 @@ export default function Home() {
               <textarea
                 value={newVoiceActorNotes}
                 onChange={(e) => setNewVoiceActorNotes(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="メモを入力..."
                 rows={3}
               />
@@ -6064,7 +6064,7 @@ export default function Home() {
                   }
                 }}
                 disabled={!newVoiceActorName.trim()}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {editingVoiceActor ? '更新' : '追加'}
               </button>
@@ -6108,7 +6108,7 @@ export default function Home() {
                   }
                 }}
                 disabled={!!editingQuote}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-600"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-600"
               >
                 <option value="">選択してください</option>
                 {allAnimes.map((anime) => (
@@ -6127,7 +6127,7 @@ export default function Home() {
               <textarea
                 value={newQuoteText}
                 onChange={(e) => setNewQuoteText(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="名言を入力"
                 rows={3}
               />
@@ -6142,7 +6142,7 @@ export default function Home() {
                 type="text"
                 value={newQuoteCharacter}
                 onChange={(e) => setNewQuoteCharacter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="キャラクター名"
               />
             </div>
@@ -6242,7 +6242,7 @@ export default function Home() {
                   }
                 }}
                 disabled={!newQuoteText.trim() || (!editingQuote && !newQuoteAnimeId)}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {editingQuote ? '更新' : '追加'}
               </button>
@@ -6284,7 +6284,7 @@ export default function Home() {
                       setSelectedAnime(anime);
                     }
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">選択してください</option>
                   {allAnimes.map((anime) => (
@@ -6303,7 +6303,7 @@ export default function Home() {
                 <p className="font-bold dark:text-white">{selectedAnime.title}</p>
                 <button
                   onClick={() => setSelectedAnime(null)}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 mt-1"
+                  className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] mt-1"
                 >
                   変更
                 </button>
@@ -6340,7 +6340,7 @@ export default function Home() {
                 <p className="font-bold dark:text-white">{songType.toUpperCase()}</p>
                 <button
                   onClick={() => setSongType(null)}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 mt-1"
+                  className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] mt-1"
                 >
                   変更
                 </button>
@@ -6356,7 +6356,7 @@ export default function Home() {
                 type="text"
                 value={newSongTitle}
                 onChange={(e) => setNewSongTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="曲名を入力"
               />
             </div>
@@ -6370,7 +6370,7 @@ export default function Home() {
                 type="text"
                 value={newSongArtist}
                 onChange={(e) => setNewSongArtist(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
                 placeholder="アーティスト名を入力"
               />
             </div>
@@ -6441,7 +6441,7 @@ export default function Home() {
                   }
                 }}
                 disabled={!newSongTitle.trim() || !newSongArtist.trim() || !songType || !selectedAnime}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 登録
               </button>
@@ -6461,7 +6461,7 @@ export default function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* DNAカード */}
-            <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 mb-4 shadow-lg">
+            <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 mb-4 shadow-lg">
               {/* タイトル */}
               <div className="text-center mb-4">
                 <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA</h2>
@@ -6572,7 +6572,7 @@ export default function Home() {
               onClick={() => setActiveTab('home')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'home'
-                  ? 'text-indigo-600 dark:text-indigo-400'
+                  ? 'text-[#ffc2d1] dark:text-[#ffc2d1]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -6586,7 +6586,7 @@ export default function Home() {
               onClick={() => setActiveTab('discover')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'discover'
-                  ? 'text-indigo-600 dark:text-indigo-400'
+                  ? 'text-[#ffc2d1] dark:text-[#ffc2d1]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -6600,7 +6600,7 @@ export default function Home() {
               onClick={() => setActiveTab('collection')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'collection'
-                  ? 'text-indigo-600 dark:text-indigo-400'
+                  ? 'text-[#ffc2d1] dark:text-[#ffc2d1]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -6614,7 +6614,7 @@ export default function Home() {
               onClick={() => setActiveTab('profile')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'profile'
-                  ? 'text-indigo-600 dark:text-indigo-400'
+                  ? 'text-[#ffc2d1] dark:text-[#ffc2d1]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -6634,7 +6634,7 @@ export default function Home() {
             onClick={() => setActiveTab('home')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'home'
-                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
@@ -6646,7 +6646,7 @@ export default function Home() {
             onClick={() => setActiveTab('discover')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'discover'
-                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
@@ -6658,7 +6658,7 @@ export default function Home() {
             onClick={() => setActiveTab('collection')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'collection'
-                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
@@ -6670,7 +6670,7 @@ export default function Home() {
             onClick={() => setActiveTab('profile')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'profile'
-                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
