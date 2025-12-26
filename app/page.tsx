@@ -3883,9 +3883,13 @@ export default function Home() {
                 ) : (
                   <p className="text-gray-500 dark:text-gray-400 text-center py-8">声優が登録されていません</p>
                 )}
-              </div>
-            )}
-          </>
+                      </div>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
         )}
         
         {activeTab === 'profile' && (
