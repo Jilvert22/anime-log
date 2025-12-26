@@ -420,7 +420,7 @@ function ProfileTab({
             onClick={() => setShowIconPicker(!showIconPicker)}
             className="relative mb-3"
           >
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl shadow-lg hover:scale-105 transition-transform">
+            <div className="w-24 h-24 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl shadow-lg hover:scale-105 transition-transform">
               {userIcon}
             </div>
             <div className="absolute bottom-0 right-0 bg-[#ffc2d1] rounded-full p-1.5">
@@ -634,7 +634,7 @@ function ProfileTab({
         
         return (
           <>
-            <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 shadow-lg mb-4">
+            <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 shadow-lg mb-4">
               {/* タイトル */}
               <div className="text-center mb-4">
                 <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA {new Date().getFullYear()}</h2>
@@ -736,7 +736,7 @@ function ProfileTab({
                   // html2canvasで画像保存
                   try {
                     const html2canvas = (await import('html2canvas')).default;
-                    const cardElement = document.querySelector('.bg-gradient-to-br.from-purple-500');
+                    const cardElement = document.querySelector('.bg-linear-to-br.from-purple-500');
                     if (cardElement) {
                       const canvas = await html2canvas(cardElement as HTMLElement);
                       const url = canvas.toDataURL('image/png');
@@ -1368,8 +1368,8 @@ function MusicTab({
                   key={index}
                   className={`shrink-0 w-48 rounded-xl p-4 text-white shadow-lg relative group ${
                     song.type === 'op'
-                      ? 'bg-gradient-to-br from-orange-500 to-red-500'
-                      : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                      ? 'bg-linear-to-br from-orange-500 to-red-500'
+                      : 'bg-linear-to-br from-blue-500 to-purple-600'
                   }`}
                 >
                   {/* 編集・削除ボタン */}
@@ -1545,7 +1545,7 @@ function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
       onClick={onClick}
       className="bg-white dark:bg-gray-800 rounded-2xl shadow-md dark:shadow-gray-900/50 overflow-hidden cursor-pointer hover:scale-105 hover:shadow-2xl transition-all relative"
     >
-      <div className="aspect-3/4 bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl relative overflow-hidden rounded-t-2xl">
+      <div className="aspect-3/4 bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl relative overflow-hidden rounded-t-2xl">
         {/* 周回数バッジ */}
         <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 z-10">
           <span className="text-xs">🔄</span>
@@ -1563,7 +1563,7 @@ function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
         {isImageUrl && !imageError ? (
           <>
             {imageLoading && (
-              <div className="absolute inset-0 bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] animate-pulse" />
+              <div className="absolute inset-0 bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] animate-pulse" />
             )}
             <img
               src={anime.image}
@@ -1638,7 +1638,7 @@ function UserCard({
         onClick={onUserClick}
         className="flex items-center gap-3 flex-1 text-left"
       >
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-2xl shrink-0">
+        <div className="w-12 h-12 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-2xl shrink-0">
           👤
         </div>
         <div className="flex-1 min-w-0">
@@ -2452,7 +2452,7 @@ export default function Home() {
             {homeSubTab === 'seasons' && (
               <>
                 {/* 統計カード */}
-                <div className="bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white mb-6 relative">
+                <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white mb-6 relative">
                   {/* オタクタイプ */}
                   <div className="mb-4 flex items-center justify-between">
                     <p className="text-white/90 text-sm font-medium">
@@ -2750,7 +2750,7 @@ export default function Home() {
                   return (
                     <>
                       {/* 視聴統計サマリー（統合版、一番上） */}
-                      <div className="bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
+                      <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                           <span>📊</span>
                           視聴統計サマリー
@@ -2780,7 +2780,7 @@ export default function Home() {
                       </div>
                       
                       {/* あなたの傾向まとめ（サマリーの次） */}
-                      <div className="bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
+                      <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
                         <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
                           <span>✨</span>
                           あなたの傾向まとめ
@@ -3511,7 +3511,7 @@ export default function Home() {
                         <div
                           key={list.id}
                           onClick={() => setSelectedList(list)}
-                          className="bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-4 shadow-md cursor-pointer hover:scale-105 transition-transform"
+                          className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-4 shadow-md cursor-pointer hover:scale-105 transition-transform"
                         >
                           <h3 className="font-bold text-white mb-1">{list.title}</h3>
                           <p className="text-white/80 text-sm mb-2">{list.description}</p>
@@ -4550,7 +4550,7 @@ export default function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-3xl shrink-0">
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-3xl shrink-0">
                 👤
               </div>
               <div className="flex-1">
@@ -6360,7 +6360,7 @@ export default function Home() {
                         setSelectedAnime(anime);
                         setSelectedList(null);
                       }}
-                      className="bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
+                      className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
                     >
                       {isImageUrl ? (
                         <img
@@ -7240,7 +7240,7 @@ export default function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* DNAカード */}
-            <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 mb-4 shadow-lg">
+            <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 mb-4 shadow-lg">
               {/* タイトル */}
               <div className="text-center mb-4">
                 <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA {new Date().getFullYear()}</h2>
