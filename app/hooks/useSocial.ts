@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { UserProfile, Anime } from '../types';
+import type { UserProfile } from '../lib/supabase';
+import type { Anime } from '../types';
 import {
   searchUsers,
   getRecommendedUsers,

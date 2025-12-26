@@ -189,7 +189,7 @@ export function AnimeDetailModal({
                   onClick={async () => {
                     const currentCount = selectedAnime.rewatchCount ?? 0;
                     const newCount = Math.max(0, currentCount - 1);
-                    await updateAnimeInSeasons(
+                    await handleUpdateAnime(
                       (anime) => ({ ...anime, rewatchCount: newCount }),
                       async (anime) => {
                         const { error } = await supabase
@@ -213,7 +213,7 @@ export function AnimeDetailModal({
                   onClick={async () => {
                     const currentCount = selectedAnime.rewatchCount ?? 0;
                     const newCount = Math.min(99, currentCount + 1);
-                    await updateAnimeInSeasons(
+                    await handleUpdateAnime(
                       (anime) => ({ ...anime, rewatchCount: newCount }),
                       async (anime) => {
                         const { error } = await supabase
@@ -285,7 +285,7 @@ export function AnimeDetailModal({
                   }}
                   onBlur={async () => {
                     const newSeriesName = selectedAnime.seriesName?.trim() || undefined;
-                    await updateAnimeInSeasons(
+                    await handleUpdateAnime(
                       (anime) => ({ ...anime, seriesName: newSeriesName }),
                       async (anime) => {
                         const { error } = await supabase
