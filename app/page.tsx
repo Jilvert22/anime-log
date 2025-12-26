@@ -4,6 +4,21 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { searchAnime, searchAnimeBySeason } from './lib/anilist';
+import type { UserProfile } from './lib/supabase';
+import { 
+  searchUsers, 
+  getRecommendedUsers, 
+  followUser, 
+  unfollowUser, 
+  getFollowers, 
+  getFollowing, 
+  getPublicProfile, 
+  getPublicAnimes,
+  isFollowing,
+  getFollowCounts,
+  upsertUserProfile,
+  getMyProfile
+} from './lib/supabase';
 
 // シーズンの型定義
 type Season = {
@@ -295,12 +310,24 @@ function ProfileTab({
   averageRating,
   isDarkMode,
   setIsDarkMode,
-  setShowSettings,
   handleLogout,
   userOtakuType,
   favoriteAnimeIds,
   setFavoriteAnimeIds,
   setShowFavoriteAnimeModal,
+  followCounts,
+  setShowFollowListModal,
+  setFollowListType,
+  setFollowListUsers,
+  user,
+  setUserName,
+  setUserIcon,
+  setUserOtakuType,
+  isProfilePublic,
+  setIsProfilePublic,
+  userBio,
+  setUserBio,
+  upsertUserProfile,
 }: {
   allAnimes: Anime[];
   seasons: Season[];
@@ -309,13 +336,48 @@ function ProfileTab({
   averageRating: number;
   isDarkMode: boolean;
   setIsDarkMode: (value: boolean) => void;
-  setShowSettings: (value: boolean) => void;
   handleLogout: () => void;
   userOtakuType: string;
   favoriteAnimeIds: number[];
   setFavoriteAnimeIds: (ids: number[]) => void;
   setShowFavoriteAnimeModal: (show: boolean) => void;
+  followCounts: { following: number; followers: number };
+  setShowFollowListModal: (show: boolean) => void;
+  setFollowListType: (type: 'following' | 'followers') => void;
+  setFollowListUsers: (users: UserProfile[]) => void;
+  user: User | null;
+  setUserName: (name: string) => void;
+  setUserIcon: (icon: string) => void;
+  setUserOtakuType: (type: string) => void;
+  isProfilePublic: boolean;
+  setIsProfilePublic: (isPublic: boolean) => void;
+  userBio: string;
+  setUserBio: (bio: string) => void;
+  upsertUserProfile: (profile: { username: string; bio?: string; is_public?: boolean }) => Promise<boolean>;
 }) {
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [showOtakuTypePicker, setShowOtakuTypePicker] = useState(false);
+  
+  const handleSaveProfile = async () => {
+    if (user) {
+      await upsertUserProfile({
+        username: userName,
+        bio: userBio,
+        is_public: isProfilePublic,
+      });
+    }
+    localStorage.setItem('userName', userName);
+    localStorage.setItem('userIcon', userIcon);
+    if (userOtakuType) {
+      localStorage.setItem('userOtakuType', userOtakuType);
+    } else {
+      localStorage.removeItem('userOtakuType');
+    }
+    localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
+  };
+  
   const watchedCount = allAnimes.filter(a => a.watched).length;
   const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
   
@@ -352,22 +414,183 @@ function ProfileTab({
     <div className="space-y-6">
       {/* プロフィールカード */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
-        <div className="flex flex-col items-center mb-4">
-          <div className="w-24 h-24 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl mb-3 shadow-lg">
-            {userIcon}
-          </div>
-          <h2 className="text-xl font-bold text-[#6b5b6e] dark:text-white mb-2">{userName}</h2>
+        {/* ヘッダー部分 */}
+        <div className="flex flex-col items-center mb-6">
           <button
-            onClick={() => setShowSettings(true)}
-            className="px-4 py-2 bg-[#ffc2d1] text-white rounded-xl font-medium hover:bg-[#ffb07c] transition-colors"
+            onClick={() => setShowIconPicker(!showIconPicker)}
+            className="relative mb-3"
           >
-            プロフィール編集
+            <div className="w-24 h-24 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl shadow-lg hover:scale-105 transition-transform">
+              {userIcon}
+            </div>
+            <div className="absolute bottom-0 right-0 bg-[#ffc2d1] rounded-full p-1.5">
+              <span className="text-xs">✏️</span>
+            </div>
           </button>
+          
+          {/* アイコン選択 */}
+          {showIconPicker && (
+            <div className="absolute z-10 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-xl border border-gray-200 dark:border-gray-700 mt-32">
+              <div className="grid grid-cols-8 gap-2 max-h-64 overflow-y-auto">
+                {['👤', '😊', '🎮', '🎬', '📺', '🎨', '⚡', '🔥', '🌟', '💫', '🎯', '🚀', '🎪', '🎭', '🎸', '🎵', '🎹', '🎤', '🎧', '🎺', '🎷', '🥁', '🎲', '🎰'].map((icon) => (
+                  <button
+                    key={icon}
+                    onClick={() => {
+                      setUserIcon(icon);
+                      setShowIconPicker(false);
+                      handleSaveProfile();
+                    }}
+                    className={`text-3xl p-2 rounded-lg transition-all ${
+                      userIcon === icon
+                        ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-[#ffc2d1]'
+                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* ユーザー名編集 */}
+          {isEditingName ? (
+            <div className="flex items-center gap-2 w-full max-w-xs">
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                onBlur={() => {
+                  setIsEditingName(false);
+                  handleSaveProfile();
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    setIsEditingName(false);
+                    handleSaveProfile();
+                  }
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-center text-xl font-bold"
+                autoFocus
+              />
+            </div>
+          ) : (
+            <h2 
+              onClick={() => setIsEditingName(true)}
+              className="text-xl font-bold text-[#6b5b6e] dark:text-white mb-2 cursor-pointer hover:text-[#ffc2d1] transition-colors flex items-center gap-2"
+            >
+              {userName}
+              <span className="text-sm">✏️</span>
+            </h2>
+          )}
         </div>
-      </div>
-      
-      {/* DNAカード */}
-      {(() => {
+        
+        {/* フォロー数・フォロワー数 */}
+        {user && (
+          <div className="flex gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => {
+                setFollowListType('following');
+                setShowFollowListModal(true);
+              }}
+              className="flex-1 text-center hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg py-2 transition-colors"
+            >
+              <p className="text-2xl font-bold dark:text-white">{followCounts.following}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">フォロー中</p>
+            </button>
+            <button
+              onClick={() => {
+                setFollowListType('followers');
+                setShowFollowListModal(true);
+              }}
+              className="flex-1 text-center hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg py-2 transition-colors"
+            >
+              <p className="text-2xl font-bold dark:text-white">{followCounts.followers}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">フォロワー</p>
+            </button>
+          </div>
+        )}
+        
+        {/* プロフィール編集項目 */}
+        <div className="space-y-4">
+          {/* プロフィール公開設定 */}
+          {user && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                プロフィールを公開
+              </label>
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                <span className="text-sm dark:text-white">
+                  {isProfilePublic ? '他のユーザーから見える' : '非公開'}
+                </span>
+                <button
+                  onClick={() => {
+                    setIsProfilePublic(!isProfilePublic);
+                    handleSaveProfile();
+                  }}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${
+                    isProfilePublic ? 'bg-[#ffc2d1]' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      isProfilePublic ? 'translate-x-6' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* 自己紹介 */}
+          {user && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                自己紹介 {!isProfilePublic && '(公開時のみ表示されます)'}
+              </label>
+              {isEditingBio ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={userBio}
+                    onChange={(e) => setUserBio(e.target.value)}
+                    onBlur={() => {
+                      setIsEditingBio(false);
+                      handleSaveProfile();
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+                    placeholder="自己紹介を入力..."
+                    rows={3}
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => {
+                      setIsEditingBio(false);
+                      handleSaveProfile();
+                    }}
+                    className="text-sm text-[#ffc2d1] hover:underline"
+                  >
+                    保存
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => setIsEditingBio(true)}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-xl min-h-[60px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-start"
+                >
+                  {userBio ? (
+                    <p className="text-sm dark:text-white flex-1">{userBio}</p>
+                  ) : (
+                    <p className="text-sm text-gray-400 flex-1">自己紹介を入力... (タップして編集)</p>
+                  )}
+                  <span className="text-xs text-gray-400 ml-2">✏️</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* DNAカード */}
+        {(() => {
         const allAnimes = seasons.flatMap(s => s.animes);
         const count = allAnimes.filter(a => a.watched).length;
         const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
@@ -414,7 +637,7 @@ function ProfileTab({
             <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 shadow-lg">
               {/* タイトル */}
               <div className="text-center mb-4">
-                <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA 2024</h2>
+                <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA {new Date().getFullYear()}</h2>
                 <span className="text-2xl">✨</span>
               </div>
               
@@ -537,7 +760,7 @@ function ProfileTab({
                   if (navigator.share) {
                     try {
                       await navigator.share({
-                        title: 'MY ANIME DNA 2024',
+                        title: `MY ANIME DNA ${new Date().getFullYear()}`,
                         text: `私のアニメDNA: ${otakuType}`,
                       });
                     } catch (error) {
@@ -557,7 +780,8 @@ function ProfileTab({
             </div>
           </>
         );
-      })()}
+        })()}
+      </div>
       
       {/* お気に入りジャンル */}
       {sortedTags.length > 0 && (
@@ -591,17 +815,129 @@ function ProfileTab({
         </div>
       )}
       
-      {/* 設定 */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-        <h3 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">設定</h3>
+      {/* アプリ設定 */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
+        <h3 className="font-bold text-lg mb-4 text-[#6b5b6e] dark:text-white">アプリ設定</h3>
+        
+        {/* DNAカード設定 */}
+        <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+          <h4 className="font-semibold text-base mb-4 dark:text-white">DNAカード設定</h4>
+          <div className="space-y-4">
+            {/* オタクタイプ */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                オタクタイプ
+              </label>
+              <button
+                onClick={() => setShowOtakuTypePicker(!showOtakuTypePicker)}
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">
+                      {userOtakuType 
+                        ? otakuTypes.find(t => t.value === userOtakuType)?.emoji || '🤖'
+                        : '🤖'
+                      }
+                    </span>
+                    <span className="font-medium dark:text-white">
+                      {userOtakuType 
+                        ? otakuTypes.find(t => t.value === userOtakuType)?.label || '自動判定'
+                        : '自動判定'
+                      }
+                    </span>
+                  </div>
+                  <span className="text-gray-400">▼</span>
+                </div>
+              </button>
+              
+              {showOtakuTypePicker && (
+                <div className="mt-2 space-y-2 max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-xl p-2 border border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => {
+                      setUserOtakuType('');
+                      setShowOtakuTypePicker(false);
+                      handleSaveProfile();
+                    }}
+                    className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
+                      !userOtakuType
+                        ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🤖</span>
+                      <div>
+                        <p className="font-medium dark:text-white">自動判定</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">タグから自動で判定されます</p>
+                      </div>
+                    </div>
+                  </button>
+                  {otakuTypes.map((type) => (
+                    <button
+                      key={type.value}
+                      onClick={() => {
+                        setUserOtakuType(type.value);
+                        setShowOtakuTypePicker(false);
+                        handleSaveProfile();
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
+                        userOtakuType === type.value
+                          ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
+                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{type.emoji}</span>
+                        <div>
+                          <p className="font-medium dark:text-white">{type.label}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{type.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* 最推し作品 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                最推し作品（最大3作品）
+              </label>
+              <button
+                onClick={() => {
+                  setShowFavoriteAnimeModal(true);
+                }}
+                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-[#ffc2d1] hover:text-[#ffc2d1] transition-colors text-left"
+              >
+                {favoriteAnimeIds.length > 0
+                  ? `${favoriteAnimeIds.length}作品が設定されています`
+                  : '最推し作品を選択'}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* その他の設定 */}
         <div className="space-y-3">
           {/* ダークモード切り替え */}
           <div className="flex items-center justify-between">
             <span className="dark:text-white">ダークモード</span>
             <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
+              onClick={() => {
+                setIsDarkMode(!isDarkMode);
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem('isDarkMode', String(!isDarkMode));
+                  if (!isDarkMode) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                }
+              }}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                isDarkMode ? 'bg-[#ffc2d1]' : 'bg-gray-300'
+                isDarkMode ? 'bg-[#ffc2d1]' : 'bg-gray-300 dark:bg-gray-600'
               }`}
             >
               <span
@@ -1284,6 +1620,51 @@ function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
   );
 }
 
+// ユーザーカードコンポーネント
+function UserCard({ 
+  user, 
+  onUserClick, 
+  onFollowClick, 
+  isFollowing 
+}: { 
+  user: UserProfile; 
+  onUserClick: () => void;
+  onFollowClick: () => void;
+  isFollowing: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+      <button
+        onClick={onUserClick}
+        className="flex items-center gap-3 flex-1 text-left"
+      >
+        <div className="w-12 h-12 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-2xl shrink-0">
+          👤
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm dark:text-white truncate">{user.username}</p>
+          {user.bio && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{user.bio}</p>
+          )}
+        </div>
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onFollowClick();
+        }}
+        className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors shrink-0 ${
+          isFollowing
+            ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+            : 'bg-[#ffc2d1] text-white hover:bg-[#ffb07c]'
+        }`}
+      >
+        {isFollowing ? 'フォロー中' : 'フォロー'}
+      </button>
+    </div>
+  );
+}
+
 // メインページ
 export default function Home() {
   const [seasons, setSeasons] = useState<Season[]>([]);
@@ -1315,7 +1696,7 @@ export default function Home() {
   const [favoriteAnimeIds, setFavoriteAnimeIds] = useState<number[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'discover' | 'collection' | 'profile'>('home');
   const [homeSubTab, setHomeSubTab] = useState<'seasons' | 'series'>('seasons');
-  const [discoverSubTab, setDiscoverSubTab] = useState<'trends'>('trends');
+  const [discoverSubTab, setDiscoverSubTab] = useState<'trends' | 'users'>('trends');
   const [collectionSubTab, setCollectionSubTab] = useState<'achievements' | 'characters' | 'quotes' | 'lists' | 'music' | 'voiceActors'>('achievements');
   const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
   const [evangelistLists, setEvangelistLists] = useState<EvangelistList[]>([]);
@@ -1347,6 +1728,44 @@ export default function Home() {
   const [quoteFilterType, setQuoteFilterType] = useState<'all' | 'anime' | 'character'>('all');
   const [selectedAnimeForFilter, setSelectedAnimeForFilter] = useState<number | null>(null);
   const [listSortType, setListSortType] = useState<'date' | 'title' | 'count'>('date');
+  
+  // SNS機能の状態管理
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [searchedUsers, setSearchedUsers] = useState<UserProfile[]>([]);
+  const [recommendedUsers, setRecommendedUsers] = useState<UserProfile[]>([]);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+  const [selectedUserProfile, setSelectedUserProfile] = useState<UserProfile | null>(null);
+  const [selectedUserAnimes, setSelectedUserAnimes] = useState<Anime[]>([]);
+  const [showUserProfileModal, setShowUserProfileModal] = useState(false);
+  const [userFollowStatus, setUserFollowStatus] = useState<{ [userId: string]: boolean }>({});
+  const [followCounts, setFollowCounts] = useState<{ following: number; followers: number }>({ following: 0, followers: 0 });
+  const [showFollowListModal, setShowFollowListModal] = useState(false);
+  const [followListType, setFollowListType] = useState<'following' | 'followers'>('following');
+  const [followListUsers, setFollowListUsers] = useState<UserProfile[]>([]);
+  const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
+  const [isProfilePublic, setIsProfilePublic] = useState(false);
+  const [userBio, setUserBio] = useState('');
+  
+  // フォロー/フォロワー一覧モーダルを開く際にデータを読み込む
+  useEffect(() => {
+    if (showFollowListModal && user) {
+      const loadFollowList = async () => {
+        try {
+          if (followListType === 'following') {
+            const following = await getFollowing(user.id);
+            setFollowListUsers(following);
+          } else {
+            const followers = await getFollowers(user.id);
+            setFollowListUsers(followers);
+          }
+        } catch (error) {
+          console.error('Failed to load follow list:', error);
+        }
+      };
+      
+      loadFollowList();
+    }
+  }, [showFollowListModal, followListType, user]);
   const [showAddQuoteModal, setShowAddQuoteModal] = useState(false);
   const [editingQuote, setEditingQuote] = useState<{ animeId: number; quoteIndex: number } | null>(null);
   const [newQuoteAnimeId, setNewQuoteAnimeId] = useState<number | null>(null);
@@ -1570,6 +1989,87 @@ export default function Home() {
       'FALL': '秋',
     };
     return seasonMap[season] || season;
+  };
+
+  // SNS機能の関数
+  const handleUserSearch = async () => {
+    if (!userSearchQuery.trim()) return;
+    
+    setIsSearchingUsers(true);
+    try {
+      const results = await searchUsers(userSearchQuery.trim());
+      setSearchedUsers(results);
+      
+      // フォロー状態を確認
+      if (user) {
+        const followStatus: { [userId: string]: boolean } = {};
+        await Promise.all(
+          results.map(async (u) => {
+            followStatus[u.id] = await isFollowing(u.id);
+          })
+        );
+        setUserFollowStatus(prev => ({ ...prev, ...followStatus }));
+      }
+    } catch (error) {
+      console.error('Failed to search users:', error);
+    } finally {
+      setIsSearchingUsers(false);
+    }
+  };
+
+  const handleViewUserProfile = async (userId: string) => {
+    try {
+      const profile = await getPublicProfile(userId);
+      if (!profile) {
+        alert('このユーザーのプロフィールは公開されていません');
+        return;
+      }
+      
+      const animes = await getPublicAnimes(userId);
+      const following = await isFollowing(userId);
+      
+      setSelectedUserProfile(profile);
+      setSelectedUserAnimes(animes.map(a => supabaseToAnime(a)));
+      setUserFollowStatus(prev => ({ ...prev, [userId]: following }));
+      setShowUserProfileModal(true);
+    } catch (error) {
+      console.error('Failed to view user profile:', error);
+      alert('プロフィールの取得に失敗しました');
+    }
+  };
+
+  const handleToggleFollow = async (userId: string) => {
+    if (!user) {
+      alert('ログインが必要です');
+      return;
+    }
+    
+    const currentlyFollowing = userFollowStatus[userId] || false;
+    
+    try {
+      let success = false;
+      if (currentlyFollowing) {
+        success = await unfollowUser(userId);
+      } else {
+        success = await followUser(userId);
+      }
+      
+      if (success) {
+        setUserFollowStatus(prev => ({
+          ...prev,
+          [userId]: !currentlyFollowing,
+        }));
+        
+        // フォロー数を更新
+        if (user) {
+          const counts = await getFollowCounts(user.id);
+          setFollowCounts(counts);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to toggle follow:', error);
+      alert('フォロー操作に失敗しました');
+    }
   };
 
   // 検索処理
@@ -2144,6 +2644,30 @@ export default function Home() {
         
         {activeTab === 'discover' && (
           <>
+            {/* サブタブ切り替え */}
+            <div className="flex gap-3 mb-6 overflow-x-auto scrollbar-hide pb-2">
+              <button
+                onClick={() => setDiscoverSubTab('trends')}
+                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                  discoverSubTab === 'trends'
+                    ? 'bg-[#ffc2d1] text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                傾向分析
+              </button>
+              <button
+                onClick={() => setDiscoverSubTab('users')}
+                className={`px-6 py-3 rounded-full text-base font-semibold whitespace-nowrap transition-all min-w-[100px] text-center ${
+                  discoverSubTab === 'users'
+                    ? 'bg-[#ffc2d1] text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                ユーザー
+              </button>
+            </div>
+            
             {discoverSubTab === 'trends' && (
               <div className="space-y-6">
                 {(() => {
@@ -2410,6 +2934,75 @@ export default function Home() {
                     </>
                   );
                 })()}
+              </div>
+            )}
+            
+            {discoverSubTab === 'users' && (
+              <div className="space-y-6">
+                {/* ユーザー検索バー */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={userSearchQuery}
+                      onChange={(e) => setUserSearchQuery(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleUserSearch();
+                        }
+                      }}
+                      placeholder="ユーザー名で検索..."
+                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+                    />
+                    <button
+                      onClick={handleUserSearch}
+                      disabled={isSearchingUsers}
+                      className="px-6 py-2 bg-[#ffc2d1] text-white rounded-xl font-medium hover:bg-[#ffb07c] transition-colors disabled:opacity-50"
+                    >
+                      {isSearchingUsers ? '検索中...' : '検索'}
+                    </button>
+                  </div>
+                </div>
+                
+                {/* 検索結果 */}
+                {userSearchQuery.trim() && searchedUsers.length > 0 && (
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+                    <h2 className="font-bold text-lg mb-3 dark:text-white">検索結果</h2>
+                    <div className="space-y-3">
+                      {searchedUsers.map((user) => (
+                        <UserCard
+                          key={user.id}
+                          user={user}
+                          onUserClick={() => handleViewUserProfile(user.id)}
+                          onFollowClick={() => handleToggleFollow(user.id)}
+                          isFollowing={userFollowStatus[user.id] || false}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* おすすめユーザー */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+                  <h2 className="font-bold text-lg mb-3 dark:text-white">おすすめユーザー</h2>
+                  {recommendedUsers.length > 0 ? (
+                    <div className="space-y-3">
+                      {recommendedUsers.map((user) => (
+                        <UserCard
+                          key={user.id}
+                          user={user}
+                          onUserClick={() => handleViewUserProfile(user.id)}
+                          onFollowClick={() => handleToggleFollow(user.id)}
+                          isFollowing={userFollowStatus[user.id] || false}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                      公開プロフィールのユーザーがいません
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -3090,6 +3683,19 @@ export default function Home() {
             favoriteAnimeIds={favoriteAnimeIds}
             setFavoriteAnimeIds={setFavoriteAnimeIds}
             setShowFavoriteAnimeModal={setShowFavoriteAnimeModal}
+            followCounts={followCounts}
+            setShowFollowListModal={setShowFollowListModal}
+            setFollowListType={setFollowListType}
+            setFollowListUsers={setFollowListUsers}
+            user={user}
+            setUserName={setUserName}
+            setUserIcon={setUserIcon}
+            setUserOtakuType={setUserOtakuType}
+            isProfilePublic={isProfilePublic}
+            setIsProfilePublic={setIsProfilePublic}
+            userBio={userBio}
+            setUserBio={setUserBio}
+            upsertUserProfile={upsertUserProfile}
           />
         )}
       </main>
@@ -3851,158 +4457,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* 設定モーダル */}
-      {showSettings && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowSettings(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">プロフィール設定</h2>
-            
-            {/* ユーザー名入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                ユーザー名
-              </label>
-              <input
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="ユーザー名を入力"
-              />
-            </div>
-
-            {/* アイコン選択 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                アイコン
-              </label>
-              <div className="grid grid-cols-8 gap-2">
-                {['👤', '😊', '🎮', '🎬', '📺', '🎨', '⚡', '🔥', '🌟', '💫', '🎯', '🚀', '🎪', '🎭', '🎸', '🎵', '🎹', '🎤', '🎧', '🎺', '🎷', '🥁', '🎲', '🎰'].map((icon) => (
-                  <button
-                    key={icon}
-                    onClick={() => setUserIcon(icon)}
-                    className={`text-3xl p-2 rounded-lg transition-all ${
-                      userIcon === icon
-                        ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
-                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* オタクタイプ選択 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                オタクタイプ（DNAカードに表示されます）
-              </label>
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                <button
-                  onClick={() => setUserOtakuType('')}
-                  className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
-                    !userOtakuType
-                      ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">🤖</span>
-                    <div>
-                      <p className="font-medium dark:text-white">自動判定</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">タグから自動で判定されます</p>
-                    </div>
-                  </div>
-                </button>
-                {otakuTypes.map((type) => (
-                  <button
-                    key={type.value}
-                    onClick={() => setUserOtakuType(type.value)}
-                    className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
-                      userOtakuType === type.value
-                        ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{type.emoji}</span>
-                      <div>
-                        <p className="font-medium dark:text-white">{type.label}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{type.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 最推し作品選択 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                最推し作品（DNAカードに表示されます、最大3作品）
-              </label>
-              <button
-                onClick={() => {
-                  setShowSettings(false);
-                  setShowFavoriteAnimeModal(true);
-                }}
-                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-[#ffc2d1] hover:text-[#ffc2d1] transition-colors"
-              >
-                {favoriteAnimeIds.length > 0
-                  ? `${favoriteAnimeIds.length}作品が設定されています`
-                  : '最推し作品を選択'}
-              </button>
-              {favoriteAnimeIds.length > 0 && (
-                <div className="mt-2 flex gap-2 flex-wrap">
-                  {favoriteAnimeIds.slice(0, 3).map((id) => {
-                    const anime = allAnimes.find(a => a.id === id);
-                    if (!anime) return null;
-                    return (
-                      <div
-                        key={id}
-                        className="flex items-center gap-1 bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 px-2 py-1 rounded-lg text-xs"
-                      >
-                        <span className="dark:text-white">{anime.title}</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFavoriteAnimeIds(favoriteAnimeIds.filter(fid => fid !== id));
-                          }}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <button 
-              onClick={() => {
-                if (userOtakuType) {
-                  localStorage.setItem('userOtakuType', userOtakuType);
-                } else {
-                  localStorage.removeItem('userOtakuType');
-                }
-                localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
-                setShowSettings(false);
-              }}
-              className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
-            >
-              保存
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 最推し作品選択モーダル */}
       {showFavoriteAnimeModal && (
@@ -4086,6 +4540,147 @@ export default function Home() {
                 保存
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 他人のプロフィールモーダル */}
+      {showUserProfileModal && selectedUserProfile && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowUserProfileModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-3xl shrink-0">
+                👤
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold dark:text-white">{selectedUserProfile.username}</h2>
+                {selectedUserProfile.bio && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedUserProfile.bio}</p>
+                )}
+              </div>
+              {user && user.id !== selectedUserProfile.id && (
+                <button
+                  onClick={() => handleToggleFollow(selectedUserProfile.id)}
+                  className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
+                    userFollowStatus[selectedUserProfile.id]
+                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                      : 'bg-[#ffc2d1] text-white hover:bg-[#ffb07c]'
+                  }`}
+                >
+                  {userFollowStatus[selectedUserProfile.id] ? 'フォロー中' : 'フォロー'}
+                </button>
+              )}
+            </div>
+            
+            {/* 視聴作品数 */}
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+              <p className="text-sm text-gray-600 dark:text-gray-400">視聴作品数</p>
+              <p className="text-2xl font-bold dark:text-white">{selectedUserAnimes.length}作品</p>
+            </div>
+            
+            {/* 視聴履歴 */}
+            {selectedUserAnimes.length > 0 && (
+              <div className="mb-4">
+                <h3 className="font-bold text-lg mb-3 dark:text-white">視聴履歴</h3>
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {selectedUserAnimes.map((anime) => (
+                    <AnimeCard
+                      key={anime.id}
+                      anime={anime}
+                      onClick={() => {
+                        setSelectedAnime(anime);
+                        setShowUserProfileModal(false);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <button
+              onClick={() => setShowUserProfileModal(false)}
+              className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* フォロー/フォロワー一覧モーダル */}
+      {showFollowListModal && user && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowFollowListModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={async () => {
+                  setFollowListType('following');
+                  const following = await getFollowing(user.id);
+                  setFollowListUsers(following);
+                }}
+                className={`flex-1 py-2 rounded-xl font-medium transition-colors ${
+                  followListType === 'following'
+                    ? 'bg-[#ffc2d1] text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                フォロー中
+              </button>
+              <button
+                onClick={async () => {
+                  setFollowListType('followers');
+                  const followers = await getFollowers(user.id);
+                  setFollowListUsers(followers);
+                }}
+                className={`flex-1 py-2 rounded-xl font-medium transition-colors ${
+                  followListType === 'followers'
+                    ? 'bg-[#ffc2d1] text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                フォロワー
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {followListUsers.length > 0 ? (
+                followListUsers.map((u) => (
+                  <UserCard
+                    key={u.id}
+                    user={u}
+                    onUserClick={() => {
+                      setShowFollowListModal(false);
+                      handleViewUserProfile(u.id);
+                    }}
+                    onFollowClick={() => handleToggleFollow(u.id)}
+                    isFollowing={userFollowStatus[u.id] || false}
+                  />
+                ))
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                  {followListType === 'following' ? 'フォロー中のユーザーがいません' : 'フォロワーがいません'}
+                </p>
+              )}
+            </div>
+            
+            <button
+              onClick={() => setShowFollowListModal(false)}
+              className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              閉じる
+            </button>
           </div>
         </div>
       )}
@@ -6653,7 +7248,7 @@ export default function Home() {
             <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 mb-4 shadow-lg">
               {/* タイトル */}
               <div className="text-center mb-4">
-                <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA</h2>
+                <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA {new Date().getFullYear()}</h2>
                 <span className="text-2xl">✨</span>
               </div>
               
