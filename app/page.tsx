@@ -1827,6 +1827,11 @@ export default function Home() {
   const [quoteFilterType, setQuoteFilterType] = useState<'all' | 'anime' | 'character'>('all');
   const [selectedAnimeForFilter, setSelectedAnimeForFilter] = useState<number | null>(null);
   const [listSortType, setListSortType] = useState<'date' | 'title' | 'count'>('date');
+  const [reviewStats, setReviewStats] = useState<{
+    reviewCount: number;
+    totalLikes: number;
+    totalHelpful: number;
+  }>({ reviewCount: 0, totalLikes: 0, totalHelpful: 0 });
   
   // SNS機能の状態管理
   const [userSearchQuery, setUserSearchQuery] = useState('');
@@ -2019,6 +2024,37 @@ export default function Home() {
       localStorage.setItem('darkMode', isDarkMode.toString());
     }
   }, [isDarkMode]);
+
+  // 感想統計を取得
+  useEffect(() => {
+    const loadReviewStats = async () => {
+      if (!user || !supabase) {
+        setReviewStats({ reviewCount: 0, totalLikes: 0, totalHelpful: 0 });
+        return;
+      }
+      
+      try {
+        // 自分の感想をすべて取得
+        const { data: reviews, error } = await supabase
+          .from('reviews')
+          .select('id, likes, helpful_count')
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
+        
+        const reviewCount = reviews?.length || 0;
+        const totalLikes = reviews?.reduce((sum: number, r: any) => sum + (r.likes || 0), 0) || 0;
+        const totalHelpful = reviews?.reduce((sum: number, r: any) => sum + (r.helpful_count || 0), 0) || 0;
+        
+        setReviewStats({ reviewCount, totalLikes, totalHelpful });
+      } catch (error) {
+        console.error('Failed to load review stats:', error);
+        setReviewStats({ reviewCount: 0, totalLikes: 0, totalHelpful: 0 });
+      }
+    };
+    
+    loadReviewStats();
+  }, [user, supabase]);
 
   // ユーザー情報をlocalStorageに保存
   useEffect(() => {
@@ -3130,82 +3166,146 @@ export default function Home() {
         )}
 
         {activeTab === 'collection' && (
-          <>
-            {/* サブタブ */}
-            <div className="flex gap-3 md:gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => setCollectionSubTab('achievements')}
-                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-                  collectionSubTab === 'achievements'
-                    ? 'bg-[#ffc2d1] text-white shadow-md'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                実績
-              </button>
-              <button
-                onClick={() => setCollectionSubTab('characters')}
-                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-                  collectionSubTab === 'characters'
-                    ? 'bg-[#ffc2d1] text-white shadow-md'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                推しキャラ
-              </button>
-              <button
-                onClick={() => setCollectionSubTab('quotes')}
-                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-                  collectionSubTab === 'quotes'
-                    ? 'bg-[#ffc2d1] text-white shadow-md'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                名言
-              </button>
-              <button
-                onClick={() => setCollectionSubTab('lists')}
-                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-                  collectionSubTab === 'lists'
-                    ? 'bg-[#ffc2d1] text-white shadow-md'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                布教リスト
-              </button>
-              <button
-                onClick={() => setCollectionSubTab('music')}
-                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-                  collectionSubTab === 'music'
-                    ? 'bg-[#ffc2d1] text-white shadow-md'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                主題歌
-              </button>
-              <button
-                onClick={() => setCollectionSubTab('voiceActors')}
-                className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-                  collectionSubTab === 'voiceActors'
-                    ? 'bg-[#ffc2d1] text-white shadow-md'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                声優
-              </button>
-            </div>
-
-            {collectionSubTab === 'achievements' && (
-              <AchievementsTab 
-                allAnimes={allAnimes}
-                achievements={achievements}
-                user={user}
-                supabase={supabase}
-              />
-            )}
-
-            {collectionSubTab === 'characters' && (
-              <div className="space-y-4">
+          <div className="bg-gradient-to-b from-pink-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-4 md:p-6">
+            {/* コレクション件数計算 */}
+            {(() => {
+              // 実績の解除判定関数
+              const checkAchievement = (achievement: Achievement): boolean => {
+                const watchedCount = allAnimes.filter(a => a.watched).length;
+                const maxRewatchCount = Math.max(...allAnimes.map(a => a.rewatchCount ?? 0), 0);
+                const godTasteCount = allAnimes.filter(a => a.rating === 5).length;
+                
+                switch (achievement.id) {
+                  case 'first':
+                    return watchedCount >= achievement.condition;
+                  case 'ten':
+                  case 'fifty':
+                  case 'hundred':
+                    return watchedCount >= achievement.condition;
+                  case 'rewatch3':
+                  case 'rewatch10':
+                    return maxRewatchCount >= achievement.condition;
+                  case 'godtaste':
+                    return godTasteCount >= achievement.condition;
+                  case 'review1':
+                  case 'review10':
+                  case 'review50':
+                    return reviewStats.reviewCount >= achievement.condition;
+                  case 'liked10':
+                  case 'liked50':
+                    return reviewStats.totalLikes >= achievement.condition;
+                  case 'helpful10':
+                    return reviewStats.totalHelpful >= achievement.condition;
+                  default:
+                    return false;
+                }
+              };
+              
+              const unlockedAchievements = achievements.filter(a => checkAchievement(a)).length;
+              
+              // 名言の件数
+              const allQuotes: Array<{ text: string; character?: string }> = [];
+              allAnimes.forEach((anime) => {
+                anime.quotes?.forEach((quote) => {
+                  allQuotes.push(quote);
+                });
+              });
+              const quoteCount = allQuotes.length;
+              
+              // 主題歌の件数
+              let songCount = 0;
+              allAnimes.forEach((anime) => {
+                if (anime.songs?.op) songCount++;
+                if (anime.songs?.ed) songCount++;
+              });
+              
+              const collections = [
+                { id: 'achievements', name: '実績', icon: '🌱', count: `${unlockedAchievements}/${achievements.length}`, type: 'progress' as const },
+                { id: 'characters', name: '推しキャラ', icon: '⭐', count: favoriteCharacters.length, type: 'collection' as const },
+                { id: 'quotes', name: '名言', icon: '💬', count: quoteCount, type: 'collection' as const },
+                { id: 'lists', name: '布教リスト', icon: '📋', count: evangelistLists.length, type: 'collection' as const },
+                { id: 'music', name: '主題歌', icon: '🎵', count: songCount, type: 'collection' as const },
+                { id: 'voiceActors', name: '声優', icon: '🎤', count: voiceActors.length, type: 'collection' as const },
+              ];
+              
+              return (
+                <>
+                  {/* コレクション選択エリア（3列×2行グリッド） */}
+                  <div className="grid grid-cols-3 gap-2 mb-6">
+                    {collections.map((collection) => (
+                      <button
+                        key={collection.id}
+                        onClick={() => setCollectionSubTab(collection.id as typeof collectionSubTab)}
+                        className={`flex flex-col items-center justify-center px-3 py-2.5 rounded-full transition-all duration-200 ${
+                          collectionSubTab === collection.id
+                            ? 'bg-pink-500 text-white shadow-md'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-gray-700 hover:border-pink-500 dark:hover:border-pink-500'
+                        }`}
+                      >
+                        <span className="text-xl mb-1">{collection.icon}</span>
+                        <span className="text-xs font-medium mb-0.5">{collection.name}</span>
+                        <span className={`text-xs font-bold ${collectionSubTab === collection.id ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                          {typeof collection.count === 'number' ? `${collection.count}件` : collection.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* コンテンツ表示エリア */}
+                  <div className="mt-6">
+                    {collectionSubTab === 'achievements' && (
+                      <>
+                        {/* 実績の場合の特別表示 */}
+                        {(() => {
+                          const unlockedAchievements = achievements.filter(a => checkAchievement(a)).length;
+                          const progressPercentage = (unlockedAchievements / achievements.length) * 100;
+                          
+                          return (
+                            <>
+                              {/* 進捗テキスト */}
+                              <div className="text-center mb-4">
+                                <p className="text-2xl font-bold text-gray-800 dark:text-white">
+                                  {unlockedAchievements}/{achievements.length} 解除済み
+                                </p>
+                              </div>
+                              
+                              {/* プログレスバー */}
+                              <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3 mb-6">
+                                <div
+                                  className="bg-pink-500 h-3 rounded-full transition-all duration-300"
+                                  style={{ width: `${progressPercentage}%` }}
+                                />
+                              </div>
+                              
+                              {/* 実績アイテムリスト */}
+                              <div className="space-y-3">
+                                {achievements.map((achievement) => {
+                                  const isUnlocked = checkAchievement(achievement);
+                                  return (
+                                    <div
+                                      key={achievement.id}
+                                      className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+                                    >
+                                      <span className="text-3xl">{achievement.icon}</span>
+                                      <div className="flex-1">
+                                        <h3 className="font-bold text-gray-800 dark:text-white">{achievement.name}</h3>
+                                        <p className="text-xs text-gray-600 dark:text-gray-400">{achievement.desc}</p>
+                                      </div>
+                                      <span className={`text-sm font-bold ${isUnlocked ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
+                                        {isUnlocked ? '達成済み ✓' : '未達成'}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </>
+                    )}
+                    
+                            {collectionSubTab === 'characters' && (
+                      <div className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold dark:text-white">推しキャラ</h2>
                   <button
@@ -3333,11 +3433,11 @@ export default function Home() {
                     </p>
                   );
                 })()}
-              </div>
-            )}
+                      </div>
+                    )}
 
-            {collectionSubTab === 'quotes' && (
-              <div className="space-y-4">
+                    {collectionSubTab === 'quotes' && (
+                      <div className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold dark:text-white">名言コレクション</h2>
                   <button
@@ -3558,11 +3658,11 @@ export default function Home() {
                     </>
                   );
                 })()}
-              </div>
-            )}
+                      </div>
+                    )}
 
-            {collectionSubTab === 'lists' && (
-              <div className="space-y-4">
+                    {collectionSubTab === 'lists' && (
+                      <div className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold dark:text-white">布教リスト</h2>
                   <button
@@ -3647,10 +3747,10 @@ export default function Home() {
                 ) : (
                   <p className="text-gray-500 dark:text-gray-400 text-center py-8">布教リストが作成されていません</p>
                 )}
-              </div>
-            )}
+                      </div>
+                    )}
 
-            {collectionSubTab === 'music' && (
+                    {collectionSubTab === 'music' && (
               <MusicTab 
                 allAnimes={allAnimes} 
                 seasons={seasons} 
