@@ -7,18 +7,7 @@ import { searchAnime, searchAnimeBySeason } from './lib/anilist';
 import type { UserProfile } from './lib/supabase';
 import { QRCodeSVG } from 'qrcode.react';
 import { 
-  searchUsers, 
-  getRecommendedUsers, 
-  followUser, 
-  unfollowUser, 
-  getFollowers, 
-  getFollowing, 
-  getPublicProfile, 
-  getPublicAnimes,
-  isFollowing,
-  getFollowCounts,
   upsertUserProfile,
-  getMyProfile
 } from './lib/supabase';
 import type { 
   Season, 
@@ -63,112 +52,189 @@ import { AddQuoteModal } from './components/modals/AddQuoteModal';
 import { DNAModal } from './components/modals/DNAModal';
 import { AddAnimeFormModal } from './components/modals/AddAnimeFormModal';
 import { AnimeDetailModal } from './components/modals/AnimeDetailModal';
+import { ListDetailModal } from './components/modals/ListDetailModal';
 import { Navigation } from './components/Navigation';
 import { useAnimeReviews } from './hooks/useAnimeReviews';
-import { translateGenre } from './utils/helpers';
+import { useAuth } from './hooks/useAuth';
+import { useUserProfile } from './hooks/useUserProfile';
+import { useAnimeData } from './hooks/useAnimeData';
+import { useSocial } from './hooks/useSocial';
+import { useModals } from './hooks/useModals';
+import { useCollection } from './hooks/useCollection';
+import { useFormStates } from './hooks/useFormStates';
+import { translateGenre, animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName } from './utils/helpers';
 
 
 
 
 // メインページ
 export default function Home() {
-  const [seasons, setSeasons] = useState<Season[]>([]);
-  const prevSeasonsRef = useRef<string>('');
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [count, setCount] = useState(0);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showFavoriteAnimeModal, setShowFavoriteAnimeModal] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [showDNAModal, setShowDNAModal] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [userName, setUserName] = useState<string>('ユーザー');
-  const [userIcon, setUserIcon] = useState<string>('👤');
+  
+  // モーダル状態管理をカスタムフックで管理
+  const {
+    showSettings,
+    setShowSettings,
+    showFavoriteAnimeModal,
+    setShowFavoriteAnimeModal,
+    showAddForm,
+    setShowAddForm,
+    showDNAModal,
+    setShowDNAModal,
+    showShareModal,
+    setShowShareModal,
+    showAuthModal,
+    setShowAuthModal,
+    showCreateListModal,
+    setShowCreateListModal,
+    showAddCharacterModal,
+    setShowAddCharacterModal,
+    showAddVoiceActorModal,
+    setShowAddVoiceActorModal,
+    showAddQuoteModal,
+    setShowAddQuoteModal,
+    showSongModal,
+    setShowSongModal,
+    showReviewModal,
+    setShowReviewModal,
+  } = useModals();
+  
+  // 認証管理をカスタムフックで管理
+  const { user, isLoading, handleLogout: logout } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [userOtakuType, setUserOtakuType] = useState<string>('');
-  const [favoriteAnimeIds, setFavoriteAnimeIds] = useState<number[]>([]);
+  
+  // ユーザープロフィール管理をカスタムフックで管理
+  const {
+    userName,
+    setUserName,
+    userIcon,
+    setUserIcon,
+    userOtakuType,
+    setUserOtakuType,
+    favoriteAnimeIds,
+    setFavoriteAnimeIds,
+    myProfile,
+    setMyProfile,
+    isProfilePublic,
+    setIsProfilePublic,
+    userBio,
+    setUserBio,
+    userHandle,
+    setUserHandle,
+  } = useUserProfile(user);
   const [activeTab, setActiveTab] = useState<'home' | 'discover' | 'collection' | 'profile'>('home');
   const [homeSubTab, setHomeSubTab] = useState<'seasons' | 'series'>('seasons');
   const [discoverSubTab, setDiscoverSubTab] = useState<'trends'>('trends');
   const [collectionSubTab, setCollectionSubTab] = useState<'achievements' | 'characters' | 'quotes' | 'lists' | 'music' | 'voiceActors'>('achievements');
-  const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
-  const [evangelistLists, setEvangelistLists] = useState<EvangelistList[]>([]);
-  const [favoriteCharacters, setFavoriteCharacters] = useState<FavoriteCharacter[]>([]);
+  
+  // コレクション関連をカスタムフックで管理
+  const {
+    evangelistLists,
+    setEvangelistLists,
+    favoriteCharacters,
+    setFavoriteCharacters,
+  } = useCollection();
+  
+  // アニメデータ管理をカスタムフックで管理
+  const {
+    seasons,
+    setSeasons,
+    expandedSeasons,
+    setExpandedSeasons,
+    allAnimes,
+    averageRating,
+    totalRewatchCount,
+  } = useAnimeData(user, isLoading);
   const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
-  const [showCreateListModal, setShowCreateListModal] = useState(false);
-  const [selectedList, setSelectedList] = useState<EvangelistList | null>(null);
-  const [editingList, setEditingList] = useState<EvangelistList | null>(null);
-  const [showAddCharacterModal, setShowAddCharacterModal] = useState(false);
-  const [newCharacterName, setNewCharacterName] = useState('');
-  const [newCharacterAnimeId, setNewCharacterAnimeId] = useState<number | null>(null);
-  const [newCharacterImage, setNewCharacterImage] = useState('👤');
-  const [newCharacterCategory, setNewCharacterCategory] = useState('');
-  const [newCharacterTags, setNewCharacterTags] = useState<string[]>([]);
-  const [newCustomTag, setNewCustomTag] = useState('');
-  const [editingCharacter, setEditingCharacter] = useState<FavoriteCharacter | null>(null);
-  const [characterFilter, setCharacterFilter] = useState<string | null>(null);
-  const [showAddVoiceActorModal, setShowAddVoiceActorModal] = useState(false);
-  const [newVoiceActorName, setNewVoiceActorName] = useState('');
-  const [newVoiceActorImage, setNewVoiceActorImage] = useState('🎤');
-  const [newVoiceActorAnimeIds, setNewVoiceActorAnimeIds] = useState<number[]>([]);
-  const [newVoiceActorNotes, setNewVoiceActorNotes] = useState('');
-  const [editingVoiceActor, setEditingVoiceActor] = useState<VoiceActor | null>(null);
-  const [voiceActorSearchQuery, setVoiceActorSearchQuery] = useState('');
-  const [quoteSearchQuery, setQuoteSearchQuery] = useState('');
-  const [quoteFilterType, setQuoteFilterType] = useState<'all' | 'anime' | 'character'>('all');
-  const [selectedAnimeForFilter, setSelectedAnimeForFilter] = useState<number | null>(null);
-  const [listSortType, setListSortType] = useState<'date' | 'title' | 'count'>('date');
   
-  // SNS機能の状態管理
-  const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [searchedUsers, setSearchedUsers] = useState<UserProfile[]>([]);
-  const [recommendedUsers, setRecommendedUsers] = useState<UserProfile[]>([]);
-  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
-  const [selectedUserProfile, setSelectedUserProfile] = useState<UserProfile | null>(null);
-  const [selectedUserAnimes, setSelectedUserAnimes] = useState<Anime[]>([]);
-  const [showUserProfileModal, setShowUserProfileModal] = useState(false);
-  const [userFollowStatus, setUserFollowStatus] = useState<{ [userId: string]: boolean }>({});
-  const [followCounts, setFollowCounts] = useState<{ following: number; followers: number }>({ following: 0, followers: 0 });
-  const [showFollowListModal, setShowFollowListModal] = useState(false);
-  const [followListType, setFollowListType] = useState<'following' | 'followers'>('following');
-  const [followListUsers, setFollowListUsers] = useState<UserProfile[]>([]);
-  const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
-  const [isProfilePublic, setIsProfilePublic] = useState(false);
-  const [userBio, setUserBio] = useState('');
-  const [userHandle, setUserHandle] = useState<string>('');
+  // フォーム状態管理をカスタムフックで管理
+  const {
+    newCharacterName,
+    setNewCharacterName,
+    newCharacterAnimeId,
+    setNewCharacterAnimeId,
+    newCharacterImage,
+    setNewCharacterImage,
+    newCharacterCategory,
+    setNewCharacterCategory,
+    newCharacterTags,
+    setNewCharacterTags,
+    newCustomTag,
+    setNewCustomTag,
+    editingCharacter,
+    setEditingCharacter,
+    characterFilter,
+    setCharacterFilter,
+    newVoiceActorName,
+    setNewVoiceActorName,
+    newVoiceActorImage,
+    setNewVoiceActorImage,
+    newVoiceActorAnimeIds,
+    setNewVoiceActorAnimeIds,
+    newVoiceActorNotes,
+    setNewVoiceActorNotes,
+    editingVoiceActor,
+    setEditingVoiceActor,
+    voiceActorSearchQuery,
+    setVoiceActorSearchQuery,
+    editingQuote,
+    setEditingQuote,
+    newQuoteAnimeId,
+    setNewQuoteAnimeId,
+    newQuoteText,
+    setNewQuoteText,
+    newQuoteCharacter,
+    setNewQuoteCharacter,
+    quoteSearchQuery,
+    setQuoteSearchQuery,
+    quoteFilterType,
+    setQuoteFilterType,
+    selectedAnimeForFilter,
+    setSelectedAnimeForFilter,
+    selectedList,
+    setSelectedList,
+    editingList,
+    setEditingList,
+    listSortType,
+    setListSortType,
+    songType,
+    setSongType,
+    newSongTitle,
+    setNewSongTitle,
+    newSongArtist,
+    setNewSongArtist,
+  } = useFormStates();
   
-  // フォロー/フォロワー一覧モーダルを開く際にデータを読み込む
-  useEffect(() => {
-    if (showFollowListModal && user) {
-      const loadFollowList = async () => {
-        try {
-          if (followListType === 'following') {
-            const following = await getFollowing(user.id);
-            setFollowListUsers(following);
-          } else {
-            const followers = await getFollowers(user.id);
-            setFollowListUsers(followers);
-          }
-        } catch (error) {
-          console.error('Failed to load follow list:', error);
-        }
-      };
-      
-      loadFollowList();
-    }
-  }, [showFollowListModal, followListType, user]);
-  const [showAddQuoteModal, setShowAddQuoteModal] = useState(false);
-  const [editingQuote, setEditingQuote] = useState<{ animeId: number; quoteIndex: number } | null>(null);
-  const [newQuoteAnimeId, setNewQuoteAnimeId] = useState<number | null>(null);
-  const [newQuoteText, setNewQuoteText] = useState('');
-  const [newQuoteCharacter, setNewQuoteCharacter] = useState('');
-  const [showSongModal, setShowSongModal] = useState(false);
-  const [songType, setSongType] = useState<'op' | 'ed' | null>(null);
-  const [newSongTitle, setNewSongTitle] = useState('');
-  const [newSongArtist, setNewSongArtist] = useState('');
-  const [showReviewModal, setShowReviewModal] = useState(false);
+  // SNS機能をカスタムフックで管理
+  const {
+    userSearchQuery,
+    setUserSearchQuery,
+    searchedUsers,
+    setSearchedUsers,
+    recommendedUsers,
+    setRecommendedUsers,
+    isSearchingUsers,
+    selectedUserProfile,
+    setSelectedUserProfile,
+    selectedUserAnimes,
+    setSelectedUserAnimes,
+    showUserProfileModal,
+    setShowUserProfileModal,
+    userFollowStatus,
+    setUserFollowStatus,
+    followCounts,
+    setFollowCounts,
+    showFollowListModal,
+    setShowFollowListModal,
+    followListType,
+    setFollowListType,
+    followListUsers,
+    setFollowListUsers,
+    handleUserSearch,
+    handleViewUserProfile,
+    handleToggleFollow,
+  } = useSocial(user);
   
   // レビュー関連の状態をカスタムフックで管理
   const {
@@ -185,95 +251,11 @@ export default function Home() {
     loadReviews,
   } = useAnimeReviews(user);
 
-  // 認証状態の監視
+  // localStorageから初期値を読み込む（ダークモードのみ）
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // 現在のセッションを確認
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      });
-
-      // 認証状態の変化を監視
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      });
-
-      return () => subscription.unsubscribe();
-    }
-  }, []);
-
-  // localStorageから初期値を読み込む
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedName = localStorage.getItem('userName');
-      const savedIcon = localStorage.getItem('userIcon');
       const savedDarkMode = localStorage.getItem('darkMode');
-      const savedOtakuType = localStorage.getItem('userOtakuType');
-      const savedFavoriteAnimeIds = localStorage.getItem('favoriteAnimeIds');
-      const savedSeasons = localStorage.getItem('animeSeasons');
-      const savedLists = localStorage.getItem('evangelistLists');
-      const savedCharacters = localStorage.getItem('favoriteCharacters');
-      
-      if (savedName) setUserName(savedName);
-      if (savedIcon) setUserIcon(savedIcon);
       if (savedDarkMode === 'true') setIsDarkMode(true);
-      if (savedOtakuType) setUserOtakuType(savedOtakuType);
-      if (savedFavoriteAnimeIds) {
-        try {
-          setFavoriteAnimeIds(JSON.parse(savedFavoriteAnimeIds));
-        } catch (e) {
-          console.error('Failed to parse favoriteAnimeIds', e);
-        }
-      }
-      
-      // 布教リストを読み込む
-      if (savedLists) {
-        try {
-          const parsedLists = JSON.parse(savedLists);
-          // Date型に変換
-          const listsWithDates = parsedLists.map((list: any) => ({
-            ...list,
-            createdAt: new Date(list.createdAt),
-          }));
-          setEvangelistLists(listsWithDates);
-        } catch (e) {
-          console.error('Failed to parse evangelist lists', e);
-        }
-      }
-      
-      // 推しキャラを読み込む
-      if (savedCharacters) {
-        try {
-          const parsedCharacters = JSON.parse(savedCharacters);
-          // サンプルデータを検出（IDが1-3のキャラクターが含まれている場合）
-          const hasSampleData = parsedCharacters.some((char: FavoriteCharacter) =>
-            char.id >= 1 && char.id <= 3
-          );
-          
-          if (hasSampleData) {
-            // サンプルデータが含まれている場合はlocalStorageをクリア
-            localStorage.removeItem('favoriteCharacters');
-            setFavoriteCharacters([]);
-          } else {
-            setFavoriteCharacters(parsedCharacters);
-          }
-        } catch (e) {
-          console.error('Failed to parse favorite characters', e);
-          // エラーの場合は空の配列を使用
-          setFavoriteCharacters([]);
-        }
-      } else {
-        // 保存データがない場合は空の配列を使用
-        setFavoriteCharacters([]);
-      }
-      
-      // アニメデータを読み込む（未ログイン時のみlocalStorageから、ログイン時はSupabaseから読み込む）
-      // ログイン時はSupabaseからの読み込み処理（useEffect）で上書きされるため、ここでは未ログイン時の処理のみ
-      // ただし、isLoadingが完了するまで待つ必要があるため、この処理は認証状態確認後に行う
     }
   }, []);
 
@@ -289,208 +271,22 @@ export default function Home() {
     }
   }, [isDarkMode]);
 
-  // ユーザー情報をlocalStorageに保存
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userName', userName);
-      localStorage.setItem('userIcon', userIcon);
-      if (userOtakuType) {
-        localStorage.setItem('userOtakuType', userOtakuType);
-      } else {
-        localStorage.removeItem('userOtakuType');
-      }
-      localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
-    }
-  }, [userName, userIcon, userOtakuType, favoriteAnimeIds]);
 
-  // アニメデータをlocalStorageに保存（未ログイン時のみ）
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !user && seasons.length > 0) {
-      const seasonsString = JSON.stringify(seasons);
-      // 前回の値と比較して、変更があった場合のみ保存
-      if (prevSeasonsRef.current !== seasonsString) {
-        localStorage.setItem('animeSeasons', seasonsString);
-        prevSeasonsRef.current = seasonsString;
-      }
-    }
-  }, [seasons, user]);
 
-  // 布教リストをlocalStorageに保存
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('evangelistLists', JSON.stringify(evangelistLists));
-    }
-  }, [evangelistLists]);
 
-  // 推しキャラをlocalStorageに保存
-  useEffect(() => {
-    if (typeof window !== 'undefined' && favoriteCharacters.length > 0) {
-      localStorage.setItem('favoriteCharacters', JSON.stringify(favoriteCharacters));
-    }
-  }, [favoriteCharacters]);
-
-  // 認証処理
-
+  // ログアウト処理
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      // ログアウト時にseasonsを空にする
-      setSeasons([]);
-    } catch (error: any) {
-      console.error('Logout error:', error);
-    }
-  };
-
-  // シーズン名を日本語に変換
-  const getSeasonName = (season: string) => {
-    const seasonMap: { [key: string]: string } = {
-      'WINTER': '冬',
-      'SPRING': '春',
-      'SUMMER': '夏',
-      'FALL': '秋',
-    };
-    return seasonMap[season] || season;
-  };
-
-  // SNS機能の関数
-  const handleUserSearch = async () => {
-    if (!userSearchQuery.trim()) return;
-    
-    setIsSearchingUsers(true);
-    try {
-      const results = await searchUsers(userSearchQuery.trim());
-      setSearchedUsers(results);
-      
-      // フォロー状態を確認
-      if (user) {
-        const followStatus: { [userId: string]: boolean } = {};
-        await Promise.all(
-          results.map(async (u) => {
-            followStatus[u.id] = await isFollowing(u.id);
-          })
-        );
-        setUserFollowStatus(prev => ({ ...prev, ...followStatus }));
-      }
-    } catch (error) {
-      console.error('Failed to search users:', error);
-    } finally {
-      setIsSearchingUsers(false);
-    }
-  };
-
-  const handleViewUserProfile = async (userId: string) => {
-    try {
-      const profile = await getPublicProfile(userId);
-      if (!profile) {
-        alert('このユーザーのプロフィールは公開されていません');
-        return;
-      }
-      
-      const animes = await getPublicAnimes(userId);
-      const following = await isFollowing(userId);
-      
-      setSelectedUserProfile(profile);
-      setSelectedUserAnimes(animes.map(a => supabaseToAnime(a)));
-      setUserFollowStatus(prev => ({ ...prev, [userId]: following }));
-      setShowUserProfileModal(true);
-    } catch (error) {
-      console.error('Failed to view user profile:', error);
-      alert('プロフィールの取得に失敗しました');
-    }
-  };
-
-  const handleToggleFollow = async (userId: string) => {
-    if (!user) {
-      alert('ログインが必要です');
-      return;
-    }
-    
-    const currentlyFollowing = userFollowStatus[userId] || false;
-    
-    try {
-      let success = false;
-      if (currentlyFollowing) {
-        success = await unfollowUser(userId);
-      } else {
-        success = await followUser(userId);
-      }
-      
-      if (success) {
-        setUserFollowStatus(prev => ({
-          ...prev,
-          [userId]: !currentlyFollowing,
-        }));
-        
-        // フォロー数を更新
-        if (user) {
-          const counts = await getFollowCounts(user.id);
-          setFollowCounts(counts);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to toggle follow:', error);
-      alert('フォロー操作に失敗しました');
+    const success = await logout();
+    if (success) {
+      // ログアウト時にseasonsを空にする（useAnimeDataフック内で管理されているため、ここでは不要）
     }
   };
 
 
-  // タイトルからシリーズ名を自動判定する関数
-  const extractSeriesName = (title: string): string | undefined => {
-    // 「2期」「3期」「Season 2」「S2」などのパターンを検出
-    const patterns = [
-      /^(.+?)\s*[第]?(\d+)[期季]/,
-      /^(.+?)\s*Season\s*(\d+)/i,
-      /^(.+?)\s*S(\d+)/i,
-      /^(.+?)\s*第(\d+)期/,
-      /^(.+?)\s*第(\d+)シーズン/i,
-    ];
-    
-    for (const pattern of patterns) {
-      const match = title.match(pattern);
-      if (match && match[1]) {
-        return match[1].trim();
-      }
-    }
-    
-    return undefined;
-  };
 
 
-  // データマッピング関数：Anime型 → Supabase形式（snake_case）
-  const animeToSupabase = (anime: Anime, seasonName: string, userId: string) => {
-    return {
-      user_id: userId,
-      season_name: seasonName,
-      title: anime.title,
-      image: anime.image || null,
-      rating: anime.rating && anime.rating > 0 ? anime.rating : null, // 0の場合はNULLにする
-      watched: anime.watched ?? false,
-      rewatch_count: anime.rewatchCount ?? 0,
-                      tags: (anime.tags && anime.tags.length > 0) ? anime.tags : null,
-                      songs: anime.songs || null,
-                      quotes: anime.quotes || null,
-                      series_name: anime.seriesName || null,
-                      studios: (anime.studios && anime.studios.length > 0) ? anime.studios : null,
-    };
-  };
 
-  // データマッピング関数：Supabase形式 → Anime型
-  const supabaseToAnime = (row: any): Anime => {
-    return {
-      id: row.id,
-      title: row.title,
-      image: row.image,
-      rating: row.rating,
-      watched: row.watched,
-      rewatchCount: row.rewatch_count ?? 0,
-      tags: row.tags || [],
-      songs: row.songs || undefined,
-      quotes: row.quotes || undefined,
-      seriesName: row.series_name || undefined,
-      studios: row.studios || undefined,
-    };
-  };
+
 
 
   // アニメが選択されたときに感想を読み込む
@@ -502,125 +298,6 @@ export default function Home() {
       // loadReviewsは既に空にする処理を含んでいるので、ここでは何もしない
     }
   }, [selectedAnime?.id, user, loadReviews]);
-
-  // ログイン時にSupabaseからアニメデータを読み込む、未ログイン時はlocalStorageから読み込む
-  useEffect(() => {
-    const loadAnimes = async () => {
-      if (isLoading) return;
-
-      if (user) {
-        // ログイン時：Supabaseから読み込む
-        try {
-          const { data, error } = await supabase
-            .from('animes')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('id', { ascending: true });
-
-          if (error) throw error;
-
-          if (data && data.length > 0) {
-            // シーズンごとにグループ化
-            const seasonMap = new Map<string, Anime[]>();
-            data.forEach((row) => {
-              const anime = supabaseToAnime(row);
-              const seasonName = row.season_name || '未分類';
-              if (!seasonMap.has(seasonName)) {
-                seasonMap.set(seasonName, []);
-              }
-              seasonMap.get(seasonName)!.push(anime);
-            });
-
-            // Season型に変換
-            const loadedSeasons: Season[] = Array.from(seasonMap.entries()).map(([name, animes]) => ({
-              name,
-              animes,
-            }));
-
-            if (loadedSeasons.length > 0) {
-              setSeasons(loadedSeasons);
-              setExpandedSeasons(new Set([loadedSeasons[0].name]));
-            } else {
-              setSeasons([]);
-            }
-          } else {
-            setSeasons([]);
-          }
-        } catch (error) {
-          console.error('Failed to load animes from Supabase:', error);
-        }
-      } else {
-        // 未ログイン時：localStorageから読み込む
-        if (typeof window !== 'undefined') {
-          const savedSeasons = localStorage.getItem('animeSeasons');
-          if (savedSeasons) {
-            try {
-              const parsedSeasons = JSON.parse(savedSeasons);
-              // サンプルデータを検出（IDが1-4のアニメが含まれている場合）
-              const hasSampleData = parsedSeasons.some((season: Season) =>
-                season.animes.some((anime: Anime) => anime.id >= 1 && anime.id <= 4)
-              );
-              
-              if (hasSampleData) {
-                // サンプルデータが含まれている場合はlocalStorageをクリア
-                localStorage.removeItem('animeSeasons');
-                setSeasons([]);
-              } else {
-                setSeasons(parsedSeasons);
-                if (parsedSeasons.length > 0) {
-                  setExpandedSeasons(new Set([parsedSeasons[0].name]));
-                }
-              }
-            } catch (e) {
-              // パースエラーの場合は空の配列を使用
-              setSeasons([]);
-            }
-          } else {
-            // 保存データがない場合は空の配列を使用
-            setSeasons([]);
-          }
-        }
-      }
-    };
-
-    loadAnimes();
-  }, [user, isLoading]);
-
-  // ログイン時にプロフィール情報を読み込む
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (user) {
-        try {
-          const profile = await getMyProfile();
-          if (profile) {
-            setMyProfile(profile);
-            setUserName(profile.username || userName);
-            setUserBio(profile.bio || '');
-            setIsProfilePublic(profile.is_public || false);
-            setUserHandle(profile.handle || '');
-          }
-        } catch (error) {
-          console.error('Failed to load profile:', error);
-        }
-      } else {
-        setMyProfile(null);
-        setUserHandle('');
-      }
-    };
-    
-    loadProfile();
-  }, [user]);
-
-  // すべてのアニメを取得
-  const allAnimes = seasons.flatMap(season => season.animes);
-
-  // 平均評価を計算
-  const averageRating = allAnimes.length > 0 && allAnimes.some(a => a.rating > 0)
-    ? allAnimes.filter(a => a.rating > 0).reduce((sum, a) => sum + a.rating, 0) / allAnimes.filter(a => a.rating > 0).length
-    : 0;
-
-  // 累計周回数を計算
-  const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
 
   // カウントアップアニメーション
   useEffect(() => {
@@ -978,79 +655,14 @@ export default function Home() {
 
       {/* 布教リスト詳細モーダル */}
       {selectedList && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedList(null)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-2 dark:text-white">{selectedList.title}</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{selectedList.description}</p>
-            
-            {/* アニメ一覧 */}
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {selectedList.animeIds.length}作品
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                {selectedList.animeIds.map((animeId) => {
-                  const anime = allAnimes.find(a => a.id === animeId);
-                  if (!anime) return null;
-                  const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
-                  return (
-                    <div
-                      key={animeId}
-                      onClick={() => {
-                        setSelectedAnime(anime);
-                        setSelectedList(null);
-                      }}
-                      className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
-                    >
-                      {isImageUrl ? (
-                        <img
-                          src={anime.image}
-                          alt={anime.title}
-                          className="w-full h-16 object-cover rounded mb-1"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            const parent = (e.target as HTMLImageElement).parentElement;
-                            if (parent) {
-                              parent.innerHTML = '<div class="text-3xl mb-1">🎬</div><p class="text-xs font-bold truncate">' + anime.title + '</p>';
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="text-3xl mb-1">{anime.image}</div>
-                      )}
-                      <p className="text-xs font-bold truncate">{anime.title}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setEditingList(selectedList);
-                  setSelectedList(null);
-                  setShowCreateListModal(true);
-                }}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
-              >
-                編集
-              </button>
-              <button
-                onClick={() => setSelectedList(null)}
-                className="flex-1 bg-gray-500 text-white py-3 rounded-xl font-bold hover:bg-gray-600 transition-colors"
-              >
-                閉じる
-              </button>
-            </div>
-          </div>
-        </div>
+        <ListDetailModal
+          selectedList={selectedList}
+          setSelectedList={setSelectedList}
+          allAnimes={allAnimes}
+          setSelectedAnime={setSelectedAnime}
+          setEditingList={setEditingList}
+          setShowCreateListModal={setShowCreateListModal}
+        />
       )}
 
       <AddCharacterModal
