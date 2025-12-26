@@ -111,7 +111,7 @@ export async function getFollowers(userId: string): Promise<UserProfile[]> {
   
   if (!data || data.length === 0) return [];
   
-  const followerIds = data.map((item: any) => item.follower_id);
+  const followerIds = data.map((item: { follower_id: string }) => item.follower_id);
   
   const { data: profiles, error: profilesError } = await supabase
     .from('user_profiles')
@@ -140,7 +140,7 @@ export async function getFollowing(userId: string): Promise<UserProfile[]> {
   
   if (!data || data.length === 0) return [];
   
-  const followingIds = data.map((item: any) => item.following_id);
+  const followingIds = data.map((item: { following_id: string }) => item.following_id);
   
   const { data: profiles, error: profilesError } = await supabase
     .from('user_profiles')
@@ -173,7 +173,7 @@ export async function getPublicProfile(userId: string): Promise<UserProfile | nu
 }
 
 // 公開アニメ一覧取得
-export async function getPublicAnimes(userId: string): Promise<any[]> {
+export async function getPublicAnimes(userId: string): Promise<unknown[]> {
   const { data, error } = await supabase
     .from('animes')
     .select('*')

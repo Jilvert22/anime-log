@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { searchAnime, searchAnimeBySeason } from './lib/anilist';
 import type { UserProfile } from './lib/supabase';
 import { 
@@ -94,6 +95,27 @@ type EvangelistList = {
   description: string;
   animeIds: number[];
   createdAt: Date;
+};
+
+// AniList APIレスポンスの型
+type AniListMedia = {
+  id: number;
+  title?: {
+    native?: string;
+    romaji?: string;
+  };
+  coverImage?: {
+    medium?: string;
+    large?: string;
+  };
+  seasonYear?: number;
+  season?: string;
+  genres?: string[];
+  format?: string;
+  episodes?: number;
+  studios?: {
+    nodes?: Array<{ name: string }>;
+  };
 };
 
 // 推しキャラの型定義
@@ -1078,8 +1100,8 @@ function AchievementsTab({
 }: { 
   allAnimes: Anime[]; 
   achievements: Achievement[];
-  user: any;
-  supabase: any;
+  user: User | null;
+  supabase: SupabaseClient;
 }) {
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [reviewStats, setReviewStats] = useState<{
@@ -1106,8 +1128,8 @@ function AchievementsTab({
         if (error) throw error;
         
         const reviewCount = reviews?.length || 0;
-        const totalLikes = reviews?.reduce((sum: number, r: any) => sum + (r.likes || 0), 0) || 0;
-        const totalHelpful = reviews?.reduce((sum: number, r: any) => sum + (r.helpful_count || 0), 0) || 0;
+        const totalLikes = reviews?.reduce((sum: number, r: { likes?: number }) => sum + (r.likes || 0), 0) || 0;
+        const totalHelpful = reviews?.reduce((sum: number, r: { helpful_count?: number }) => sum + (r.helpful_count || 0), 0) || 0;
         
         setReviewStats({ reviewCount, totalLikes, totalHelpful });
       } catch (error) {
@@ -1271,8 +1293,8 @@ function MusicTab({
   setNewSongTitle: (title: string) => void;
   setNewSongArtist: (artist: string) => void;
   setShowSongModal: (show: boolean) => void;
-  user: any;
-  supabase: any;
+  user: User | null;
+  supabase: SupabaseClient;
 }) {
   const [musicSearchQuery, setMusicSearchQuery] = useState('');
   const [musicFilterType, setMusicFilterType] = useState<'all' | 'op' | 'ed' | 'artist'>('all');
@@ -1630,14 +1652,17 @@ function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
   
   // コンポーネントがマウントされた時、またはimageが変わった時にリセット
   useEffect(() => {
-    if (isImageUrl) {
-      setImageLoading(true);
-      setImageError(false);
-    } else {
-      setImageLoading(false);
-      setImageError(false);
-    }
-  }, [anime.image]);
+    const updateImageState = () => {
+      if (isImageUrl) {
+        setImageLoading(true);
+        setImageError(false);
+      } else {
+        setImageLoading(false);
+        setImageError(false);
+      }
+    };
+    updateImageState();
+  }, [isImageUrl]);
   
   return (
     <div 
@@ -1778,9 +1803,9 @@ export default function Home() {
   const [newAnimeIcon, setNewAnimeIcon] = useState('🎬');
   const [newAnimeRating, setNewAnimeRating] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<AniListMedia[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedSearchResult, setSelectedSearchResult] = useState<any | null>(null);
+  const [selectedSearchResult, setSelectedSearchResult] = useState<AniListMedia | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -1903,7 +1928,7 @@ export default function Home() {
   const [addModalMode, setAddModalMode] = useState<'search' | 'season'>('search');
   const [selectedSeason, setSelectedSeason] = useState<'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [seasonSearchResults, setSeasonSearchResults] = useState<any[]>([]);
+  const [seasonSearchResults, setSeasonSearchResults] = useState<AniListMedia[]>([]);
   const [selectedSeasonAnimeIds, setSelectedSeasonAnimeIds] = useState<Set<number>>(new Set());
   const [isSeasonSearching, setIsSeasonSearching] = useState(false);
   const [seasonSearchPage, setSeasonSearchPage] = useState(1);
@@ -1971,7 +1996,7 @@ export default function Home() {
         try {
           const parsedLists = JSON.parse(savedLists);
           // Date型に変換
-          const listsWithDates = parsedLists.map((list: any) => ({
+          const listsWithDates = parsedLists.map((list: Omit<EvangelistList, 'createdAt'> & { createdAt: string | Date }) => ({
             ...list,
             createdAt: new Date(list.createdAt),
           }));
@@ -2043,8 +2068,8 @@ export default function Home() {
         if (error) throw error;
         
         const reviewCount = reviews?.length || 0;
-        const totalLikes = reviews?.reduce((sum: number, r: any) => sum + (r.likes || 0), 0) || 0;
-        const totalHelpful = reviews?.reduce((sum: number, r: any) => sum + (r.helpful_count || 0), 0) || 0;
+        const totalLikes = reviews?.reduce((sum: number, r: { likes?: number }) => sum + (r.likes || 0), 0) || 0;
+        const totalHelpful = reviews?.reduce((sum: number, r: { helpful_count?: number }) => sum + (r.helpful_count || 0), 0) || 0;
         
         setReviewStats({ reviewCount, totalLikes, totalHelpful });
       } catch (error) {
@@ -2120,8 +2145,8 @@ export default function Home() {
         setAuthPassword('');
         setAuthMode('login');
       }
-    } catch (error: any) {
-      setAuthError(error.message || 'エラーが発生しました');
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'エラーが発生しました');
     }
   };
 
@@ -2131,7 +2156,7 @@ export default function Home() {
       if (error) throw error;
       // ログアウト時にseasonsを空にする
       setSeasons([]);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Logout error:', error);
     }
   };
@@ -2185,7 +2210,7 @@ export default function Home() {
       const following = await isFollowing(userId);
       
       setSelectedUserProfile(profile);
-      setSelectedUserAnimes(animes.map(a => supabaseToAnime(a)));
+      setSelectedUserAnimes(animes.map(a => supabaseToAnime(a as SupabaseAnimeRow)));
       setUserFollowStatus(prev => ({ ...prev, [userId]: following }));
       setShowUserProfileModal(true);
     } catch (error) {
@@ -2269,7 +2294,7 @@ export default function Home() {
   };
 
   // 検索結果を選択した時の処理
-  const handleSelectSearchResult = (result: any) => {
+  const handleSelectSearchResult = (result: AniListMedia) => {
     setSelectedSearchResult(result);
     
     const title = result.title?.native || result.title?.romaji || '';
@@ -2282,8 +2307,9 @@ export default function Home() {
     // シリーズ名は後でnewAnimeに設定する際に使用
     
     // 画像URLを設定（largeがあればlarge、なければmediumを使用）
-    if (result.coverImage?.large || result.coverImage?.medium) {
-      setNewAnimeIcon(result.coverImage.large || result.coverImage.medium);
+    const imageUrl = result.coverImage?.large || result.coverImage?.medium;
+    if (imageUrl) {
+      setNewAnimeIcon(imageUrl);
     }
     
     // シーズン名を自動設定
@@ -2316,8 +2342,26 @@ export default function Home() {
     };
   };
 
+  // Supabaseのanimesテーブルの行の型
+  type SupabaseAnimeRow = {
+    id: number;
+    title: string;
+    image: string;
+    rating: number;
+    watched: boolean;
+    rewatch_count?: number;
+    tags?: string[];
+    songs?: {
+      op?: { title: string; artist: string; rating: number; isFavorite: boolean };
+      ed?: { title: string; artist: string; rating: number; isFavorite: boolean };
+    };
+    quotes?: { text: string; character?: string }[];
+    series_name?: string;
+    studios?: string[];
+  };
+
   // データマッピング関数：Supabase形式 → Anime型
-  const supabaseToAnime = (row: any): Anime => {
+  const supabaseToAnime = (row: SupabaseAnimeRow): Anime => {
     return {
       id: row.id,
       title: row.title,
@@ -2389,7 +2433,21 @@ export default function Home() {
         const likedReviewIds = new Set(likesData?.map(l => l.review_id) || []);
         const helpfulReviewIds = new Set(helpfulData?.map(h => h.review_id) || []);
         
-        const reviews: Review[] = reviewsData.map((r: any) => ({
+        const reviews: Review[] = reviewsData.map((r: {
+          id: string;
+          user_id: string;
+          user_name: string;
+          user_icon: string;
+          type: string;
+          episode_number?: number;
+          content: string;
+          contains_spoiler: boolean;
+          spoiler_hidden: boolean;
+          likes: number;
+          helpful_count: number;
+          created_at: string;
+          updated_at: string;
+        }) => ({
           id: r.id,
           animeId: animeId, // 数値IDを保持
           userId: r.user_id,
@@ -4123,7 +4181,7 @@ export default function Home() {
                               rewatchCount: 0,
                               tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
                               seriesName,
-                              studios: result.studios?.nodes?.map((s: any) => s.name) || [],
+                              studios: result.studios?.nodes?.map((s: { name: string }) => s.name) || [],
                             };
                           });
                           
@@ -4177,11 +4235,12 @@ export default function Home() {
                               
                               if (error) {
                                 console.error('❌ Supabase Error:', error);
+                                const errorObj = error as { message?: string; details?: string; hint?: string; code?: string };
                                 console.error('📋 Error Properties:', {
-                                  message: error.message,
-                                  details: error.details,
-                                  hint: error.hint,
-                                  code: error.code,
+                                  message: errorObj.message,
+                                  details: errorObj.details,
+                                  hint: errorObj.hint,
+                                  code: errorObj.code,
                                 });
                                 console.groupEnd();
                                 throw error;
@@ -4189,17 +4248,18 @@ export default function Home() {
                               
                               console.log('✅ Success:', data);
                               console.groupEnd();
-                            } catch (error: any) {
+                            } catch (error) {
                               console.group('❌ Error Catch Block');
                               console.error('Error Type:', typeof error);
                               console.error('Error Value:', error);
                               
                               // エラーオブジェクトのすべてのプロパティを確認
                               if (error) {
-                                const errorProps: Record<string, any> = {};
-                                for (const key in error) {
+                                const errorProps: Record<string, unknown> = {};
+                                const errorObj = error as Record<string, unknown>;
+                                for (const key in errorObj) {
                                   try {
-                                    errorProps[key] = error[key];
+                                    errorProps[key] = errorObj[key];
                                   } catch (e) {
                                     errorProps[key] = '[読み取り不可]';
                                   }
@@ -4216,7 +4276,8 @@ export default function Home() {
                               
                               console.groupEnd();
                               
-                              const errorMessage = error?.message || error?.details || error?.hint || String(error) || '不明なエラー';
+                              const errorObj = error as { message?: string; details?: string; hint?: string } | null;
+                              const errorMessage = errorObj?.message || errorObj?.details || errorObj?.hint || String(error) || '不明なエラー';
                               alert(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`);
                             }
                           }
@@ -4393,7 +4454,7 @@ export default function Home() {
                     // 制作会社を取得
                     const studios: string[] = [];
                     if (selectedSearchResult?.studios?.nodes && Array.isArray(selectedSearchResult.studios.nodes)) {
-                      studios.push(...selectedSearchResult.studios.nodes.map((s: any) => s.name));
+                      studios.push(...selectedSearchResult.studios.nodes.map((s: { name: string }) => s.name));
                     }
                     
                     const newAnime: Anime = {
@@ -4469,11 +4530,12 @@ export default function Home() {
                         if (error) {
                           console.error('Supabase insert error:', error);
                           console.error('Error object:', JSON.stringify(error, null, 2));
-                          console.error('Error properties:', Object.keys(error));
-                          console.error('Error message:', error.message);
-                          console.error('Error details:', error.details);
-                          console.error('Error hint:', error.hint);
-                          console.error('Error code:', error.code);
+                          const errorObj = error as { message?: string; details?: string; hint?: string; code?: string };
+                          console.error('Error properties:', Object.keys(errorObj));
+                          console.error('Error message:', errorObj.message);
+                          console.error('Error details:', errorObj.details);
+                          console.error('Error hint:', errorObj.hint);
+                          console.error('Error code:', errorObj.code);
                           throw error;
                         }
                         
@@ -4488,16 +4550,17 @@ export default function Home() {
                             updatedSeasons[seasonIndex].animes[animeIndex] = savedAnime;
                           }
                         }
-                      } catch (error: any) {
+                      } catch (error) {
                         console.error('Failed to save anime to Supabase');
                         console.error('Error type:', typeof error);
-                        console.error('Error constructor:', error?.constructor?.name);
+                        const errorObj = error as { message?: string; details?: string; hint?: string; code?: string; constructor?: { name?: string } } | null;
+                        console.error('Error constructor:', errorObj?.constructor?.name);
                         console.error('Error as string:', String(error));
-                        if (error) {
-                          console.error('Error message:', error.message);
-                          console.error('Error details:', error.details);
-                          console.error('Error hint:', error.hint);
-                          console.error('Error code:', error.code);
+                        if (errorObj) {
+                          console.error('Error message:', errorObj.message);
+                          console.error('Error details:', errorObj.details);
+                          console.error('Error hint:', errorObj.hint);
+                          console.error('Error code:', errorObj.code);
                         }
                         // エラーが発生してもローカル状態は更新する
                       }
@@ -6082,13 +6145,14 @@ export default function Home() {
                       } else {
                         console.log('Skipping Supabase delete for local ID:', selectedAnime.id);
                       }
-                    } catch (error: any) {
+                    } catch (error) {
                       console.error('Failed to delete anime from Supabase:', error);
+                      const errorObj = error as { message?: string; details?: string; hint?: string; code?: string } | null;
                       console.error('Error details:', {
-                        message: error?.message,
-                        details: error?.details,
-                        hint: error?.hint,
-                        code: error?.code,
+                        message: error instanceof Error ? error.message : String(error),
+                        details: errorObj?.details,
+                        hint: errorObj?.hint,
+                        code: errorObj?.code,
                         animeId: selectedAnime.id,
                         userId: user.id,
                       });
@@ -6180,7 +6244,7 @@ export default function Home() {
                   </div>
                 ) : (() => {
                   // フィルタリング
-                  let filteredReviews = animeReviews.filter(review => {
+                  const filteredReviews = animeReviews.filter(review => {
                     if (reviewFilter === 'overall' && review.type !== 'overall') return false;
                     if (reviewFilter === 'episode' && review.type !== 'episode') return false;
                     if (userSpoilerHidden && review.containsSpoiler) return false;

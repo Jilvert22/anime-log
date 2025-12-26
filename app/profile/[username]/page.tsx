@@ -58,7 +58,7 @@ export default function ProfilePage() {
         
         // アニメ一覧を読み込む
         const animesData = await getPublicAnimes(profileData.id);
-        setAnimes(animesData);
+        setAnimes(animesData as Anime[]);
         
         // フォロー数を取得
         const counts = await getFollowCounts(profileData.id);
@@ -239,4 +239,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
