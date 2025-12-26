@@ -46,6 +46,15 @@ import { UserCard } from './components/UserCard';
 import { AchievementsTab } from './components/tabs/AchievementsTab';
 import { MusicTab } from './components/tabs/MusicTab';
 import { ProfileTab } from './components/tabs/ProfileTab';
+import { ReviewModal } from './components/modals/ReviewModal';
+import { SettingsModal } from './components/modals/SettingsModal';
+import { AuthModal } from './components/modals/AuthModal';
+import { FavoriteAnimeModal } from './components/modals/FavoriteAnimeModal';
+import { SongModal } from './components/modals/SongModal';
+import { UserProfileModal } from './components/modals/UserProfileModal';
+import { FollowListModal } from './components/modals/FollowListModal';
+import { CreateListModal } from './components/modals/CreateListModal';
+import { AddCharacterModal } from './components/modals/AddCharacterModal';
 import { translateGenre } from './utils/helpers';
 
 
@@ -72,10 +81,6 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authError, setAuthError] = useState('');
   const [userName, setUserName] = useState<string>('ユーザー');
   const [userIcon, setUserIcon] = useState<string>('👤');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
@@ -91,9 +96,6 @@ export default function Home() {
   const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
   const [showCreateListModal, setShowCreateListModal] = useState(false);
   const [selectedList, setSelectedList] = useState<EvangelistList | null>(null);
-  const [newListTitle, setNewListTitle] = useState('');
-  const [newListDescription, setNewListDescription] = useState('');
-  const [selectedAnimeIds, setSelectedAnimeIds] = useState<number[]>([]);
   const [editingList, setEditingList] = useState<EvangelistList | null>(null);
   const [showAddCharacterModal, setShowAddCharacterModal] = useState(false);
   const [newCharacterName, setNewCharacterName] = useState('');
@@ -175,10 +177,6 @@ export default function Home() {
   const [animeReviews, setAnimeReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewMode, setReviewMode] = useState<'overall' | 'episode'>('overall');
-  const [newReviewContent, setNewReviewContent] = useState('');
-  const [newReviewContainsSpoiler, setNewReviewContainsSpoiler] = useState(false);
-  const [newReviewEpisodeNumber, setNewReviewEpisodeNumber] = useState<number | undefined>(undefined);
   const [reviewFilter, setReviewFilter] = useState<'all' | 'overall' | 'episode'>('all');
   const [reviewSort, setReviewSort] = useState<'newest' | 'likes' | 'helpful'>('newest');
   const [userSpoilerHidden, setUserSpoilerHidden] = useState(false);
@@ -329,33 +327,6 @@ export default function Home() {
   }, [favoriteCharacters]);
 
   // 認証処理
-  const handleAuth = async () => {
-    setAuthError('');
-    try {
-      if (authMode === 'login') {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: authEmail,
-          password: authPassword,
-        });
-        if (error) throw error;
-        setShowAuthModal(false);
-        setAuthEmail('');
-        setAuthPassword('');
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email: authEmail,
-          password: authPassword,
-        });
-        if (error) throw error;
-        setShowAuthModal(false);
-        setAuthEmail('');
-        setAuthPassword('');
-        setAuthMode('login');
-      }
-    } catch (error: any) {
-      setAuthError(error.message || 'エラーが発生しました');
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -1767,9 +1738,6 @@ export default function Home() {
                   <h2 className="text-xl font-bold dark:text-white">布教リスト</h2>
                   <button
                     onClick={() => {
-                      setNewListTitle('');
-                      setNewListDescription('');
-                      setSelectedAnimeIds([]);
                       setEditingList(null);
                       setShowCreateListModal(true);
                     }}
@@ -2625,762 +2593,84 @@ export default function Home() {
       )}
 
       {/* 感想投稿モーダル */}
-      {showReviewModal && selectedAnime && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4"
-          onClick={() => setShowReviewModal(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">感想を投稿</h2>
-            
-            {/* モード切り替え */}
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => {
-                  setReviewMode('overall');
-                  setNewReviewEpisodeNumber(undefined);
-                }}
-                className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
-                  reviewMode === 'overall'
-                    ? 'bg-[#ffc2d1] text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                全体感想
-              </button>
-              <button
-                onClick={() => setReviewMode('episode')}
-                className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
-                  reviewMode === 'episode'
-                    ? 'bg-[#ffc2d1] text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                話数感想
-              </button>
-            </div>
+      <ReviewModal
+        show={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        selectedAnime={selectedAnime}
+        user={user}
+        userName={userName}
+        userIcon={userIcon}
+        onReviewPosted={async () => {
+          if (selectedAnime) {
+            await loadReviews(selectedAnime.id);
+          }
+        }}
+      />
 
-            {/* 話数選択（話数感想の場合） */}
-            {reviewMode === 'episode' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  話数
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={newReviewEpisodeNumber || ''}
-                  onChange={(e) => setNewReviewEpisodeNumber(e.target.value ? Number(e.target.value) : undefined)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                  placeholder="例: 1"
-                />
-              </div>
-            )}
+      <SettingsModal
+        show={showSettings}
+        onClose={() => setShowSettings(false)}
+        userName={userName}
+        setUserName={setUserName}
+        userIcon={userIcon}
+        setUserIcon={setUserIcon}
+        userHandle={userHandle}
+        setUserHandle={setUserHandle}
+        userOtakuType={userOtakuType}
+        setUserOtakuType={setUserOtakuType}
+        favoriteAnimeIds={favoriteAnimeIds}
+        setFavoriteAnimeIds={setFavoriteAnimeIds}
+        isProfilePublic={isProfilePublic}
+        setIsProfilePublic={setIsProfilePublic}
+        userBio={userBio}
+        setUserBio={setUserBio}
+        user={user}
+        allAnimes={allAnimes}
+        setShowFavoriteAnimeModal={setShowFavoriteAnimeModal}
+        upsertUserProfile={upsertUserProfile}
+        setMyProfile={setMyProfile}
+      />
 
-            {/* 感想本文 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                感想
-              </label>
-              <textarea
-                value={newReviewContent}
-                onChange={(e) => setNewReviewContent(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white min-h-[120px]"
-                placeholder="感想を入力してください..."
-              />
-            </div>
+      <FavoriteAnimeModal
+        show={showFavoriteAnimeModal}
+        onClose={() => setShowFavoriteAnimeModal(false)}
+        allAnimes={allAnimes}
+        favoriteAnimeIds={favoriteAnimeIds}
+        setFavoriteAnimeIds={setFavoriteAnimeIds}
+      />
 
-            {/* ネタバレチェック */}
-            <div className="mb-6">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={newReviewContainsSpoiler}
-                  onChange={(e) => setNewReviewContainsSpoiler(e.target.checked)}
-                  className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  ネタバレを含む
-                </span>
-              </label>
-            </div>
+      <UserProfileModal
+        show={showUserProfileModal}
+        onClose={() => setShowUserProfileModal(false)}
+        selectedUserProfile={selectedUserProfile}
+        selectedUserAnimes={selectedUserAnimes}
+        user={user}
+        userFollowStatus={userFollowStatus}
+        onToggleFollow={handleToggleFollow}
+        onAnimeClick={setSelectedAnime}
+      />
 
-            {/* ボタン */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowReviewModal(false);
-                  setNewReviewContent('');
-                  setNewReviewContainsSpoiler(false);
-                  setNewReviewEpisodeNumber(undefined);
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={async () => {
-                  if (!newReviewContent.trim() || !user || !selectedAnime) return;
-                  
-                  if (reviewMode === 'episode' && !newReviewEpisodeNumber) {
-                    alert('話数を入力してください');
-                    return;
-                  }
-
-                  try {
-                    // アニメのUUIDを取得
-                    const { data: animeData, error: animeError } = await supabase
-                      .from('animes')
-                      .select('id')
-                      .eq('id', selectedAnime.id)
-                      .eq('user_id', user.id)
-                      .single();
-                    
-                    if (animeError || !animeData) {
-                      console.error('Failed to find anime:', animeError);
-                      return;
-                    }
-                    
-                    const animeUuid = animeData.id;
-                    
-                    // 感想を投稿
-                    const { data: reviewData, error: reviewError } = await supabase
-                      .from('reviews')
-                      .insert({
-                        anime_id: animeUuid,
-                        user_id: user.id,
-                        user_name: userName,
-                        user_icon: userIcon,
-                        type: reviewMode,
-                        episode_number: reviewMode === 'episode' ? newReviewEpisodeNumber : null,
-                        content: newReviewContent.trim(),
-                        contains_spoiler: newReviewContainsSpoiler,
-                      })
-                      .select()
-                      .single();
-                    
-                    if (reviewError) throw reviewError;
-                    
-                    // 感想を再読み込み
-                    await loadReviews(selectedAnime.id);
-                    
-                    // モーダルを閉じる
-                    setShowReviewModal(false);
-                    setNewReviewContent('');
-                    setNewReviewContainsSpoiler(false);
-                    setNewReviewEpisodeNumber(undefined);
-                  } catch (error) {
-                    console.error('Failed to post review:', error);
-                    alert('感想の投稿に失敗しました');
-                  }
-                }}
-                disabled={!newReviewContent.trim() || (reviewMode === 'episode' && !newReviewEpisodeNumber)}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                投稿
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 設定モーダル */}
-      {showSettings && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-50 flex"
-          onClick={() => setShowSettings(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 w-full max-w-md ml-auto h-full shadow-2xl overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold dark:text-white">設定</h2>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-              >
-                <span className="text-2xl">✕</span>
-              </button>
-            </div>
-            
-            {/* ユーザー名入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                ユーザー名
-              </label>
-              <input
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="ユーザー名を入力"
-              />
-            </div>
-
-            {/* アイコン選択 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                アイコン
-              </label>
-              <div className="grid grid-cols-8 gap-2">
-                {['👤', '😊', '🎮', '🎬', '📺', '🎨', '⚡', '🔥', '🌟', '💫', '🎯', '🚀', '🎪', '🎭', '🎸', '🎵', '🎹', '🎤', '🎧', '🎺', '🎷', '🥁', '🎲', '🎰'].map((icon) => (
-                  <button
-                    key={icon}
-                    onClick={() => setUserIcon(icon)}
-                    className={`text-3xl p-2 rounded-lg transition-all ${
-                      userIcon === icon
-                        ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
-                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* DNAカード編集セクション */}
-            <div className="mb-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">DNAカード編集</h3>
-              
-              {/* ハンドル入力（@で始まるID） */}
-              {user && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    @ハンドル（DNAカードに表示されます）
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500 dark:text-gray-400">@</span>
-                    <input
-                      type="text"
-                      value={userHandle}
-                      onChange={(e) => {
-                        // 英数字、アンダースコア、ハイフンのみ許可、小文字に変換
-                        const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
-                        setUserHandle(value);
-                      }}
-                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                      placeholder="handle"
-                      maxLength={30}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    英数字、アンダースコア(_)のみ使用可能。他のユーザーから検索される際に使用されます。
-                  </p>
-                </div>
-              )}
-
-              {/* オタクタイプ選択 */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  オタクタイプ（DNAカードに表示されます）
-                </label>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                <button
-                  onClick={() => setUserOtakuType('')}
-                  className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
-                    !userOtakuType
-                      ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">🤖</span>
-                    <div>
-                      <p className="font-medium dark:text-white">自動判定</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">タグから自動で判定されます</p>
-                    </div>
-                  </div>
-                </button>
-                {otakuTypes.map((type) => (
-                  <button
-                    key={type.value}
-                    onClick={() => setUserOtakuType(type.value)}
-                    className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
-                      userOtakuType === type.value
-                        ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{type.emoji}</span>
-                      <div>
-                        <p className="font-medium dark:text-white">{type.label}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{type.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-                </div>
-              </div>
-
-              {/* 最推し作品選択 */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  最推し作品（DNAカードに表示されます、最大3作品）
-                </label>
-                <button
-                  onClick={() => {
-                    setShowSettings(false);
-                    setShowFavoriteAnimeModal(true);
-                  }}
-                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-[#ffc2d1] hover:text-[#ffc2d1] transition-colors"
-                >
-                  {favoriteAnimeIds.length > 0
-                    ? `${favoriteAnimeIds.length}作品が設定されています`
-                    : '最推し作品を選択'}
-                </button>
-                {favoriteAnimeIds.length > 0 && (
-                  <div className="mt-2 flex gap-2 flex-wrap">
-                    {favoriteAnimeIds.slice(0, 3).map((id) => {
-                      const anime = allAnimes.find(a => a.id === id);
-                      if (!anime) return null;
-                      return (
-                        <div
-                          key={id}
-                          className="flex items-center gap-1 bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 px-2 py-1 rounded-lg text-xs"
-                        >
-                          <span className="dark:text-white">{anime.title}</span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setFavoriteAnimeIds(favoriteAnimeIds.filter(fid => fid !== id));
-                            }}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* プロフィール公開設定 */}
-            {user && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  プロフィールを公開
-                </label>
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <span className="text-sm dark:text-white">
-                    {isProfilePublic ? '他のユーザーから見える' : '非公開'}
-                  </span>
-                  <button
-                    onClick={() => setIsProfilePublic(!isProfilePublic)}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${
-                      isProfilePublic ? 'bg-[#ffc2d1]' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                        isProfilePublic ? 'translate-x-6' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-                {isProfilePublic && (
-                  <div className="mt-3">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      自己紹介（任意）
-                    </label>
-                    <textarea
-                      value={userBio}
-                      onChange={(e) => setUserBio(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                      placeholder="自己紹介を入力..."
-                      rows={3}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            <button 
-              onClick={async () => {
-                // プロフィール情報を保存
-                if (user) {
-                  await upsertUserProfile({
-                    username: userName,
-                    handle: userHandle || null,
-                    bio: userBio,
-                    is_public: isProfilePublic,
-                  });
-                  // プロフィールを再読み込み
-                  const profile = await getMyProfile();
-                  if (profile) {
-                    setMyProfile(profile);
-                    setUserHandle(profile.handle || '');
-                  }
-                }
-                
-                // localStorageに保存
-                localStorage.setItem('userName', userName);
-                localStorage.setItem('userIcon', userIcon);
-                if (userOtakuType) {
-                  localStorage.setItem('userOtakuType', userOtakuType);
-                } else {
-                  localStorage.removeItem('userOtakuType');
-                }
-                localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
-                setShowSettings(false);
-              }}
-              className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
-            >
-              保存
-            </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 最推し作品選択モーダル */}
-      {showFavoriteAnimeModal && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowFavoriteAnimeModal(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">最推し作品を選択（最大3作品）</h2>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {allAnimes.map((anime) => {
-                const isSelected = favoriteAnimeIds.includes(anime.id);
-                return (
-                  <button
-                    key={anime.id}
-                    onClick={() => {
-                      if (isSelected) {
-                        setFavoriteAnimeIds(favoriteAnimeIds.filter(id => id !== anime.id));
-                      } else {
-                        if (favoriteAnimeIds.length < 3) {
-                          setFavoriteAnimeIds([...favoriteAnimeIds, anime.id]);
-                        } else {
-                          alert('最大3作品まで選択できます');
-                        }
-                      }
-                    }}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                      isSelected
-                        ? 'border-[#ffc2d1] bg-[#ffc2d1]/10 dark:bg-[#ffc2d1]/10'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ffc2d1]'
-                    }`}
-                  >
-                    <div className="w-12 h-16 rounded overflow-hidden shrink-0">
-                      {anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://')) ? (
-                        <img
-                          src={anime.image}
-                          alt={anime.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="64"><rect fill="%23ddd" width="48" height="64"/></svg>';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-                          <span className="text-2xl">{anime.image || '🎬'}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-bold text-sm dark:text-white">{anime.title}</p>
-                      {anime.rating > 0 && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <StarRating rating={anime.rating} size="text-sm" />
-                        </div>
-                      )}
-                    </div>
-                    {isSelected && (
-                      <span className="text-[#ffc2d1] text-xl">✓</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={() => setShowFavoriteAnimeModal(false)}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                閉じる
-              </button>
-              <button
-                onClick={() => {
-                  localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
-                  setShowFavoriteAnimeModal(false);
-                }}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
-              >
-                保存
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 他人のプロフィールモーダル */}
-      {showUserProfileModal && selectedUserProfile && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowUserProfileModal(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-3xl shrink-0">
-                👤
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold dark:text-white">{selectedUserProfile.username}</h2>
-                {selectedUserProfile.bio && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedUserProfile.bio}</p>
-                )}
-              </div>
-              {user && user.id !== selectedUserProfile.id && (
-                <button
-                  onClick={() => handleToggleFollow(selectedUserProfile.id)}
-                  className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
-                    userFollowStatus[selectedUserProfile.id]
-                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                      : 'bg-[#ffc2d1] text-white hover:bg-[#ffb07c]'
-                  }`}
-                >
-                  {userFollowStatus[selectedUserProfile.id] ? 'フォロー中' : 'フォロー'}
-                </button>
-              )}
-            </div>
-            
-            {/* 視聴作品数 */}
-            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-              <p className="text-sm text-gray-600 dark:text-gray-400">視聴作品数</p>
-              <p className="text-2xl font-bold dark:text-white">{selectedUserAnimes.length}作品</p>
-            </div>
-            
-            {/* 視聴履歴 */}
-            {selectedUserAnimes.length > 0 && (
-              <div className="mb-4">
-                <h3 className="font-bold text-lg mb-3 dark:text-white">視聴履歴</h3>
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {selectedUserAnimes.map((anime) => (
-                    <AnimeCard
-                      key={anime.id}
-                      anime={anime}
-                      onClick={() => {
-                        setSelectedAnime(anime);
-                        setShowUserProfileModal(false);
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <button
-              onClick={() => setShowUserProfileModal(false)}
-              className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              閉じる
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* フォロー/フォロワー一覧モーダル */}
-      {showFollowListModal && user && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowFollowListModal(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex gap-3 mb-4">
-              <button
-                onClick={async () => {
-                  setFollowListType('following');
-                  const following = await getFollowing(user.id);
-                  setFollowListUsers(following);
-                }}
-                className={`flex-1 py-2 rounded-xl font-medium transition-colors ${
-                  followListType === 'following'
-                    ? 'bg-[#ffc2d1] text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                フォロー中
-              </button>
-              <button
-                onClick={async () => {
-                  setFollowListType('followers');
-                  const followers = await getFollowers(user.id);
-                  setFollowListUsers(followers);
-                }}
-                className={`flex-1 py-2 rounded-xl font-medium transition-colors ${
-                  followListType === 'followers'
-                    ? 'bg-[#ffc2d1] text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                フォロワー
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {followListUsers.length > 0 ? (
-                followListUsers.map((u) => (
-                  <UserCard
-                    key={u.id}
-                    user={u}
-                    onUserClick={() => {
-                      setShowFollowListModal(false);
-                      handleViewUserProfile(u.id);
-                    }}
-                    onFollowClick={() => handleToggleFollow(u.id)}
-                    isFollowing={userFollowStatus[u.id] || false}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-                  {followListType === 'following' ? 'フォロー中のユーザーがいません' : 'フォロワーがいません'}
-                </p>
-              )}
-            </div>
-            
-            <button
-              onClick={() => setShowFollowListModal(false)}
-              className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              閉じる
-            </button>
-          </div>
-        </div>
-      )}
+      <FollowListModal
+        show={showFollowListModal}
+        onClose={() => setShowFollowListModal(false)}
+        user={user}
+        followListType={followListType}
+        setFollowListType={setFollowListType}
+        followListUsers={followListUsers}
+        setFollowListUsers={setFollowListUsers}
+        userFollowStatus={userFollowStatus}
+        onViewUserProfile={handleViewUserProfile}
+        onToggleFollow={handleToggleFollow}
+      />
 
       {/* 認証モーダル */}
-      {showAuthModal && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => {
-            setShowAuthModal(false);
-            setAuthError('');
-            setAuthEmail('');
-            setAuthPassword('');
-          }}
-        >
-          <div
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">
-              {authMode === 'login' ? 'ログイン' : '新規登録'}
-            </h2>
-
-            {/* タブ切り替え */}
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => {
-                  setAuthMode('login');
-                  setAuthError('');
-                }}
-                className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-                  authMode === 'login'
-                    ? 'bg-[#ffc2d1] text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                ログイン
-              </button>
-              <button
-                onClick={() => {
-                  setAuthMode('signup');
-                  setAuthError('');
-                }}
-                className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-                  authMode === 'signup'
-                    ? 'bg-[#ffc2d1] text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                新規登録
-              </button>
-            </div>
-
-            {/* エラーメッセージ */}
-            {authError && (
-              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm">
-                {authError}
-              </div>
-            )}
-
-            {/* メールアドレス入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                メールアドレス
-              </label>
-              <input
-                type="email"
-                value={authEmail}
-                onChange={(e) => setAuthEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="example@email.com"
-              />
-            </div>
-
-            {/* パスワード入力 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                パスワード
-              </label>
-              <input
-                type="password"
-                value={authPassword}
-                onChange={(e) => setAuthPassword(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAuth();
-                  }
-                }}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="パスワードを入力"
-              />
-            </div>
-
-            {/* 送信ボタン */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowAuthModal(false);
-                  setAuthError('');
-                  setAuthEmail('');
-                  setAuthPassword('');
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={handleAuth}
-                disabled={!authEmail || !authPassword}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                {authMode === 'login' ? 'ログイン' : '登録'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AuthModal
+        show={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={() => {
+          // 認証成功後の処理（必要に応じて）
+        }}
+      />
 
       {/* アニメ詳細モーダル */}
       {selectedAnime && (
@@ -4321,10 +3611,6 @@ export default function Home() {
                 {user && (
                   <button
                     onClick={() => {
-                      setReviewMode('overall');
-                      setNewReviewContent('');
-                      setNewReviewContainsSpoiler(false);
-                      setNewReviewEpisodeNumber(undefined);
                       setShowReviewModal(true);
                     }}
                     className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors mb-4"
@@ -4535,10 +3821,6 @@ export default function Home() {
                                       <div className="ml-auto flex gap-2">
                                         <button
                                           onClick={() => {
-                                            setReviewMode(review.type);
-                                            setNewReviewContent(review.content);
-                                            setNewReviewContainsSpoiler(review.containsSpoiler);
-                                            setNewReviewEpisodeNumber(review.episodeNumber);
                                             setShowReviewModal(true);
                                           }}
                                           className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline"
@@ -4738,10 +4020,6 @@ export default function Home() {
                                             <div className="ml-auto flex gap-2">
                                               <button
                                                 onClick={() => {
-                                                  setReviewMode(review.type);
-                                                  setNewReviewContent(review.content);
-                                                  setNewReviewContainsSpoiler(review.containsSpoiler);
-                                                  setNewReviewEpisodeNumber(review.episodeNumber);
                                                   setShowReviewModal(true);
                                                 }}
                                                 className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline"
@@ -4791,132 +4069,42 @@ export default function Home() {
         </div>
       )}
 
-      {/* 布教リスト作成・編集モーダル */}
-      {showCreateListModal && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowCreateListModal(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">
-              {editingList ? 'リストを編集' : '新しいリストを作成'}
-            </h2>
-            
-            {/* タイトル入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                タイトル
-              </label>
-              <input
-                type="text"
-                value={newListTitle}
-                onChange={(e) => setNewListTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="初心者におすすめ5選"
-              />
-            </div>
-
-            {/* 説明入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                説明
-              </label>
-              <textarea
-                value={newListDescription}
-                onChange={(e) => setNewListDescription(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="アニメ入門にぴったり"
-                rows={3}
-              />
-            </div>
-
-            {/* アニメ選択 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                アニメを選択
-              </label>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {allAnimes.map((anime) => (
-                  <label
-                    key={anime.id}
-                    className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedAnimeIds.includes(anime.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedAnimeIds([...selectedAnimeIds, anime.id]);
-                        } else {
-                          setSelectedAnimeIds(selectedAnimeIds.filter(id => id !== anime.id));
-                        }
-                      }}
-                      className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
-                    />
-                    <span className="text-sm dark:text-white">{anime.title}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowCreateListModal(false);
-                  setNewListTitle('');
-                  setNewListDescription('');
-                  setSelectedAnimeIds([]);
-                  setEditingList(null);
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={() => {
-                  if (newListTitle.trim() && selectedAnimeIds.length > 0) {
-                    if (editingList) {
-                      // 編集
-                      const updatedLists = evangelistLists.map(list =>
-                        list.id === editingList.id
-                          ? {
-                              ...list,
-                              title: newListTitle.trim(),
-                              description: newListDescription.trim(),
-                              animeIds: selectedAnimeIds,
-                            }
-                          : list
-                      );
-                      setEvangelistLists(updatedLists);
-                    } else {
-                      // 新規作成
-                      const newList: EvangelistList = {
-                        id: Date.now(),
-                        title: newListTitle.trim(),
-                        description: newListDescription.trim(),
-                        animeIds: selectedAnimeIds,
-                        createdAt: new Date(),
-                      };
-                      setEvangelistLists([...evangelistLists, newList]);
-                    }
-                    setShowCreateListModal(false);
-                    setNewListTitle('');
-                    setNewListDescription('');
-                    setSelectedAnimeIds([]);
-                    setEditingList(null);
+      <CreateListModal
+        show={showCreateListModal}
+        onClose={() => {
+          setShowCreateListModal(false);
+          setEditingList(null);
+        }}
+        allAnimes={allAnimes}
+        editingList={editingList}
+        onSave={(list) => {
+          if (editingList) {
+            // 編集
+            const updatedLists = evangelistLists.map(l =>
+              l.id === editingList.id
+                ? {
+                    ...l,
+                    title: list.title,
+                    description: list.description,
+                    animeIds: list.animeIds,
                   }
-                }}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
-              >
-                {editingList ? '更新' : '作成'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                : l
+            );
+            setEvangelistLists(updatedLists);
+          } else {
+            // 新規作成
+            const newList: EvangelistList = {
+              id: Date.now(),
+              title: list.title,
+              description: list.description,
+              animeIds: list.animeIds,
+              createdAt: new Date(),
+            };
+            setEvangelistLists([...evangelistLists, newList]);
+          }
+          setEditingList(null);
+        }}
+      />
 
       {/* 布教リスト詳細モーダル */}
       {selectedList && (
@@ -5008,9 +4196,6 @@ export default function Home() {
               <button
                 onClick={() => {
                   setEditingList(selectedList);
-                  setNewListTitle(selectedList.title);
-                  setNewListDescription(selectedList.description);
-                  setSelectedAnimeIds(selectedList.animeIds);
                   setSelectedList(null);
                   setShowCreateListModal(true);
                 }}
@@ -5618,204 +4803,25 @@ export default function Home() {
         </div>
       )}
 
-      {/* 主題歌登録モーダル */}
-      {showSongModal && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => {
-            setShowSongModal(false);
-            setSongType(null);
-            setSelectedAnime(null);
-            setNewSongTitle('');
-            setNewSongArtist('');
-          }}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">
-              {songType ? `${songType === 'op' ? 'OP' : 'ED'}を登録` : '主題歌を追加'}
-            </h2>
-            
-            {/* アニメ選択（selectedAnimeがない場合） */}
-            {!selectedAnime && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  アニメ
-                </label>
-                <select
-                  onChange={(e) => {
-                    const anime = allAnimes.find(a => a.id === Number(e.target.value));
-                    if (anime) {
-                      setSelectedAnime(anime);
-                    }
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">選択してください</option>
-                  {allAnimes.map((anime) => (
-                    <option key={anime.id} value={anime.id}>
-                      {anime.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* アニメ表示（selectedAnimeがある場合） */}
-            {selectedAnime && (
-              <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">アニメ</p>
-                <p className="font-bold dark:text-white">{selectedAnime.title}</p>
-                <button
-                  onClick={() => setSelectedAnime(null)}
-                  className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] mt-1"
-                >
-                  変更
-                </button>
-              </div>
-            )}
-
-            {/* タイプ選択（songTypeがない場合） */}
-            {selectedAnime && !songType && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  タイプ
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setSongType('op')}
-                    className="flex-1 px-4 py-2 rounded-xl font-bold transition-colors bg-orange-500 text-white hover:bg-orange-600"
-                  >
-                    OP
-                  </button>
-                  <button
-                    onClick={() => setSongType('ed')}
-                    className="flex-1 px-4 py-2 rounded-xl font-bold transition-colors bg-blue-500 text-white hover:bg-blue-600"
-                  >
-                    ED
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* タイプ表示（songTypeがある場合） */}
-            {songType && (
-              <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">タイプ</p>
-                <p className="font-bold dark:text-white">{songType.toUpperCase()}</p>
-                <button
-                  onClick={() => setSongType(null)}
-                  className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] mt-1"
-                >
-                  変更
-                </button>
-              </div>
-            )}
-            
-            {/* 曲名入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                曲名
-              </label>
-              <input
-                type="text"
-                value={newSongTitle}
-                onChange={(e) => setNewSongTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="曲名を入力"
-              />
-            </div>
-
-            {/* アーティスト名入力 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                アーティスト名
-              </label>
-              <input
-                type="text"
-                value={newSongArtist}
-                onChange={(e) => setNewSongArtist(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="アーティスト名を入力"
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowSongModal(false);
-                  setSongType(null);
-                  setSelectedAnime(null);
-                  setNewSongTitle('');
-                  setNewSongArtist('');
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={async () => {
-                  if (newSongTitle.trim() && newSongArtist.trim() && songType && selectedAnime) {
-                    const newSong = {
-                      title: newSongTitle.trim(),
-                      artist: newSongArtist.trim(),
-                      rating: 0,
-                      isFavorite: false,
-                    };
-                    
-                    const updatedSeasons = seasons.map(season => ({
-                      ...season,
-                      animes: season.animes.map((anime) =>
-                        anime.id === selectedAnime.id
-                          ? {
-                              ...anime,
-                              songs: {
-                                ...anime.songs,
-                                [songType]: newSong,
-                              },
-                            }
-                          : anime
-                      ),
-                    }));
-                    
-                    // Supabaseを更新（ログイン時のみ）
-                    if (user) {
-                      try {
-                        const updatedSongs = {
-                          ...selectedAnime.songs,
-                          [songType]: newSong,
-                        };
-                        const { error } = await supabase
-                          .from('animes')
-                          .update({ songs: updatedSongs })
-                          .eq('id', selectedAnime.id)
-                          .eq('user_id', user.id);
-                        
-                        if (error) throw error;
-                      } catch (error) {
-                        console.error('Failed to save anime song to Supabase:', error);
-                      }
-                    }
-                    
-                    setSeasons(updatedSeasons);
-                    setShowSongModal(false);
-                    setSongType(null);
-                    setSelectedAnime(null);
-                    setNewSongTitle('');
-                    setNewSongArtist('');
-                  }
-                }}
-                disabled={!newSongTitle.trim() || !newSongArtist.trim() || !songType || !selectedAnime}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                登録
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SongModal
+        show={showSongModal}
+        onClose={() => {
+          setShowSongModal(false);
+          setSongType(null);
+          setSelectedAnime(null);
+          setNewSongTitle('');
+          setNewSongArtist('');
+        }}
+        selectedAnime={selectedAnime}
+        setSelectedAnime={setSelectedAnime}
+        allAnimes={allAnimes}
+        seasons={seasons}
+        setSeasons={setSeasons}
+        user={user}
+        initialSongType={songType}
+        initialSongTitle={newSongTitle}
+        initialSongArtist={newSongArtist}
+      />
 
       {/* DNAモーダル */}
       {showDNAModal && (
