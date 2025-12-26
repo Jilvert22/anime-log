@@ -634,7 +634,7 @@ function ProfileTab({
         
         return (
           <>
-            <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 shadow-lg">
+            <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 shadow-lg mb-4">
               {/* タイトル */}
               <div className="text-center mb-4">
                 <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA {new Date().getFullYear()}</h2>
