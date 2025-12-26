@@ -1,39 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import type { User } from '@supabase/supabase-js';
-import { searchAnime, searchAnimeBySeason } from './lib/anilist';
-import type { UserProfile } from './lib/supabase';
-import { QRCodeSVG } from 'qrcode.react';
 import { 
   upsertUserProfile,
 } from './lib/supabase';
 import type { 
   Season, 
-  Review, 
   Anime, 
-  Achievement, 
   EvangelistList, 
-  FavoriteCharacter, 
   VoiceActor 
 } from './types';
 import {
-  availableTags,
-  characterCategories,
-  otakuTypes,
-  characterPresetTags,
-  sampleFavoriteCharacters,
   achievements,
-  sampleSeasons,
-  ratingLabels,
-  genreTranslation,
 } from './constants';
-import { StarRating } from './components/StarRating';
-import { AnimeCard } from './components/AnimeCard';
-import { UserCard } from './components/UserCard';
-import { AchievementsTab } from './components/tabs/AchievementsTab';
-import { MusicTab } from './components/tabs/MusicTab';
 import { ProfileTab } from './components/tabs/ProfileTab';
 import { HomeTab } from './components/tabs/HomeTab';
 import { DiscoverTab } from './components/tabs/DiscoverTab';
@@ -62,7 +42,11 @@ import { useSocial } from './hooks/useSocial';
 import { useModals } from './hooks/useModals';
 import { useCollection } from './hooks/useCollection';
 import { useFormStates } from './hooks/useFormStates';
-import { translateGenre, animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName } from './utils/helpers';
+import { useTabs } from './hooks/useTabs';
+import { useDarkMode } from './hooks/useDarkMode';
+import { useCountAnimation } from './hooks/useCountAnimation';
+import { useModalHandlers } from './hooks/useModalHandlers';
+import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName } from './utils/helpers';
 
 
 
@@ -70,7 +54,6 @@ import { translateGenre, animeToSupabase, supabaseToAnime, extractSeriesName, ge
 // メインページ
 export default function Home() {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
-  const [count, setCount] = useState(0);
   
   // モーダル状態管理をカスタムフックで管理
   const {
@@ -102,7 +85,9 @@ export default function Home() {
   
   // 認証管理をカスタムフックで管理
   const { user, isLoading, handleLogout: logout } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  
+  // ダークモード管理をカスタムフックで管理
+  const { isDarkMode, setIsDarkMode } = useDarkMode();
   
   // ユーザープロフィール管理をカスタムフックで管理
   const {
@@ -123,10 +108,18 @@ export default function Home() {
     userHandle,
     setUserHandle,
   } = useUserProfile(user);
-  const [activeTab, setActiveTab] = useState<'home' | 'discover' | 'collection' | 'profile'>('home');
-  const [homeSubTab, setHomeSubTab] = useState<'seasons' | 'series'>('seasons');
-  const [discoverSubTab, setDiscoverSubTab] = useState<'trends'>('trends');
-  const [collectionSubTab, setCollectionSubTab] = useState<'achievements' | 'characters' | 'quotes' | 'lists' | 'music' | 'voiceActors'>('achievements');
+  
+  // タブ状態管理をカスタムフックで管理
+  const {
+    activeTab,
+    setActiveTab,
+    homeSubTab,
+    setHomeSubTab,
+    discoverSubTab,
+    setDiscoverSubTab,
+    collectionSubTab,
+    setCollectionSubTab,
+  } = useTabs();
   
   // コレクション関連をカスタムフックで管理
   const {
@@ -134,6 +127,8 @@ export default function Home() {
     setEvangelistLists,
     favoriteCharacters,
     setFavoriteCharacters,
+    voiceActors,
+    setVoiceActors,
   } = useCollection();
   
   // アニメデータ管理をカスタムフックで管理
@@ -146,7 +141,9 @@ export default function Home() {
     averageRating,
     totalRewatchCount,
   } = useAnimeData(user, isLoading);
-  const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
+  
+  // カウントアニメーションをカスタムフックで管理
+  const count = useCountAnimation(allAnimes.length);
   
   // フォーム状態管理をカスタムフックで管理
   const {
@@ -206,6 +203,46 @@ export default function Home() {
     setNewSongArtist,
   } = useFormStates();
   
+  // モーダルハンドラーをカスタムフックで管理
+  const {
+    handleCreateListSave,
+    handleCreateListClose,
+    handleCharacterSave,
+    handleCharacterClose,
+    handleOpenAddCharacterModal,
+    handleEditCharacter,
+    handleVoiceActorSave,
+    handleVoiceActorClose,
+    handleOpenAddVoiceActorModal,
+    handleEditVoiceActor,
+  } = useModalHandlers({
+    evangelistLists,
+    setEvangelistLists,
+    favoriteCharacters,
+    setFavoriteCharacters,
+    voiceActors,
+    setVoiceActors,
+    editingList,
+    setEditingList,
+    editingCharacter,
+    setEditingCharacter,
+    editingVoiceActor,
+    setEditingVoiceActor,
+    setShowCreateListModal,
+    setShowAddCharacterModal,
+    setShowAddVoiceActorModal,
+    setNewCharacterName,
+    setNewCharacterAnimeId,
+    setNewCharacterImage,
+    setNewCharacterCategory,
+    setNewCharacterTags,
+    setNewCustomTag,
+    setNewVoiceActorName,
+    setNewVoiceActorImage,
+    setNewVoiceActorAnimeIds,
+    setNewVoiceActorNotes,
+  });
+  
   // SNS機能をカスタムフックで管理
   const {
     userSearchQuery,
@@ -251,25 +288,6 @@ export default function Home() {
     loadReviews,
   } = useAnimeReviews(user);
 
-  // localStorageから初期値を読み込む（ダークモードのみ）
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedDarkMode = localStorage.getItem('darkMode');
-      if (savedDarkMode === 'true') setIsDarkMode(true);
-    }
-  }, []);
-
-  // ダークモードの適用
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (isDarkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      localStorage.setItem('darkMode', isDarkMode.toString());
-    }
-  }, [isDarkMode]);
 
 
 
@@ -299,27 +317,6 @@ export default function Home() {
     }
   }, [selectedAnime?.id, user, loadReviews]);
 
-  // カウントアップアニメーション
-  useEffect(() => {
-    const targetCount = allAnimes.length;
-    const duration = 1500; // 1.5秒
-    const steps = 60;
-    const increment = targetCount / steps;
-    const stepDuration = duration / steps;
-
-    let currentStep = 0;
-    const timer = setInterval(() => {
-      currentStep++;
-      const nextCount = Math.min(Math.ceil(increment * currentStep), targetCount);
-      setCount(nextCount);
-      
-      if (nextCount >= targetCount) {
-        clearInterval(timer);
-      }
-    }, stepDuration);
-
-    return () => clearInterval(timer);
-  }, [allAnimes.length]);
 
   return (
     <div className="min-h-screen bg-[#fef6f0] dark:bg-gray-900">
@@ -373,26 +370,8 @@ export default function Home() {
             setFavoriteCharacters={setFavoriteCharacters}
             characterFilter={characterFilter}
             setCharacterFilter={setCharacterFilter}
-            onOpenAddCharacterModal={() => {
-              setNewCharacterName('');
-              setNewCharacterAnimeId(null);
-              setNewCharacterImage('👤');
-              setNewCharacterCategory('');
-              setNewCharacterTags([]);
-              setNewCustomTag('');
-              setEditingCharacter(null);
-              setShowAddCharacterModal(true);
-            }}
-            onEditCharacter={(character) => {
-              setEditingCharacter(character);
-              setNewCharacterName(character.name);
-              setNewCharacterAnimeId(character.animeId);
-              setNewCharacterImage(character.image);
-              setNewCharacterCategory(character.category);
-              setNewCharacterTags([...character.tags]);
-              setNewCustomTag('');
-              setShowAddCharacterModal(true);
-            }}
+            onOpenAddCharacterModal={handleOpenAddCharacterModal}
+            onEditCharacter={handleEditCharacter}
             quoteSearchQuery={quoteSearchQuery}
             setQuoteSearchQuery={setQuoteSearchQuery}
             quoteFilterType={quoteFilterType}
@@ -428,22 +407,8 @@ export default function Home() {
             setVoiceActors={setVoiceActors}
             voiceActorSearchQuery={voiceActorSearchQuery}
             setVoiceActorSearchQuery={setVoiceActorSearchQuery}
-            onOpenAddVoiceActorModal={() => {
-              setNewVoiceActorName('');
-              setNewVoiceActorImage('🎤');
-              setNewVoiceActorAnimeIds([]);
-              setNewVoiceActorNotes('');
-              setEditingVoiceActor(null);
-              setShowAddVoiceActorModal(true);
-            }}
-            onEditVoiceActor={(actor) => {
-              setEditingVoiceActor(actor);
-              setNewVoiceActorName(actor.name);
-              setNewVoiceActorImage(actor.image);
-              setNewVoiceActorAnimeIds(actor.animeIds);
-              setNewVoiceActorNotes(actor.notes || '');
-              setShowAddVoiceActorModal(true);
-            }}
+            onOpenAddVoiceActorModal={handleOpenAddVoiceActorModal}
+            onEditVoiceActor={handleEditVoiceActor}
             setSelectedAnime={setSelectedAnime}
             setSongType={setSongType}
             setNewSongTitle={setNewSongTitle}
@@ -618,39 +583,10 @@ export default function Home() {
 
       <CreateListModal
         show={showCreateListModal}
-        onClose={() => {
-          setShowCreateListModal(false);
-          setEditingList(null);
-        }}
+        onClose={handleCreateListClose}
         allAnimes={allAnimes}
         editingList={editingList}
-        onSave={(list) => {
-          if (editingList) {
-            // 編集
-            const updatedLists = evangelistLists.map(l =>
-              l.id === editingList.id
-                ? {
-                    ...l,
-                    title: list.title,
-                    description: list.description,
-                    animeIds: list.animeIds,
-                  }
-                : l
-            );
-            setEvangelistLists(updatedLists);
-          } else {
-            // 新規作成
-            const newList: EvangelistList = {
-              id: Date.now(),
-              title: list.title,
-              description: list.description,
-              animeIds: list.animeIds,
-              createdAt: new Date(),
-            };
-            setEvangelistLists([...evangelistLists, newList]);
-          }
-          setEditingList(null);
-        }}
+        onSave={handleCreateListSave}
       />
 
       {/* 布教リスト詳細モーダル */}
@@ -662,261 +598,27 @@ export default function Home() {
           setSelectedAnime={setSelectedAnime}
           setEditingList={setEditingList}
           setShowCreateListModal={setShowCreateListModal}
+          evangelistLists={evangelistLists}
+          setEvangelistLists={setEvangelistLists}
         />
       )}
 
       <AddCharacterModal
         show={showAddCharacterModal}
-        onClose={() => {
-          setShowAddCharacterModal(false);
-          setEditingCharacter(null);
-        }}
+        onClose={handleCharacterClose}
         allAnimes={allAnimes}
         editingCharacter={editingCharacter}
         favoriteCharacters={favoriteCharacters}
-        onSave={(character) => {
-          if (editingCharacter) {
-            // 編集
-            setFavoriteCharacters(favoriteCharacters.map(c =>
-              c.id === editingCharacter.id ? character : c
-            ));
-          } else {
-            // 新規作成
-            setFavoriteCharacters([...favoriteCharacters, character]);
-          }
-          setShowAddCharacterModal(false);
-          setEditingCharacter(null);
-        }}
+        onSave={handleCharacterSave}
       />
 
       <AddVoiceActorModal
         show={showAddVoiceActorModal}
-        onClose={() => {
-          setShowAddVoiceActorModal(false);
-          setEditingVoiceActor(null);
-        }}
+        onClose={handleVoiceActorClose}
         allAnimes={allAnimes}
         editingVoiceActor={editingVoiceActor}
         voiceActors={voiceActors}
-        onSave={(actor) => {
-          if (editingVoiceActor) {
-            // 編集
-            setVoiceActors(voiceActors.map(a =>
-              a.id === editingVoiceActor.id ? actor : a
-            ));
-          } else {
-            // 新規作成
-            setVoiceActors([...voiceActors, actor]);
-          }
-          setShowAddVoiceActorModal(false);
-          setEditingVoiceActor(null);
-        }}
-      />
-      <CreateListModal
-        show={showCreateListModal}
-        onClose={() => {
-          setShowCreateListModal(false);
-          setEditingList(null);
-        }}
-        allAnimes={allAnimes}
-        editingList={editingList}
-        onSave={(list) => {
-          if (editingList) {
-            // 編集
-            const updatedLists = evangelistLists.map(l =>
-              l.id === editingList.id
-                ? {
-                    ...l,
-                    title: list.title,
-                    description: list.description,
-                    animeIds: list.animeIds,
-                  }
-                : l
-            );
-            setEvangelistLists(updatedLists);
-          } else {
-            // 新規作成
-            const newList: EvangelistList = {
-              id: Date.now(),
-              title: list.title,
-              description: list.description,
-              animeIds: list.animeIds,
-              createdAt: new Date(),
-            };
-            setEvangelistLists([...evangelistLists, newList]);
-          }
-          setEditingList(null);
-        }}
-      />
-
-      {/* 布教リスト詳細モーダル */}
-      {selectedList && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedList(null)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-2 dark:text-white">{selectedList.title}</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{selectedList.description}</p>
-            
-            {/* アニメ一覧 */}
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {selectedList.animeIds.length}作品
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                {selectedList.animeIds.map((animeId) => {
-                  const anime = allAnimes.find(a => a.id === animeId);
-                  if (!anime) return null;
-                  const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
-                  return (
-                    <div
-                      key={animeId}
-                      onClick={() => {
-                        setSelectedAnime(anime);
-                        setSelectedList(null);
-                      }}
-                      className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
-                    >
-                      {isImageUrl ? (
-                        <img
-                          src={anime.image}
-                          alt={anime.title}
-                          className="w-full h-16 object-cover rounded mb-1"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            const parent = (e.target as HTMLImageElement).parentElement;
-                            if (parent) {
-                              parent.innerHTML = '<div class="text-3xl mb-1">🎬</div><p class="text-xs font-bold truncate">' + anime.title + '</p>';
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="text-3xl mb-1">{anime.image}</div>
-                      )}
-                      <p className="text-xs font-bold truncate">{anime.title}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={async () => {
-                  if (navigator.share) {
-                    try {
-                      const animeTitles = selectedList.animeIds
-                        .map(id => allAnimes.find(a => a.id === id)?.title)
-                        .filter(Boolean)
-                        .join('、');
-                      
-                      await navigator.share({
-                        title: selectedList.title,
-                        text: `${selectedList.description}\n\n${animeTitles}`,
-                      });
-                    } catch (error) {
-                      console.error('Share failed:', error);
-                    }
-                  } else {
-                    // フォールバック: テキストをクリップボードにコピー
-                    const animeTitles = selectedList.animeIds
-                      .map(id => allAnimes.find(a => a.id === id)?.title)
-                      .filter(Boolean)
-                      .join('、');
-                    const shareText = `${selectedList.title}\n${selectedList.description}\n\n${animeTitles}`;
-                    await navigator.clipboard.writeText(shareText);
-                    alert('リストをクリップボードにコピーしました');
-                  }
-                }}
-                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              >
-                📤 シェア
-              </button>
-              <button
-                onClick={() => {
-                  setEditingList(selectedList);
-                  setSelectedList(null);
-                  setShowCreateListModal(true);
-                }}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
-              >
-                編集
-              </button>
-              <button
-                onClick={() => {
-                  setEvangelistLists(evangelistLists.filter(list => list.id !== selectedList.id));
-                  setSelectedList(null);
-                }}
-                className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors"
-              >
-                削除
-              </button>
-            </div>
-            
-            <button
-              onClick={() => setSelectedList(null)}
-              className="w-full mt-3 text-gray-500 dark:text-gray-400 text-sm"
-            >
-              閉じる
-            </button>
-          </div>
-        </div>
-      )}
-
-      <AddCharacterModal
-        show={showAddCharacterModal}
-        onClose={() => {
-          setShowAddCharacterModal(false);
-          setEditingCharacter(null);
-        }}
-        allAnimes={allAnimes}
-        editingCharacter={editingCharacter}
-        favoriteCharacters={favoriteCharacters}
-        onSave={(character) => {
-          if (editingCharacter) {
-            setFavoriteCharacters(favoriteCharacters.map(c => 
-              c.id === editingCharacter.id ? character : c
-            ));
-          } else {
-            setFavoriteCharacters([...favoriteCharacters, character]);
-          }
-          setShowAddCharacterModal(false);
-          setEditingCharacter(null);
-        }}
-      />
-
-      <AddVoiceActorModal
-        show={showAddVoiceActorModal}
-        onClose={() => {
-          setShowAddVoiceActorModal(false);
-          setEditingVoiceActor(null);
-        }}
-        allAnimes={allAnimes}
-        editingVoiceActor={editingVoiceActor}
-        voiceActors={voiceActors}
-        onSave={(voiceActor) => {
-          if (editingVoiceActor) {
-            const updated = voiceActors.map(va => 
-              va.id === editingVoiceActor.id ? voiceActor : va
-            );
-            setVoiceActors(updated);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('voiceActors', JSON.stringify(updated));
-            }
-          } else {
-            const updated = [...voiceActors, voiceActor];
-            setVoiceActors(updated);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('voiceActors', JSON.stringify(updated));
-            }
-          }
-          setShowAddVoiceActorModal(false);
-          setEditingVoiceActor(null);
-        }}
+        onSave={handleVoiceActorSave}
       />
 
       <AddQuoteModal

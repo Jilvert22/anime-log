@@ -9,6 +9,8 @@ interface ListDetailModalProps {
   setSelectedAnime: (anime: Anime | null) => void;
   setEditingList: (list: EvangelistList | null) => void;
   setShowCreateListModal: (show: boolean) => void;
+  evangelistLists: EvangelistList[];
+  setEvangelistLists: (lists: EvangelistList[]) => void;
 }
 
 export function ListDetailModal({
@@ -18,6 +20,8 @@ export function ListDetailModal({
   setSelectedAnime,
   setEditingList,
   setShowCreateListModal,
+  evangelistLists,
+  setEvangelistLists,
 }: ListDetailModalProps) {
   return (
     <div 
@@ -75,6 +79,37 @@ export function ListDetailModal({
 
         <div className="flex gap-3">
           <button
+            onClick={async () => {
+              if (navigator.share) {
+                try {
+                  const animeTitles = selectedList.animeIds
+                    .map(id => allAnimes.find(a => a.id === id)?.title)
+                    .filter(Boolean)
+                    .join('、');
+                  
+                  await navigator.share({
+                    title: selectedList.title,
+                    text: `${selectedList.description}\n\n${animeTitles}`,
+                  });
+                } catch (error) {
+                  console.error('Share failed:', error);
+                }
+              } else {
+                // フォールバック: テキストをクリップボードにコピー
+                const animeTitles = selectedList.animeIds
+                  .map(id => allAnimes.find(a => a.id === id)?.title)
+                  .filter(Boolean)
+                  .join('、');
+                const shareText = `${selectedList.title}\n${selectedList.description}\n\n${animeTitles}`;
+                await navigator.clipboard.writeText(shareText);
+                alert('リストをクリップボードにコピーしました');
+              }
+            }}
+            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            📤 シェア
+          </button>
+          <button
             onClick={() => {
               setEditingList(selectedList);
               setSelectedList(null);
@@ -85,12 +120,22 @@ export function ListDetailModal({
             編集
           </button>
           <button
-            onClick={() => setSelectedList(null)}
-            className="flex-1 bg-gray-500 text-white py-3 rounded-xl font-bold hover:bg-gray-600 transition-colors"
+            onClick={() => {
+              setEvangelistLists(evangelistLists.filter(list => list.id !== selectedList.id));
+              setSelectedList(null);
+            }}
+            className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors"
           >
-            閉じる
+            削除
           </button>
         </div>
+        
+        <button
+          onClick={() => setSelectedList(null)}
+          className="w-full mt-3 text-gray-500 dark:text-gray-400 text-sm"
+        >
+          閉じる
+        </button>
       </div>
     </div>
   );

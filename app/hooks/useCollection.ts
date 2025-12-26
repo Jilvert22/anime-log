@@ -1,17 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { EvangelistList, FavoriteCharacter } from '../types';
+import type { EvangelistList, FavoriteCharacter, VoiceActor } from '../types';
 
 export function useCollection() {
   const [evangelistLists, setEvangelistLists] = useState<EvangelistList[]>([]);
   const [favoriteCharacters, setFavoriteCharacters] = useState<FavoriteCharacter[]>([]);
+  const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
 
   // localStorageから初期値を読み込む
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedLists = localStorage.getItem('evangelistLists');
       const savedCharacters = localStorage.getItem('favoriteCharacters');
+      const savedVoiceActors = localStorage.getItem('voiceActors');
       
       // 布教リストを読み込む
       if (savedLists) {
@@ -53,6 +55,19 @@ export function useCollection() {
         // 保存データがない場合は空の配列を使用
         setFavoriteCharacters([]);
       }
+      
+      // 声優を読み込む
+      if (savedVoiceActors) {
+        try {
+          const parsedVoiceActors = JSON.parse(savedVoiceActors);
+          setVoiceActors(parsedVoiceActors);
+        } catch (e) {
+          console.error('Failed to parse voice actors', e);
+          setVoiceActors([]);
+        }
+      } else {
+        setVoiceActors([]);
+      }
     }
   }, []);
 
@@ -70,11 +85,20 @@ export function useCollection() {
     }
   }, [favoriteCharacters]);
 
+  // 声優をlocalStorageに保存
+  useEffect(() => {
+    if (typeof window !== 'undefined' && voiceActors.length > 0) {
+      localStorage.setItem('voiceActors', JSON.stringify(voiceActors));
+    }
+  }, [voiceActors]);
+
   return {
     evangelistLists,
     setEvangelistLists,
     favoriteCharacters,
     setFavoriteCharacters,
+    voiceActors,
+    setVoiceActors,
   };
 }
 
