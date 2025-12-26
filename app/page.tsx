@@ -55,6 +55,9 @@ import { UserProfileModal } from './components/modals/UserProfileModal';
 import { FollowListModal } from './components/modals/FollowListModal';
 import { CreateListModal } from './components/modals/CreateListModal';
 import { AddCharacterModal } from './components/modals/AddCharacterModal';
+import { AddVoiceActorModal } from './components/modals/AddVoiceActorModal';
+import { AddQuoteModal } from './components/modals/AddQuoteModal';
+import { DNAModal } from './components/modals/DNAModal';
 import { translateGenre } from './utils/helpers';
 
 
@@ -4224,584 +4227,74 @@ export default function Home() {
         </div>
       )}
 
-      {/* 推しキャラ追加モーダル */}
-      {showAddCharacterModal && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowAddCharacterModal(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">
-              {editingCharacter ? '推しを編集' : '推しを追加'}
-            </h2>
-            
-            {/* キャラ名入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                キャラ名
-              </label>
-              <input
-                type="text"
-                value={newCharacterName}
-                onChange={(e) => setNewCharacterName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="キャラクター名"
-              />
-            </div>
+      <AddCharacterModal
+        show={showAddCharacterModal}
+        onClose={() => {
+          setShowAddCharacterModal(false);
+          setEditingCharacter(null);
+        }}
+        allAnimes={allAnimes}
+        editingCharacter={editingCharacter}
+        favoriteCharacters={favoriteCharacters}
+        onSave={(character) => {
+          if (editingCharacter) {
+            setFavoriteCharacters(favoriteCharacters.map(c => 
+              c.id === editingCharacter.id ? character : c
+            ));
+          } else {
+            setFavoriteCharacters([...favoriteCharacters, character]);
+          }
+          setShowAddCharacterModal(false);
+          setEditingCharacter(null);
+        }}
+      />
 
-            {/* アニメ選択 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                アニメ
-              </label>
-              <select
-                value={newCharacterAnimeId || ''}
-                onChange={(e) => setNewCharacterAnimeId(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-              >
-                <option value="">選択してください</option>
-                {allAnimes.map((anime) => (
-                  <option key={anime.id} value={anime.id}>
-                    {anime.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+      <AddVoiceActorModal
+        show={showAddVoiceActorModal}
+        onClose={() => {
+          setShowAddVoiceActorModal(false);
+          setEditingVoiceActor(null);
+        }}
+        allAnimes={allAnimes}
+        editingVoiceActor={editingVoiceActor}
+        voiceActors={voiceActors}
+        onSave={(voiceActor) => {
+          if (editingVoiceActor) {
+            const updated = voiceActors.map(va => 
+              va.id === editingVoiceActor.id ? voiceActor : va
+            );
+            setVoiceActors(updated);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('voiceActors', JSON.stringify(updated));
+            }
+          } else {
+            const updated = [...voiceActors, voiceActor];
+            setVoiceActors(updated);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('voiceActors', JSON.stringify(updated));
+            }
+          }
+          setShowAddVoiceActorModal(false);
+          setEditingVoiceActor(null);
+        }}
+      />
 
-            {/* アイコン選択 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                アイコン
-              </label>
-              <div className="grid grid-cols-8 gap-2">
-                {['👤', '👻', '🧝', '🎸', '👑', '🦄', '🌟', '💫', '⚡', '🔥', '💕', '❤️', '🎭', '🛡️', '😇', '🤡', '💀', '🎪', '🎨', '🎯', '🎬', '🎮'].map((icon) => (
-                  <button
-                    key={icon}
-                    onClick={() => setNewCharacterImage(icon)}
-                    className={`text-3xl p-2 rounded-lg transition-all ${
-                      newCharacterImage === icon
-                        ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
-                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* カテゴリ選択 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                カテゴリ
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {characterCategories.map((category) => (
-                  <button
-                    key={category.value}
-                    onClick={() => setNewCharacterCategory(category.value)}
-                    className={`p-2 rounded-lg text-sm font-medium transition-all ${
-                      newCharacterCategory === category.value
-                        ? 'bg-[#ffc2d1] text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {category.emoji} {category.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* タグ選択 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                タグ
-              </label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {characterPresetTags.map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => {
-                      if (newCharacterTags.includes(tag)) {
-                        setNewCharacterTags(newCharacterTags.filter(t => t !== tag));
-                      } else {
-                        setNewCharacterTags([...newCharacterTags, tag]);
-                      }
-                    }}
-                    className={`px-3 py-1 rounded-full text-sm transition-all ${
-                      newCharacterTags.includes(tag)
-                        ? 'bg-[#ffc2d1] text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-              
-              {/* カスタムタグ追加 */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newCustomTag}
-                  onChange={(e) => setNewCustomTag(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && newCustomTag.trim() && !newCharacterTags.includes(newCustomTag.trim())) {
-                      setNewCharacterTags([...newCharacterTags, newCustomTag.trim()]);
-                      setNewCustomTag('');
-                    }
-                  }}
-                  className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
-                  placeholder="新しいタグを入力してEnter"
-                />
-              </div>
-              
-              {/* 選択中のタグ表示 */}
-              {newCharacterTags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {newCharacterTags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center gap-1 bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1] px-2 py-1 rounded-full text-xs"
-                    >
-                      {tag}
-                      <button
-                        onClick={() => setNewCharacterTags(newCharacterTags.filter((_, i) => i !== index))}
-                        className="hover:text-red-500"
-                      >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowAddCharacterModal(false);
-                  setNewCharacterName('');
-                  setNewCharacterAnimeId(null);
-                  setNewCharacterImage('👤');
-                  setNewCharacterCategory('');
-                  setNewCharacterTags([]);
-                  setNewCustomTag('');
-                  setEditingCharacter(null);
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={() => {
-                  if (newCharacterName.trim() && newCharacterAnimeId) {
-                    const selectedAnime = allAnimes.find(a => a.id === newCharacterAnimeId);
-                    if (selectedAnime) {
-                      if (editingCharacter) {
-                        // 編集
-                        const updatedCharacter: FavoriteCharacter = {
-                          ...editingCharacter,
-                          name: newCharacterName.trim(),
-                          animeId: newCharacterAnimeId,
-                          animeName: selectedAnime.title,
-                          image: newCharacterImage,
-                          category: newCharacterCategory,
-                          tags: newCharacterTags,
-                        };
-                        setFavoriteCharacters(favoriteCharacters.map(c => 
-                          c.id === editingCharacter.id ? updatedCharacter : c
-                        ));
-                      } else {
-                        // 新規追加
-                        const newCharacter: FavoriteCharacter = {
-                          id: Date.now(),
-                          name: newCharacterName.trim(),
-                          animeId: newCharacterAnimeId,
-                          animeName: selectedAnime.title,
-                          image: newCharacterImage,
-                          category: newCharacterCategory,
-                          tags: newCharacterTags,
-                        };
-                        setFavoriteCharacters([...favoriteCharacters, newCharacter]);
-                      }
-                      setShowAddCharacterModal(false);
-                      setNewCharacterName('');
-                      setNewCharacterAnimeId(null);
-                      setNewCharacterImage('👤');
-                      setNewCharacterCategory('');
-                      setNewCharacterTags([]);
-                      setNewCustomTag('');
-                      setEditingCharacter(null);
-                    }
-                  }
-                }}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
-              >
-                {editingCharacter ? '更新' : '追加'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 声優追加・編集モーダル */}
-      {showAddVoiceActorModal && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => {
-            setShowAddVoiceActorModal(false);
-            setEditingVoiceActor(null);
-            setNewVoiceActorName('');
-            setNewVoiceActorImage('🎤');
-            setNewVoiceActorAnimeIds([]);
-            setNewVoiceActorNotes('');
-          }}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-md lg:max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">
-              {editingVoiceActor ? '声優を編集' : '声優を追加'}
-            </h2>
-            
-            {/* 声優名入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                声優名
-              </label>
-              <input
-                type="text"
-                value={newVoiceActorName}
-                onChange={(e) => setNewVoiceActorName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="声優名"
-              />
-            </div>
-
-            {/* アイコン選択 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                アイコン
-              </label>
-              <div className="grid grid-cols-8 gap-2">
-                {['🎤', '🎭', '🎪', '🎨', '🎯', '🎮', '🎸', '🎵', '🎹', '🎧', '🎺', '🎷', '👤', '⭐', '💫', '✨'].map((icon) => (
-                  <button
-                    key={icon}
-                    onClick={() => setNewVoiceActorImage(icon)}
-                    className={`text-2xl p-2 rounded-lg transition-all ${
-                      newVoiceActorImage === icon
-                        ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
-                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 出演アニメ選択 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                出演アニメ（複数選択可）
-              </label>
-              <div className="max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-xl p-2 space-y-1">
-                {allAnimes.length > 0 ? (
-                  allAnimes.map((anime) => (
-                    <label
-                      key={anime.id}
-                      className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={newVoiceActorAnimeIds.includes(anime.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setNewVoiceActorAnimeIds([...newVoiceActorAnimeIds, anime.id]);
-                          } else {
-                            setNewVoiceActorAnimeIds(newVoiceActorAnimeIds.filter(id => id !== anime.id));
-                          }
-                        }}
-                        className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
-                      />
-                      <span className="text-sm dark:text-white">{anime.title}</span>
-                    </label>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-400 text-center py-2">アニメが登録されていません</p>
-                )}
-              </div>
-            </div>
-
-            {/* メモ */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                メモ（任意）
-              </label>
-              <textarea
-                value={newVoiceActorNotes}
-                onChange={(e) => setNewVoiceActorNotes(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="メモを入力..."
-                rows={3}
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowAddVoiceActorModal(false);
-                  setEditingVoiceActor(null);
-                  setNewVoiceActorName('');
-                  setNewVoiceActorImage('🎤');
-                  setNewVoiceActorAnimeIds([]);
-                  setNewVoiceActorNotes('');
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={() => {
-                  if (newVoiceActorName.trim()) {
-                    const animeNames = newVoiceActorAnimeIds
-                      .map(id => allAnimes.find(a => a.id === id)?.title)
-                      .filter(Boolean) as string[];
-
-                    if (editingVoiceActor) {
-                      // 編集
-                      const updatedVoiceActor: VoiceActor = {
-                        ...editingVoiceActor,
-                        name: newVoiceActorName.trim(),
-                        image: newVoiceActorImage,
-                        animeIds: newVoiceActorAnimeIds,
-                        animeNames: animeNames,
-                        notes: newVoiceActorNotes.trim() || undefined,
-                      };
-                      const updated = voiceActors.map(va => 
-                        va.id === editingVoiceActor.id ? updatedVoiceActor : va
-                      );
-                      setVoiceActors(updated);
-                      if (typeof window !== 'undefined') {
-                        localStorage.setItem('voiceActors', JSON.stringify(updated));
-                      }
-                    } else {
-                      // 新規追加
-                      const maxId = voiceActors.length > 0 ? Math.max(...voiceActors.map(va => va.id)) : 0;
-                      const newVoiceActor: VoiceActor = {
-                        id: maxId + 1,
-                        name: newVoiceActorName.trim(),
-                        image: newVoiceActorImage,
-                        animeIds: newVoiceActorAnimeIds,
-                        animeNames: animeNames,
-                        notes: newVoiceActorNotes.trim() || undefined,
-                      };
-                      const updated = [...voiceActors, newVoiceActor];
-                      setVoiceActors(updated);
-                      if (typeof window !== 'undefined') {
-                        localStorage.setItem('voiceActors', JSON.stringify(updated));
-                      }
-                    }
-                    setShowAddVoiceActorModal(false);
-                    setEditingVoiceActor(null);
-                    setNewVoiceActorName('');
-                    setNewVoiceActorImage('🎤');
-                    setNewVoiceActorAnimeIds([]);
-                    setNewVoiceActorNotes('');
-                  }
-                }}
-                disabled={!newVoiceActorName.trim()}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                {editingVoiceActor ? '更新' : '追加'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 名言追加・編集モーダル */}
-      {showAddQuoteModal && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => {
-            setShowAddQuoteModal(false);
-            setEditingQuote(null);
-            setNewQuoteAnimeId(null);
-            setNewQuoteText('');
-            setNewQuoteCharacter('');
-          }}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">
-              {editingQuote ? '名言を編集' : '名言を追加'}
-            </h2>
-            
-            {/* アニメ選択 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                アニメ
-              </label>
-              <select
-                value={editingQuote ? editingQuote.animeId : (newQuoteAnimeId || '')}
-                onChange={(e) => {
-                  if (editingQuote) {
-                    setEditingQuote({ ...editingQuote, animeId: Number(e.target.value) });
-                  } else {
-                    setNewQuoteAnimeId(Number(e.target.value) || null);
-                  }
-                }}
-                disabled={!!editingQuote}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-600"
-              >
-                <option value="">選択してください</option>
-                {allAnimes.map((anime) => (
-                  <option key={anime.id} value={anime.id}>
-                    {anime.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* セリフ入力 */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                セリフ
-              </label>
-              <textarea
-                value={newQuoteText}
-                onChange={(e) => setNewQuoteText(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="名言を入力"
-                rows={3}
-              />
-            </div>
-
-            {/* キャラクター名入力 */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                キャラクター名（任意）
-              </label>
-              <input
-                type="text"
-                value={newQuoteCharacter}
-                onChange={(e) => setNewQuoteCharacter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
-                placeholder="キャラクター名"
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowAddQuoteModal(false);
-                  setEditingQuote(null);
-                  setNewQuoteText('');
-                  setNewQuoteCharacter('');
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={async () => {
-                  const selectElement = document.querySelector('select[data-quote-anime]') as HTMLSelectElement;
-                  const animeId = editingQuote ? editingQuote.animeId : (selectElement?.value ? Number(selectElement.value) : null);
-                  if (newQuoteText.trim() && animeId) {
-                    const anime = allAnimes.find(a => a.id === animeId);
-                    if (anime) {
-                      if (editingQuote) {
-                        // 編集
-                        const updatedQuotes = [...(anime.quotes || [])];
-                        updatedQuotes[editingQuote.quoteIndex] = {
-                          text: newQuoteText.trim(),
-                          character: newQuoteCharacter.trim() || undefined,
-                        };
-                        
-                        const updatedSeasons = seasons.map(season => ({
-                          ...season,
-                          animes: season.animes.map(a =>
-                            a.id === animeId
-                              ? { ...a, quotes: updatedQuotes }
-                              : a
-                          ),
-                        }));
-                        
-                        // Supabaseを更新（ログイン時のみ）
-                        if (user) {
-                          try {
-                            const { error } = await supabase
-                              .from('animes')
-                              .update({ quotes: updatedQuotes })
-                              .eq('id', animeId)
-                              .eq('user_id', user.id);
-                            
-                            if (error) throw error;
-                          } catch (error) {
-                            console.error('Failed to update quote in Supabase:', error);
-                          }
-                        }
-                        
-                        setSeasons(updatedSeasons);
-                      } else {
-                        // 新規追加
-                        const newQuotes = [...(anime.quotes || []), {
-                          text: newQuoteText.trim(),
-                          character: newQuoteCharacter.trim() || undefined,
-                        }];
-                        
-                        const updatedSeasons = seasons.map(season => ({
-                          ...season,
-                          animes: season.animes.map(a =>
-                            a.id === animeId
-                              ? { ...a, quotes: newQuotes }
-                              : a
-                          ),
-                        }));
-                        
-                        // Supabaseを更新（ログイン時のみ）
-                        if (user) {
-                          try {
-                            const { error } = await supabase
-                              .from('animes')
-                              .update({ quotes: newQuotes })
-                              .eq('id', animeId)
-                              .eq('user_id', user.id);
-                            
-                            if (error) throw error;
-                          } catch (error) {
-                            console.error('Failed to add quote to Supabase:', error);
-                          }
-                        }
-                        
-                        setSeasons(updatedSeasons);
-                      }
-                      
-                      setShowAddQuoteModal(false);
-                      setEditingQuote(null);
-                      setNewQuoteAnimeId(null);
-                      setNewQuoteText('');
-                      setNewQuoteCharacter('');
-                    }
-                  }
-                }}
-                disabled={!newQuoteText.trim() || (!editingQuote && !newQuoteAnimeId)}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                {editingQuote ? '更新' : '追加'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddQuoteModal
+        show={showAddQuoteModal}
+        onClose={() => {
+          setShowAddQuoteModal(false);
+          setEditingQuote(null);
+        }}
+        allAnimes={allAnimes}
+        seasons={seasons}
+        setSeasons={setSeasons}
+        user={user}
+        editingQuote={editingQuote}
+        onSave={() => {
+          setShowAddQuoteModal(false);
+          setEditingQuote(null);
+        }}
+      />
 
       <SongModal
         show={showSongModal}
@@ -4823,124 +4316,14 @@ export default function Home() {
         initialSongArtist={newSongArtist}
       />
 
-      {/* DNAモーダル */}
-      {showDNAModal && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowDNAModal(false)}
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* DNAカード */}
-            <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 mb-4 shadow-lg">
-              {/* タイトル */}
-              <div className="text-center mb-4">
-                <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA</h2>
-                <span className="text-2xl">✨</span>
-              </div>
-              
-              {/* オタクタイプ */}
-              <div className="text-center mb-6">
-                <p className="text-white text-4xl font-black">
-                  🎵 音響派
-                </p>
-              </div>
-              
-              {/* 統計 */}
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-                  <p className="text-white text-2xl font-black">{count}</p>
-                  <p className="text-white/80 text-xs mt-1">作品</p>
-                </div>
-                <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-                  <p className="text-white text-2xl font-black">12</p>
-                  <p className="text-white/80 text-xs mt-1">周</p>
-                </div>
-                <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-                  <p className="text-white text-2xl font-black">
-                    {averageRating > 0 ? `${averageRating.toFixed(1)}` : '0.0'}
-                  </p>
-                  <p className="text-white/80 text-xs mt-1">平均</p>
-                </div>
-              </div>
-              
-              {/* 最推し作品 */}
-              <div className="mb-4">
-                <p className="text-white/90 text-xs font-medium mb-2 text-center">最推し作品</p>
-                <div className="flex justify-center gap-3">
-                  {(favoriteAnimeIds.length > 0
-                    ? favoriteAnimeIds
-                        .map(id => allAnimes.find(a => a.id === id))
-                        .filter((a): a is Anime => a !== undefined)
-                        .slice(0, 3)
-                    : allAnimes
-                        .filter(a => a.rating > 0)
-                        .sort((a, b) => b.rating - a.rating)
-                        .slice(0, 3)
-                  ).map((anime, index) => {
-                      const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
-                      return (
-                        <div
-                          key={anime.id}
-                          className="bg-white/20 backdrop-blur-sm rounded-lg w-16 h-20 flex items-center justify-center overflow-hidden relative"
-                        >
-                          {isImageUrl ? (
-                            <img
-                              src={anime.image}
-                              alt={anime.title}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                                const parent = (e.target as HTMLImageElement).parentElement;
-                                if (parent) {
-                                  parent.innerHTML = '<span class="text-3xl">🎬</span>';
-                                }
-                              }}
-                            />
-                          ) : (
-                            <span className="text-3xl">{anime.image || '🎬'}</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-              
-              {/* ロゴ */}
-              <div className="text-center pt-2 border-t border-white/20">
-                <p className="text-white/80 text-xs font-bold">アニメログ</p>
-              </div>
-            </div>
-            
-            {/* ボタン */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {}}
-                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <span>📥</span>
-                <span>保存</span>
-              </button>
-              <button
-                onClick={() => {}}
-                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <span>📤</span>
-                <span>シェア</span>
-              </button>
-            </div>
-            
-            <button
-              onClick={() => setShowDNAModal(false)}
-              className="w-full mt-3 text-gray-500 dark:text-gray-400 text-sm"
-            >
-              閉じる
-            </button>
-          </div>
-        </div>
-      )}
+      <DNAModal
+        show={showDNAModal}
+        onClose={() => setShowDNAModal(false)}
+        allAnimes={allAnimes}
+        favoriteAnimeIds={favoriteAnimeIds}
+        count={count}
+        averageRating={averageRating}
+      />
 
       {/* ボトムナビゲーション（スマホ・タブレット） */}
       <nav className="block lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 z-10">
