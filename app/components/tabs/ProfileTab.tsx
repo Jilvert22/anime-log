@@ -200,11 +200,11 @@ export function ProfileTab({
                 </p>
                 {userHandle ? (
                   <p className="text-white/80 text-sm mt-1">
-                    {isHandleVisible ? `@${userHandle}` : '@XXXX'}
+                    {!isHandleVisible ? `@${userHandle}` : '@XXXX'}
                   </p>
                 ) : (
                   <p className="text-white/80 text-sm mt-1">
-                    {isHandleVisible ? '' : '@XXXX'}
+                    {!isHandleVisible ? '' : '@XXXX'}
                   </p>
                 )}
               </div>
@@ -343,12 +343,12 @@ export function ProfileTab({
         <button
           onClick={() => setIsHandleVisible(!isHandleVisible)}
           className={`relative w-12 h-6 rounded-full transition-colors ${
-            isHandleVisible ? 'bg-[#ffc2d1]' : 'bg-gray-300 dark:bg-gray-600'
+            !isHandleVisible ? 'bg-[#ffc2d1]' : 'bg-gray-300 dark:bg-gray-600'
           }`}
         >
           <div
             className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-              isHandleVisible ? 'translate-x-6' : 'translate-x-0'
+              !isHandleVisible ? 'translate-x-6' : 'translate-x-0'
             }`}
           />
         </button>

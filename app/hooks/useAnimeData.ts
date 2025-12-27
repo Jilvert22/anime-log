@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Season, Anime } from '../types';
@@ -106,16 +106,26 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
     loadAnimes();
   }, [user, isLoading]);
 
-  // すべてのアニメを取得
-  const allAnimes = seasons.flatMap(season => season.animes);
+  // すべてのアニメを取得（メモ化）
+  const allAnimes = useMemo(
+    () => seasons.flatMap(season => season.animes),
+    [seasons]
+  );
 
-  // 平均評価を計算
-  const averageRating = allAnimes.length > 0 && allAnimes.some(a => a.rating > 0)
-    ? allAnimes.filter(a => a.rating > 0).reduce((sum, a) => sum + a.rating, 0) / allAnimes.filter(a => a.rating > 0).length
-    : 0;
+  // 平均評価を計算（メモ化）
+  const averageRating = useMemo(() => {
+    if (allAnimes.length === 0 || !allAnimes.some(a => a.rating > 0)) {
+      return 0;
+    }
+    const ratedAnimes = allAnimes.filter(a => a.rating > 0);
+    return ratedAnimes.reduce((sum, a) => sum + a.rating, 0) / ratedAnimes.length;
+  }, [allAnimes]);
 
-  // 累計周回数を計算
-  const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
+  // 累計周回数を計算（メモ化）
+  const totalRewatchCount = useMemo(
+    () => allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0),
+    [allAnimes]
+  );
 
   return {
     seasons,

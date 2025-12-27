@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import type { UserProfile } from '../lib/supabase';
 
-export function UserCard({ 
+function UserCardComponent({ 
   user, 
   onUserClick, 
   onFollowClick, 
@@ -46,3 +47,6 @@ export function UserCard({
     </div>
   );
 }
+
+// React.memoでメモ化
+export const UserCard = memo(UserCardComponent);

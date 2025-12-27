@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from './lib/supabase';
 import { 
   upsertUserProfile,
@@ -286,9 +286,93 @@ export default function Home() {
   } = useAnimeReviews(user);
 
   // ログアウト処理
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
-  };
+  }, [logout]);
+
+  // イベントハンドラのメモ化
+  const handleOpenAddForm = useCallback(() => {
+    setShowAddForm(true);
+  }, []);
+
+  const handleCloseAddForm = useCallback(() => {
+    setShowAddForm(false);
+  }, []);
+
+  const handleCloseReviewModal = useCallback(() => {
+    setShowReviewModal(false);
+  }, []);
+
+  const handleCloseSettings = useCallback(() => {
+    setShowSettings(false);
+  }, []);
+
+  const handleCloseFavoriteAnimeModal = useCallback(() => {
+    setShowFavoriteAnimeModal(false);
+  }, []);
+
+  const handleCloseUserProfileModal = useCallback(() => {
+    setShowUserProfileModal(false);
+  }, []);
+
+  const handleCloseFollowListModal = useCallback(() => {
+    setShowFollowListModal(false);
+  }, []);
+
+  const handleCloseAuthModal = useCallback(() => {
+    setShowAuthModal(false);
+  }, []);
+
+  const handleCloseAddQuoteModal = useCallback(() => {
+    setShowAddQuoteModal(false);
+    setEditingQuote(null);
+  }, []);
+
+  const handleCloseSongModal = useCallback(() => {
+    setShowSongModal(false);
+    setSongType(null);
+    setSelectedAnime(null);
+    setNewSongTitle('');
+    setNewSongArtist('');
+  }, []);
+
+  const handleCloseDNAModal = useCallback(() => {
+    setShowDNAModal(false);
+  }, []);
+
+  const handleOpenAddQuoteModal = useCallback(() => {
+    setEditingQuote(null);
+    setNewQuoteAnimeId(null);
+    setNewQuoteText('');
+    setNewQuoteCharacter('');
+    setShowAddQuoteModal(true);
+  }, []);
+
+  const handleEditQuote = useCallback((animeId: number, quoteIndex: number) => {
+    const anime = allAnimes.find(a => a.id === animeId);
+    if (anime?.quotes?.[quoteIndex]) {
+      setEditingQuote({ animeId, quoteIndex });
+      setNewQuoteText(anime.quotes[quoteIndex].text);
+      setNewQuoteCharacter(anime.quotes[quoteIndex].character || '');
+      setShowAddQuoteModal(true);
+    }
+  }, [allAnimes]);
+
+  const handleOpenCreateListModal = useCallback(() => {
+    setEditingList(null);
+    setShowCreateListModal(true);
+  }, []);
+
+  const handleSaveAddQuoteModal = useCallback(() => {
+    setShowAddQuoteModal(false);
+    setEditingQuote(null);
+  }, []);
+
+  const handleReviewPosted = useCallback(async () => {
+    if (selectedAnime) {
+      await loadReviews(selectedAnime.id);
+    }
+  }, [selectedAnime, loadReviews]);
 
   // アニメが選択されたときに感想を読み込む
   useEffect(() => {
@@ -322,7 +406,7 @@ export default function Home() {
             seasons={seasons}
             expandedSeasons={expandedSeasons}
             setExpandedSeasons={setExpandedSeasons}
-            onOpenAddForm={() => setShowAddForm(true)}
+            onOpenAddForm={handleOpenAddForm}
             setSelectedAnime={setSelectedAnime}
           />
         )}
@@ -356,31 +440,14 @@ export default function Home() {
             setQuoteFilterType={setQuoteFilterType}
             selectedAnimeForFilter={selectedAnimeForFilter}
             setSelectedAnimeForFilter={setSelectedAnimeForFilter}
-            onOpenAddQuoteModal={() => {
-              setEditingQuote(null);
-              setNewQuoteAnimeId(null);
-              setNewQuoteText('');
-              setNewQuoteCharacter('');
-              setShowAddQuoteModal(true);
-            }}
-            onEditQuote={(animeId, quoteIndex) => {
-              const anime = allAnimes.find(a => a.id === animeId);
-              if (anime?.quotes?.[quoteIndex]) {
-                setEditingQuote({ animeId, quoteIndex });
-                setNewQuoteText(anime.quotes[quoteIndex].text);
-                setNewQuoteCharacter(anime.quotes[quoteIndex].character || '');
-                setShowAddQuoteModal(true);
-              }
-            }}
+            onOpenAddQuoteModal={handleOpenAddQuoteModal}
+            onEditQuote={handleEditQuote}
             evangelistLists={evangelistLists}
             setEvangelistLists={setEvangelistLists}
             listSortType={listSortType}
             setListSortType={setListSortType}
             onSelectList={setSelectedList}
-            onOpenCreateListModal={() => {
-              setEditingList(null);
-              setShowCreateListModal(true);
-            }}
+            onOpenCreateListModal={handleOpenCreateListModal}
             voiceActors={voiceActors}
             setVoiceActors={setVoiceActors}
             voiceActorSearchQuery={voiceActorSearchQuery}
@@ -439,7 +506,7 @@ export default function Home() {
 
       <AddAnimeFormModal
         show={showAddForm}
-        onClose={() => setShowAddForm(false)}
+        onClose={handleCloseAddForm}
         seasons={seasons}
         setSeasons={setSeasons}
         expandedSeasons={expandedSeasons}
@@ -454,21 +521,17 @@ export default function Home() {
       {/* 感想投稿モーダル */}
       <ReviewModal
         show={showReviewModal}
-        onClose={() => setShowReviewModal(false)}
+        onClose={handleCloseReviewModal}
         selectedAnime={selectedAnime}
         user={user}
         userName={userName}
         userIcon={userIcon}
-        onReviewPosted={async () => {
-          if (selectedAnime) {
-            await loadReviews(selectedAnime.id);
-          }
-        }}
+        onReviewPosted={handleReviewPosted}
       />
 
       <SettingsModal
         show={showSettings}
-        onClose={() => setShowSettings(false)}
+        onClose={handleCloseSettings}
         userName={userName}
         setUserName={setUserName}
         userIcon={userIcon}
@@ -492,7 +555,7 @@ export default function Home() {
 
       <FavoriteAnimeModal
         show={showFavoriteAnimeModal}
-        onClose={() => setShowFavoriteAnimeModal(false)}
+        onClose={handleCloseFavoriteAnimeModal}
         allAnimes={allAnimes}
         favoriteAnimeIds={favoriteAnimeIds}
         setFavoriteAnimeIds={setFavoriteAnimeIds}
@@ -500,7 +563,7 @@ export default function Home() {
 
       <UserProfileModal
         show={showUserProfileModal}
-        onClose={() => setShowUserProfileModal(false)}
+        onClose={handleCloseUserProfileModal}
         selectedUserProfile={selectedUserProfile}
         selectedUserAnimes={selectedUserAnimes}
         user={user}
@@ -511,7 +574,7 @@ export default function Home() {
 
       <FollowListModal
         show={showFollowListModal}
-        onClose={() => setShowFollowListModal(false)}
+        onClose={handleCloseFollowListModal}
         user={user}
         followListType={followListType}
         setFollowListType={setFollowListType}
@@ -525,7 +588,7 @@ export default function Home() {
       {/* 認証モーダル */}
       <AuthModal
         show={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+        onClose={handleCloseAuthModal}
         onAuthSuccess={() => {
           // 認証成功後の処理（必要に応じて）
         }}
@@ -601,30 +664,18 @@ export default function Home() {
 
       <AddQuoteModal
         show={showAddQuoteModal}
-        onClose={() => {
-          setShowAddQuoteModal(false);
-          setEditingQuote(null);
-        }}
+        onClose={handleCloseAddQuoteModal}
         allAnimes={allAnimes}
         seasons={seasons}
         setSeasons={setSeasons}
         user={user}
         editingQuote={editingQuote}
-        onSave={() => {
-          setShowAddQuoteModal(false);
-          setEditingQuote(null);
-        }}
+        onSave={handleSaveAddQuoteModal}
       />
 
       <SongModal
         show={showSongModal}
-        onClose={() => {
-          setShowSongModal(false);
-          setSongType(null);
-          setSelectedAnime(null);
-          setNewSongTitle('');
-          setNewSongArtist('');
-        }}
+        onClose={handleCloseSongModal}
         selectedAnime={selectedAnime}
         setSelectedAnime={setSelectedAnime}
         allAnimes={allAnimes}
@@ -638,7 +689,7 @@ export default function Home() {
 
       <DNAModal
         show={showDNAModal}
-        onClose={() => setShowDNAModal(false)}
+        onClose={handleCloseDNAModal}
         allAnimes={allAnimes}
         favoriteAnimeIds={favoriteAnimeIds}
         count={count}

@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { memo, useState, useMemo, useCallback } from 'react';
+import Image from 'next/image';
 import type { Anime } from '../types';
 import { StarRating } from './StarRating';
 import { ratingLabels, availableTags } from '../constants';
 import { translateGenre } from '../utils/helpers';
 
-export function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => void }) {
+function AnimeCardComponent({ anime, onClick }: { anime: Anime; onClick: () => void }) {
   const rating = ratingLabels[anime.rating];
   const rewatchCount = anime.rewatchCount ?? 0;
   const [imageError, setImageError] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
   
   // imageがURLか絵文字かを判定（httpまたはhttpsで始まる場合）
-  const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
+  const isImageUrl = useMemo(
+    () => anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://')),
+    [anime.image]
+  );
   
-  // コンポーネントがマウントされた時、またはimageが変わった時にリセット
-  useEffect(() => {
-    if (isImageUrl) {
-      setImageLoading(true);
-      setImageError(false);
-    } else {
-      setImageLoading(false);
-      setImageError(false);
-    }
-  }, [anime.image, isImageUrl]);
+  // 画像エラー時のフォールバック処理
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
   
   return (
     <div 
@@ -47,25 +44,17 @@ export function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => voi
         
         {/* 画像または絵文字を表示 */}
         {isImageUrl && !imageError ? (
-          <>
-            {imageLoading && (
-              <div className="absolute inset-0 bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] animate-pulse" />
-            )}
-            <img
-              src={anime.image}
-              alt={anime.title}
-              className={`w-full h-full object-cover ${imageLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-              onLoad={() => {
-                setImageLoading(false);
-                setImageError(false);
-              }}
-              onError={(e) => {
-                console.error('Image load error for:', anime.title, 'URL:', anime.image);
-                setImageError(true);
-                setImageLoading(false);
-              }}
-            />
-          </>
+          <Image
+            src={anime.image}
+            alt={anime.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZmZjMmQxIi8+PC9zdmc+"
+            onError={handleImageError}
+          />
         ) : (
           <span>{imageError ? '🎬' : anime.image || '🎬'}</span>
         )}
@@ -105,3 +94,6 @@ export function AnimeCard({ anime, onClick }: { anime: Anime; onClick: () => voi
     </div>
   );
 }
+
+// React.memoでメモ化（animeオブジェクトの参照が変わった場合のみ再レンダリング）
+export const AnimeCard = memo(AnimeCardComponent);

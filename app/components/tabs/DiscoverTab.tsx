@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { Anime, Season } from '../../types';
 import { availableTags, ratingLabels } from '../../constants';
 
@@ -10,93 +11,118 @@ export function DiscoverTab({
   allAnimes: Anime[];
   seasons: Season[];
 }) {
-  return (
-    <div className="space-y-6">
-      {(() => {
-        // 統計データの計算
-        const totalAnimes = allAnimes.length;
-        const totalRewatchCount = allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0);
-        // 評価が未登録（rating: 0またはnull）の場合は平均計算から除外
-        const ratedAnimes = allAnimes.filter(a => a.rating && a.rating > 0);
-        const avgRating = ratedAnimes.length > 0
-          ? ratedAnimes.reduce((sum, a) => sum + a.rating, 0) / ratedAnimes.length
-          : 0;
-        
-        // 最も見たクールを計算
-        const seasonCounts: { [key: string]: number } = {};
-        seasons.forEach(season => {
-          seasonCounts[season.name] = season.animes.length;
-        });
-        const mostWatchedSeason = Object.entries(seasonCounts)
-          .sort((a, b) => b[1] - a[1])[0];
-        
-        // タグの使用頻度
-        const tagCounts: { [key: string]: number } = {};
-        allAnimes.forEach(anime => {
-          anime.tags?.forEach(tag => {
-            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-          });
-        });
-        const sortedTags = Object.entries(tagCounts)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5);
-        const maxTagCount = sortedTags.length > 0 ? sortedTags[0][1] : 1;
-        
-        // 評価分布
-        const ratingCounts = [5, 4, 3, 2, 1].map(rating => ({
-          rating,
-          count: allAnimes.filter(a => a.rating === rating).length,
-        }));
-        const maxRatingCount = Math.max(...ratingCounts.map(r => r.count), 1);
-        
-        // クール別視聴数
-        const seasonAnimeCounts = seasons.map(season => ({
-          name: season.name,
-          count: season.animes.length,
-        }));
-        const maxSeasonCount = Math.max(...seasonAnimeCounts.map(s => s.count), 1);
-        
-        // タグの集計（マイページから移動）
-        const tagCountsForProfile: { [key: string]: number } = {};
-        allAnimes.forEach(anime => {
-          anime.tags?.forEach(tag => {
-            tagCountsForProfile[tag] = (tagCountsForProfile[tag] || 0) + 1;
-          });
-        });
-        const sortedTagsForProfile = Object.entries(tagCountsForProfile)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5);
-        const mostPopularTag = sortedTagsForProfile[0] ? availableTags.find(t => t.value === sortedTagsForProfile[0][0]) : null;
-        
-        // 制作会社を実際のアニメデータから集計
-        const studioCounts: { [key: string]: number } = {};
-        allAnimes.forEach(anime => {
-          if (anime.studios && Array.isArray(anime.studios)) {
-            anime.studios.forEach(studio => {
-              if (studio) {
-                studioCounts[studio] = (studioCounts[studio] || 0) + 1;
-              }
-            });
+  // 統計データの計算をメモ化
+  const totalAnimes = useMemo(() => allAnimes.length, [allAnimes.length]);
+  
+  const totalRewatchCount = useMemo(
+    () => allAnimes.reduce((sum, a) => sum + (a.rewatchCount ?? 0), 0),
+    [allAnimes]
+  );
+  
+  const avgRating = useMemo(() => {
+    const ratedAnimes = allAnimes.filter(a => a.rating && a.rating > 0);
+    return ratedAnimes.length > 0
+      ? ratedAnimes.reduce((sum, a) => sum + a.rating, 0) / ratedAnimes.length
+      : 0;
+  }, [allAnimes]);
+  
+  // 最も見たクールを計算
+  const mostWatchedSeason = useMemo(() => {
+    const seasonCounts: { [key: string]: number } = {};
+    seasons.forEach(season => {
+      seasonCounts[season.name] = season.animes.length;
+    });
+    return Object.entries(seasonCounts).sort((a, b) => b[1] - a[1])[0];
+  }, [seasons]);
+  
+  // タグの使用頻度
+  const { sortedTags, maxTagCount } = useMemo(() => {
+    const tagCounts: { [key: string]: number } = {};
+    allAnimes.forEach(anime => {
+      anime.tags?.forEach(tag => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      });
+    });
+    const sorted = Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    return {
+      sortedTags: sorted,
+      maxTagCount: sorted.length > 0 ? sorted[0][1] : 1,
+    };
+  }, [allAnimes]);
+  
+  // 評価分布
+  const { ratingCounts, maxRatingCount } = useMemo(() => {
+    const counts = [5, 4, 3, 2, 1].map(rating => ({
+      rating,
+      count: allAnimes.filter(a => a.rating === rating).length,
+    }));
+    return {
+      ratingCounts: counts,
+      maxRatingCount: Math.max(...counts.map(r => r.count), 1),
+    };
+  }, [allAnimes]);
+  
+  // クール別視聴数
+  const { seasonAnimeCounts, maxSeasonCount } = useMemo(() => {
+    const counts = seasons.map(season => ({
+      name: season.name,
+      count: season.animes.length,
+    }));
+    return {
+      seasonAnimeCounts: counts,
+      maxSeasonCount: Math.max(...counts.map(s => s.count), 1),
+    };
+  }, [seasons]);
+  
+  // タグの集計（マイページから移動）
+  const mostPopularTag = useMemo(() => {
+    const tagCountsForProfile: { [key: string]: number } = {};
+    allAnimes.forEach(anime => {
+      anime.tags?.forEach(tag => {
+        tagCountsForProfile[tag] = (tagCountsForProfile[tag] || 0) + 1;
+      });
+    });
+    const sortedTagsForProfile = Object.entries(tagCountsForProfile)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    return sortedTagsForProfile[0] ? availableTags.find(t => t.value === sortedTagsForProfile[0][0]) : null;
+  }, [allAnimes]);
+  
+  // 制作会社を実際のアニメデータから集計
+  const studios = useMemo(() => {
+    const studioCounts: { [key: string]: number } = {};
+    allAnimes.forEach(anime => {
+      if (anime.studios && Array.isArray(anime.studios)) {
+        anime.studios.forEach(studio => {
+          if (studio) {
+            studioCounts[studio] = (studioCounts[studio] || 0) + 1;
           }
         });
-        const studios = Object.entries(studioCounts)
-          .map(([name, count]) => ({ name, count }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 10); // 上位10社
-        
-        // 傾向テキスト生成
-        const topTags = sortedTags.slice(0, 2);
-        const tendencyText = topTags.length > 0
-          ? `あなたは${topTags.map(([tag]) => {
-              const tagInfo = availableTags.find(t => t.value === tag);
-              return `${tagInfo?.emoji}${tagInfo?.label || tag}`;
-            }).join('と')}な作品を好む傾向があります`
-          : 'データが不足しています';
-        
-        return (
-          <>
-            {/* 視聴統計サマリー（統合版、一番上） */}
-            <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
+      }
+    });
+    return Object.entries(studioCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10); // 上位10社
+  }, [allAnimes]);
+  
+  // 傾向テキスト生成
+  const tendencyText = useMemo(() => {
+    const topTags = sortedTags.slice(0, 2);
+    return topTags.length > 0
+      ? `あなたは${topTags.map(([tag]) => {
+          const tagInfo = availableTags.find(t => t.value === tag);
+          return `${tagInfo?.emoji}${tagInfo?.label || tag}`;
+        }).join('と')}な作品を好む傾向があります`
+      : 'データが不足しています';
+  }, [sortedTags]);
+
+  return (
+    <div className="space-y-6">
+      {/* 視聴統計サマリー（統合版、一番上） */}
+      <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <span>📊</span>
                 視聴統計サマリー
@@ -124,9 +150,9 @@ export function DiscoverTab({
                 </div>
               </div>
             </div>
-            
-            {/* あなたの傾向まとめ（サマリーの次） */}
-            <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
+      
+      {/* あなたの傾向まとめ（サマリーの次） */}
+      <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
               <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
                 <span>✨</span>
                 あなたの傾向まとめ
@@ -134,8 +160,8 @@ export function DiscoverTab({
               <p className="text-sm leading-relaxed">{tendencyText}</p>
             </div>
 
-            {/* ジャンル分布 */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+      {/* ジャンル分布 */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
               <h3 className="font-bold text-lg mb-3 dark:text-white flex items-center gap-2">
                 <span>🏷️</span>
                 ジャンル分布
@@ -177,8 +203,8 @@ export function DiscoverTab({
               )}
             </div>
 
-            {/* 評価分布 */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+      {/* 評価分布 */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
               <h3 className="font-bold text-lg mb-3 dark:text-white flex items-center gap-2">
                 <span>⭐</span>
                 評価分布
@@ -220,8 +246,8 @@ export function DiscoverTab({
               </div>
             </div>
 
-            {/* 視聴ペース */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+      {/* 視聴ペース */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
               <h3 className="font-bold text-lg mb-3 dark:text-white flex items-center gap-2">
                 <span>📅</span>
                 視聴ペース
@@ -257,8 +283,8 @@ export function DiscoverTab({
               )}
             </div>
 
-            {/* よく見る制作会社（最後） */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+      {/* よく見る制作会社（最後） */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
               <h3 className="font-bold text-lg mb-3 dark:text-white">よく見る制作会社</h3>
               {studios.length > 0 ? (
                 <div className="space-y-2">
@@ -273,9 +299,6 @@ export function DiscoverTab({
                 <p className="text-sm text-gray-400 text-center py-4">データがありません</p>
               )}
             </div>
-          </>
-        );
-      })()}
     </div>
   );
 }

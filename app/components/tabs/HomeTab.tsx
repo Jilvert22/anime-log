@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { Anime, Season } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 
@@ -138,106 +139,119 @@ export function HomeTab({
       )}
 
       {homeSubTab === 'series' && (
-        <div className="space-y-6">
-          {(() => {
-            // すべてのアニメを取得
-            const allAnimes = seasons.flatMap(s => s.animes);
-            
-            // シリーズごとにグループ化
-            const seriesMap = new Map<string, Anime[]>();
-            const standaloneAnimes: Anime[] = [];
-            
-            allAnimes.forEach(anime => {
-              if (anime.seriesName) {
-                if (!seriesMap.has(anime.seriesName)) {
-                  seriesMap.set(anime.seriesName, []);
-                }
-                seriesMap.get(anime.seriesName)!.push(anime);
-              } else {
-                standaloneAnimes.push(anime);
-              }
-            });
-            
-            // シリーズ内を時系列順にソート（seasonNameから判断、または追加順）
-            seriesMap.forEach((animes, seriesName) => {
-              animes.sort((a, b) => {
-                // 同じシーズン内の順序を保持するため、元の順序を使用
-                const aSeason = seasons.find(s => s.animes.includes(a));
-                const bSeason = seasons.find(s => s.animes.includes(b));
-                if (aSeason && bSeason) {
-                  const seasonIndexA = seasons.indexOf(aSeason);
-                  const seasonIndexB = seasons.indexOf(bSeason);
-                  if (seasonIndexA !== seasonIndexB) {
-                    return seasonIndexA - seasonIndexB;
-                  }
-                  const animeIndexA = aSeason.animes.indexOf(a);
-                  const animeIndexB = bSeason.animes.indexOf(b);
-                  return animeIndexA - animeIndexB;
-                }
-                return 0;
-              });
-            });
-            
-            const seriesArray = Array.from(seriesMap.entries());
-            
-            return (
-              <>
-                {/* シリーズ一覧 */}
-                {seriesArray.map(([seriesName, animes]) => (
-                  <div key={seriesName} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-xl font-bold dark:text-white">{seriesName}</h2>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        全{animes.length}作品
-                      </span>
-                    </div>
-                    <div className="overflow-x-auto pb-2 scrollbar-hide">
-                      <div className="flex gap-3" style={{ minWidth: 'max-content' }}>
-                        {animes.map((anime) => (
-                          <div
-                            key={anime.id}
-                            onClick={() => setSelectedAnime(anime)}
-                            className="shrink-0 w-24 cursor-pointer"
-                          >
-                            <AnimeCard anime={anime} onClick={() => setSelectedAnime(anime)} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {/* 単発作品 */}
-                {standaloneAnimes.length > 0 && (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-xl font-bold dark:text-white">単発作品</h2>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        全{standaloneAnimes.length}作品
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                      {standaloneAnimes.map((anime) => (
-                        <AnimeCard
-                          key={anime.id}
-                          anime={anime}
-                          onClick={() => setSelectedAnime(anime)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {seriesArray.length === 0 && standaloneAnimes.length === 0 && (
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-                    アニメが登録されていません
-                  </p>
-                )}
-              </>
-            );
-          })()}
-        </div>
+        <SeriesView seasons={seasons} setSelectedAnime={setSelectedAnime} />
       )}
     </>
+  );
+}
+
+// シリーズビューコンポーネント（計算をメモ化）
+function SeriesView({ 
+  seasons, 
+  setSelectedAnime 
+}: { 
+  seasons: Season[]; 
+  setSelectedAnime: (anime: Anime | null) => void;
+}) {
+  // シリーズごとのグループ化とソートをメモ化
+  const { seriesArray, standaloneAnimes } = useMemo(() => {
+    // すべてのアニメを取得
+    const allAnimes = seasons.flatMap(s => s.animes);
+    
+    // シリーズごとにグループ化
+    const seriesMap = new Map<string, Anime[]>();
+    const standalone: Anime[] = [];
+    
+    allAnimes.forEach(anime => {
+      if (anime.seriesName) {
+        if (!seriesMap.has(anime.seriesName)) {
+          seriesMap.set(anime.seriesName, []);
+        }
+        seriesMap.get(anime.seriesName)!.push(anime);
+      } else {
+        standalone.push(anime);
+      }
+    });
+    
+    // シリーズ内を時系列順にソート（seasonNameから判断、または追加順）
+    seriesMap.forEach((animes) => {
+      animes.sort((a, b) => {
+        // 同じシーズン内の順序を保持するため、元の順序を使用
+        const aSeason = seasons.find(s => s.animes.includes(a));
+        const bSeason = seasons.find(s => s.animes.includes(b));
+        if (aSeason && bSeason) {
+          const seasonIndexA = seasons.indexOf(aSeason);
+          const seasonIndexB = seasons.indexOf(bSeason);
+          if (seasonIndexA !== seasonIndexB) {
+            return seasonIndexA - seasonIndexB;
+          }
+          const animeIndexA = aSeason.animes.indexOf(a);
+          const animeIndexB = bSeason.animes.indexOf(b);
+          return animeIndexA - animeIndexB;
+        }
+        return 0;
+      });
+    });
+    
+    return {
+      seriesArray: Array.from(seriesMap.entries()),
+      standaloneAnimes: standalone,
+    };
+  }, [seasons]);
+
+  return (
+    <div className="space-y-6">
+      {/* シリーズ一覧 */}
+      {seriesArray.map(([seriesName, animes]) => (
+        <div key={seriesName} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-bold dark:text-white">{seriesName}</h2>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              全{animes.length}作品
+            </span>
+          </div>
+          <div className="overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-3" style={{ minWidth: 'max-content' }}>
+              {animes.map((anime) => (
+                <div
+                  key={anime.id}
+                  onClick={() => setSelectedAnime(anime)}
+                  className="shrink-0 w-24 cursor-pointer"
+                >
+                  <AnimeCard anime={anime} onClick={() => setSelectedAnime(anime)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+      
+      {/* 単発作品 */}
+      {standaloneAnimes.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-bold dark:text-white">単発作品</h2>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              全{standaloneAnimes.length}作品
+            </span>
+          </div>
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {standaloneAnimes.map((anime) => (
+              <AnimeCard
+                key={anime.id}
+                anime={anime}
+                onClick={() => setSelectedAnime(anime)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {seriesArray.length === 0 && standaloneAnimes.length === 0 && (
+        <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+          アニメが登録されていません
+        </p>
+      )}
+    </div>
   );
 }
