@@ -5,6 +5,9 @@ import type { Anime, Season } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 import { GalleryTab } from './GalleryTab';
 import { WatchlistTab } from './WatchlistTab';
+import { searchAnimeBySeason } from '../../lib/anilist';
+import { translateGenre, sortSeasonsByTime } from '../../utils/helpers';
+import { supabase, addToWatchlist } from '../../lib/supabase';
 
 // フィルターの型
 type FilterType = 'all' | 'unrated' | 'unwatched';
@@ -62,12 +65,16 @@ function SeasonHeader({
   season, 
   animes, 
   isExpanded, 
-  onToggle 
+  onToggle,
+  isEmpty,
+  onSearch
 }: { 
   season: string; 
   animes: Anime[]; 
   isExpanded: boolean; 
   onToggle: () => void;
+  isEmpty?: boolean;
+  onSearch?: () => void;
 }) {
   const stats = useMemo(() => {
     const total = animes.length;
@@ -79,31 +86,55 @@ function SeasonHeader({
   }, [animes]);
 
   return (
-    <button
-      onClick={onToggle}
-      className="w-full flex items-center justify-between py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors ml-4"
-    >
-      <div className="flex items-center gap-2">
-        <span className="text-gray-400 text-sm">
-          {isExpanded ? '▼' : '▶'}
-        </span>
-        <span className="font-medium text-gray-700 dark:text-gray-300">{season}</span>
-      </div>
-      
-      <div className="flex items-center gap-3 text-sm">
-        <span className="text-gray-500 dark:text-gray-400">
-          <span className="font-medium" style={{ color: '#764ba2' }}>{stats.total}</span> 作品
-        </span>
-        <span className="text-gray-500 dark:text-gray-400">
-          平均 <span className="font-medium text-orange-500">{stats.avgRating}</span>
-        </span>
-        {stats.godTier > 0 && (
-          <span className="text-gray-500 dark:text-gray-400">
-            神作 <span className="font-medium" style={{ color: '#e879d4' }}>{stats.godTier}</span>
+    <div className={`w-full flex items-center justify-between py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors ml-4 ${
+      isEmpty ? 'border border-dashed border-gray-300 dark:border-gray-600' : ''
+    }`}>
+      <button
+        onClick={onToggle}
+        className="flex-1 flex items-center justify-between"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-gray-400 text-sm">
+            {isExpanded ? '▼' : '▶'}
           </span>
-        )}
-      </div>
-    </button>
+          <span className={`font-medium ${isEmpty ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
+            {season}
+            {isEmpty && <span className="ml-2 text-xs">(未登録)</span>}
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-3 text-sm">
+          {isEmpty ? (
+            <span className="text-gray-400 dark:text-gray-500 text-xs">作品を検索</span>
+          ) : (
+            <>
+              <span className="text-gray-500 dark:text-gray-400">
+                <span className="font-medium" style={{ color: '#764ba2' }}>{stats.total}</span> 作品
+              </span>
+              <span className="text-gray-500 dark:text-gray-400">
+                平均 <span className="font-medium text-orange-500">{stats.avgRating}</span>
+              </span>
+              {stats.godTier > 0 && (
+                <span className="text-gray-500 dark:text-gray-400">
+                  神作 <span className="font-medium" style={{ color: '#e879d4' }}>{stats.godTier}</span>
+                </span>
+              )}
+            </>
+          )}
+        </div>
+      </button>
+      {!isEmpty && onSearch && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onSearch();
+          }}
+          className="ml-2 px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          検索
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -122,6 +153,11 @@ export function HomeTab({
   setSelectedAnime,
   allAnimes,
   user,
+  setSeasons,
+  extractSeriesName,
+  getSeasonName,
+  animeToSupabase,
+  supabaseToAnime,
 }: {
   homeSubTab: 'seasons' | 'series' | 'gallery' | 'watchlist';
   setHomeSubTab: (tab: 'seasons' | 'series' | 'gallery' | 'watchlist') => void;
@@ -137,8 +173,17 @@ export function HomeTab({
   setSelectedAnime: (anime: Anime | null) => void;
   allAnimes: Anime[];
   user: any;
+  setSeasons: (seasons: Season[]) => void;
+  extractSeriesName: (title: string) => string | undefined;
+  getSeasonName: (season: string) => string;
+  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => any;
+  supabaseToAnime: (row: any) => Anime;
 }) {
   const [filter, setFilter] = useState<FilterType>('all');
+  const [showAllSeasons, setShowAllSeasons] = useState(false); // すべての年・季節を表示するか
+  const [seasonSearchResults, setSeasonSearchResults] = useState<Map<string, any[]>>(new Map()); // シーズン検索結果
+  const [loadingSeasons, setLoadingSeasons] = useState<Set<string>>(new Set()); // ローディング中のシーズン
+  const [expandedSeasonSearches, setExpandedSeasonSearches] = useState<Set<string>>(new Set()); // 展開されている検索結果
   const seasonOrder = ['冬', '春', '夏', '秋'];
 
   // フィルター適用
@@ -179,31 +224,83 @@ export function HomeTab({
       });
     });
     
+    // すべて表示モードの場合、1970年から現在年+1年までのすべての年・季節を含める
+    const currentYear = new Date().getFullYear();
+    const startYear = 1970; // アニメのクールは1970年代から始まる
+    const endYear = currentYear + 1; // 来年まで表示（来クールの準備）
+    
+    if (showAllSeasons) {
+      for (let year = endYear; year >= startYear; year--) {
+        const yearStr = year.toString();
+        if (!data.has(yearStr)) {
+          data.set(yearStr, new Map());
+        }
+        // すべての季節を追加（登録がない場合でも）
+        seasonOrder.forEach(seasonName => {
+          if (!data.get(yearStr)!.has(seasonName)) {
+            data.get(yearStr)!.set(seasonName, []);
+          }
+        });
+      }
+    }
+    
     // 年を降順でソート
-    const sortedYears = Array.from(data.keys()).sort((a, b) => Number(b) - Number(a));
+    const sortedYears = Array.from(data.keys())
+      .filter(year => {
+        if (showAllSeasons) {
+          const yearNum = Number(year);
+          return yearNum >= startYear && yearNum <= endYear;
+        }
+        return true;
+      })
+      .sort((a, b) => Number(b) - Number(a));
     
     return sortedYears
       .map(year => ({
         year,
         seasons: seasonOrder
-          .filter(s => data.get(year)!.has(s) && data.get(year)!.get(s)!.length > 0)
+          .filter(s => {
+            if (showAllSeasons) {
+              // すべて表示モード: すべての季節を表示
+              return true;
+            } else {
+              // 登録済みのみ表示モード: 作品がある季節のみ表示
+              return data.get(year)!.has(s) && data.get(year)!.get(s)!.length > 0;
+            }
+          })
           .map(s => ({
             season: s,
-            animes: data.get(year)!.get(s)!,
+            animes: data.get(year)!.get(s) || [],
           })),
         allAnimes: Array.from(data.get(year)!.values()).flat(),
       }))
-      .filter(y => y.allAnimes.length > 0); // 作品がない年は非表示
-  }, [seasons, filterAnime, seasonOrder]);
+      .filter(y => {
+        if (showAllSeasons) {
+          // すべて表示モード: すべての年を表示
+          return true;
+        } else {
+          // 登録済みのみ表示モード: 作品がある年のみ表示
+          return y.allAnimes.length > 0;
+        }
+      });
+  }, [seasons, filterAnime, seasonOrder, showAllSeasons]);
 
   // 全展開/全折りたたみ
   const expandAll = useCallback(() => {
-    const allYears = new Set(yearSeasonData.map(y => y.year));
+    const allYears = new Set<string>();
     const allSeasons = new Set<string>();
     yearSeasonData.forEach(y => {
-      y.seasons.forEach(s => {
-        allSeasons.add(`${y.year}-${s.season}`);
-      });
+      // 作品がある年のみ展開
+      const hasAnimes = y.seasons.some(s => s.animes.length > 0);
+      if (hasAnimes) {
+        allYears.add(y.year);
+        // 作品がある季節のみ展開
+        y.seasons.forEach(s => {
+          if (s.animes.length > 0) {
+            allSeasons.add(`${y.year}-${s.season}`);
+          }
+        });
+      }
     });
     setExpandedYears(allYears);
     setExpandedSeasons(allSeasons);
@@ -214,8 +311,19 @@ export function HomeTab({
     setExpandedSeasons(new Set());
   }, [setExpandedYears, setExpandedSeasons]);
 
-  const isAllExpanded = expandedYears.size === yearSeasonData.length && 
-    yearSeasonData.every(y => y.seasons.every(s => expandedSeasons.has(`${y.year}-${s.season}`)));
+  // 作品があるクールのみを対象に展開状態を判定
+  const isAllExpanded = useMemo(() => {
+    const yearsWithAnimes = yearSeasonData.filter(y => 
+      y.seasons.some(s => s.animes.length > 0)
+    );
+    const seasonsWithAnimes = yearsWithAnimes.flatMap(y => 
+      y.seasons.filter(s => s.animes.length > 0).map(s => `${y.year}-${s.season}`)
+    );
+    
+    return yearsWithAnimes.length > 0 &&
+           yearsWithAnimes.every(y => expandedYears.has(y.year)) &&
+           seasonsWithAnimes.every(key => expandedSeasons.has(key));
+  }, [yearSeasonData, expandedYears, expandedSeasons]);
 
   // 年の展開切り替え
   const toggleYear = useCallback((year: string) => {
@@ -234,6 +342,58 @@ export function HomeTab({
     setExpandedYears(newExpanded);
   }, [expandedYears, expandedSeasons, yearSeasonData, setExpandedYears, setExpandedSeasons]);
 
+  // シーズンの作品を検索
+  const searchSeasonAnimes = useCallback(async (year: string, season: string, forceRefresh: boolean = false) => {
+    const key = `${year}-${season}`;
+    if (!forceRefresh && (loadingSeasons.has(key) || seasonSearchResults.has(key))) {
+      return Promise.resolve();
+    }
+
+    setLoadingSeasons(prev => new Set(prev).add(key));
+
+    try {
+      // 季節名をAniListの形式に変換
+      const seasonMap: Record<string, 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER'> = {
+        '春': 'SPRING',
+        '夏': 'SUMMER',
+        '秋': 'FALL',
+        '冬': 'WINTER',
+      };
+      const anilistSeason = seasonMap[season];
+      if (!anilistSeason) return Promise.resolve();
+
+      const yearNum = parseInt(year, 10);
+      const result = await searchAnimeBySeason(anilistSeason, yearNum, 1, 50);
+      
+      // 既に登録済みのアニメを除外
+      const registeredTitles = new Set(
+        allAnimes.map(a => a.title.toLowerCase().trim())
+      );
+      
+      const filteredResults = result.media.filter((anime: any) => {
+        const titleNative = (anime.title?.native || '').toLowerCase().trim();
+        const titleRomaji = (anime.title?.romaji || '').toLowerCase().trim();
+        return !registeredTitles.has(titleNative) && !registeredTitles.has(titleRomaji);
+      });
+      
+      setSeasonSearchResults(prev => {
+        const newMap = new Map(prev);
+        newMap.set(key, filteredResults);
+        return newMap;
+      });
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Failed to search season animes:', error);
+      return Promise.resolve();
+    } finally {
+      setLoadingSeasons(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(key);
+        return newSet;
+      });
+    }
+  }, [loadingSeasons, seasonSearchResults, allAnimes]);
+
   // 季節の展開切り替え
   const toggleSeason = useCallback((year: string, season: string) => {
     const key = `${year}-${season}`;
@@ -242,9 +402,118 @@ export function HomeTab({
       newExpanded.delete(key);
     } else {
       newExpanded.add(key);
+      // 未登録のシーズンの場合、検索を実行
+      const yearData = yearSeasonData.find(y => y.year === year);
+      const seasonData = yearData?.seasons.find(s => s.season === season);
+      if (seasonData && seasonData.animes.length === 0 && !seasonSearchResults.has(key) && !loadingSeasons.has(key)) {
+        // 検索を実行し、完了後に自動的に展開
+        searchSeasonAnimes(year, season, false).then(() => {
+          // 検索完了後、自動的に検索結果も展開
+          setExpandedSeasonSearches(prev => new Set(prev).add(key));
+        });
+      } else if (seasonData && seasonData.animes.length === 0 && seasonSearchResults.has(key)) {
+        // 既に検索結果がある場合は、自動的に展開
+        setExpandedSeasonSearches(prev => new Set(prev).add(key));
+      }
     }
     setExpandedSeasons(newExpanded);
-  }, [expandedSeasons, setExpandedSeasons]);
+  }, [expandedSeasons, setExpandedSeasons, yearSeasonData, seasonSearchResults, loadingSeasons, searchSeasonAnimes, setExpandedSeasonSearches]);
+
+  // 検索結果から作品を追加
+  const addAnimeFromSearch = useCallback(async (result: any, year: string, season: string) => {
+    if (!user) return;
+
+    try {
+      // 有効なIDのみを取得して最大値を計算
+      const allAnimeIds = seasons.flatMap(s => s.animes).map(a => a.id).filter(id => typeof id === 'number' && !isNaN(id));
+      const maxId = allAnimeIds.length > 0 ? Math.max(...allAnimeIds) : 0;
+      const seasonName = `${year}年${season}`;
+      
+      const seriesName = extractSeriesName(result.title?.native || result.title?.romaji || '');
+      const newAnime: Anime = {
+        id: maxId + 1,
+        title: result.title?.native || result.title?.romaji || '',
+        image: result.coverImage?.large || result.coverImage?.medium || '🎬',
+        rating: 0,
+        watched: false,
+        rewatchCount: 1,
+        tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
+        seriesName,
+        studios: result.studios?.nodes?.map((s: any) => s.name) || [],
+      };
+
+      // Supabaseに保存
+      const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
+      const { error } = await supabase
+        .from('animes')
+        .insert(supabaseData);
+
+      if (error) {
+        console.error('Failed to add anime:', error);
+        return;
+      }
+
+      // ローカル状態を更新
+      const existingSeasonIndex = seasons.findIndex(s => s.name === seasonName);
+      let updatedSeasons: Season[];
+
+      if (existingSeasonIndex === -1) {
+        updatedSeasons = [...seasons, { name: seasonName, animes: [newAnime] }];
+      } else {
+        updatedSeasons = seasons.map((s, index) =>
+          index === existingSeasonIndex
+            ? { ...s, animes: [...s.animes, newAnime] }
+            : s
+        );
+      }
+
+      updatedSeasons = sortSeasonsByTime(updatedSeasons);
+      setSeasons(updatedSeasons);
+
+      // 検索結果から削除（追加したアニメを検索結果から除外）
+      const key = `${year}-${season}`;
+      setSeasonSearchResults(prev => {
+        const newMap = new Map(prev);
+        const results = newMap.get(key) || [];
+        const titleNative = (result.title?.native || '').toLowerCase().trim();
+        const titleRomaji = (result.title?.romaji || '').toLowerCase().trim();
+        newMap.set(key, results.filter((r: any) => {
+          const rTitleNative = (r.title?.native || '').toLowerCase().trim();
+          const rTitleRomaji = (r.title?.romaji || '').toLowerCase().trim();
+          return r.id !== result.id && 
+                 rTitleNative !== titleNative && 
+                 rTitleRomaji !== titleRomaji &&
+                 rTitleNative !== titleRomaji &&
+                 rTitleRomaji !== titleNative;
+        }));
+        return newMap;
+      });
+    } catch (error) {
+      console.error('Failed to add anime from search:', error);
+    }
+  }, [user, seasons, setSeasons, extractSeriesName, animeToSupabase]);
+
+  // 積みアニメに追加
+  const addToWatchlistFromSearch = useCallback(async (result: any) => {
+    if (!user) return;
+
+    try {
+      const success = await addToWatchlist({
+        anilist_id: result.id,
+        title: result.title?.native || result.title?.romaji || '',
+        image: result.coverImage?.large || null,
+      });
+
+      if (success) {
+        // 成功メッセージは表示しない（UXを考慮）
+      } else {
+        alert('積みアニメの追加に失敗しました');
+      }
+    } catch (error) {
+      console.error('Failed to add to watchlist:', error);
+      alert('積みアニメの追加に失敗しました');
+    }
+  }, [user]);
 
   // フィルター後の統計
   const filteredStats = useMemo(() => {
@@ -328,6 +597,19 @@ export function HomeTab({
                 <option value="unwatched">周回未登録</option>
               </select>
               
+              {/* 未登録のクールも含めて表示するトグル */}
+              <label className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showAllSeasons}
+                  onChange={(e) => setShowAllSeasons(e.target.checked)}
+                  className="w-4 h-4 text-[#e879d4] rounded focus:ring-[#e879d4]"
+                />
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  未登録のクールも含めて表示
+                </span>
+              </label>
+              
               {/* 全展開/全折りたたみ */}
               <button
                 onClick={isAllExpanded ? collapseAll : expandAll}
@@ -358,28 +640,189 @@ export function HomeTab({
                 
                 {expandedYears.has(year) && (
                   <div className="px-2 pb-3 space-y-2">
-                    {yearSeasons.map(({ season, animes }) => (
-                      <div key={`${year}-${season}`}>
-                        <SeasonHeader
-                          season={season}
-                          animes={animes}
-                          isExpanded={expandedSeasons.has(`${year}-${season}`)}
-                          onToggle={() => toggleSeason(year, season)}
-                        />
-                        
-                        {expandedSeasons.has(`${year}-${season}`) && (
-                          <div className="ml-8 mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 px-2">
-                            {animes.map(anime => (
-                              <AnimeCard 
-                                key={anime.id} 
-                                anime={anime}
-                                onClick={() => setSelectedAnime(anime)}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    {yearSeasons.map(({ season, animes }) => {
+                      const seasonKey = `${year}-${season}`;
+                      const isEmpty = animes.length === 0;
+                      const isExpanded = expandedSeasons.has(seasonKey);
+                      const searchResults = seasonSearchResults.get(seasonKey) || [];
+                      const isLoading = loadingSeasons.has(seasonKey);
+                      const isSearchExpanded = expandedSeasonSearches.has(seasonKey);
+                      
+                      return (
+                        <div key={seasonKey}>
+                          <SeasonHeader
+                            season={season}
+                            animes={animes}
+                            isExpanded={isExpanded}
+                            onToggle={() => toggleSeason(year, season)}
+                            isEmpty={isEmpty}
+                            onSearch={!isEmpty ? () => {
+                              // 登録済みクールの検索
+                              if (!seasonSearchResults.has(seasonKey) && !loadingSeasons.has(seasonKey)) {
+                                searchSeasonAnimes(year, season, false).then(() => {
+                                  setExpandedSeasonSearches(prev => new Set(prev).add(seasonKey));
+                                });
+                              } else if (seasonSearchResults.has(seasonKey)) {
+                                // 既に検索結果がある場合は展開
+                                setExpandedSeasonSearches(prev => new Set(prev).add(seasonKey));
+                              }
+                            } : undefined}
+                          />
+                          
+                          {isExpanded && (
+                            <>
+                              {/* 登録済み作品の表示 */}
+                              {animes.length > 0 && (
+                                <>
+                                  <div className="ml-8 mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 px-2">
+                                    {animes.map((anime, index) => (
+                                      <AnimeCard 
+                                        key={anime.id && typeof anime.id === 'number' && !isNaN(anime.id) ? anime.id : `anime-${year}-${season}-${index}`} 
+                                        anime={anime}
+                                        onClick={() => setSelectedAnime(anime)}
+                                      />
+                                    ))}
+                                  </div>
+                                  
+                                  {/* 登録済みクールの検索結果表示 */}
+                                  {isSearchExpanded && (
+                                    <div className="ml-8 mt-4 px-2">
+                                      <div className="flex items-center justify-between mb-3">
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                          {searchResults.length > 0 ? `このクールの他の作品: ${searchResults.length}件` : 'このクールの他の作品が見つかりませんでした'}
+                                        </p>
+                                        <button
+                                          onClick={() => {
+                                            const newExpandedSearches = new Set(expandedSeasonSearches);
+                                            newExpandedSearches.delete(seasonKey);
+                                            setExpandedSeasonSearches(newExpandedSearches);
+                                          }}
+                                          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                        >
+                                          閉じる
+                                        </button>
+                                      </div>
+                                      {searchResults.length > 0 && (
+                                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                                          {searchResults.map((result: any) => (
+                                            <div
+                                              key={result.id}
+                                              className="relative group"
+                                            >
+                                              {result.coverImage?.large && (
+                                                <img
+                                                  src={result.coverImage.large}
+                                                  alt={result.title?.native || result.title?.romaji || ''}
+                                                  className="w-full aspect-[2/3] object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
+                                                />
+                                              )}
+                                              <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
+                                                {result.title?.native || result.title?.romaji || 'タイトル不明'}
+                                              </p>
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  addAnimeFromSearch(result, year, season);
+                                                }}
+                                                className="mt-2 w-full px-2 py-1 text-xs font-medium bg-[#e879d4] text-white rounded hover:bg-[#d45dbf] transition-colors"
+                                              >
+                                                追加
+                                              </button>
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  addToWatchlistFromSearch(result);
+                                                }}
+                                                className="mt-1 w-full px-2 py-1 text-xs font-medium bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                                              >
+                                                積みアニメに追加
+                                              </button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                              
+                              {/* 未登録シーズンの検索結果表示 */}
+                              {isEmpty && (
+                                <div className="ml-8 mt-2 px-2">
+                                  {isLoading ? (
+                                    <div className="py-4 text-center text-gray-500 dark:text-gray-400 text-sm font-medium">
+                                      作品を検索中...
+                                    </div>
+                                  ) : searchResults.length > 0 ? (
+                                    <div>
+                                      <div className="flex items-center justify-between mb-3">
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                          {searchResults.length}件の作品が見つかりました
+                                        </p>
+                                        <button
+                                          onClick={() => {
+                                            const newExpandedSeasons = new Set(expandedSeasons);
+                                            newExpandedSeasons.delete(seasonKey);
+                                            setExpandedSeasons(newExpandedSeasons);
+                                            const newExpandedSearches = new Set(expandedSeasonSearches);
+                                            newExpandedSearches.delete(seasonKey);
+                                            setExpandedSeasonSearches(newExpandedSearches);
+                                          }}
+                                          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                        >
+                                          閉じる
+                                        </button>
+                                      </div>
+                                      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                                        {searchResults.map((result: any) => (
+                                          <div
+                                            key={result.id}
+                                            className="relative group"
+                                          >
+                                            {result.coverImage?.large && (
+                                              <img
+                                                src={result.coverImage.large}
+                                                alt={result.title?.native || result.title?.romaji || ''}
+                                                className="w-full aspect-[2/3] object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
+                                              />
+                                            )}
+                                            <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
+                                              {result.title?.native || result.title?.romaji || 'タイトル不明'}
+                                            </p>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                addAnimeFromSearch(result, year, season);
+                                              }}
+                                              className="mt-2 w-full px-2 py-1 text-xs font-medium bg-[#e879d4] text-white rounded hover:bg-[#d45dbf] transition-colors"
+                                            >
+                                              追加
+                                            </button>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                addToWatchlistFromSearch(result);
+                                              }}
+                                              className="mt-1 w-full px-2 py-1 text-xs font-medium bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                                            >
+                                              積みアニメに追加
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="py-4 text-center text-gray-500 dark:text-gray-400 text-sm font-medium">
+                                      作品が見つかりませんでした
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -413,6 +413,11 @@ export default function Home() {
             setSelectedAnime={setSelectedAnime}
             allAnimes={allAnimes}
             user={user}
+            setSeasons={setSeasons}
+            extractSeriesName={extractSeriesName}
+            getSeasonName={getSeasonName}
+            animeToSupabase={animeToSupabase}
+            supabaseToAnime={supabaseToAnime}
           />
         )}
         
