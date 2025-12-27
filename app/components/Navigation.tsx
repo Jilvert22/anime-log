@@ -90,11 +90,11 @@ export function Navigation({
 
       {/* ボトムナビゲーション（スマホ・タブレット） */}
       <nav className="block lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 z-10">
-        <div className="max-w-md mx-auto px-4 py-2">
-          <div className="flex justify-around items-center">
+        <div className="max-w-md mx-auto">
+          <div className="grid grid-cols-4">
             <button
               onClick={() => setActiveTab('home')}
-              className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
+              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
                 activeTab === 'home'
                   ? 'text-[#e879d4] dark:text-[#e879d4]'
                   : 'text-gray-500 dark:text-gray-400'
@@ -108,7 +108,7 @@ export function Navigation({
             
             <button
               onClick={() => setActiveTab('discover')}
-              className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
+              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
                 activeTab === 'discover'
                   ? 'text-[#e879d4] dark:text-[#e879d4]'
                   : 'text-gray-500 dark:text-gray-400'
@@ -122,7 +122,7 @@ export function Navigation({
             
             <button
               onClick={() => setActiveTab('collection')}
-              className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
+              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
                 activeTab === 'collection'
                   ? 'text-[#e879d4] dark:text-[#e879d4]'
                   : 'text-gray-500 dark:text-gray-400'
@@ -136,7 +136,7 @@ export function Navigation({
             
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
+              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
                 activeTab === 'profile'
                   ? 'text-[#e879d4] dark:text-[#e879d4]'
                   : 'text-gray-500 dark:text-gray-400'

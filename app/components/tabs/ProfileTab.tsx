@@ -744,10 +744,7 @@ export function ProfileTab({
       
       {/* ハンドル表示/非表示切り替え */}
       <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-        <div className="flex items-center gap-3">
-          <span className="text-xl">🔒</span>
-          <span className="dark:text-white font-medium">ハンドルを非表示</span>
-        </div>
+        <span className="dark:text-white font-medium">ハンドルを非表示</span>
         <button
           onClick={() => setIsHandleVisible(!isHandleVisible)}
           className={`relative w-12 h-6 rounded-full transition-colors ${
@@ -949,6 +946,38 @@ export function ProfileTab({
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
         <h3 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">設定</h3>
         <div className="space-y-3">
+          {/* DNAカード編集 */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="w-full text-left py-2 text-gray-700 dark:text-gray-300 transition-colors"
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#e879d4'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+          >
+            DNAカード編集
+          </button>
+          
+          {/* ご意見・ご感想 */}
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLScfwMPJs8-qazTa9kfnDU6b4gqRLJVleDJkDgeCFDeuJjlxUQ/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full text-left py-2 text-gray-700 dark:text-gray-300 transition-colors block"
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#e879d4'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+          >
+            ご意見・ご感想
+          </a>
+          
+          {/* データをエクスポート */}
+          <button
+            onClick={() => {}}
+            className="w-full text-left py-2 text-gray-700 dark:text-gray-300 transition-colors"
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#e879d4'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+          >
+            データをエクスポート
+          </button>
+          
           {/* 自分のID表示 */}
           {user && (
             <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
@@ -980,59 +1009,6 @@ export function ProfileTab({
               </div>
             </div>
           )}
-          
-          {/* DNAカード編集 */}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="w-full px-4 py-3 text-left bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🎨</span>
-              <span className="dark:text-white font-medium">DNAカード編集</span>
-            </div>
-            <span className="text-gray-400">›</span>
-          </button>
-          
-          {/* ダークモード切り替え */}
-          <div className="flex items-center justify-between">
-            <span className="dark:text-white">ダークモード</span>
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`relative w-12 h-6 rounded-full transition-colors ${
-                isDarkMode ? 'bg-[#e879d4]' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                  isDarkMode ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-          
-          {/* ご意見・ご感想 */}
-          <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLScfwMPJs8-qazTa9kfnDU6b4gqRLJVleDJkDgeCFDeuJjlxUQ/viewform"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full px-4 py-3 text-left bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">💬</span>
-              <span className="dark:text-white font-medium">ご意見・ご感想</span>
-            </div>
-            <span className="text-gray-400">›</span>
-          </a>
-          
-          {/* データをエクスポート */}
-          <button
-            onClick={() => {}}
-            className="w-full text-left py-2 text-gray-700 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors" style={{
-              '--hover-color': '#e879d4',
-            } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.color = '#e879d4'; }} onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
-          >
-            データをエクスポート
-          </button>
           
           {/* ログアウト */}
           <button

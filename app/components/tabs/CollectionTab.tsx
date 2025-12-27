@@ -93,68 +93,47 @@ export function CollectionTab({
   return (
     <>
       {/* サブタブ */}
-      <div className="flex gap-3 md:gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-        <button
-          onClick={() => setCollectionSubTab('achievements')}
-          className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-            collectionSubTab === 'achievements'
-              ? 'bg-[#e879d4] text-white shadow-md'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          実績
-        </button>
-        <button
-          onClick={() => setCollectionSubTab('characters')}
-          className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-            collectionSubTab === 'characters'
-              ? 'bg-[#e879d4] text-white shadow-md'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          推しキャラ
-        </button>
-        <button
-          onClick={() => setCollectionSubTab('quotes')}
-          className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-            collectionSubTab === 'quotes'
-              ? 'bg-[#e879d4] text-white shadow-md'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          名言
-        </button>
-        <button
-          onClick={() => setCollectionSubTab('lists')}
-          className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-            collectionSubTab === 'lists'
-              ? 'bg-[#e879d4] text-white shadow-md'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          布教リスト
-        </button>
-        <button
-          onClick={() => setCollectionSubTab('music')}
-          className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-            collectionSubTab === 'music'
-              ? 'bg-[#e879d4] text-white shadow-md'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          主題歌
-        </button>
-        <button
-          onClick={() => setCollectionSubTab('voiceActors')}
-          className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
-            collectionSubTab === 'voiceActors'
-              ? 'bg-[#e879d4] text-white shadow-md'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          声優
-        </button>
-      </div>
+      {(() => {
+        // 各コレクションのカウントを計算
+        const allQuotes = allAnimes.reduce((acc, anime) => acc + (anime.quotes?.length || 0), 0);
+        const allSongs = allAnimes.reduce((acc, anime) => {
+          let count = 0;
+          if (anime.songs?.op) count++;
+          if (anime.songs?.ed) count++;
+          return acc + count;
+        }, 0);
+        
+        type CollectionSubTabType = 'achievements' | 'characters' | 'quotes' | 'lists' | 'music' | 'voiceActors';
+        
+        const collections: Array<{ id: CollectionSubTabType; name: string; icon: string; count: number }> = [
+          { id: 'achievements', name: '実績', icon: '🏆', count: achievements.length },
+          { id: 'characters', name: '推しキャラ', icon: '💕', count: favoriteCharacters.length },
+          { id: 'quotes', name: '名言', icon: '💬', count: allQuotes },
+          { id: 'lists', name: '布教リスト', icon: '📋', count: evangelistLists.length },
+          { id: 'music', name: '主題歌', icon: '🎵', count: allSongs },
+          { id: 'voiceActors', name: '声優', icon: '🎤', count: voiceActors.length },
+        ];
+        
+        return (
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            {collections.map((col) => (
+              <button
+                key={col.id}
+                onClick={() => setCollectionSubTab(col.id)}
+                className={`px-3 py-2.5 rounded-full transition-all flex flex-col items-center gap-1 ${
+                  collectionSubTab === col.id
+                    ? 'bg-[#e879d4] text-white shadow-md'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
+              >
+                <span className="text-xl">{col.icon}</span>
+                <span className="text-xs">{col.name}</span>
+                <span className="text-xs font-bold">{col.count}</span>
+              </button>
+            ))}
+          </div>
+        );
+      })()}
 
       {collectionSubTab === 'achievements' && (
         <AchievementsTab 
