@@ -47,10 +47,13 @@ export function DNAModal({
       >
         {/* DNAカード */}
         <div 
-          className="dna-card-container relative rounded-3xl p-6 shadow-2xl overflow-hidden"
+          className="dna-card-container relative rounded-3xl p-6 overflow-hidden"
           style={{
-            background: 'linear-gradient(165deg, rgba(102, 126, 234, 0.92) 0%, rgba(118, 75, 162, 0.95) 35%, rgba(180, 80, 160, 0.92) 65%, rgba(240, 147, 251, 0.88) 100%)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            background: `
+              linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 30%, rgba(255,255,255,0) 50%),
+              linear-gradient(135deg, #7b8ff5 0%, #9b6bc9 25%, #d76bbc 50%, #f586d4 75%, #ffa3e0 100%)
+            `,
+            boxShadow: '0 0 40px rgba(247, 134, 212, 0.4), 0 0 80px rgba(123, 143, 245, 0.2), 0 20px 40px rgba(0, 0, 0, 0.1)',
           }}
         >
           {/* ヘッダー */}
@@ -59,7 +62,13 @@ export function DNAModal({
               <div className="dna-logo-icon"></div>
               <h2 className="text-white text-xl font-black">ANIME DNA</h2>
             </div>
-            <div className="dna-glass-card px-4 py-2">
+            <div 
+              className="px-4 py-2 backdrop-blur-md border border-white/50 rounded-xl"
+              style={{
+                background: 'rgba(255, 255, 255, 0.25)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+              }}
+            >
               <span className="text-white text-sm font-semibold">{new Date().getFullYear()}</span>
             </div>
           </div>
@@ -69,10 +78,10 @@ export function DNAModal({
             {/* アバター */}
             <div className="flex justify-center">
               <div 
-                className="w-24 h-24 rounded-full dna-glass-card flex items-center justify-center overflow-hidden shadow-lg"
+                className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden shadow-lg border-2 border-white/40"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%)',
-                  border: '2px solid rgba(255, 255, 255, 0.2)'
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.15) 100%)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.1), inset 0 2px 0 rgba(255,255,255,0.3)'
                 }}
               >
                 {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
@@ -105,9 +114,10 @@ export function DNAModal({
             
             {/* タイプバッジ */}
             <div className="flex justify-center">
-              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl" style={{
-                background: 'linear-gradient(135deg, #e879d4, #f09fe3)',
-                boxShadow: '0 4px 15px rgba(232, 121, 212, 0.4)',
+              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full backdrop-blur-sm border border-white/50" style={{
+                background: 'rgba(255, 255, 255, 0.35)',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                boxShadow: '0 2px 8px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.3)'
               }}>
                 <div className="dna-type-icon"></div>
                 <span className="text-white text-base font-semibold">{otakuTypeLabel}</span>
@@ -129,15 +139,33 @@ export function DNAModal({
           
           {/* 統計グリッド（3カラム） */}
           <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="dna-glass-card p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+            <div 
+              className="p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-md border border-white/50 rounded-xl"
+              style={{
+                background: 'rgba(255, 255, 255, 0.35)',
+                boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+              }}
+            >
               <p className="text-white text-2xl font-black mb-1" style={{ color: '#00d4ff' }}>{count}</p>
               <p className="text-white/70 text-xs">作品数</p>
             </div>
-            <div className="dna-glass-card p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+            <div 
+              className="p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-md border border-white/50 rounded-xl"
+              style={{
+                background: 'rgba(255, 255, 255, 0.35)',
+                boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+              }}
+            >
               <p className="text-white text-2xl font-black mb-1" style={{ color: '#e879d4' }}>{totalRewatchCount}</p>
               <p className="text-white/70 text-xs">視聴週</p>
             </div>
-            <div className="dna-glass-card p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+            <div 
+              className="p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-md border border-white/50 rounded-xl"
+              style={{
+                background: 'rgba(255, 255, 255, 0.35)',
+                boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+              }}
+            >
               <p className="text-white text-2xl font-black mb-1" style={{ color: '#ffd700' }}>
                 {averageRating > 0 ? `${averageRating.toFixed(1)}` : '0.0'}
               </p>
@@ -148,7 +176,12 @@ export function DNAModal({
           {/* 最推し作品 & アニメログ */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             {/* 最推し作品 */}
-            <div className="flex-1 dna-glass-card p-4 min-h-[200px]">
+            <div 
+              className="flex-1 p-4 min-h-[200px] backdrop-blur-md border border-white/30 rounded-xl"
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)'
+              }}
+            >
               <div className="flex items-center mb-4">
                 <div className="dna-trophy-icon"></div>
                 <h3 className="text-white text-base font-semibold">最推し作品</h3>
@@ -164,7 +197,10 @@ export function DNAModal({
                       return (
                         <div
                           key={anime.id}
-                          className="dna-glass-card w-20 h-28 flex items-center justify-center overflow-hidden"
+                          className="w-20 h-28 flex items-center justify-center overflow-hidden backdrop-blur-md border border-white/30 rounded-xl"
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.15)'
+                          }}
                         >
                           {isImageUrl ? (
                             <img
@@ -216,7 +252,12 @@ export function DNAModal({
             </div>
             
             {/* アニメログ */}
-            <div className="flex-1 dna-glass-card p-4 min-h-[200px]">
+            <div 
+              className="flex-1 p-4 min-h-[200px] backdrop-blur-md border border-white/30 rounded-xl"
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)'
+              }}
+            >
               <div className="flex items-center mb-4">
                 <div className="dna-chart-icon">
                   <span></span>

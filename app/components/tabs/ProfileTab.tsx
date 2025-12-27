@@ -201,10 +201,13 @@ export function ProfileTab({
         return (
           <>
             <div 
-              className="dna-card-container relative rounded-3xl p-6 shadow-2xl overflow-hidden"
+              className="dna-card-container relative rounded-3xl p-6 overflow-hidden"
               style={{
-                background: 'linear-gradient(165deg, rgba(102, 126, 234, 0.92) 0%, rgba(118, 75, 162, 0.95) 35%, rgba(180, 80, 160, 0.92) 65%, rgba(240, 147, 251, 0.88) 100%)',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                background: `
+                  linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 30%, rgba(255,255,255,0) 50%),
+                  linear-gradient(135deg, #7b8ff5 0%, #9b6bc9 25%, #d76bbc 50%, #f586d4 75%, #ffa3e0 100%)
+                `,
+                boxShadow: '0 0 40px rgba(247, 134, 212, 0.4), 0 0 80px rgba(123, 143, 245, 0.2), 0 20px 40px rgba(0, 0, 0, 0.1)',
               }}
             >
               {/* ヘッダー */}
@@ -213,7 +216,13 @@ export function ProfileTab({
                   <div className="dna-logo-icon"></div>
                   <h2 className="text-white text-xl font-black">ANIME DNA</h2>
                 </div>
-                <div className="dna-glass-card px-4 py-2 flex items-center justify-center">
+                <div 
+                  className="px-4 py-2 flex items-center justify-center backdrop-blur-md border border-white/50 rounded-xl"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.25)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                  }}
+                >
                   <span className="text-white text-sm font-semibold">{new Date().getFullYear()}</span>
                 </div>
               </div>
@@ -226,7 +235,13 @@ export function ProfileTab({
                   <section className="dna-profile-section">
                     <div className="profile-left">
                       {/* アバター */}
-                      <div className="w-[72px] h-[72px] md:w-[76px] md:h-[76px] lg:w-[100px] lg:h-[100px] rounded-[18px] md:rounded-xl lg:rounded-2xl dna-glass-card flex items-center justify-center overflow-hidden shadow-lg border-2 border-white/15">
+                      <div 
+                        className="w-[72px] h-[72px] md:w-[76px] md:h-[76px] lg:w-[100px] lg:h-[100px] rounded-[18px] md:rounded-xl lg:rounded-2xl flex items-center justify-center overflow-hidden shadow-lg border-2 border-white/40"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.15) 100%)',
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.1), inset 0 2px 0 rgba(255,255,255,0.3)'
+                        }}
+                      >
                         {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
                           <img
                             src={userIcon}
@@ -237,20 +252,29 @@ export function ProfileTab({
                               const parent = (e.target as HTMLImageElement).parentElement;
                               if (parent) {
                                 const placeholder = document.createElement('div');
-                                placeholder.className = 'w-full h-full bg-white/20';
+                                placeholder.className = 'w-full h-full';
+                                placeholder.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.15) 100%)';
+                                placeholder.style.boxShadow = 'inset 0 2px 0 rgba(255,255,255,0.3)';
                                 parent.appendChild(placeholder);
                               }
                             }}
                           />
                         ) : (
-                          <div className="w-full h-full bg-white/20"></div>
+                          <div 
+                            className="w-full h-full"
+                            style={{
+                              background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.15) 100%)',
+                              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.3)'
+                            }}
+                          ></div>
                         )}
                       </div>
                       
                       {/* タイプバッジ */}
-                      <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:px-4 md:py-2 rounded-xl" style={{
-                        background: 'linear-gradient(135deg, #e879d4, #f09fe3)',
-                        boxShadow: '0 4px 15px rgba(232, 121, 212, 0.4)',
+                      <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:px-4 md:py-2 rounded-full backdrop-blur-sm border border-white/50" style={{
+                        background: 'rgba(255, 255, 255, 0.35)',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        boxShadow: '0 2px 8px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.3)'
                       }}>
                         <div className="dna-type-icon"></div>
                         <span className="text-white text-sm md:text-[13px] font-semibold">{otakuTypeLabel}</span>
@@ -278,15 +302,33 @@ export function ProfileTab({
                   
                   {/* 統計グリッド */}
                   <section className="dna-stats-grid">
-                    <div className="dna-glass-card p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+                    <div 
+                      className="p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-md border border-white/50 rounded-xl"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.35)',
+                        boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+                      }}
+                    >
                       <p className="stat-value text-2xl md:text-3xl lg:text-[42px] font-black mb-1" style={{ color: '#00d4ff' }}>{count}</p>
                       <p className="stat-label text-xs md:text-[11px] lg:text-[13px] text-white/70 uppercase" style={{ letterSpacing: '0.5px' }}>作品数</p>
                     </div>
-                    <div className="dna-glass-card p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+                    <div 
+                      className="p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-md border border-white/50 rounded-xl"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.35)',
+                        boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+                      }}
+                    >
                       <p className="stat-value text-2xl md:text-3xl lg:text-[42px] font-black mb-1" style={{ color: '#e879d4' }}>{totalRewatchCount}</p>
                       <p className="stat-label text-xs md:text-[11px] lg:text-[13px] text-white/70 uppercase" style={{ letterSpacing: '0.5px' }}>視聴週</p>
                     </div>
-                    <div className="dna-glass-card p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+                    <div 
+                      className="p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-md border border-white/50 rounded-xl"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.35)',
+                        boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+                      }}
+                    >
                       <p className="stat-value text-2xl md:text-3xl lg:text-[42px] font-black mb-1" style={{ color: '#ffd700' }}>
                         {averageRating > 0 ? `${averageRating.toFixed(1)}` : '0.0'}
                       </p>
@@ -299,7 +341,12 @@ export function ProfileTab({
                 <div className="dna-bottom-sections">
               
                   {/* 最推し作品 */}
-                  <div className="content-card dna-glass-card p-4 md:p-5 lg:p-6 min-h-[140px] md:min-h-[150px] lg:min-h-[180px]">
+                  <div 
+                    className="content-card p-4 md:p-5 lg:p-6 min-h-[140px] md:min-h-[150px] lg:min-h-[180px] backdrop-blur-md border border-white/30 rounded-xl"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.2)'
+                    }}
+                  >
                     <div className="card-header flex items-center justify-between mb-3 md:mb-4">
                       <div className="card-title text-xs md:text-sm lg:text-[14px] font-semibold text-white flex items-center gap-2 md:gap-2.5">
                         <span className="dna-trophy-icon"></span>
@@ -317,9 +364,9 @@ export function ProfileTab({
                             return (
                               <div
                                 key={anime.id}
-                                className="favorite-poster w-[52px] h-[72px] md:w-[60px] md:h-[84px] lg:w-[70px] lg:h-[100px] rounded-lg md:rounded-xl dna-glass-card flex items-center justify-center overflow-hidden flex-shrink-0"
+                                className="favorite-poster w-[52px] h-[72px] md:w-[60px] md:h-[84px] lg:w-[70px] lg:h-[100px] rounded-lg md:rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 backdrop-blur-md border border-white/30"
                                 style={{
-                                  background: 'linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%)',
+                                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%)',
                                 }}
                               >
                                 {isImageUrl ? (
@@ -332,7 +379,9 @@ export function ProfileTab({
                                       const parent = (e.target as HTMLImageElement).parentElement;
                                       if (parent) {
                                         const placeholder = document.createElement('div');
-                                        placeholder.className = 'w-full h-full bg-white/10';
+                                        placeholder.className = 'w-full h-full';
+                                        placeholder.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%)';
+                                        placeholder.style.border = '1px solid rgba(255, 255, 255, 0.15)';
                                         parent.appendChild(placeholder);
                                       }
                                     }}
@@ -347,8 +396,8 @@ export function ProfileTab({
                     ) : (
                       <div className="favorite-content flex items-center justify-center flex-1">
                         <div className="favorite-empty text-center text-white/70 text-xs md:text-sm lg:text-[15px] leading-relaxed">
-                          <div className="favorite-poster w-[52px] h-[72px] md:w-[60px] md:h-[84px] lg:w-[70px] lg:h-[100px] mx-auto mb-3 dna-glass-card flex items-center justify-center rounded-lg md:rounded-xl" style={{
-                            background: 'linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%)',
+                          <div className="favorite-poster w-[52px] h-[72px] md:w-[60px] md:h-[84px] lg:w-[70px] lg:h-[100px] mx-auto mb-3 flex items-center justify-center rounded-lg md:rounded-xl backdrop-blur-md border border-white/30" style={{
+                            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%)',
                           }}>
                             <div className="film-icon w-6 h-5 md:w-7 md:h-5.5 lg:w-7 lg:h-6 border-2 border-white/30 rounded-sm"></div>
                           </div>
@@ -360,7 +409,12 @@ export function ProfileTab({
                   </div>
                   
                   {/* アニメログ */}
-                  <div className="content-card dna-glass-card p-4 md:p-5 lg:p-6 min-h-[140px] md:min-h-[150px] lg:min-h-[180px]">
+                  <div 
+                    className="content-card p-4 md:p-5 lg:p-6 min-h-[140px] md:min-h-[150px] lg:min-h-[180px] backdrop-blur-md border border-white/30 rounded-xl"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.2)'
+                    }}
+                  >
                     <div className="card-header flex items-center justify-between mb-3 md:mb-4">
                       <div className="card-title text-xs md:text-sm lg:text-[14px] font-semibold text-white flex items-center gap-2 md:gap-2.5">
                         <span className="dna-chart-icon">

@@ -64,9 +64,13 @@ export function HomeTab({
           >
             {/* オタクタイプ */}
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-white/90 text-sm font-medium">
-                あなたは 🎵 音響派
-              </p>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/50" style={{
+                background: 'rgba(255, 255, 255, 0.35)',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                boxShadow: '0 2px 8px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.3)'
+              }}>
+                <span className="text-white text-sm font-semibold">🎵 音響派</span>
+              </div>
             </div>
             
             {/* 統計情報 */}

@@ -30,7 +30,15 @@ export function Navigation({
       {/* ヘッダー */}
       <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 lg:ml-[200px]">
         <div className="max-w-md md:max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-black bg-gradient-to-r from-[#e879d4] to-[#f09fe3] bg-clip-text text-transparent">
+          <h1 
+            className="text-xl font-bold tracking-tight"
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #e879d4 50%, #f093fb 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
             アニメログ
           </h1>
           <div className="flex items-center gap-2">
@@ -71,7 +79,7 @@ export function Navigation({
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="px-3 py-1.5 rounded-full bg-[#e879d4] hover:bg-[#f09fe3] text-white font-bold text-sm transition-colors"
+                className="px-4 py-2 rounded-lg bg-white text-[#e879d4] font-semibold text-sm hover:bg-white/90 hover:-translate-y-0.5 transition-all"
               >
                 ログイン
               </button>
@@ -145,57 +153,89 @@ export function Navigation({
 
       {/* サイドバーナビゲーション（PC） */}
       <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 w-[200px] bg-white dark:bg-gray-800 border-r dark:border-gray-700 z-10 flex-col pt-20">
-        <div className="flex flex-col gap-2 px-2">
+        <div className="flex flex-col gap-1 p-3">
           <button
             onClick={() => setActiveTab('home')}
-            className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
+            className={`relative flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
               activeTab === 'home'
-                ? 'text-[#e879d4] dark:text-[#e879d4]'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                ? 'text-[#e879d4] font-semibold border border-[#e879d4]/20'
+                : 'text-gray-500 dark:text-gray-400 font-medium hover:bg-[#e879d4]/8 hover:text-[#e879d4]'
             }`}
-            style={activeTab === 'home' ? { background: 'rgba(232, 121, 212, 0.15)' } : undefined}
+            style={activeTab === 'home' ? { background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(232, 121, 212, 0.15) 100%)' } : undefined}
           >
-            <span className="text-2xl">📺</span>
-            <span className="font-medium">ホーム</span>
+            {activeTab === 'home' && (
+              <span 
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r"
+                style={{
+                  background: 'linear-gradient(180deg, #667eea 0%, #e879d4 100%)'
+                }}
+              />
+            )}
+            <span className="text-lg w-6 text-center">📺</span>
+            <span>ホーム</span>
           </button>
           
           <button
             onClick={() => setActiveTab('discover')}
-            className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
+            className={`relative flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
               activeTab === 'discover'
-                ? 'text-[#e879d4] dark:text-[#e879d4]'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                ? 'text-[#e879d4] font-semibold border border-[#e879d4]/20'
+                : 'text-gray-500 dark:text-gray-400 font-medium hover:bg-[#e879d4]/8 hover:text-[#e879d4]'
             }`}
-            style={activeTab === 'discover' ? { background: 'rgba(232, 121, 212, 0.15)' } : undefined}
+            style={activeTab === 'discover' ? { background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(232, 121, 212, 0.15) 100%)' } : undefined}
           >
-            <span className="text-2xl">📊</span>
-            <span className="font-medium">統計</span>
+            {activeTab === 'discover' && (
+              <span 
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r"
+                style={{
+                  background: 'linear-gradient(180deg, #667eea 0%, #e879d4 100%)'
+                }}
+              />
+            )}
+            <span className="text-lg w-6 text-center">📊</span>
+            <span>統計</span>
           </button>
           
           <button
             onClick={() => setActiveTab('collection')}
-            className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
+            className={`relative flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
               activeTab === 'collection'
-                ? 'text-[#e879d4] dark:text-[#e879d4]'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                ? 'text-[#e879d4] font-semibold border border-[#e879d4]/20'
+                : 'text-gray-500 dark:text-gray-400 font-medium hover:bg-[#e879d4]/8 hover:text-[#e879d4]'
             }`}
-            style={activeTab === 'collection' ? { background: 'rgba(232, 121, 212, 0.15)' } : undefined}
+            style={activeTab === 'collection' ? { background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(232, 121, 212, 0.15) 100%)' } : undefined}
           >
-            <span className="text-2xl">🏆</span>
-            <span className="font-medium">コレクション</span>
+            {activeTab === 'collection' && (
+              <span 
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r"
+                style={{
+                  background: 'linear-gradient(180deg, #667eea 0%, #e879d4 100%)'
+                }}
+              />
+            )}
+            <span className="text-lg w-6 text-center">🏆</span>
+            <span>コレクション</span>
           </button>
           
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
+            className={`relative flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
               activeTab === 'profile'
-                ? 'text-[#e879d4] dark:text-[#e879d4]'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                ? 'text-[#e879d4] font-semibold border border-[#e879d4]/20'
+                : 'text-gray-500 dark:text-gray-400 font-medium hover:bg-[#e879d4]/8 hover:text-[#e879d4]'
             }`}
-            style={activeTab === 'profile' ? { background: 'rgba(232, 121, 212, 0.15)' } : undefined}
+            style={activeTab === 'profile' ? { background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(232, 121, 212, 0.15) 100%)' } : undefined}
           >
-            <span className="text-2xl">👤</span>
-            <span className="font-medium">マイページ</span>
+            {activeTab === 'profile' && (
+              <span 
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r"
+                style={{
+                  background: 'linear-gradient(180deg, #667eea 0%, #e879d4 100%)'
+                }}
+              />
+            )}
+            <span className="text-lg w-6 text-center">👤</span>
+            <span>マイページ</span>
           </button>
         </div>
       </nav>
