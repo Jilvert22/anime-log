@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { Anime, Season } from '../../types';
 import { availableTags, ratingLabels } from '../../constants';
+import { translateGenre } from '../../utils/helpers';
 
 export function DiscoverTab({
   allAnimes,
@@ -114,7 +115,12 @@ export function DiscoverTab({
     return topTags.length > 0
       ? `あなたは${topTags.map(([tag]) => {
           const tagInfo = availableTags.find(t => t.value === tag);
-          return `${tagInfo?.emoji}${tagInfo?.label || tag}`;
+          if (tagInfo) {
+            return `${tagInfo.emoji}${tagInfo.label}`;
+          }
+          // availableTagsにない場合は、translateGenreを使用して翻訳を試みる
+          const translatedTag = translateGenre(tag);
+          return translatedTag || tag;
         }).join('と')}な作品を好む傾向があります`
       : 'データが不足しています';
   }, [sortedTags]);
