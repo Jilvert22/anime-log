@@ -270,7 +270,7 @@ export function AddAnimeFormModal({
                           image: result.coverImage?.large || result.coverImage?.medium || '🎬',
                           rating: 0, // 未評価
                           watched: false,
-                          rewatchCount: 0,
+                          rewatchCount: 1, // デフォルトで1周
                           tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
                           seriesName,
                           studios: result.studios?.nodes?.map((s: any) => s.name) || [],
@@ -539,7 +539,7 @@ export function AddAnimeFormModal({
                         image: image,
                         rating: 0,
                         watched: false,
-                        rewatchCount: 0,
+                        rewatchCount: 1, // デフォルトで1周
                         tags: tags.length > 0 ? tags : undefined,
                         seriesName: seriesName,
                         studios: studios.length > 0 ? studios : undefined,

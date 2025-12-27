@@ -23,6 +23,10 @@ export async function searchAnime(query: string) {
                 name
               }
             }
+            externalLinks {
+              site
+              url
+            }
           }
         }
       }
@@ -75,6 +79,10 @@ export async function searchAnimeBySeason(
               nodes {
                 name
               }
+            }
+            externalLinks {
+              site
+              url
             }
           }
         }

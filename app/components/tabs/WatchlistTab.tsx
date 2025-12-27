@@ -23,7 +23,7 @@ function WatchlistCard({
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group">
       <div className="aspect-[3/4] bg-gradient-to-br from-[#e879d4] to-[#764ba2] relative">
-        {isImageUrl && !imageError ? (
+        {isImageUrl && !imageError && item.image ? (
           <Image
             src={item.image}
             alt={item.title}
