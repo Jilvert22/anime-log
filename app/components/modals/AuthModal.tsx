@@ -78,7 +78,7 @@ export function AuthModal({
             }}
             className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
               authMode === 'login'
-                ? 'bg-[#ff6b9d] text-white'
+                ? 'bg-[#e879d4] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -91,7 +91,7 @@ export function AuthModal({
             }}
             className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
               authMode === 'signup'
-                ? 'bg-[#ff6b9d] text-white'
+                ? 'bg-[#e879d4] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -115,7 +115,7 @@ export function AuthModal({
             type="email"
             value={authEmail}
             onChange={(e) => setAuthEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             placeholder="example@email.com"
           />
         </div>
@@ -134,7 +134,7 @@ export function AuthModal({
                 handleAuth();
               }
             }}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             placeholder="パスワードを入力"
           />
         </div>
@@ -150,7 +150,7 @@ export function AuthModal({
           <button
             onClick={handleAuth}
             disabled={!authEmail || !authPassword}
-            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {authMode === 'login' ? 'ログイン' : '登録'}
           </button>

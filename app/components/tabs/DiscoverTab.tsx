@@ -122,7 +122,12 @@ export function DiscoverTab({
   return (
     <div className="space-y-6">
       {/* 視聴統計サマリー（統合版、一番上） */}
-      <div className="bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] rounded-2xl p-5 text-white shadow-lg">
+      <div 
+        className="rounded-2xl p-5 text-white shadow-lg"
+        style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 35%, #e879d4 65%, #f093fb 100%)'
+        }}
+      >
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <span>📊</span>
                 視聴統計サマリー
@@ -152,7 +157,12 @@ export function DiscoverTab({
             </div>
       
       {/* あなたの傾向まとめ（サマリーの次） */}
-      <div className="bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] rounded-2xl p-5 text-white shadow-lg">
+      <div 
+        className="rounded-2xl p-5 text-white shadow-lg"
+        style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 35%, #e879d4 65%, #f093fb 100%)'
+        }}
+      >
               <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
                 <span>✨</span>
                 あなたの傾向まとめ
@@ -179,7 +189,7 @@ export function DiscoverTab({
                           <span className="text-sm font-medium dark:text-white">
                             {tagInfo?.emoji} {tagInfo?.label || tag}
                           </span>
-                          <span className="text-sm font-bold text-[#ff6b9d] dark:text-[#ff6b9d]">
+                          <span className="text-sm font-bold text-[#e879d4] dark:text-[#e879d4]">
                             {Math.round((count / totalAnimes) * 100)}%
                           </span>
                         </div>
@@ -221,7 +231,7 @@ export function DiscoverTab({
                         <span className="text-sm font-medium dark:text-white">
                           ⭐{rating} {ratingLabel?.label || ''}
                         </span>
-                        <span className="text-sm font-bold text-[#ff6b9d] dark:text-[#ff6b9d]">
+                        <span className="text-sm font-bold text-[#e879d4] dark:text-[#e879d4]">
                           {count}本
                         </span>
                       </div>
@@ -262,7 +272,7 @@ export function DiscoverTab({
                       <div key={name} className="space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium dark:text-white">{name}</span>
-                          <span className="text-sm font-bold text-[#ff6b9d] dark:text-[#ff6b9d]">
+                          <span className="text-sm font-bold text-[#e879d4] dark:text-[#e879d4]">
                             {count}本
                           </span>
                         </div>

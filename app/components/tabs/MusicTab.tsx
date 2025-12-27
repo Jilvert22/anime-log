@@ -116,7 +116,7 @@ export function MusicTab({
             setNewSongArtist('');
             setShowSongModal(true);
           }}
-          className="text-sm bg-[#ff6b9d] text-white px-4 py-2 rounded-lg hover:bg-[#ff8a65] transition-colors"
+          className="text-sm bg-[#e879d4] text-white px-4 py-2 rounded-lg hover:bg-[#f09fe3] transition-colors"
         >
           + 主題歌を追加
         </button>
@@ -130,7 +130,7 @@ export function MusicTab({
             type="text"
             value={musicSearchQuery}
             onChange={(e) => setMusicSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             placeholder="曲名、アーティスト、アニメで検索..."
           />
           
@@ -143,7 +143,7 @@ export function MusicTab({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 musicFilterType === 'all'
-                  ? 'bg-[#ff6b9d] text-white'
+                  ? 'bg-[#e879d4] text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -156,7 +156,7 @@ export function MusicTab({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 musicFilterType === 'op'
-                  ? 'bg-[#ff6b9d] text-white'
+                  ? 'bg-[#e879d4] text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -169,7 +169,7 @@ export function MusicTab({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 musicFilterType === 'ed'
-                  ? 'bg-[#ff6b9d] text-white'
+                  ? 'bg-[#e879d4] text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -182,7 +182,7 @@ export function MusicTab({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 musicFilterType === 'artist'
-                  ? 'bg-[#ff6b9d] text-white'
+                  ? 'bg-[#e879d4] text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -195,7 +195,7 @@ export function MusicTab({
             <select
               value={selectedArtistForFilter || ''}
               onChange={(e) => setSelectedArtistForFilter(e.target.value || null)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             >
               <option value="">アーティストを選択...</option>
               {uniqueArtists.map((artist) => (

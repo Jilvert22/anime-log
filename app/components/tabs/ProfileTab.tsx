@@ -213,7 +213,7 @@ export function ProfileTab({
                   <div className="dna-logo-icon"></div>
                   <h2 className="text-white text-xl font-black">ANIME DNA</h2>
                 </div>
-                <div className="dna-glass-card px-4 py-2">
+                <div className="dna-glass-card px-4 py-2 flex items-center justify-center">
                   <span className="text-white text-sm font-semibold">{new Date().getFullYear()}</span>
                 </div>
               </div>
@@ -249,8 +249,8 @@ export function ProfileTab({
                       
                       {/* タイプバッジ */}
                       <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:px-4 md:py-2 rounded-xl" style={{
-                        background: 'linear-gradient(135deg, #ff6b9d, #ff8a65)',
-                        boxShadow: '0 4px 15px rgba(255, 107, 157, 0.4)',
+                        background: 'linear-gradient(135deg, #e879d4, #f09fe3)',
+                        boxShadow: '0 4px 15px rgba(232, 121, 212, 0.4)',
                       }}>
                         <div className="dna-type-icon"></div>
                         <span className="text-white text-sm md:text-[13px] font-semibold">{otakuTypeLabel}</span>
@@ -258,7 +258,7 @@ export function ProfileTab({
                     </div>
                     
                     {/* ユーザー情報 */}
-                    <div className="profile-info text-center md:text-left">
+                    <div className="profile-info text-center md:text-left flex flex-col justify-center">
                       <h1 className="username text-xl md:text-2xl lg:text-[28px] font-bold md:font-[700] mb-1 text-white" style={{
                         textShadow: '0 2px 10px rgba(0,0,0,0.2)',
                       }}>
@@ -283,7 +283,7 @@ export function ProfileTab({
                       <p className="stat-label text-xs md:text-[11px] lg:text-[13px] text-white/70 uppercase" style={{ letterSpacing: '0.5px' }}>作品数</p>
                     </div>
                     <div className="dna-glass-card p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
-                      <p className="stat-value text-2xl md:text-3xl lg:text-[42px] font-black mb-1" style={{ color: '#ff6b9d' }}>{totalRewatchCount}</p>
+                      <p className="stat-value text-2xl md:text-3xl lg:text-[42px] font-black mb-1" style={{ color: '#e879d4' }}>{totalRewatchCount}</p>
                       <p className="stat-label text-xs md:text-[11px] lg:text-[13px] text-white/70 uppercase" style={{ letterSpacing: '0.5px' }}>視聴週</p>
                     </div>
                     <div className="dna-glass-card p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
@@ -394,20 +394,283 @@ export function ProfileTab({
             <div className="flex gap-3 mt-4">
               <button
                 onClick={async () => {
+                  // 確認ダイアログ
+                  if (!confirm('ANIME DNAカードを画像として保存しますか？')) {
+                    return;
+                  }
+                  
                   // html2canvasで画像保存
                   try {
                     const html2canvas = (await import('html2canvas')).default;
                     const cardElement = document.querySelector('.dna-card-container');
                     if (cardElement) {
-                      const canvas = await html2canvas(cardElement as HTMLElement);
-                      const url = canvas.toDataURL('image/png');
-                      const link = document.createElement('a');
-                      link.download = 'anime-dna-card.png';
-                      link.href = url;
-                      link.click();
+                      // すべてのスタイルシートを一時的に無効化（oklabを回避）
+                      const originalStyleSheets: Array<{ element: HTMLLinkElement | HTMLStyleElement; disabled?: boolean; textContent?: string | null }> = [];
+                      const allStyleSheets = document.querySelectorAll('style, link[rel="stylesheet"]');
+                      
+                      allStyleSheets.forEach((styleSheet) => {
+                        if (styleSheet instanceof HTMLStyleElement) {
+                          originalStyleSheets.push({
+                            element: styleSheet,
+                            textContent: styleSheet.textContent,
+                          });
+                          // oklabを含む場合は空にする
+                          if (styleSheet.textContent && styleSheet.textContent.includes('oklab')) {
+                            styleSheet.textContent = '';
+                          }
+                        } else if (styleSheet instanceof HTMLLinkElement) {
+                          originalStyleSheets.push({
+                            element: styleSheet,
+                            disabled: styleSheet.disabled,
+                          });
+                          // 外部スタイルシートを一時的に無効化
+                          styleSheet.disabled = true;
+                        }
+                      });
+                      
+                      try {
+                        const canvas = await html2canvas(cardElement as HTMLElement, {
+                          onclone: (clonedDoc) => {
+                            // oklabを含むスタイルシートのみを削除
+                            const clonedStyleSheets = clonedDoc.querySelectorAll('style');
+                            clonedStyleSheets.forEach((styleSheet) => {
+                              if (styleSheet instanceof HTMLStyleElement && styleSheet.textContent && styleSheet.textContent.includes('oklab')) {
+                                styleSheet.remove();
+                              }
+                            });
+                            
+                            // 外部スタイルシートは保持（Tailwind CSSを維持）
+                            const clonedLinks = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
+                            clonedLinks.forEach((link) => {
+                              // oklabを含む可能性がある場合は無効化
+                              if (link instanceof HTMLLinkElement) {
+                                // 外部スタイルシートは保持
+                              }
+                            });
+                            
+                            // カード要素に必要なスタイルを詳細に再適用
+                            const clonedCard = clonedDoc.querySelector('.dna-card-container') as HTMLElement;
+                            if (clonedCard) {
+                              // カードコンテナのスタイル
+                              clonedCard.style.position = 'relative';
+                              clonedCard.style.borderRadius = '24px';
+                              clonedCard.style.padding = '24px';
+                              clonedCard.style.overflow = 'hidden';
+                              clonedCard.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.5)';
+                              
+                              // グラスモーフィズムカードのスタイルを確実に適用
+                              const glassCards = clonedCard.querySelectorAll('.dna-glass-card');
+                              glassCards.forEach((card) => {
+                                const htmlCard = card as HTMLElement;
+                                htmlCard.style.background = 'rgba(255, 255, 255, 0.08)';
+                                htmlCard.style.backdropFilter = 'blur(20px)';
+                                htmlCard.style.webkitBackdropFilter = 'blur(20px)';
+                                htmlCard.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+                                htmlCard.style.borderRadius = '14px';
+                              });
+                              
+                              // テキストの色を確実に適用
+                              const allText = clonedCard.querySelectorAll('h1, h2, h3, p, span, div');
+                              allText.forEach((el) => {
+                                const htmlEl = el as HTMLElement;
+                                const classes = htmlEl.className.toString();
+                                
+                                // 白いテキスト
+                                if (classes.includes('text-white') || 
+                                    htmlEl.closest('.dna-glass-card') || 
+                                    htmlEl.tagName === 'H1' || 
+                                    htmlEl.tagName === 'H2' || 
+                                    htmlEl.tagName === 'H3') {
+                                  htmlEl.style.color = 'white';
+                                }
+                                
+                                // 半透明の白いテキスト
+                                if (classes.includes('text-white/70') || classes.includes('text-white/60')) {
+                                  htmlEl.style.color = 'rgba(255, 255, 255, 0.7)';
+                                }
+                              });
+                              
+                              // Flexboxレイアウトを再適用
+                              const flexElements = clonedCard.querySelectorAll('.flex, .dna-main-content, .dna-top-section, .dna-profile-section, .dna-stats-grid, .dna-bottom-sections, .profile-left, .profile-info, .favorite-content, .log-content, .card-header');
+                              flexElements.forEach((el) => {
+                                const htmlEl = el as HTMLElement;
+                                htmlEl.style.display = 'flex';
+                                
+                                if (htmlEl.classList.contains('dna-main-content') || 
+                                    htmlEl.classList.contains('dna-top-section') || 
+                                    htmlEl.classList.contains('dna-profile-section') || 
+                                    htmlEl.classList.contains('dna-bottom-sections') || 
+                                    htmlEl.classList.contains('log-content')) {
+                                  htmlEl.style.flexDirection = 'column';
+                                }
+                                
+                                if (htmlEl.classList.contains('dna-main-content')) {
+                                  htmlEl.style.gap = '28px';
+                                }
+                                if (htmlEl.classList.contains('dna-top-section')) {
+                                  htmlEl.style.flexDirection = 'row';
+                                  htmlEl.style.alignItems = 'center';
+                                  htmlEl.style.gap = '40px';
+                                }
+                                if (htmlEl.classList.contains('dna-profile-section')) {
+                                  htmlEl.style.flexDirection = 'row';
+                                  htmlEl.style.alignItems = 'center';
+                                  htmlEl.style.gap = '20px';
+                                  htmlEl.style.flexShrink = '0';
+                                }
+                                if (htmlEl.classList.contains('profile-info')) {
+                                  htmlEl.style.display = 'flex';
+                                  htmlEl.style.flexDirection = 'column';
+                                  htmlEl.style.justifyContent = 'center';
+                                }
+                                if (htmlEl.classList.contains('dna-stats-grid')) {
+                                  htmlEl.style.display = 'grid';
+                                  htmlEl.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                                  htmlEl.style.gap = '20px';
+                                  htmlEl.style.flex = '1';
+                                }
+                                if (htmlEl.classList.contains('dna-bottom-sections')) {
+                                  htmlEl.style.display = 'grid';
+                                  htmlEl.style.gridTemplateColumns = '1fr 1fr';
+                                  htmlEl.style.gap = '24px';
+                                }
+                                if (htmlEl.classList.contains('favorite-content')) {
+                                  htmlEl.style.flexDirection = 'row';
+                                  htmlEl.style.alignItems = 'center';
+                                  htmlEl.style.gap = '14px';
+                                }
+                                if (htmlEl.classList.contains('log-content')) {
+                                  htmlEl.style.alignItems = 'center';
+                                  htmlEl.style.justifyContent = 'center';
+                                }
+                              });
+                              
+                              // フォントサイズとウェイト
+                              const h1 = clonedCard.querySelectorAll('h1');
+                              h1.forEach((el) => {
+                                (el as HTMLElement).style.fontSize = '28px';
+                                (el as HTMLElement).style.fontWeight = '700';
+                                (el as HTMLElement).style.color = 'white';
+                              });
+                              
+                              const h2 = clonedCard.querySelectorAll('h2');
+                              h2.forEach((el) => {
+                                (el as HTMLElement).style.fontSize = '20px';
+                                (el as HTMLElement).style.fontWeight = '900';
+                                (el as HTMLElement).style.color = 'white';
+                              });
+                              
+                              const statValues = clonedCard.querySelectorAll('.stat-value');
+                              statValues.forEach((el) => {
+                                const htmlEl = el as HTMLElement;
+                                htmlEl.style.fontSize = '42px';
+                                htmlEl.style.fontWeight = '900';
+                                htmlEl.style.marginBottom = '4px';
+                              });
+                              
+                              // 間隔とマージン
+                              const mb6 = clonedCard.querySelectorAll('.mb-6');
+                              mb6.forEach((el) => {
+                                (el as HTMLElement).style.marginBottom = '24px';
+                              });
+                              
+                              const mb4 = clonedCard.querySelectorAll('.mb-4');
+                              mb4.forEach((el) => {
+                                (el as HTMLElement).style.marginBottom = '16px';
+                              });
+                              
+                              const mb3 = clonedCard.querySelectorAll('.mb-3');
+                              mb3.forEach((el) => {
+                                (el as HTMLElement).style.marginBottom = '12px';
+                              });
+                              
+                              const mb1 = clonedCard.querySelectorAll('.mb-1');
+                              mb1.forEach((el) => {
+                                (el as HTMLElement).style.marginBottom = '4px';
+                              });
+                              
+                              // パディング
+                              const p4 = clonedCard.querySelectorAll('.p-4');
+                              p4.forEach((el) => {
+                                (el as HTMLElement).style.padding = '16px';
+                              });
+                              
+                              const p6 = clonedCard.querySelectorAll('.p-6');
+                              p6.forEach((el) => {
+                                (el as HTMLElement).style.padding = '24px';
+                              });
+                              
+                              // テキストアライン
+                              const textCenter = clonedCard.querySelectorAll('.text-center');
+                              textCenter.forEach((el) => {
+                                (el as HTMLElement).style.textAlign = 'center';
+                              });
+                              
+                              // 2025の枠のスタイルを明示的に適用
+                              const allGlassCards = clonedCard.querySelectorAll('.dna-glass-card');
+                              allGlassCards.forEach((card) => {
+                                const htmlCard = card as HTMLElement;
+                                // 2025を含むdna-glass-cardを探す
+                                if (htmlCard.textContent?.includes('2025')) {
+                                  htmlCard.style.display = 'flex';
+                                  htmlCard.style.alignItems = 'center';
+                                  htmlCard.style.justifyContent = 'center';
+                                  htmlCard.style.padding = '8px 16px';
+                                }
+                              });
+                              
+                              // プロフィールセクションの高さを揃える
+                              const profileSection = clonedCard.querySelector('.dna-profile-section') as HTMLElement;
+                              if (profileSection) {
+                                profileSection.style.alignItems = 'center';
+                                const profileLeft = profileSection.querySelector('.profile-left') as HTMLElement;
+                                const profileInfo = profileSection.querySelector('.profile-info') as HTMLElement;
+                                if (profileLeft && profileInfo) {
+                                  profileLeft.style.display = 'flex';
+                                  profileLeft.style.flexDirection = 'column';
+                                  profileLeft.style.alignItems = 'center';
+                                  profileInfo.style.display = 'flex';
+                                  profileInfo.style.flexDirection = 'column';
+                                  profileInfo.style.justifyContent = 'center';
+                                }
+                              }
+                            }
+                          },
+                          ignoreElements: (element) => {
+                            // oklabを含むstyle要素を無視
+                            if (element instanceof HTMLStyleElement && element.textContent?.includes('oklab')) {
+                              return true;
+                            }
+                            return false;
+                          },
+                          useCORS: true,
+                          allowTaint: false,
+                          logging: false,
+                          backgroundColor: null, // 透明背景でカードのグラデーションを保持
+                          scale: 2,
+                          windowWidth: cardElement.scrollWidth,
+                          windowHeight: cardElement.scrollHeight,
+                        });
+                        const url = canvas.toDataURL('image/png');
+                        const link = document.createElement('a');
+                        link.download = 'anime-dna-card.png';
+                        link.href = url;
+                        link.click();
+                      } finally {
+                        // スタイルシートを元に戻す
+                        originalStyleSheets.forEach(({ element, disabled, textContent }) => {
+                          if (element instanceof HTMLStyleElement && textContent !== undefined) {
+                            element.textContent = textContent || '';
+                          } else if (element instanceof HTMLLinkElement && disabled !== undefined) {
+                            element.disabled = disabled;
+                          }
+                        });
+                      }
                     }
                   } catch (error) {
                     console.error('Failed to save image:', error);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    alert(`画像の保存に失敗しました。\n\nエラー: ${errorMessage}\n\n詳細はブラウザのコンソール（F12）を確認してください。`);
                   }
                 }}
                 className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -416,7 +679,7 @@ export function ProfileTab({
               </button>
               <button
                 onClick={() => setShowShareModal(true)}
-                className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg hover:bg-[#ff8a65] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg hover:bg-[#f09fe3] transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 シェア
               </button>
@@ -434,7 +697,7 @@ export function ProfileTab({
         <button
           onClick={() => setIsHandleVisible(!isHandleVisible)}
           className={`relative w-12 h-6 rounded-full transition-colors ${
-            !isHandleVisible ? 'bg-[#ff6b9d]' : 'bg-gray-300 dark:bg-gray-600'
+            !isHandleVisible ? 'bg-[#e879d4]' : 'bg-gray-300 dark:bg-gray-600'
           }`}
         >
           <div
@@ -512,8 +775,8 @@ export function ProfileTab({
                   }
                 }}
                 className="w-full text-white py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2" style={{
-                  background: '#ff6b9d',
-                }} onMouseEnter={(e) => { e.currentTarget.style.background = '#ff8a65'; }} onMouseLeave={(e) => { e.currentTarget.style.background = '#ff6b9d'; }}
+                  background: '#e879d4',
+                }} onMouseEnter={(e) => { e.currentTarget.style.background = '#f09fe3'; }} onMouseLeave={(e) => { e.currentTarget.style.background = '#e879d4'; }}
               >
                 <span>📋</span>
                 <span>リンクをコピー</span>
@@ -568,7 +831,7 @@ export function ProfileTab({
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
                         className="h-2 rounded-full transition-all"
-                        style={{ background: '#ff6b9d', width: `${percentage}%` }}
+                        style={{ background: '#e879d4', width: `${percentage}%` }}
                       />
                     </div>
                   </div>
@@ -595,14 +858,14 @@ export function ProfileTab({
                 }
               }}
               placeholder="ユーザー名または@ハンドルで検索..."
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             />
             <button
               onClick={handleUserSearch}
               disabled={isSearchingUsers}
               className="px-6 py-2 text-white rounded-xl font-medium transition-colors disabled:opacity-50" style={{
-                background: '#ff6b9d',
-              }} onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#ff8a65'; }} onMouseLeave={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#ff6b9d'; }}
+                background: '#e879d4',
+              }} onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#f09fe3'; }} onMouseLeave={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#e879d4'; }}
             >
               {isSearchingUsers ? '検索中...' : '検索'}
             </button>
@@ -654,8 +917,8 @@ export function ProfileTab({
                     }
                   }}
                   className="ml-3 px-3 py-1.5 text-white rounded-lg text-xs font-medium transition-colors shrink-0" style={{
-                    background: '#ff6b9d',
-                  }} onMouseEnter={(e) => { e.currentTarget.style.background = '#ff8a65'; }} onMouseLeave={(e) => { e.currentTarget.style.background = '#ff6b9d'; }}
+                    background: '#e879d4',
+                  }} onMouseEnter={(e) => { e.currentTarget.style.background = '#f09fe3'; }} onMouseLeave={(e) => { e.currentTarget.style.background = '#e879d4'; }}
                   title="IDをコピー"
                 >
                   コピー
@@ -682,7 +945,7 @@ export function ProfileTab({
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                isDarkMode ? 'bg-[#ff6b9d]' : 'bg-gray-300'
+                isDarkMode ? 'bg-[#e879d4]' : 'bg-gray-300'
               }`}
             >
               <span
@@ -711,8 +974,8 @@ export function ProfileTab({
           <button
             onClick={() => {}}
             className="w-full text-left py-2 text-gray-700 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors" style={{
-              '--hover-color': '#ff6b9d',
-            } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.color = '#ff6b9d'; }} onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+              '--hover-color': '#e879d4',
+            } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.color = '#e879d4'; }} onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
           >
             データをエクスポート
           </button>

@@ -7,7 +7,7 @@ export function StarRating({ rating, size = 'text-3xl' }: { rating: number; size
           key={star}
           className={`${size} ${
             star <= rating
-              ? 'text-[#ffd966]'
+              ? 'text-[#ffd700]'
               : 'text-gray-300 opacity-30'
           }`}
         >

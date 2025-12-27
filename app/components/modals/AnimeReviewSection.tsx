@@ -128,7 +128,7 @@ export function AnimeReviewSection({
               newSet.add(review.id);
               setExpandedSpoilerReviews(newSet);
             }}
-            className="w-full text-left text-sm text-[#ff6b9d] dark:text-[#ff6b9d] hover:underline py-2"
+            className="w-full text-left text-sm text-[#e879d4] dark:text-[#e879d4] hover:underline py-2"
           >
             ▶ クリックして展開
           </button>
@@ -246,7 +246,7 @@ export function AnimeReviewSection({
                 onClick={() => {
                   setShowReviewModal(true);
                 }}
-                className="text-xs text-[#ff6b9d] dark:text-[#ff6b9d] hover:underline"
+                className="text-xs text-[#e879d4] dark:text-[#e879d4] hover:underline"
               >
                 編集
               </button>
@@ -283,7 +283,7 @@ export function AnimeReviewSection({
         <select
           value={reviewFilter}
           onChange={(e) => setReviewFilter(e.target.value as 'all' | 'overall' | 'episode')}
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
         >
           <option value="all">すべて</option>
           <option value="overall">全体感想のみ</option>
@@ -292,7 +292,7 @@ export function AnimeReviewSection({
         <select
           value={reviewSort}
           onChange={(e) => setReviewSort(e.target.value as 'newest' | 'likes' | 'helpful')}
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
         >
           <option value="newest">新着順</option>
           <option value="likes">いいね順</option>
@@ -307,7 +307,7 @@ export function AnimeReviewSection({
           id="spoilerHidden"
           checked={userSpoilerHidden}
           onChange={(e) => setUserSpoilerHidden(e.target.checked)}
-          className="w-4 h-4 text-[#ff6b9d] rounded focus:ring-[#ff6b9d]"
+          className="w-4 h-4 text-[#e879d4] rounded focus:ring-[#e879d4]"
         />
         <label htmlFor="spoilerHidden" className="text-sm text-gray-700 dark:text-gray-300">
           ネタバレを含む感想を非表示
@@ -320,7 +320,7 @@ export function AnimeReviewSection({
           onClick={() => {
             setShowReviewModal(true);
           }}
-          className="w-full bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors mb-4"
+          className="w-full bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors mb-4"
         >
           + 感想を投稿
         </button>
@@ -329,7 +329,7 @@ export function AnimeReviewSection({
       {/* 感想一覧 */}
       {loadingReviews ? (
         <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff6b9d]"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#e879d4]"></div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">読み込み中...</p>
         </div>
       ) : filteredReviews.length > 0 ? (

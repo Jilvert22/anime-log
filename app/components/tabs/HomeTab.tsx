@@ -35,7 +35,7 @@ export function HomeTab({
           onClick={() => setHomeSubTab('seasons')}
           className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
             homeSubTab === 'seasons'
-              ? 'bg-[#ff6b9d] text-white'
+              ? 'bg-[#e879d4] text-white'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
           }`}
         >
@@ -45,7 +45,7 @@ export function HomeTab({
           onClick={() => setHomeSubTab('series')}
           className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
             homeSubTab === 'series'
-              ? 'bg-[#ff6b9d] text-white'
+              ? 'bg-[#e879d4] text-white'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
           }`}
         >
@@ -56,7 +56,12 @@ export function HomeTab({
       {homeSubTab === 'seasons' && (
         <>
           {/* 統計カード */}
-          <div className="bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] rounded-2xl p-5 text-white mb-6 relative">
+          <div 
+            className="rounded-2xl p-5 text-white mb-6 relative"
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 35%, #e879d4 65%, #f093fb 100%)'
+            }}
+          >
             {/* オタクタイプ */}
             <div className="mb-4 flex items-center justify-between">
               <p className="text-white/90 text-sm font-medium">
@@ -86,7 +91,7 @@ export function HomeTab({
           {/* 追加ボタン */}
           <button 
             onClick={onOpenAddForm}
-            className="w-full mb-6 py-4 border-2 border-dashed border-[#ff6b9d] dark:border-[#ff6b9d] rounded-2xl text-[#ff6b9d] dark:text-[#ff6b9d] font-bold hover:bg-[#ff6b9d]/10 dark:hover:bg-[#ff6b9d]/10 transition-colors"
+            className="w-full mb-6 py-4 border-2 border-dashed border-[#e879d4] dark:border-[#e879d4] rounded-2xl text-[#e879d4] dark:text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 dark:hover:bg-[#e879d4]/5 transition-colors"
           >
             + アニメを追加
           </button>

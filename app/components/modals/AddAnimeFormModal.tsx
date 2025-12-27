@@ -97,7 +97,7 @@ export function AddAnimeFormModal({
             onClick={() => setAddModalMode('search')}
             className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
               addModalMode === 'search'
-                ? 'bg-[#ff6b9d] text-white'
+                ? 'bg-[#e879d4] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -107,7 +107,7 @@ export function AddAnimeFormModal({
             onClick={() => setAddModalMode('season')}
             className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
               addModalMode === 'season'
-                ? 'bg-[#ff6b9d] text-white'
+                ? 'bg-[#e879d4] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -127,7 +127,7 @@ export function AddAnimeFormModal({
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 >
                   {Array.from({ length: new Date().getFullYear() - 1970 + 1 }, (_, i) => new Date().getFullYear() - i).map(year => (
                     <option key={year} value={year}>{year}年</option>
@@ -141,7 +141,7 @@ export function AddAnimeFormModal({
                 <select
                   value={selectedSeason || ''}
                   onChange={(e) => setSelectedSeason(e.target.value as 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">選択してください</option>
                   <option value="SPRING">春</option>
@@ -169,7 +169,7 @@ export function AddAnimeFormModal({
                 }
               }}
               disabled={!selectedSeason || isSeasonSearching}
-              className="w-full px-4 py-3 bg-[#ff6b9d] text-white rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-[#e879d4] text-white rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {isSeasonSearching ? '検索中...' : 'クールを検索'}
             </button>
@@ -189,7 +189,7 @@ export function AddAnimeFormModal({
                         setSelectedSeasonAnimeIds(new Set(seasonSearchResults.map(r => r.id)));
                       }
                     }}
-                    className="text-xs text-[#ff6b9d] dark:text-[#ff6b9d] hover:underline"
+                    className="text-xs text-[#e879d4] dark:text-[#e879d4] hover:underline"
                   >
                     {selectedSeasonAnimeIds.size === seasonSearchResults.length ? 'すべて解除' : 'すべて選択'}
                   </button>
@@ -203,8 +203,8 @@ export function AddAnimeFormModal({
                         key={result.id}
                         className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
                           isSelected
-                            ? 'border-[#ff6b9d] bg-[#ff6b9d]/10 dark:bg-[#ff6b9d]/10/30'
-                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ff6b9d] dark:hover:border-[#ff6b9d]'
+                            ? 'border-[#e879d4] bg-[#e879d4]/10 dark:bg-[#e879d4]/10/30'
+                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#e879d4] dark:hover:border-[#e879d4]'
                         }`}
                       >
                         <input
@@ -219,7 +219,7 @@ export function AddAnimeFormModal({
                             }
                             setSelectedSeasonAnimeIds(newSet);
                           }}
-                          className="w-5 h-5 text-[#ff6b9d] rounded focus:ring-[#ff6b9d]"
+                          className="w-5 h-5 text-[#e879d4] rounded focus:ring-[#e879d4]"
                         />
                         <img
                           src={result.coverImage?.large || result.coverImage?.medium || '🎬'}
@@ -322,7 +322,7 @@ export function AddAnimeFormModal({
                       setSeasons(updatedSeasons);
                       handleClose();
                     }}
-                    className="w-full px-4 py-3 bg-[#ff6b9d] text-white rounded-xl font-bold hover:bg-[#ff8a65] transition-colors"
+                    className="w-full px-4 py-3 bg-[#e879d4] text-white rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
                   >
                     {selectedSeasonAnimeIds.size}件のアニメを登録
                   </button>
@@ -350,13 +350,13 @@ export function AddAnimeFormModal({
                       handleSearch();
                     }
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                   placeholder="アニメタイトルで検索"
                 />
                 <button
                   onClick={handleSearch}
                   disabled={!searchQuery.trim() || isSearching}
-                  className="px-4 py-2 bg-[#ff6b9d] text-white rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-[#e879d4] text-white rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   {isSearching ? '検索中...' : '検索'}
                 </button>
@@ -366,7 +366,7 @@ export function AddAnimeFormModal({
             {/* 検索結果 */}
             {isSearching && (
               <div className="mb-4 text-center py-4">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff6b9d]"></div>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#e879d4]"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">検索中...</p>
               </div>
             )}
@@ -381,8 +381,8 @@ export function AddAnimeFormModal({
                       onClick={() => handleSelectSearchResult(result)}
                       className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
                         selectedSearchResult?.id === result.id
-                          ? 'border-[#ff6b9d] bg-[#ff6b9d]/10 dark:bg-[#ff6b9d]/10/30'
-                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ff6b9d] dark:hover:border-[#ff6b9d]'
+                          ? 'border-[#e879d4] bg-[#e879d4]/10 dark:bg-[#e879d4]/10/30'
+                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#e879d4] dark:hover:border-[#e879d4]'
                       }`}
                     >
                       <img
@@ -568,7 +568,7 @@ export function AddAnimeFormModal({
                     setSeasons(updatedSeasons);
                     handleClose();
                   }}
-                  className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors"
+                  className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
                 >
                   追加
                 </button>

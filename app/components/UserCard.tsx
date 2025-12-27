@@ -18,7 +18,7 @@ function UserCardComponent({
         onClick={onUserClick}
         className="flex items-center gap-3 flex-1 text-left"
       >
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] flex items-center justify-center text-2xl shrink-0">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-2xl shrink-0">
           👤
         </div>
         <div className="flex-1 min-w-0">
@@ -39,7 +39,7 @@ function UserCardComponent({
         className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors shrink-0 ${
           isFollowing
             ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-            : 'bg-[#ff6b9d] text-white hover:bg-[#ff8a65]'
+            : 'bg-[#e879d4] text-white hover:bg-[#f09fe3]'
         }`}
       >
         {isFollowing ? 'フォロー中' : 'フォロー'}

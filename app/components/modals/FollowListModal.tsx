@@ -48,7 +48,7 @@ export function FollowListModal({
             }}
             className={`flex-1 py-2 rounded-xl font-medium transition-colors ${
               followListType === 'following'
-                ? 'bg-[#ff6b9d] text-white'
+                ? 'bg-[#e879d4] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -62,7 +62,7 @@ export function FollowListModal({
             }}
             className={`flex-1 py-2 rounded-xl font-medium transition-colors ${
               followListType === 'followers'
-                ? 'bg-[#ff6b9d] text-white'
+                ? 'bg-[#e879d4] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >

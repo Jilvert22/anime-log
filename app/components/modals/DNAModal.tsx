@@ -68,7 +68,13 @@ export function DNAModal({
           <div className="flex flex-col gap-4 mb-6">
             {/* アバター */}
             <div className="flex justify-center">
-              <div className="w-24 h-24 rounded-full dna-glass-card flex items-center justify-center overflow-hidden shadow-lg">
+              <div 
+                className="w-24 h-24 rounded-full dna-glass-card flex items-center justify-center overflow-hidden shadow-lg"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%)',
+                  border: '2px solid rgba(255, 255, 255, 0.2)'
+                }}
+              >
                 {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
                   <img
                     src={userIcon}
@@ -78,14 +84,21 @@ export function DNAModal({
                       (e.target as HTMLImageElement).style.display = 'none';
                       const parent = (e.target as HTMLImageElement).parentElement;
                       if (parent) {
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'w-full h-full bg-white/20';
-                        parent.appendChild(placeholder);
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'w-full h-full';
+                      placeholder.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%)';
+                      placeholder.style.border = '2px solid rgba(255, 255, 255, 0.2)';
+                      parent.appendChild(placeholder);
                       }
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full bg-white/20"></div>
+                  <div 
+                    className="w-full h-full"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)'
+                    }}
+                  ></div>
                 )}
               </div>
             </div>
@@ -93,8 +106,8 @@ export function DNAModal({
             {/* タイプバッジ */}
             <div className="flex justify-center">
               <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl" style={{
-                background: 'linear-gradient(135deg, #ff6b9d, #ff8a65)',
-                boxShadow: '0 4px 15px rgba(255, 107, 157, 0.4)',
+                background: 'linear-gradient(135deg, #e879d4, #f09fe3)',
+                boxShadow: '0 4px 15px rgba(232, 121, 212, 0.4)',
               }}>
                 <div className="dna-type-icon"></div>
                 <span className="text-white text-base font-semibold">{otakuTypeLabel}</span>
@@ -121,7 +134,7 @@ export function DNAModal({
               <p className="text-white/70 text-xs">作品数</p>
             </div>
             <div className="dna-glass-card p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
-              <p className="text-white text-2xl font-black mb-1" style={{ color: '#ff6b9d' }}>{totalRewatchCount}</p>
+              <p className="text-white text-2xl font-black mb-1" style={{ color: '#e879d4' }}>{totalRewatchCount}</p>
               <p className="text-white/70 text-xs">視聴週</p>
             </div>
             <div className="dna-glass-card p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
@@ -162,14 +175,22 @@ export function DNAModal({
                                 (e.target as HTMLImageElement).style.display = 'none';
                                 const parent = (e.target as HTMLImageElement).parentElement;
                                 if (parent) {
-                                  const placeholder = document.createElement('div');
-                                  placeholder.className = 'w-full h-full bg-white/10';
-                                  parent.appendChild(placeholder);
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'w-full h-full';
+                      placeholder.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%)';
+                      placeholder.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+                      parent.appendChild(placeholder);
                                 }
                               }}
                             />
                           ) : (
-                            <div className="w-full h-full bg-white/10"></div>
+                            <div 
+                              className="w-full h-full"
+                              style={{
+                                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%)',
+                                border: '1px solid rgba(255, 255, 255, 0.15)'
+                              }}
+                            ></div>
                           )}
                         </div>
                       );
@@ -179,7 +200,13 @@ export function DNAModal({
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     <div className="w-16 h-20 dna-glass-card mx-auto mb-3 flex items-center justify-center">
-                      <div className="w-full h-full bg-white/10"></div>
+                      <div 
+                        className="w-full h-full"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)'
+                        }}
+                      ></div>
                     </div>
                     <p className="text-white/70 text-sm">まだ最推し作品が</p>
                     <p className="text-white/70 text-sm">登録されていません</p>
@@ -202,7 +229,7 @@ export function DNAModal({
               <div className="flex flex-col items-center justify-center h-full">
                 <div className="dna-pen-icon mb-3"></div>
                 <p className="text-white/70 text-sm text-center mb-4">視聴記録を追加しよう</p>
-                <button className="text-white/80 text-xs hover:text-white transition-colors">
+                <button className="text-xs hover:text-white transition-colors" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                   すべて見る →
                 </button>
               </div>
@@ -216,16 +243,25 @@ export function DNAModal({
         </div>
         
         {/* ボタン */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-4">
           <button
             onClick={() => {}}
-            className="flex-1 dna-glass-card text-white py-3 rounded-xl font-bold hover:bg-white/15 transition-colors"
+            className="flex-1 h-12 px-6 rounded-xl font-semibold text-sm transition-all hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e879d4] focus-visible:outline-offset-2"
+            style={{
+              background: '#ffffff',
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+              color: '#171717'
+            }}
           >
-            保存
+            画像を保存
           </button>
           <button
             onClick={() => {}}
-            className="flex-1 dna-glass-card text-white py-3 rounded-xl font-bold hover:bg-white/15 transition-colors"
+            className="flex-1 h-12 px-6 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e879d4] focus-visible:outline-offset-2"
+            style={{
+              background: 'linear-gradient(135deg, #e879d4 0%, #f093fb 100%)',
+              border: 'none'
+            }}
           >
             シェア
           </button>

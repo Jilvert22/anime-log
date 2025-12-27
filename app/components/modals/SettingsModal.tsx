@@ -111,7 +111,7 @@ export function SettingsModal({
               type="text"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
               placeholder="ユーザー名を入力"
             />
           </div>
@@ -165,7 +165,7 @@ export function SettingsModal({
                       reader.readAsDataURL(file);
                     }
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white text-sm"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   画像ファイルを選択してください（JPG、PNG、GIFなど）
@@ -184,7 +184,7 @@ export function SettingsModal({
                       onClick={() => setUserIcon(icon)}
                       className={`text-3xl p-2 rounded-lg transition-all ${
                         userIcon === icon
-                          ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 ring-2 ring-indigo-500'
+                          ? 'bg-[#e879d4]/20 dark:bg-[#e879d4]/20 ring-2 ring-indigo-500'
                           : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
@@ -216,7 +216,7 @@ export function SettingsModal({
                       const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
                       setUserHandle(value);
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                     placeholder="handle"
                     maxLength={30}
                   />
@@ -237,8 +237,8 @@ export function SettingsModal({
                   onClick={() => setUserOtakuType('')}
                   className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
                     !userOtakuType
-                      ? 'border-[#ff6b9d] bg-[#ff6b9d]/10 dark:bg-[#ff6b9d]/10'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ff6b9d]'
+                      ? 'border-[#e879d4] bg-[#e879d4]/10 dark:bg-[#e879d4]/10'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#e879d4]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -255,8 +255,8 @@ export function SettingsModal({
                     onClick={() => setUserOtakuType(type.value)}
                     className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
                       userOtakuType === type.value
-                        ? 'border-[#ff6b9d] bg-[#ff6b9d]/10 dark:bg-[#ff6b9d]/10'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ff6b9d]'
+                        ? 'border-[#e879d4] bg-[#e879d4]/10 dark:bg-[#e879d4]/10'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#e879d4]'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -281,7 +281,7 @@ export function SettingsModal({
                   onClose();
                   setShowFavoriteAnimeModal(true);
                 }}
-                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-[#ff6b9d] hover:text-[#ff6b9d] transition-colors"
+                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-[#e879d4] hover:text-[#e879d4] transition-colors"
               >
                 {favoriteAnimeIds.length > 0
                   ? `${favoriteAnimeIds.length}作品が設定されています`
@@ -295,7 +295,7 @@ export function SettingsModal({
                     return (
                       <div
                         key={id}
-                        className="flex items-center gap-1 bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 px-2 py-1 rounded-lg text-xs"
+                        className="flex items-center gap-1 bg-[#e879d4]/20 dark:bg-[#e879d4]/20 px-2 py-1 rounded-lg text-xs"
                       >
                         <span className="dark:text-white">{anime.title}</span>
                         <button
@@ -328,7 +328,7 @@ export function SettingsModal({
                 <button
                   onClick={() => setIsProfilePublic(!isProfilePublic)}
                   className={`relative w-12 h-6 rounded-full transition-colors ${
-                    isProfilePublic ? 'bg-[#ff6b9d]' : 'bg-gray-300 dark:bg-gray-600'
+                    isProfilePublic ? 'bg-[#e879d4]' : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <div
@@ -346,7 +346,7 @@ export function SettingsModal({
                   <textarea
                     value={userBio}
                     onChange={(e) => setUserBio(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                     placeholder="自己紹介を入力..."
                     rows={3}
                   />
@@ -357,7 +357,7 @@ export function SettingsModal({
 
           <button 
             onClick={handleSave}
-            className="w-full bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors"
+            className="w-full bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
           >
             保存
           </button>

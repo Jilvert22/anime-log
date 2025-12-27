@@ -52,7 +52,10 @@ export function ListDetailModal({
                     setSelectedAnime(anime);
                     setSelectedList(null);
                   }}
-                  className="bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
+                  className="rounded-xl p-3 text-white text-center cursor-pointer hover:scale-105 transition-transform"
+                  style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 35%, #e879d4 65%, #f093fb 100%)'
+                  }}
                 >
                   {isImageUrl ? (
                     <img
@@ -115,7 +118,7 @@ export function ListDetailModal({
               setSelectedList(null);
               setShowCreateListModal(true);
             }}
-            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors"
+            className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
           >
             編集
           </button>

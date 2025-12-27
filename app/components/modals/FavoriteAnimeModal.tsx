@@ -57,8 +57,8 @@ export function FavoriteAnimeModal({
                 }}
                 className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
                   isSelected
-                    ? 'border-[#ff6b9d] bg-[#ff6b9d]/10 dark:bg-[#ff6b9d]/10'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#ff6b9d]'
+                    ? 'border-[#e879d4] bg-[#e879d4]/10 dark:bg-[#e879d4]/10'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:border-[#e879d4]'
                 }`}
               >
                 <div className="w-12 h-16 rounded overflow-hidden shrink-0">
@@ -86,7 +86,7 @@ export function FavoriteAnimeModal({
                   )}
                 </div>
                 {isSelected && (
-                  <span className="text-[#ff6b9d] text-xl">✓</span>
+                  <span className="text-[#e879d4] text-xl">✓</span>
                 )}
               </button>
             );
@@ -101,7 +101,7 @@ export function FavoriteAnimeModal({
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors"
+            className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
           >
             保存
           </button>

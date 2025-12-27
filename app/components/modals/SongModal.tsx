@@ -121,7 +121,7 @@ export function SongModal({
                   setSelectedAnimeParent(anime);
                 }
               }}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             >
               <option value="">選択してください</option>
               {allAnimes.map((anime) => (
@@ -143,7 +143,7 @@ export function SongModal({
                 setSelectedAnime(null);
                 setSelectedAnimeParent(null);
               }}
-              className="text-xs text-[#ff6b9d] dark:text-[#ff6b9d] mt-1"
+              className="text-xs text-[#e879d4] dark:text-[#e879d4] mt-1"
             >
               変更
             </button>
@@ -180,7 +180,7 @@ export function SongModal({
             <p className="font-bold dark:text-white">{songType.toUpperCase()}</p>
             <button
               onClick={() => setSongType(null)}
-              className="text-xs text-[#ff6b9d] dark:text-[#ff6b9d] mt-1"
+              className="text-xs text-[#e879d4] dark:text-[#e879d4] mt-1"
             >
               変更
             </button>
@@ -196,7 +196,7 @@ export function SongModal({
             type="text"
             value={newSongTitle}
             onChange={(e) => setNewSongTitle(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             placeholder="曲名を入力"
           />
         </div>
@@ -210,7 +210,7 @@ export function SongModal({
             type="text"
             value={newSongArtist}
             onChange={(e) => setNewSongArtist(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             placeholder="アーティスト名を入力"
           />
         </div>
@@ -225,7 +225,7 @@ export function SongModal({
           <button
             onClick={handleSubmit}
             disabled={!newSongTitle.trim() || !newSongArtist.trim() || !songType || !selectedAnime}
-            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             登録
           </button>

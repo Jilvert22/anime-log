@@ -30,7 +30,7 @@ export function Navigation({
       {/* ヘッダー */}
       <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 lg:ml-[200px]">
         <div className="max-w-md md:max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-black bg-gradient-to-r from-[#ff6b9d] to-[#ff8a65] bg-clip-text text-transparent">
+          <h1 className="text-xl font-black bg-gradient-to-r from-[#e879d4] to-[#f09fe3] bg-clip-text text-transparent">
             アニメログ
           </h1>
           <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export function Navigation({
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="px-3 py-1.5 rounded-full bg-[#ff6b9d] hover:bg-[#ff8a65] text-white font-bold text-sm transition-colors"
+                className="px-3 py-1.5 rounded-full bg-[#e879d4] hover:bg-[#f09fe3] text-white font-bold text-sm transition-colors"
               >
                 ログイン
               </button>
@@ -88,7 +88,7 @@ export function Navigation({
               onClick={() => setActiveTab('home')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'home'
-                  ? 'text-[#ff6b9d] dark:text-[#ff6b9d]'
+                  ? 'text-[#e879d4] dark:text-[#e879d4]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -102,7 +102,7 @@ export function Navigation({
               onClick={() => setActiveTab('discover')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'discover'
-                  ? 'text-[#ff6b9d] dark:text-[#ff6b9d]'
+                  ? 'text-[#e879d4] dark:text-[#e879d4]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -116,7 +116,7 @@ export function Navigation({
               onClick={() => setActiveTab('collection')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'collection'
-                  ? 'text-[#ff6b9d] dark:text-[#ff6b9d]'
+                  ? 'text-[#e879d4] dark:text-[#e879d4]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -130,7 +130,7 @@ export function Navigation({
               onClick={() => setActiveTab('profile')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'profile'
-                  ? 'text-[#ff6b9d] dark:text-[#ff6b9d]'
+                  ? 'text-[#e879d4] dark:text-[#e879d4]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -150,9 +150,10 @@ export function Navigation({
             onClick={() => setActiveTab('home')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'home'
-                ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d]'
+                ? 'text-[#e879d4] dark:text-[#e879d4]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
+            style={activeTab === 'home' ? { background: 'rgba(232, 121, 212, 0.15)' } : undefined}
           >
             <span className="text-2xl">📺</span>
             <span className="font-medium">ホーム</span>
@@ -162,9 +163,10 @@ export function Navigation({
             onClick={() => setActiveTab('discover')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'discover'
-                ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d]'
+                ? 'text-[#e879d4] dark:text-[#e879d4]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
+            style={activeTab === 'discover' ? { background: 'rgba(232, 121, 212, 0.15)' } : undefined}
           >
             <span className="text-2xl">📊</span>
             <span className="font-medium">統計</span>
@@ -174,9 +176,10 @@ export function Navigation({
             onClick={() => setActiveTab('collection')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'collection'
-                ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d]'
+                ? 'text-[#e879d4] dark:text-[#e879d4]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
+            style={activeTab === 'collection' ? { background: 'rgba(232, 121, 212, 0.15)' } : undefined}
           >
             <span className="text-2xl">🏆</span>
             <span className="font-medium">コレクション</span>
@@ -186,9 +189,10 @@ export function Navigation({
             onClick={() => setActiveTab('profile')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'profile'
-                ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d]'
+                ? 'text-[#e879d4] dark:text-[#e879d4]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
+            style={activeTab === 'profile' ? { background: 'rgba(232, 121, 212, 0.15)' } : undefined}
           >
             <span className="text-2xl">👤</span>
             <span className="font-medium">マイページ</span>
