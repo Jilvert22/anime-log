@@ -220,8 +220,8 @@ export function MusicTab({
                   key={index}
                   className={`shrink-0 w-48 rounded-xl p-4 text-white shadow-lg relative group ${
                     song.type === 'op'
-                      ? 'bg-gradient-to-br from-orange-500 to-red-500'
-                      : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                      ? 'bg-linear-to-br from-orange-500 to-red-500'
+                      : 'bg-linear-to-br from-blue-500 to-purple-600'
                   }`}
                 >
                   {/* 編集・削除ボタン */}

@@ -18,7 +18,7 @@ function UserCardComponent({
         onClick={onUserClick}
         className="flex items-center gap-3 flex-1 text-left"
       >
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-2xl shrink-0">
+        <div className="w-12 h-12 rounded-full bg-linear-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-2xl shrink-0">
           👤
         </div>
         <div className="flex-1 min-w-0">

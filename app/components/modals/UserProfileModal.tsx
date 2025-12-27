@@ -36,7 +36,7 @@ export function UserProfileModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-3xl shrink-0">
+          <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-3xl shrink-0">
             👤
           </div>
           <div className="flex-1">

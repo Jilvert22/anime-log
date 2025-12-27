@@ -144,7 +144,7 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md mb-6">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* プロフィールアイコン */}
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-5xl shadow-lg">
+            <div className="w-24 h-24 rounded-full bg-linear-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-5xl shadow-lg">
               👤
             </div>
             
@@ -204,7 +204,7 @@ export default function ProfilePage() {
                   key={anime.id}
                   className="bg-gray-50 dark:bg-gray-700 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform"
                 >
-                  <div className="aspect-[3/4] bg-gradient-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-4xl">
+                  <div className="aspect-(3/4) bg-linear-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-4xl">
                     {anime.image && anime.image.startsWith('http') ? (
                       <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
                     ) : (
