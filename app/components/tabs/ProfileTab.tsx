@@ -464,7 +464,7 @@ export function ProfileTab({
                                 const htmlCard = card as HTMLElement;
                                 htmlCard.style.background = 'rgba(255, 255, 255, 0.08)';
                                 htmlCard.style.backdropFilter = 'blur(20px)';
-                                htmlCard.style.webkitBackdropFilter = 'blur(20px)';
+                                htmlCard.style.setProperty('-webkit-backdrop-filter', 'blur(20px)');
                                 htmlCard.style.border = '1px solid rgba(255, 255, 255, 0.15)';
                                 htmlCard.style.borderRadius = '14px';
                               });
