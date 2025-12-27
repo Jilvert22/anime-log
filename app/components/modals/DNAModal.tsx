@@ -9,6 +9,11 @@ export function DNAModal({
   favoriteAnimeIds,
   count,
   averageRating,
+  totalRewatchCount,
+  userName,
+  userIcon,
+  userHandle,
+  userOtakuType,
 }: {
   show: boolean;
   onClose: () => void;
@@ -16,8 +21,20 @@ export function DNAModal({
   favoriteAnimeIds: number[];
   count: number;
   averageRating: number;
+  totalRewatchCount: number;
+  userName: string;
+  userIcon: string;
+  userHandle: string;
+  userOtakuType: string;
 }) {
   if (!show) return null;
+
+  // オタクタイプから絵文字を除去する関数
+  const getOtakuTypeLabel = (type: string): string => {
+    return type.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+  };
+  
+  const otakuTypeLabel = userOtakuType ? getOtakuTypeLabel(userOtakuType) : '音響派';
 
   return (
     <div 
@@ -29,83 +46,172 @@ export function DNAModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* DNAカード */}
-        <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 mb-4 shadow-lg">
-          {/* タイトル */}
-          <div className="text-center mb-4">
-            <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA</h2>
-            <span className="text-2xl">✨</span>
+        <div 
+          className="dna-card-container relative rounded-3xl p-6 shadow-2xl overflow-hidden"
+          style={{
+            background: 'linear-gradient(165deg, rgba(102, 126, 234, 0.92) 0%, rgba(118, 75, 162, 0.95) 35%, rgba(180, 80, 160, 0.92) 65%, rgba(240, 147, 251, 0.88) 100%)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          {/* ヘッダー */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="dna-logo-icon"></div>
+              <h2 className="text-white text-xl font-black">ANIME DNA</h2>
+            </div>
+            <div className="dna-glass-card px-4 py-2">
+              <span className="text-white text-sm font-semibold">{new Date().getFullYear()}</span>
+            </div>
           </div>
           
-          {/* オタクタイプ */}
-          <div className="text-center mb-6">
-            <p className="text-white text-4xl font-black">
-              🎵 音響派
-            </p>
+          {/* プロフィールセクション */}
+          <div className="flex flex-col gap-4 mb-6">
+            {/* アバター */}
+            <div className="flex justify-center">
+              <div className="w-24 h-24 rounded-full dna-glass-card flex items-center justify-center overflow-hidden shadow-lg">
+                {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
+                  <img
+                    src={userIcon}
+                    alt="アイコン"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      const parent = (e.target as HTMLImageElement).parentElement;
+                      if (parent) {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'w-full h-full bg-white/20';
+                        parent.appendChild(placeholder);
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-white/20"></div>
+                )}
+              </div>
+            </div>
+            
+            {/* タイプバッジ */}
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl" style={{
+                background: 'linear-gradient(135deg, #ff6b9d, #ff8a65)',
+                boxShadow: '0 4px 15px rgba(255, 107, 157, 0.4)',
+              }}>
+                <div className="dna-type-icon"></div>
+                <span className="text-white text-base font-semibold">{otakuTypeLabel}</span>
+              </div>
+            </div>
+            
+            {/* ユーザー名とハンドル */}
+            <div className="text-center">
+              <p className="text-white text-xl font-bold mb-1">
+                {userName}
+              </p>
+              {userHandle ? (
+                <p className="text-white/70 text-sm">
+                  @{userHandle}
+                </p>
+              ) : null}
+            </div>
           </div>
           
-          {/* 統計 */}
+          {/* 統計グリッド（3カラム） */}
           <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-              <p className="text-white text-2xl font-black">{count}</p>
-              <p className="text-white/80 text-xs mt-1">作品</p>
+            <div className="dna-glass-card p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+              <p className="text-white text-2xl font-black mb-1" style={{ color: '#00d4ff' }}>{count}</p>
+              <p className="text-white/70 text-xs">作品数</p>
             </div>
-            <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-              <p className="text-white text-2xl font-black">12</p>
-              <p className="text-white/80 text-xs mt-1">周</p>
+            <div className="dna-glass-card p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+              <p className="text-white text-2xl font-black mb-1" style={{ color: '#ff6b9d' }}>{totalRewatchCount}</p>
+              <p className="text-white/70 text-xs">視聴週</p>
             </div>
-            <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-              <p className="text-white text-2xl font-black">
+            <div className="dna-glass-card p-4 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+              <p className="text-white text-2xl font-black mb-1" style={{ color: '#ffd700' }}>
                 {averageRating > 0 ? `${averageRating.toFixed(1)}` : '0.0'}
               </p>
-              <p className="text-white/80 text-xs mt-1">平均</p>
+              <p className="text-white/70 text-xs">平均評価</p>
             </div>
           </div>
           
-          {/* 最推し作品 */}
-          <div className="mb-4">
-            <p className="text-white/90 text-xs font-medium mb-2 text-center">最推し作品</p>
-            <div className="flex justify-center gap-3">
-              {(favoriteAnimeIds.length > 0
-                ? favoriteAnimeIds
+          {/* 最推し作品 & アニメログ */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            {/* 最推し作品 */}
+            <div className="flex-1 dna-glass-card p-4 min-h-[200px]">
+              <div className="flex items-center mb-4">
+                <div className="dna-trophy-icon"></div>
+                <h3 className="text-white text-base font-semibold">最推し作品</h3>
+              </div>
+              {favoriteAnimeIds.length > 0 ? (
+                <div className="flex justify-center gap-3">
+                  {favoriteAnimeIds
                     .map(id => allAnimes.find(a => a.id === id))
                     .filter((a): a is Anime => a !== undefined)
                     .slice(0, 3)
-                : allAnimes
-                    .filter(a => a.rating > 0)
-                    .sort((a, b) => b.rating - a.rating)
-                    .slice(0, 3)
-              ).map((anime) => {
-                  const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
-                  return (
-                    <div
-                      key={anime.id}
-                      className="bg-white/20 backdrop-blur-sm rounded-lg w-16 h-20 flex items-center justify-center overflow-hidden relative"
-                    >
-                      {isImageUrl ? (
-                        <img
-                          src={anime.image}
-                          alt={anime.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            const parent = (e.target as HTMLImageElement).parentElement;
-                            if (parent) {
-                              parent.innerHTML = '<span class="text-3xl">🎬</span>';
-                            }
-                          }}
-                        />
-                      ) : (
-                        <span className="text-3xl">{anime.image || '🎬'}</span>
-                      )}
+                    .map((anime) => {
+                      const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
+                      return (
+                        <div
+                          key={anime.id}
+                          className="dna-glass-card w-20 h-28 flex items-center justify-center overflow-hidden"
+                        >
+                          {isImageUrl ? (
+                            <img
+                              src={anime.image}
+                              alt={anime.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                const parent = (e.target as HTMLImageElement).parentElement;
+                                if (parent) {
+                                  const placeholder = document.createElement('div');
+                                  placeholder.className = 'w-full h-full bg-white/10';
+                                  parent.appendChild(placeholder);
+                                }
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-white/10"></div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="w-16 h-20 dna-glass-card mx-auto mb-3 flex items-center justify-center">
+                      <div className="w-full h-full bg-white/10"></div>
                     </div>
-                  );
-                })}
+                    <p className="text-white/70 text-sm">まだ最推し作品が</p>
+                    <p className="text-white/70 text-sm">登録されていません</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* アニメログ */}
+            <div className="flex-1 dna-glass-card p-4 min-h-[200px]">
+              <div className="flex items-center mb-4">
+                <div className="dna-chart-icon">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <h3 className="text-white text-base font-semibold">アニメログ</h3>
+              </div>
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="dna-pen-icon mb-3"></div>
+                <p className="text-white/70 text-sm text-center mb-4">視聴記録を追加しよう</p>
+                <button className="text-white/80 text-xs hover:text-white transition-colors">
+                  すべて見る →
+                </button>
+              </div>
             </div>
           </div>
           
-          {/* ロゴ */}
-          <div className="text-center pt-2 border-t border-white/20">
-            <p className="text-white/80 text-xs font-bold">アニメログ</p>
+          {/* フッター */}
+          <div className="text-center pt-4 border-t border-white/15">
+            <p className="text-white/60 text-xs">SCAN TO VIEW PROFILE</p>
           </div>
         </div>
         
@@ -113,17 +219,15 @@ export function DNAModal({
         <div className="flex gap-3">
           <button
             onClick={() => {}}
-            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 dna-glass-card text-white py-3 rounded-xl font-bold hover:bg-white/15 transition-colors"
           >
-            <span>📥</span>
-            <span>保存</span>
+            保存
           </button>
           <button
             onClick={() => {}}
-            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 dna-glass-card text-white py-3 rounded-xl font-bold hover:bg-white/15 transition-colors"
           >
-            <span>📤</span>
-            <span>シェア</span>
+            シェア
           </button>
         </div>
         

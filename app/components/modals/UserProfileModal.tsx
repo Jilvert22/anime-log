@@ -36,7 +36,7 @@ export function UserProfileModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-3xl shrink-0">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] flex items-center justify-center text-3xl shrink-0">
             👤
           </div>
           <div className="flex-1">
@@ -51,7 +51,7 @@ export function UserProfileModal({
               className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
                 userFollowStatus[selectedUserProfile.id]
                   ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                  : 'bg-[#ffc2d1] text-white hover:bg-[#ffb07c]'
+                  : 'bg-[#ff6b9d] text-white hover:bg-[#ff8a65]'
               }`}
             >
               {userFollowStatus[selectedUserProfile.id] ? 'フォロー中' : 'フォロー'}

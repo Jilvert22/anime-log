@@ -67,7 +67,7 @@ export function CreateListModal({
             type="text"
             value={newListTitle}
             onChange={(e) => setNewListTitle(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
             placeholder="初心者におすすめ5選"
           />
         </div>
@@ -80,7 +80,7 @@ export function CreateListModal({
           <textarea
             value={newListDescription}
             onChange={(e) => setNewListDescription(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
             placeholder="アニメ入門にぴったり"
             rows={3}
           />
@@ -107,7 +107,7 @@ export function CreateListModal({
                       setSelectedAnimeIds(selectedAnimeIds.filter(id => id !== anime.id));
                     }
                   }}
-                  className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
+                  className="w-4 h-4 text-[#ff6b9d] rounded focus:ring-[#ff6b9d]"
                 />
                 <span className="text-sm dark:text-white">{anime.title}</span>
               </label>
@@ -125,7 +125,7 @@ export function CreateListModal({
           <button
             onClick={handleSave}
             disabled={!newListTitle.trim() || selectedAnimeIds.length === 0}
-            className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {editingList ? '更新' : '作成'}
           </button>

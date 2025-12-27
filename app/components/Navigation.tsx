@@ -30,7 +30,7 @@ export function Navigation({
       {/* ヘッダー */}
       <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 lg:ml-[200px]">
         <div className="max-w-md md:max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-black bg-linear-to-r from-[#ffc2d1] to-[#ffb07c] bg-clip-text text-transparent">
+          <h1 className="text-xl font-black bg-gradient-to-r from-[#ff6b9d] to-[#ff8a65] bg-clip-text text-transparent">
             アニメログ
           </h1>
           <div className="flex items-center gap-2">
@@ -46,13 +46,31 @@ export function Navigation({
                 onClick={() => setShowSettings(true)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                <span className="text-2xl">{userIcon}</span>
+                {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
+                  <img
+                    src={userIcon}
+                    alt="アイコン"
+                    className="w-8 h-8 rounded-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      const parent = (e.target as HTMLImageElement).parentElement;
+                      if (parent) {
+                        const span = document.createElement('span');
+                        span.className = 'text-2xl';
+                        span.textContent = '👤';
+                        parent.insertBefore(span, e.target);
+                      }
+                    }}
+                  />
+                ) : (
+                  <span className="text-2xl">{userIcon || '👤'}</span>
+                )}
                 <span className="font-bold text-sm dark:text-white">{userName}</span>
               </button>
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="px-3 py-1.5 rounded-full bg-[#ffc2d1] hover:bg-[#ffb07c] text-white font-bold text-sm transition-colors"
+                className="px-3 py-1.5 rounded-full bg-[#ff6b9d] hover:bg-[#ff8a65] text-white font-bold text-sm transition-colors"
               >
                 ログイン
               </button>
@@ -69,7 +87,7 @@ export function Navigation({
               onClick={() => setActiveTab('home')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'home'
-                  ? 'text-[#ffc2d1] dark:text-[#ffc2d1]'
+                  ? 'text-[#ff6b9d] dark:text-[#ff6b9d]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -83,7 +101,7 @@ export function Navigation({
               onClick={() => setActiveTab('discover')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'discover'
-                  ? 'text-[#ffc2d1] dark:text-[#ffc2d1]'
+                  ? 'text-[#ff6b9d] dark:text-[#ff6b9d]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -97,7 +115,7 @@ export function Navigation({
               onClick={() => setActiveTab('collection')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'collection'
-                  ? 'text-[#ffc2d1] dark:text-[#ffc2d1]'
+                  ? 'text-[#ff6b9d] dark:text-[#ff6b9d]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -111,7 +129,7 @@ export function Navigation({
               onClick={() => setActiveTab('profile')}
               className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all ${
                 activeTab === 'profile'
-                  ? 'text-[#ffc2d1] dark:text-[#ffc2d1]'
+                  ? 'text-[#ff6b9d] dark:text-[#ff6b9d]'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -131,7 +149,7 @@ export function Navigation({
             onClick={() => setActiveTab('home')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'home'
-                ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1]'
+                ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
@@ -143,7 +161,7 @@ export function Navigation({
             onClick={() => setActiveTab('discover')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'discover'
-                ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1]'
+                ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
@@ -155,7 +173,7 @@ export function Navigation({
             onClick={() => setActiveTab('collection')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'collection'
-                ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1]'
+                ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
@@ -167,7 +185,7 @@ export function Navigation({
             onClick={() => setActiveTab('profile')}
             className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
               activeTab === 'profile'
-                ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1]'
+                ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >

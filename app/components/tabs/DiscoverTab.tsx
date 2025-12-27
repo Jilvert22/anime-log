@@ -122,7 +122,7 @@ export function DiscoverTab({
   return (
     <div className="space-y-6">
       {/* 視聴統計サマリー（統合版、一番上） */}
-      <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
+      <div className="bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] rounded-2xl p-5 text-white shadow-lg">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <span>📊</span>
                 視聴統計サマリー
@@ -152,7 +152,7 @@ export function DiscoverTab({
             </div>
       
       {/* あなたの傾向まとめ（サマリーの次） */}
-      <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white shadow-lg">
+      <div className="bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] rounded-2xl p-5 text-white shadow-lg">
               <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
                 <span>✨</span>
                 あなたの傾向まとめ
@@ -179,14 +179,14 @@ export function DiscoverTab({
                           <span className="text-sm font-medium dark:text-white">
                             {tagInfo?.emoji} {tagInfo?.label || tag}
                           </span>
-                          <span className="text-sm font-bold text-[#ffc2d1] dark:text-[#ffc2d1]">
+                          <span className="text-sm font-bold text-[#ff6b9d] dark:text-[#ff6b9d]">
                             {Math.round((count / totalAnimes) * 100)}%
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                             <div
-                              className="bg-linear-to-r from-indigo-500 to-purple-500 h-full transition-all"
+                              className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all"
                               style={{ width: `${barWidth}%` }}
                             />
                           </div>
@@ -221,14 +221,14 @@ export function DiscoverTab({
                         <span className="text-sm font-medium dark:text-white">
                           ⭐{rating} {ratingLabel?.label || ''}
                         </span>
-                        <span className="text-sm font-bold text-[#ffc2d1] dark:text-[#ffc2d1]">
+                        <span className="text-sm font-bold text-[#ff6b9d] dark:text-[#ff6b9d]">
                           {count}本
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                           <div
-                            className="bg-linear-to-r from-yellow-400 to-orange-500 h-full transition-all"
+                            className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all"
                             style={{ width: `${barWidth}%` }}
                           />
                         </div>
@@ -262,14 +262,14 @@ export function DiscoverTab({
                       <div key={name} className="space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium dark:text-white">{name}</span>
-                          <span className="text-sm font-bold text-[#ffc2d1] dark:text-[#ffc2d1]">
+                          <span className="text-sm font-bold text-[#ff6b9d] dark:text-[#ff6b9d]">
                             {count}本
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                             <div
-                              className="bg-linear-to-r from-green-400 to-blue-500 h-full transition-all"
+                              className="bg-gradient-to-r from-green-400 to-blue-500 h-full transition-all"
                               style={{ width: `${barWidth}%` }}
                             />
                           </div>

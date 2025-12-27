@@ -44,6 +44,7 @@ export function ProfileTab({
   handleViewUserProfile,
   handleToggleFollow,
   userFollowStatus,
+  setActiveTab,
 }: {
   allAnimes: Anime[];
   seasons: Season[];
@@ -80,10 +81,12 @@ export function ProfileTab({
   handleViewUserProfile: (userId: string) => Promise<void>;
   handleToggleFollow: (userId: string) => Promise<void>;
   userFollowStatus: { [userId: string]: boolean };
+  setActiveTab: (tab: 'home' | 'discover' | 'collection' | 'profile') => void;
 }) {
   const [isDNACardVisible, setIsDNACardVisible] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
   const [isHandleVisible, setIsHandleVisible] = useState(true);
+  const [isIdVisible, setIsIdVisible] = useState(false);
   
   const handleSaveProfile = async () => {
     if (user) {
@@ -153,23 +156,38 @@ export function ProfileTab({
           });
         });
         
+        // オタクタイプから絵文字を除去する関数
+        const getOtakuTypeLabel = (type: string): string => {
+          // 絵文字を除去（Unicode絵文字の範囲をチェック）
+          return type.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+        };
+        
         // ユーザーが設定したオタクタイプを使用、なければ自動判定
-        let otakuType = userOtakuType || '🎵 音響派'; // デフォルト
+        let otakuTypeValue = userOtakuType || '🎵 音響派'; // デフォルト
+        let otakuTypeLabel = '音響派';
         if (!userOtakuType) {
           // 自動判定
           if (tagCounts['考察'] && tagCounts['考察'] >= 3) {
-            otakuType = '🔍 考察厨';
+            otakuTypeValue = '🔍 考察厨';
+            otakuTypeLabel = '考察厨';
           } else if (tagCounts['泣ける'] && tagCounts['泣ける'] >= 3) {
-            otakuType = '😭 感情移入型';
+            otakuTypeValue = '😭 感情移入型';
+            otakuTypeLabel = '感情移入型';
           } else if (tagCounts['作画神'] && tagCounts['作画神'] >= 3) {
-            otakuType = '🎨 作画厨';
+            otakuTypeValue = '🎨 作画厨';
+            otakuTypeLabel = '作画厨';
           } else if (tagCounts['音楽最高'] && tagCounts['音楽最高'] >= 3) {
-            otakuType = '🎵 音響派';
+            otakuTypeValue = '🎵 音響派';
+            otakuTypeLabel = '音響派';
           } else if (tagCounts['キャラ萌え'] && tagCounts['キャラ萌え'] >= 3) {
-            otakuType = '💕 キャラオタ';
+            otakuTypeValue = '💕 キャラオタ';
+            otakuTypeLabel = 'キャラオタ';
           } else if (tagCounts['熱い'] && tagCounts['熱い'] >= 3) {
-            otakuType = '🔥 熱血派';
+            otakuTypeValue = '🔥 熱血派';
+            otakuTypeLabel = '熱血派';
           }
+        } else {
+          otakuTypeLabel = getOtakuTypeLabel(userOtakuType);
         }
         
         // お気に入り曲
@@ -182,127 +200,204 @@ export function ProfileTab({
         
         return (
           <>
-            <div className="bg-linear-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl p-6 shadow-lg">
-              {/* タイトル */}
-              <div className="text-center mb-4">
-                <h2 className="text-white text-xl font-black mb-1">MY ANIME DNA {new Date().getFullYear()}</h2>
-              </div>
-              
-              {/* プロフィール画像と名前（Twitter風） */}
-              <div className="text-center mb-4">
-                <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-4xl mx-auto mb-2 shadow-lg">
-                  {userIcon}
+            <div 
+              className="dna-card-container relative rounded-3xl p-6 shadow-2xl overflow-hidden"
+              style={{
+                background: 'linear-gradient(165deg, rgba(102, 126, 234, 0.92) 0%, rgba(118, 75, 162, 0.95) 35%, rgba(180, 80, 160, 0.92) 65%, rgba(240, 147, 251, 0.88) 100%)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              }}
+            >
+              {/* ヘッダー */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="dna-logo-icon"></div>
+                  <h2 className="text-white text-xl font-black">ANIME DNA</h2>
                 </div>
-                <p className="text-white text-lg font-bold">
-                  {userName}
-                </p>
-                {userHandle ? (
-                  <p className="text-white/80 text-sm mt-1">
-                    {!isHandleVisible ? `@${userHandle}` : '@XXXX'}
-                  </p>
-                ) : (
-                  <p className="text-white/80 text-sm mt-1">
-                    {!isHandleVisible ? '' : '@XXXX'}
-                  </p>
-                )}
-              </div>
-              
-              {/* オタクタイプ */}
-              <div className="text-center mb-6">
-                <p className="text-white text-4xl font-black">
-                  {otakuType}
-                </p>
-              </div>
-              
-              {/* 統計 */}
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-                  <p className="text-white text-2xl font-black">{count}</p>
-                  <p className="text-white/80 text-xs mt-1">作品</p>
-                </div>
-                <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-                  <p className="text-white text-2xl font-black">{totalRewatchCount}</p>
-                  <p className="text-white/80 text-xs mt-1">周</p>
-                </div>
-                <div className="text-center bg-white/20 backdrop-blur-sm rounded-lg py-2">
-                  <p className="text-white text-2xl font-black">
-                    {averageRating > 0 ? `${averageRating.toFixed(1)}` : '0.0'}
-                  </p>
-                  <p className="text-white/80 text-xs mt-1">平均</p>
+                <div className="dna-glass-card px-4 py-2">
+                  <span className="text-white text-sm font-semibold">{new Date().getFullYear()}</span>
                 </div>
               </div>
               
-              {/* 最推し作品 */}
-              <div className="mb-4">
-                <p className="text-white/90 text-xs font-medium mb-2 text-center">最推し作品</p>
-                <div className="flex justify-center gap-3">
-                  {(favoriteAnimeIds.length > 0
-                    ? favoriteAnimeIds
-                        .map(id => allAnimes.find(a => a.id === id))
-                        .filter((a): a is Anime => a !== undefined)
-                        .slice(0, 3)
-                    : allAnimes
-                        .filter(a => a.rating > 0)
-                        .sort((a, b) => b.rating - a.rating)
-                        .slice(0, 3)
-                  ).map((anime, index) => {
-                      const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
-                      return (
-                        <div
-                          key={anime.id}
-                          className="bg-white/20 backdrop-blur-sm rounded-lg w-16 h-20 flex items-center justify-center overflow-hidden relative"
-                        >
-                          {isImageUrl ? (
-                            <img
-                              src={anime.image}
-                              alt={anime.title}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                                const parent = (e.target as HTMLImageElement).parentElement;
-                                if (parent) {
-                                  parent.innerHTML = '<span class="text-3xl">🎬</span>';
-                                }
-                              }}
-                            />
-                          ) : (
-                            <span className="text-3xl">{anime.image || '🎬'}</span>
-                          )}
+              {/* メインコンテンツ */}
+              <div className="dna-main-content">
+                {/* 上部セクション: プロフィール + 統計（デスクトップで横並び） */}
+                <div className="dna-top-section">
+                  {/* プロフィールセクション */}
+                  <section className="dna-profile-section">
+                    <div className="profile-left">
+                      {/* アバター */}
+                      <div className="w-[72px] h-[72px] md:w-[76px] md:h-[76px] lg:w-[100px] lg:h-[100px] rounded-[18px] md:rounded-xl lg:rounded-2xl dna-glass-card flex items-center justify-center overflow-hidden shadow-lg border-2 border-white/15">
+                        {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
+                          <img
+                            src={userIcon}
+                            alt="アイコン"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              const parent = (e.target as HTMLImageElement).parentElement;
+                              if (parent) {
+                                const placeholder = document.createElement('div');
+                                placeholder.className = 'w-full h-full bg-white/20';
+                                parent.appendChild(placeholder);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-white/20"></div>
+                        )}
+                      </div>
+                      
+                      {/* タイプバッジ */}
+                      <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:px-4 md:py-2 rounded-xl" style={{
+                        background: 'linear-gradient(135deg, #ff6b9d, #ff8a65)',
+                        boxShadow: '0 4px 15px rgba(255, 107, 157, 0.4)',
+                      }}>
+                        <div className="dna-type-icon"></div>
+                        <span className="text-white text-sm md:text-[13px] font-semibold">{otakuTypeLabel}</span>
+                      </div>
+                    </div>
+                    
+                    {/* ユーザー情報 */}
+                    <div className="profile-info text-center md:text-left">
+                      <h1 className="username text-xl md:text-2xl lg:text-[28px] font-bold md:font-[700] mb-1 text-white" style={{
+                        textShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                      }}>
+                        {userName}
+                      </h1>
+                      {userHandle ? (
+                        <p className="handle text-sm md:text-base text-white/70">
+                          {!isHandleVisible ? `@${userHandle}` : '@XXXX'}
+                        </p>
+                      ) : (
+                        <p className="handle text-sm md:text-base text-white/70">
+                          {!isHandleVisible ? '' : '@XXXX'}
+                        </p>
+                      )}
+                    </div>
+                  </section>
+                  
+                  {/* 統計グリッド */}
+                  <section className="dna-stats-grid">
+                    <div className="dna-glass-card p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+                      <p className="stat-value text-2xl md:text-3xl lg:text-[42px] font-black mb-1" style={{ color: '#00d4ff' }}>{count}</p>
+                      <p className="stat-label text-xs md:text-[11px] lg:text-[13px] text-white/70 uppercase" style={{ letterSpacing: '0.5px' }}>作品数</p>
+                    </div>
+                    <div className="dna-glass-card p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+                      <p className="stat-value text-2xl md:text-3xl lg:text-[42px] font-black mb-1" style={{ color: '#ff6b9d' }}>{totalRewatchCount}</p>
+                      <p className="stat-label text-xs md:text-[11px] lg:text-[13px] text-white/70 uppercase" style={{ letterSpacing: '0.5px' }}>視聴週</p>
+                    </div>
+                    <div className="dna-glass-card p-4 md:p-5 lg:p-7 text-center hover:transform hover:-translate-y-1 transition-all cursor-pointer">
+                      <p className="stat-value text-2xl md:text-3xl lg:text-[42px] font-black mb-1" style={{ color: '#ffd700' }}>
+                        {averageRating > 0 ? `${averageRating.toFixed(1)}` : '0.0'}
+                      </p>
+                      <p className="stat-label text-xs md:text-[11px] lg:text-[13px] text-white/70 uppercase" style={{ letterSpacing: '0.5px' }}>平均評価</p>
+                    </div>
+                  </section>
+                </div>
+                
+                {/* 下部セクション: カード2枚（均等幅） */}
+                <div className="dna-bottom-sections">
+              
+                  {/* 最推し作品 */}
+                  <div className="content-card dna-glass-card p-4 md:p-5 lg:p-6 min-h-[140px] md:min-h-[150px] lg:min-h-[180px]">
+                    <div className="card-header flex items-center justify-between mb-3 md:mb-4">
+                      <div className="card-title text-xs md:text-sm lg:text-[14px] font-semibold text-white flex items-center gap-2 md:gap-2.5">
+                        <span className="dna-trophy-icon"></span>
+                        最推し作品
+                      </div>
+                    </div>
+                    {favoriteAnimeIds.length > 0 ? (
+                      <div className="favorite-content flex items-center gap-3.5 md:gap-4 lg:gap-5 flex-1">
+                        {favoriteAnimeIds
+                          .map(id => allAnimes.find(a => a.id === id))
+                          .filter((a): a is Anime => a !== undefined)
+                          .slice(0, 3)
+                          .map((anime) => {
+                            const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
+                            return (
+                              <div
+                                key={anime.id}
+                                className="favorite-poster w-[52px] h-[72px] md:w-[60px] md:h-[84px] lg:w-[70px] lg:h-[100px] rounded-lg md:rounded-xl dna-glass-card flex items-center justify-center overflow-hidden flex-shrink-0"
+                                style={{
+                                  background: 'linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%)',
+                                }}
+                              >
+                                {isImageUrl ? (
+                                  <img
+                                    src={anime.image}
+                                    alt={anime.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                      const parent = (e.target as HTMLImageElement).parentElement;
+                                      if (parent) {
+                                        const placeholder = document.createElement('div');
+                                        placeholder.className = 'w-full h-full bg-white/10';
+                                        parent.appendChild(placeholder);
+                                      }
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="film-icon w-6 h-5 md:w-7 md:h-5.5 lg:w-7 lg:h-6 border-2 border-white/30 rounded-sm"></div>
+                                )}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <div className="favorite-content flex items-center justify-center flex-1">
+                        <div className="favorite-empty text-center text-white/70 text-xs md:text-sm lg:text-[15px] leading-relaxed">
+                          <div className="favorite-poster w-[52px] h-[72px] md:w-[60px] md:h-[84px] lg:w-[70px] lg:h-[100px] mx-auto mb-3 dna-glass-card flex items-center justify-center rounded-lg md:rounded-xl" style={{
+                            background: 'linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%)',
+                          }}>
+                            <div className="film-icon w-6 h-5 md:w-7 md:h-5.5 lg:w-7 lg:h-6 border-2 border-white/30 rounded-sm"></div>
+                          </div>
+                          <p>まだ最推し作品が</p>
+                          <p>登録されていません</p>
                         </div>
-                      );
-                    })}
-                </div>
-              </div>
-              
-              {/* お気に入り曲 */}
-              {favoriteSongs.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-white/90 text-xs font-medium mb-2 text-center">お気に入り曲</p>
-                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
-                    <p className="text-white text-sm font-bold text-center">
-                      {favoriteSongs[0].title}
-                    </p>
-                    <p className="text-white/80 text-xs text-center mt-1">
-                      {favoriteSongs[0].artist}
-                    </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* アニメログ */}
+                  <div className="content-card dna-glass-card p-4 md:p-5 lg:p-6 min-h-[140px] md:min-h-[150px] lg:min-h-[180px]">
+                    <div className="card-header flex items-center justify-between mb-3 md:mb-4">
+                      <div className="card-title text-xs md:text-sm lg:text-[14px] font-semibold text-white flex items-center gap-2 md:gap-2.5">
+                        <span className="dna-chart-icon">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </span>
+                        アニメログ
+                      </div>
+                      <a 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setActiveTab('home');
+                        }}
+                        className="view-all text-[11px] md:text-xs lg:text-[13px] text-[#00d4ff] hover:opacity-80 transition-opacity cursor-pointer"
+                      >
+                        すべて見る →
+                      </a>
+                    </div>
+                    <div className="log-content flex flex-col items-center justify-center flex-1 gap-2">
+                      <span className="dna-pen-icon"></span>
+                      <p className="log-empty-text text-white/70 text-xs md:text-sm lg:text-[15px]">視聴記録を追加しよう</p>
+                    </div>
                   </div>
                 </div>
-              )}
-              
-              {/* ロゴ */}
-              <div className="text-center pt-2 border-t border-white/20">
-                <p className="text-white/80 text-xs font-bold">アニメログ</p>
               </div>
             </div>
             
             {/* ボタン */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 mt-4">
               <button
                 onClick={async () => {
                   // html2canvasで画像保存
                   try {
                     const html2canvas = (await import('html2canvas')).default;
-                    const cardElement = document.querySelector('.bg-linear-to-br.from-purple-500');
+                    const cardElement = document.querySelector('.dna-card-container');
                     if (cardElement) {
                       const canvas = await html2canvas(cardElement as HTMLElement);
                       const url = canvas.toDataURL('image/png');
@@ -315,17 +410,15 @@ export function ProfileTab({
                     console.error('Failed to save image:', error);
                   }
                 }}
-                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                <span>📥</span>
-                <span>画像を保存</span>
+                画像を保存
               </button>
               <button
                 onClick={() => setShowShareModal(true)}
-                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg hover:bg-[#ff8a65] transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                <span>📤</span>
-                <span>シェア</span>
+                シェア
               </button>
             </div>
           </>
@@ -341,7 +434,7 @@ export function ProfileTab({
         <button
           onClick={() => setIsHandleVisible(!isHandleVisible)}
           className={`relative w-12 h-6 rounded-full transition-colors ${
-            !isHandleVisible ? 'bg-[#ffc2d1]' : 'bg-gray-300 dark:bg-gray-600'
+            !isHandleVisible ? 'bg-[#ff6b9d]' : 'bg-gray-300 dark:bg-gray-600'
           }`}
         >
           <div
@@ -374,7 +467,9 @@ export function ProfileTab({
 
             {/* QRコード */}
             <div className="flex flex-col items-center mb-6">
-              <div className="relative bg-gradient-to-br from-[#ffc2d1] via-[#ffb07c] to-[#ffc2d1] p-6 rounded-3xl shadow-xl mb-4">
+              <div className="relative p-6 rounded-3xl shadow-xl mb-4" style={{
+                background: 'linear-gradient(165deg, rgba(102, 126, 234, 0.92) 0%, rgba(118, 75, 162, 0.95) 35%, rgba(180, 80, 160, 0.92) 65%, rgba(240, 147, 251, 0.88) 100%)',
+              }}>
                 <div className="bg-white p-4 rounded-2xl">
                   <QRCodeSVG
                     value={typeof window !== 'undefined' ? window.location.href : ''}
@@ -416,7 +511,9 @@ export function ProfileTab({
                     alert('リンクのコピーに失敗しました');
                   }
                 }}
-                className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors flex items-center justify-center gap-2"
+                className="w-full text-white py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2" style={{
+                  background: '#ff6b9d',
+                }} onMouseEnter={(e) => { e.currentTarget.style.background = '#ff8a65'; }} onMouseLeave={(e) => { e.currentTarget.style.background = '#ff6b9d'; }}
               >
                 <span>📋</span>
                 <span>リンクをコピー</span>
@@ -462,15 +559,15 @@ export function ProfileTab({
               
               return (
                 <div key={tag} className="flex items-center gap-3">
-                  <span className="text-xl">{tagInfo?.emoji}</span>
+                  <span className="text-xl">{tagInfo?.emoji || '🏷️'}</span>
                   <div className="flex-1">
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium dark:text-white">{tagInfo?.label}</span>
+                      <span className="font-medium dark:text-white">{tagInfo?.label || tag}</span>
                       <span className="text-gray-500 dark:text-gray-400">{count}回</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
-                        className="bg-[#ffc2d1] h-2 rounded-full transition-all"
+                        className="h-2 rounded-full transition-all" style={{ background: '#ff6b9d' }}
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -498,12 +595,14 @@ export function ProfileTab({
                 }
               }}
               placeholder="ユーザー名または@ハンドルで検索..."
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
             />
             <button
               onClick={handleUserSearch}
               disabled={isSearchingUsers}
-              className="px-6 py-2 bg-[#ffc2d1] text-white rounded-xl font-medium hover:bg-[#ffb07c] transition-colors disabled:opacity-50"
+              className="px-6 py-2 text-white rounded-xl font-medium transition-colors disabled:opacity-50" style={{
+                background: '#ff6b9d',
+              }} onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#ff8a65'; }} onMouseLeave={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#ff6b9d'; }}
             >
               {isSearchingUsers ? '検索中...' : '検索'}
             </button>
@@ -539,10 +638,13 @@ export function ProfileTab({
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">自分のID</p>
-                  <p className="text-sm font-mono dark:text-white truncate">{user.id}</p>
+                  <p className="text-sm font-mono dark:text-white truncate">
+                    {isIdVisible ? user.id : 'XXXX'}
+                  </p>
                 </div>
                 <button
                   onClick={async () => {
+                    setIsIdVisible(true);
                     try {
                       await navigator.clipboard.writeText(user.id);
                       alert('IDをクリップボードにコピーしました');
@@ -551,7 +653,9 @@ export function ProfileTab({
                       alert('IDのコピーに失敗しました');
                     }
                   }}
-                  className="ml-3 px-3 py-1.5 bg-[#ffc2d1] text-white rounded-lg text-xs font-medium hover:bg-[#ffb07c] transition-colors shrink-0"
+                  className="ml-3 px-3 py-1.5 text-white rounded-lg text-xs font-medium transition-colors shrink-0" style={{
+                    background: '#ff6b9d',
+                  }} onMouseEnter={(e) => { e.currentTarget.style.background = '#ff8a65'; }} onMouseLeave={(e) => { e.currentTarget.style.background = '#ff6b9d'; }}
                   title="IDをコピー"
                 >
                   コピー
@@ -578,7 +682,7 @@ export function ProfileTab({
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                isDarkMode ? 'bg-[#ffc2d1]' : 'bg-gray-300'
+                isDarkMode ? 'bg-[#ff6b9d]' : 'bg-gray-300'
               }`}
             >
               <span
@@ -606,7 +710,9 @@ export function ProfileTab({
           {/* データをエクスポート */}
           <button
             onClick={() => {}}
-            className="w-full text-left py-2 text-gray-700 dark:text-gray-300 hover:text-[#ffc2d1] dark:hover:text-indigo-400 transition-colors"
+            className="w-full text-left py-2 text-gray-700 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors" style={{
+              '--hover-color': '#ff6b9d',
+            } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.color = '#ff6b9d'; }} onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
           >
             データをエクスポート
           </button>

@@ -94,7 +94,25 @@ export function AnimeReviewSection({
 
         {/* ユーザー情報 */}
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-xl">{review.userIcon}</span>
+          {review.userIcon && (review.userIcon.startsWith('http://') || review.userIcon.startsWith('https://') || review.userIcon.startsWith('data:')) ? (
+            <img
+              src={review.userIcon}
+              alt="アイコン"
+              className="w-6 h-6 rounded-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                const parent = (e.target as HTMLImageElement).parentElement;
+                if (parent) {
+                  const span = document.createElement('span');
+                  span.className = 'text-xl';
+                  span.textContent = '👤';
+                  parent.insertBefore(span, e.target);
+                }
+              }}
+            />
+          ) : (
+            <span className="text-xl">{review.userIcon || '👤'}</span>
+          )}
           <span className="font-bold text-sm dark:text-white">{review.userName}</span>
           <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
             {new Date(review.createdAt).toLocaleDateString('ja-JP')}
@@ -109,7 +127,7 @@ export function AnimeReviewSection({
               newSet.add(review.id);
               setExpandedSpoilerReviews(newSet);
             }}
-            className="w-full text-left text-sm text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline py-2"
+            className="w-full text-left text-sm text-[#ff6b9d] dark:text-[#ff6b9d] hover:underline py-2"
           >
             ▶ クリックして展開
           </button>
@@ -227,7 +245,7 @@ export function AnimeReviewSection({
                 onClick={() => {
                   setShowReviewModal(true);
                 }}
-                className="text-xs text-[#ffc2d1] dark:text-[#ffc2d1] hover:underline"
+                className="text-xs text-[#ff6b9d] dark:text-[#ff6b9d] hover:underline"
               >
                 編集
               </button>
@@ -264,7 +282,7 @@ export function AnimeReviewSection({
         <select
           value={reviewFilter}
           onChange={(e) => setReviewFilter(e.target.value as 'all' | 'overall' | 'episode')}
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white text-sm"
         >
           <option value="all">すべて</option>
           <option value="overall">全体感想のみ</option>
@@ -273,7 +291,7 @@ export function AnimeReviewSection({
         <select
           value={reviewSort}
           onChange={(e) => setReviewSort(e.target.value as 'newest' | 'likes' | 'helpful')}
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white text-sm"
         >
           <option value="newest">新着順</option>
           <option value="likes">いいね順</option>
@@ -288,7 +306,7 @@ export function AnimeReviewSection({
           id="spoilerHidden"
           checked={userSpoilerHidden}
           onChange={(e) => setUserSpoilerHidden(e.target.checked)}
-          className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
+          className="w-4 h-4 text-[#ff6b9d] rounded focus:ring-[#ff6b9d]"
         />
         <label htmlFor="spoilerHidden" className="text-sm text-gray-700 dark:text-gray-300">
           ネタバレを含む感想を非表示
@@ -301,7 +319,7 @@ export function AnimeReviewSection({
           onClick={() => {
             setShowReviewModal(true);
           }}
-          className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors mb-4"
+          className="w-full bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors mb-4"
         >
           + 感想を投稿
         </button>
@@ -310,7 +328,7 @@ export function AnimeReviewSection({
       {/* 感想一覧 */}
       {loadingReviews ? (
         <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#ffc2d1]-600"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff6b9d]"></div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">読み込み中...</p>
         </div>
       ) : filteredReviews.length > 0 ? (

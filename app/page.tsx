@@ -497,6 +497,7 @@ export default function Home() {
             handleViewUserProfile={handleViewUserProfile}
             handleToggleFollow={handleToggleFollow}
             userFollowStatus={userFollowStatus}
+            setActiveTab={setActiveTab}
           />
         )}
       </main>
@@ -691,6 +692,11 @@ export default function Home() {
         favoriteAnimeIds={favoriteAnimeIds}
         count={count}
         averageRating={averageRating}
+        totalRewatchCount={totalRewatchCount}
+        userName={userName}
+        userIcon={userIcon}
+        userHandle={userHandle}
+        userOtakuType={userOtakuType}
       />
 
     </div>

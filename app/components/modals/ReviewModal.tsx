@@ -114,7 +114,7 @@ export function ReviewModal({
             }}
             className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
               reviewMode === 'overall'
-                ? 'bg-[#ffc2d1] text-white'
+                ? 'bg-[#ff6b9d] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -124,7 +124,7 @@ export function ReviewModal({
             onClick={() => setReviewMode('episode')}
             className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
               reviewMode === 'episode'
-                ? 'bg-[#ffc2d1] text-white'
+                ? 'bg-[#ff6b9d] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -143,7 +143,7 @@ export function ReviewModal({
               min="1"
               value={newReviewEpisodeNumber || ''}
               onChange={(e) => setNewReviewEpisodeNumber(e.target.value ? Number(e.target.value) : undefined)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
               placeholder="例: 1"
             />
           </div>
@@ -157,7 +157,7 @@ export function ReviewModal({
           <textarea
             value={newReviewContent}
             onChange={(e) => setNewReviewContent(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white min-h-[120px]"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white min-h-[120px]"
             placeholder="感想を入力してください..."
           />
         </div>
@@ -169,7 +169,7 @@ export function ReviewModal({
               type="checkbox"
               checked={newReviewContainsSpoiler}
               onChange={(e) => setNewReviewContainsSpoiler(e.target.checked)}
-              className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
+              className="w-4 h-4 text-[#ff6b9d] rounded focus:ring-[#ff6b9d]"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">
               ネタバレを含む
@@ -188,7 +188,7 @@ export function ReviewModal({
           <button
             onClick={handleSubmit}
             disabled={!newReviewContent.trim() || (reviewMode === 'episode' && !newReviewEpisodeNumber)}
-            className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             投稿
           </button>

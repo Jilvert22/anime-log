@@ -93,7 +93,7 @@ export function AnimeDetailModal({
             onClick={() => setAnimeDetailTab('info')}
             className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
               animeDetailTab === 'info'
-                ? 'bg-[#ffc2d1] text-white'
+                ? 'bg-[#ff6b9d] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -103,7 +103,7 @@ export function AnimeDetailModal({
             onClick={() => setAnimeDetailTab('reviews')}
             className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
               animeDetailTab === 'reviews'
-                ? 'bg-[#ffc2d1] text-white'
+                ? 'bg-[#ff6b9d] text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -261,7 +261,7 @@ export function AnimeDetailModal({
                       }}
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                         isSelected
-                          ? 'bg-[#ffc2d1] text-white dark:bg-indigo-500'
+                          ? 'bg-[#ff6b9d] text-white dark:bg-indigo-500'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                       }`}
                     >
@@ -298,7 +298,7 @@ export function AnimeDetailModal({
                     );
                   }}
                   placeholder="シリーズ名を入力（任意）"
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white text-sm"
                 />
                 {selectedAnime.seriesName && (
                   <button
@@ -341,14 +341,14 @@ export function AnimeDetailModal({
                         setNewSongArtist('');
                         setShowSongModal(true);
                       }}
-                      className="text-xs bg-[#ffc2d1] text-white px-3 py-1 rounded-lg hover:bg-[#ffb07c] transition-colors"
+                      className="text-xs bg-[#ff6b9d] text-white px-3 py-1 rounded-lg hover:bg-[#ff8a65] transition-colors"
                     >
                       + 登録
                     </button>
                   )}
                 </div>
                 {selectedAnime.songs?.op && (
-                  <div className="bg-linear-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 rounded-lg p-3">
+                  <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1">
                         <p className="font-bold text-sm dark:text-white">{selectedAnime.songs.op.title}</p>
@@ -472,14 +472,14 @@ export function AnimeDetailModal({
                         setNewSongArtist('');
                         setShowSongModal(true);
                       }}
-                      className="text-xs bg-[#ffc2d1] text-white px-3 py-1 rounded-lg hover:bg-[#ffb07c] transition-colors"
+                      className="text-xs bg-[#ff6b9d] text-white px-3 py-1 rounded-lg hover:bg-[#ff8a65] transition-colors"
                     >
                       + 登録
                     </button>
                   )}
                 </div>
                 {selectedAnime.songs?.ed && (
-                  <div className="bg-linear-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-3">
+                  <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1">
                         <p className="font-bold text-sm dark:text-white">{selectedAnime.songs.ed.title}</p>
@@ -615,7 +615,7 @@ export function AnimeDetailModal({
                       );
                     }
                   }}
-                  className="text-xs bg-[#ffc2d1] text-white px-3 py-1 rounded-lg hover:bg-[#ffb07c] transition-colors"
+                  className="text-xs bg-[#ff6b9d] text-white px-3 py-1 rounded-lg hover:bg-[#ff8a65] transition-colors"
                 >
                   + 名言を追加
                 </button>
@@ -626,7 +626,7 @@ export function AnimeDetailModal({
                   {selectedAnime.quotes.map((quote, index) => (
                     <div
                       key={index}
-                      className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border-l-4 border-[#ffc2d1]-500 relative"
+                      className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border-l-4 border-[#ff6b9d] relative"
                     >
                       <p className="text-sm dark:text-white mb-1">「{quote.text}」</p>
                       {quote.character && (
@@ -692,7 +692,7 @@ export function AnimeDetailModal({
               </button>
               <button
                 onClick={() => setSelectedAnime(null)}
-                className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
+                className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors"
               >
                 閉じる
               </button>

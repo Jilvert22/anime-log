@@ -28,7 +28,7 @@ function AnimeCardComponent({ anime, onClick }: { anime: Anime; onClick: () => v
       onClick={onClick}
       className="bg-white dark:bg-gray-800 rounded-2xl shadow-md dark:shadow-gray-900/50 overflow-hidden cursor-pointer hover:scale-105 hover:shadow-2xl transition-all relative"
     >
-      <div className="aspect-3/4 bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl relative overflow-hidden rounded-t-2xl">
+      <div className="aspect-3/4 bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] flex items-center justify-center text-5xl relative overflow-hidden rounded-t-2xl">
         {/* 周回数バッジ */}
         <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 z-10">
           <span className="text-xs">🔄</span>

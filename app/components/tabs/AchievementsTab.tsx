@@ -111,7 +111,7 @@ export function AchievementsTab({
         </p>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
           <div
-            className="bg-[#ffc2d1] h-2 rounded-full transition-all"
+            className="bg-[#ff6b9d] h-2 rounded-full transition-all"
             style={{ width: `${(unlockedCount / achievements.length) * 100}%` }}
           />
         </div>
@@ -172,7 +172,7 @@ export function AchievementsTab({
             
             <button 
               onClick={() => setSelectedAchievement(null)}
-              className="w-full bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors"
+              className="w-full bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors"
             >
               閉じる
             </button>

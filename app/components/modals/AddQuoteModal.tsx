@@ -159,7 +159,7 @@ export function AddQuoteModal({
               }
             }}
             disabled={!!editingQuote}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-600"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-600"
           >
             <option value="">選択してください</option>
             {allAnimes.map((anime) => (
@@ -178,7 +178,7 @@ export function AddQuoteModal({
           <textarea
             value={newQuoteText}
             onChange={(e) => setNewQuoteText(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
             placeholder="名言を入力"
             rows={3}
           />
@@ -193,7 +193,7 @@ export function AddQuoteModal({
             type="text"
             value={newQuoteCharacter}
             onChange={(e) => setNewQuoteCharacter(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
             placeholder="キャラクター名"
           />
         </div>
@@ -208,7 +208,7 @@ export function AddQuoteModal({
           <button
             onClick={handleSave}
             disabled={!newQuoteText.trim() || (!editingQuote && !newQuoteAnimeId)}
-            className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {editingQuote ? '更新' : '追加'}
           </button>

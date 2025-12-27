@@ -98,7 +98,7 @@ export function CollectionTab({
           onClick={() => setCollectionSubTab('achievements')}
           className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
             collectionSubTab === 'achievements'
-              ? 'bg-[#ffc2d1] text-white shadow-md'
+              ? 'bg-[#ff6b9d] text-white shadow-md'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -108,7 +108,7 @@ export function CollectionTab({
           onClick={() => setCollectionSubTab('characters')}
           className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
             collectionSubTab === 'characters'
-              ? 'bg-[#ffc2d1] text-white shadow-md'
+              ? 'bg-[#ff6b9d] text-white shadow-md'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -118,7 +118,7 @@ export function CollectionTab({
           onClick={() => setCollectionSubTab('quotes')}
           className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
             collectionSubTab === 'quotes'
-              ? 'bg-[#ffc2d1] text-white shadow-md'
+              ? 'bg-[#ff6b9d] text-white shadow-md'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -128,7 +128,7 @@ export function CollectionTab({
           onClick={() => setCollectionSubTab('lists')}
           className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
             collectionSubTab === 'lists'
-              ? 'bg-[#ffc2d1] text-white shadow-md'
+              ? 'bg-[#ff6b9d] text-white shadow-md'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -138,7 +138,7 @@ export function CollectionTab({
           onClick={() => setCollectionSubTab('music')}
           className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
             collectionSubTab === 'music'
-              ? 'bg-[#ffc2d1] text-white shadow-md'
+              ? 'bg-[#ff6b9d] text-white shadow-md'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -148,7 +148,7 @@ export function CollectionTab({
           onClick={() => setCollectionSubTab('voiceActors')}
           className={`px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold whitespace-nowrap transition-all min-w-[100px] md:min-w-[120px] text-center ${
             collectionSubTab === 'voiceActors'
-              ? 'bg-[#ffc2d1] text-white shadow-md'
+              ? 'bg-[#ff6b9d] text-white shadow-md'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -171,7 +171,7 @@ export function CollectionTab({
             <h2 className="text-xl font-bold dark:text-white">推しキャラ</h2>
             <button
               onClick={onOpenAddCharacterModal}
-              className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
+              className="text-sm bg-[#ff6b9d] text-white px-4 py-2 rounded-lg hover:bg-[#ff8a65] transition-colors"
             >
               + 推しを追加
             </button>
@@ -184,7 +184,7 @@ export function CollectionTab({
                 onClick={() => setCharacterFilter(null)}
                 className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                   characterFilter === null
-                    ? 'bg-[#ffc2d1] text-white'
+                    ? 'bg-[#ff6b9d] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -199,7 +199,7 @@ export function CollectionTab({
                     onClick={() => setCharacterFilter(category.value)}
                     className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                       characterFilter === category.value
-                        ? 'bg-[#ffc2d1] text-white'
+                        ? 'bg-[#ff6b9d] text-white'
                         : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                     }`}
                   >
@@ -248,7 +248,7 @@ export function CollectionTab({
                     <h3 className="font-bold text-sm dark:text-white text-center mb-1">{character.name}</h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-2">{character.animeName}</p>
                     <div className="flex items-center justify-center mb-2">
-                      <span className="text-xs bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1] px-2 py-1 rounded-full">
+                      <span className="text-xs bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d] px-2 py-1 rounded-full">
                         {character.category}
                       </span>
                     </div>
@@ -285,7 +285,7 @@ export function CollectionTab({
             <h2 className="text-xl font-bold dark:text-white">名言コレクション</h2>
             <button
               onClick={onOpenAddQuoteModal}
-              className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
+              className="text-sm bg-[#ff6b9d] text-white px-4 py-2 rounded-lg hover:bg-[#ff8a65] transition-colors"
             >
               + 名言を追加
             </button>
@@ -336,7 +336,7 @@ export function CollectionTab({
                       type="text"
                       value={quoteSearchQuery}
                       onChange={(e) => setQuoteSearchQuery(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
                       placeholder="名言、アニメ、キャラクターで検索..."
                     />
                     
@@ -349,7 +349,7 @@ export function CollectionTab({
                         }}
                         className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                           quoteFilterType === 'all'
-                            ? 'bg-[#ffc2d1] text-white'
+                            ? 'bg-[#ff6b9d] text-white'
                             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                         }`}
                       >
@@ -362,7 +362,7 @@ export function CollectionTab({
                         }}
                         className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                           quoteFilterType === 'anime'
-                            ? 'bg-[#ffc2d1] text-white'
+                            ? 'bg-[#ff6b9d] text-white'
                             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                         }`}
                       >
@@ -375,7 +375,7 @@ export function CollectionTab({
                         }}
                         className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                           quoteFilterType === 'character'
-                            ? 'bg-[#ffc2d1] text-white'
+                            ? 'bg-[#ff6b9d] text-white'
                             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                         }`}
                       >
@@ -388,7 +388,7 @@ export function CollectionTab({
                       <select
                         value={selectedAnimeForFilter || ''}
                         onChange={(e) => setSelectedAnimeForFilter(Number(e.target.value) || null)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
                       >
                         <option value="">アニメを選択...</option>
                         {uniqueAnimes.map((anime) => (
@@ -419,7 +419,7 @@ export function CollectionTab({
                       return quoteMap.map(({ quote, animeId, quoteIndex }) => (
                         <div
                           key={`${animeId}-${quoteIndex}`}
-                          className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border-l-4 border-[#ffc2d1]-500 relative group"
+                          className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border-l-4 border-[#ff6b9d] relative group"
                         >
                           {/* 編集・削除ボタン */}
                           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -496,7 +496,7 @@ export function CollectionTab({
             <h2 className="text-xl font-bold dark:text-white">布教リスト</h2>
             <button
               onClick={onOpenCreateListModal}
-              className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
+              className="text-sm bg-[#ff6b9d] text-white px-4 py-2 rounded-lg hover:bg-[#ff8a65] transition-colors"
             >
               + 新しいリストを作成
             </button>
@@ -509,7 +509,7 @@ export function CollectionTab({
                 onClick={() => setListSortType('date')}
                 className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                   listSortType === 'date'
-                    ? 'bg-[#ffc2d1] text-white'
+                    ? 'bg-[#ff6b9d] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -519,7 +519,7 @@ export function CollectionTab({
                 onClick={() => setListSortType('title')}
                 className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                   listSortType === 'title'
-                    ? 'bg-[#ffc2d1] text-white'
+                    ? 'bg-[#ff6b9d] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -529,7 +529,7 @@ export function CollectionTab({
                 onClick={() => setListSortType('count')}
                 className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                   listSortType === 'count'
-                    ? 'bg-[#ffc2d1] text-white'
+                    ? 'bg-[#ff6b9d] text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -558,7 +558,7 @@ export function CollectionTab({
                   <div
                     key={list.id}
                     onClick={() => onSelectList(list)}
-                    className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-4 shadow-md cursor-pointer hover:scale-105 transition-transform"
+                    className="bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] rounded-2xl p-4 shadow-md cursor-pointer hover:scale-105 transition-transform"
                   >
                     <h3 className="font-bold text-white mb-1">{list.title}</h3>
                     <p className="text-white/80 text-sm mb-2">{list.description}</p>
@@ -594,7 +594,7 @@ export function CollectionTab({
             <h2 className="text-xl font-bold dark:text-white">声優リスト</h2>
             <button
               onClick={onOpenAddVoiceActorModal}
-              className="text-sm bg-[#ffc2d1] text-white px-4 py-2 rounded-lg hover:bg-[#ffb07c] transition-colors"
+              className="text-sm bg-[#ff6b9d] text-white px-4 py-2 rounded-lg hover:bg-[#ff8a65] transition-colors"
             >
               + 声優を追加
             </button>
@@ -608,7 +608,7 @@ export function CollectionTab({
                 value={voiceActorSearchQuery}
                 onChange={(e) => setVoiceActorSearchQuery(e.target.value)}
                 placeholder="声優名で検索..."
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
               />
             </div>
           )}
@@ -635,7 +635,7 @@ export function CollectionTab({
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                         <button
                           onClick={() => onEditVoiceActor(voiceActor)}
-                          className="bg-[#ffc2d1] text-white p-2 rounded-lg hover:bg-[#ffb07c] transition-colors text-xs"
+                          className="bg-[#ff6b9d] text-white p-2 rounded-lg hover:bg-[#ff8a65] transition-colors text-xs"
                           title="編集"
                         >
                           ✏️

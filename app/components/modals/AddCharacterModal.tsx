@@ -112,7 +112,7 @@ export function AddCharacterModal({
             type="text"
             value={newCharacterName}
             onChange={(e) => setNewCharacterName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
             placeholder="キャラクター名"
           />
         </div>
@@ -125,7 +125,7 @@ export function AddCharacterModal({
           <select
             value={newCharacterAnimeId || ''}
             onChange={(e) => setNewCharacterAnimeId(Number(e.target.value))}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
           >
             <option value="">選択してください</option>
             {allAnimes.map((anime) => (
@@ -148,7 +148,7 @@ export function AddCharacterModal({
                 onClick={() => setNewCharacterImage(icon)}
                 className={`text-3xl p-2 rounded-lg transition-all ${
                   newCharacterImage === icon
-                    ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
+                    ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 ring-2 ring-indigo-500'
                     : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -170,7 +170,7 @@ export function AddCharacterModal({
                 onClick={() => setNewCharacterCategory(category.value)}
                 className={`p-2 rounded-lg text-sm font-medium transition-all ${
                   newCharacterCategory === category.value
-                    ? 'bg-[#ffc2d1] text-white'
+                    ? 'bg-[#ff6b9d] text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -198,7 +198,7 @@ export function AddCharacterModal({
                 }}
                 className={`px-3 py-1 rounded-full text-sm transition-all ${
                   newCharacterTags.includes(tag)
-                    ? 'bg-[#ffc2d1] text-white'
+                    ? 'bg-[#ff6b9d] text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -219,7 +219,7 @@ export function AddCharacterModal({
                   setNewCustomTag('');
                 }
               }}
-              className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white text-sm"
+              className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white text-sm"
               placeholder="新しいタグを入力してEnter"
             />
           </div>
@@ -230,7 +230,7 @@ export function AddCharacterModal({
               {newCharacterTags.map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1 bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 text-[#ffc2d1] dark:text-[#ffc2d1] px-2 py-1 rounded-full text-xs"
+                  className="inline-flex items-center gap-1 bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 text-[#ff6b9d] dark:text-[#ff6b9d] px-2 py-1 rounded-full text-xs"
                 >
                   {tag}
                   <button
@@ -255,7 +255,7 @@ export function AddCharacterModal({
           <button
             onClick={handleSave}
             disabled={!newCharacterName.trim() || !newCharacterAnimeId}
-            className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {editingCharacter ? '更新' : '追加'}
           </button>

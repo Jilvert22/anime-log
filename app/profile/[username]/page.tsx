@@ -118,7 +118,7 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">プロフィールが見つかりません</h1>
           <button
             onClick={() => router.push('/')}
-            className="px-4 py-2 bg-[#ffc2d1] text-white rounded-xl hover:bg-[#ffb07c] transition-colors"
+            className="px-4 py-2 bg-[#ff6b9d] text-white rounded-xl hover:bg-[#ff8a65] transition-colors"
           >
             ホームに戻る
           </button>
@@ -134,7 +134,7 @@ export default function ProfilePage() {
         <div className="mb-8">
           <button
             onClick={() => router.push('/')}
-            className="text-gray-600 dark:text-gray-400 hover:text-[#ffc2d1] mb-4"
+            className="text-gray-600 dark:text-gray-400 hover:text-[#ff6b9d] mb-4"
           >
             ← 戻る
           </button>
@@ -144,7 +144,7 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md mb-6">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* プロフィールアイコン */}
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-5xl shadow-lg">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] flex items-center justify-center text-5xl shadow-lg">
               👤
             </div>
             
@@ -167,7 +167,7 @@ export default function ProfilePage() {
                     className={`px-6 py-2 rounded-xl font-medium transition-colors ${
                       isFollowingUser
                         ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                        : 'bg-[#ffc2d1] text-white hover:bg-[#ffb07c]'
+                        : 'bg-[#ff6b9d] text-white hover:bg-[#ff8a65]'
                     }`}
                   >
                     {isFollowingUser ? 'フォロー中' : 'フォロー'}
@@ -204,7 +204,7 @@ export default function ProfilePage() {
                   key={anime.id}
                   className="bg-gray-50 dark:bg-gray-700 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform"
                 >
-                  <div className="aspect-[3/4] bg-gradient-to-br from-[#ffc2d1] to-[#ffb07c] flex items-center justify-center text-4xl">
+                  <div className="aspect-[3/4] bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] flex items-center justify-center text-4xl">
                     {anime.image && anime.image.startsWith('http') ? (
                       <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
                     ) : (

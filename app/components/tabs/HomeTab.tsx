@@ -35,7 +35,7 @@ export function HomeTab({
           onClick={() => setHomeSubTab('seasons')}
           className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
             homeSubTab === 'seasons'
-              ? 'bg-[#ffc2d1] text-white'
+              ? 'bg-[#ff6b9d] text-white'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
           }`}
         >
@@ -45,7 +45,7 @@ export function HomeTab({
           onClick={() => setHomeSubTab('series')}
           className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
             homeSubTab === 'series'
-              ? 'bg-[#ffc2d1] text-white'
+              ? 'bg-[#ff6b9d] text-white'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
           }`}
         >
@@ -56,7 +56,7 @@ export function HomeTab({
       {homeSubTab === 'seasons' && (
         <>
           {/* 統計カード */}
-          <div className="bg-linear-to-br from-[#ffc2d1] to-[#ffb07c] rounded-2xl p-5 text-white mb-6 relative">
+          <div className="bg-gradient-to-br from-[#ff6b9d] to-[#ff8a65] rounded-2xl p-5 text-white mb-6 relative">
             {/* オタクタイプ */}
             <div className="mb-4 flex items-center justify-between">
               <p className="text-white/90 text-sm font-medium">
@@ -86,7 +86,7 @@ export function HomeTab({
           {/* 追加ボタン */}
           <button 
             onClick={onOpenAddForm}
-            className="w-full mb-6 py-4 border-2 border-dashed border-[#ffc2d1]-300 dark:border-[#ffc2d1]-600 rounded-2xl text-[#ffc2d1] dark:text-[#ffc2d1] font-bold hover:bg-[#ffc2d1]/10 dark:hover:bg-[#ffc2d1]/10 transition-colors"
+            className="w-full mb-6 py-4 border-2 border-dashed border-[#ff6b9d] dark:border-[#ff6b9d] rounded-2xl text-[#ff6b9d] dark:text-[#ff6b9d] font-bold hover:bg-[#ff6b9d]/10 dark:hover:bg-[#ff6b9d]/10 transition-colors"
           >
             + アニメを追加
           </button>

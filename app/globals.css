@@ -5,11 +5,35 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* ===== アプリ全体で使用するカラーパレット ===== */
+  /* プライマリカラー（ピンク） */
+  --color-primary: #ff6b9d;
+  --color-primary-light: #ff8fb3;
+  --color-primary-dark: #e85a8a;
+  
+  /* セカンダリカラー（オレンジ） */
+  --color-secondary: #ff8a65;
+  --color-secondary-light: #ffa280;
+  --color-secondary-dark: #e67550;
+  
+  /* アクセントカラー（シアン） */
+  --color-accent: #00d4ff;
+  --color-accent-light: #33ddff;
+  --color-accent-dark: #00b8e0;
+  
+  /* ゴールド */
+  --color-gold: #ffd700;
+  --color-gold-light: #ffe44d;
+  
+  /* グラデーション */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  --gradient-primary-reverse: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #0a0a0f;
+  --foreground: #ffffff;
 }
 
 body {
@@ -25,4 +49,444 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* MY ANIME DNA カード用カスタムスタイル */
+:root {
+  /* メインカラー */
+  --color-pink: #ff6b9d;
+  --color-pink-light: #ff8fb3;
+  --color-pink-dark: #e85a8a;
+  
+  --color-orange: #ff8a65;
+  --color-orange-light: #ffa280;
+  --color-orange-dark: #e67550;
+  
+  --color-cyan: #00d4ff;
+  --color-cyan-light: #33ddff;
+  --color-cyan-dark: #00b8e0;
+  
+  --color-gold: #ffd700;
+  --color-gold-light: #ffe44d;
+  
+  --color-purple: #764ba2;
+  --color-purple-light: #8b5fbf;
+  
+  /* グラデーション背景 */
+  --dna-primary-gradient: linear-gradient(165deg, 
+    rgba(102, 126, 234, 0.92) 0%, 
+    rgba(118, 75, 162, 0.95) 35%,
+    rgba(180, 80, 160, 0.92) 65%,
+    rgba(240, 147, 251, 0.88) 100%);
+  
+  /* グラスモーフィズム */
+  --dna-glass-bg: rgba(255, 255, 255, 0.08);
+  --dna-glass-bg-hover: rgba(255, 255, 255, 0.12);
+  --dna-glass-border: rgba(255, 255, 255, 0.15);
+  
+  /* テキスト */
+  --dna-text-primary: #ffffff;
+  --dna-text-secondary: rgba(255, 255, 255, 0.7);
+  
+  /* アクセント */
+  --dna-accent-pink: var(--color-pink);
+  --dna-accent-cyan: var(--color-cyan);
+  --dna-accent-gold: var(--color-gold);
+}
+
+/* DNAアイコン */
+.dna-logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-pink));
+  border-radius: 8px;
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.dna-logo-icon::before,
+.dna-logo-icon::after {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 16px;
+  background: white;
+  border-radius: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dna-logo-icon::before {
+  transform: translateY(-50%) rotate(-30deg);
+  left: 10px;
+}
+
+.dna-logo-icon::after {
+  transform: translateY(-50%) rotate(30deg);
+  right: 10px;
+}
+
+/* 音符アイコン */
+.dna-type-icon {
+  width: 14px;
+  height: 14px;
+  position: relative;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.dna-type-icon::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  bottom: 0;
+  left: 0;
+}
+
+.dna-type-icon::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 10px;
+  background: white;
+  border-radius: 1px;
+  bottom: 3px;
+  left: 4px;
+}
+
+/* トロフィーアイコン */
+.dna-trophy-icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.dna-trophy-icon::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 8px;
+  background: #ffd700;
+  border-radius: 0 0 5px 5px;
+  top: 0;
+  left: 3px;
+}
+
+.dna-trophy-icon::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 5px;
+  background: #ffd700;
+  bottom: 0;
+  left: 6px;
+  border-radius: 0 0 2px 2px;
+}
+
+/* チャートアイコン */
+.dna-chart-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.dna-chart-icon span {
+  width: 3px;
+  background: var(--color-cyan);
+  border-radius: 1px;
+  display: block;
+}
+
+.dna-chart-icon span:nth-child(1) { height: 6px; }
+.dna-chart-icon span:nth-child(2) { height: 10px; }
+.dna-chart-icon span:nth-child(3) { height: 8px; }
+.dna-chart-icon span:nth-child(4) { height: 14px; }
+
+/* ペンアイコン */
+.dna-pen-icon {
+  width: 14px;
+  height: 14px;
+  position: relative;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.dna-pen-icon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  display: inline-block;
+  opacity: 0.5;
+}
+
+.dna-pen-icon::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 4px;
+  background: var(--dna-text-secondary);
+  border-radius: 1px;
+  transform: rotate(-45deg);
+  top: 8px;
+  left: 2px;
+}
+
+.dna-pen-icon::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 6px solid var(--dna-text-secondary);
+  transform: rotate(-45deg);
+  bottom: 4px;
+  left: 0;
+}
+
+/* フィルムアイコン */
+.film-icon {
+  width: 24px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  position: relative;
+}
+
+.film-icon::before,
+.film-icon::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.3) 0px,
+    rgba(255, 255, 255, 0.3) 3px,
+    transparent 3px,
+    transparent 5px
+  );
+}
+
+.film-icon::before {
+  left: -6px;
+}
+
+.film-icon::after {
+  right: -6px;
+}
+
+/* カレンダーアイコン */
+.calendar-icon {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  position: relative;
+}
+
+.calendar-icon::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 1px;
+  right: 1px;
+  height: 1.5px;
+  background: currentColor;
+}
+
+/* プロフィール左側（アバター+バッジ） */
+.profile-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* プロフィール情報 */
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* グラスモーフィズムカード */
+.dna-glass-card {
+  background: var(--dna-glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--dna-glass-border);
+  border-radius: 14px;
+  transition: all 0.3s ease;
+}
+
+.dna-glass-card:hover {
+  background: var(--dna-glass-bg-hover);
+  transform: translateY(-2px);
+}
+
+/* アンビエントグロー */
+@keyframes dna-pulse {
+  0%, 100% { 
+    opacity: 0.3; 
+    transform: scale(0.95); 
+  }
+  50% { 
+    opacity: 0.45; 
+    transform: scale(1.02); 
+  }
+}
+
+.dna-ambient-glow {
+  animation: dna-pulse 4s ease-in-out infinite;
+}
+
+/* フロートアニメーション */
+@keyframes dna-float {
+  0%, 100% { 
+    transform: translate(0, 0); 
+  }
+  50% { 
+    transform: translate(10px, -15px); 
+  }
+}
+
+.dna-float {
+  animation: dna-float 6s ease-in-out infinite;
+}
+
+/* レスポンシブレイアウト */
+/* モバイル（デフォルト）: 全て縦積み */
+.dna-card-container .dna-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dna-card-container .dna-top-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dna-card-container .dna-profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.dna-card-container .dna-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.dna-card-container .dna-bottom-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  /* タブレット以上: 最推し作品とアニメログが横並び */
+  .dna-card-container .dna-main-content {
+    gap: 24px;
+  }
+  
+  .dna-card-container .dna-profile-section {
+    flex-direction: row;
+    text-align: left;
+    gap: 16px;
+  }
+  
+  .dna-card-container .dna-stats-grid {
+    gap: 14px;
+  }
+  
+  .dna-card-container .dna-bottom-sections {
+    flex-direction: row;
+    gap: 14px;
+  }
+  
+  .profile-left {
+    gap: 10px;
+  }
+}
+
+@media (min-width: 900px) {
+  /* デスクトップ: 上部（プロフィール+統計）横並び、下部カード横並び */
+  .dna-card-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .dna-card-container .dna-main-content {
+    gap: 28px;
+  }
+  
+  /* 上部エリア: プロフィールと統計を横並び */
+  .dna-card-container .dna-top-section {
+    flex-direction: row;
+    align-items: center;
+    gap: 40px;
+  }
+  
+  .dna-card-container .dna-profile-section {
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .dna-card-container .dna-stats-grid {
+    flex: 1;
+    gap: 20px;
+  }
+  
+  /* 下部セクション: カード2枚を均等幅で横並び */
+  .dna-card-container .dna-bottom-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  
+  .profile-info {
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+@media (min-width: 1200px) {
+  /* 大画面: 余白拡大、要素サイズ拡大 */
+  .dna-card-container {
+    max-width: 1040px;
+  }
+  
+  .dna-card-container .dna-top-section {
+    gap: 60px;
+  }
+  
+  .dna-card-container .dna-main-content {
+    gap: 32px;
+  }
+  
+  .dna-card-container .dna-bottom-sections {
+    gap: 28px;
+  }
 }

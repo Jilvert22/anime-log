@@ -103,7 +103,7 @@ export function AddVoiceActorModal({
             type="text"
             value={newVoiceActorName}
             onChange={(e) => setNewVoiceActorName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
             placeholder="声優名"
           />
         </div>
@@ -120,7 +120,7 @@ export function AddVoiceActorModal({
                 onClick={() => setNewVoiceActorImage(icon)}
                 className={`text-2xl p-2 rounded-lg transition-all ${
                   newVoiceActorImage === icon
-                    ? 'bg-[#ffc2d1]/20 dark:bg-[#ffc2d1]/20 ring-2 ring-indigo-500'
+                    ? 'bg-[#ff6b9d]/20 dark:bg-[#ff6b9d]/20 ring-2 ring-indigo-500'
                     : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -152,7 +152,7 @@ export function AddVoiceActorModal({
                         setNewVoiceActorAnimeIds(newVoiceActorAnimeIds.filter(id => id !== anime.id));
                       }
                     }}
-                    className="w-4 h-4 text-[#ffc2d1] rounded focus:ring-[#ffc2d1]"
+                    className="w-4 h-4 text-[#ff6b9d] rounded focus:ring-[#ff6b9d]"
                   />
                   <span className="text-sm dark:text-white">{anime.title}</span>
                 </label>
@@ -171,7 +171,7 @@ export function AddVoiceActorModal({
           <textarea
             value={newVoiceActorNotes}
             onChange={(e) => setNewVoiceActorNotes(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffc2d1] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff6b9d] dark:bg-gray-700 dark:text-white"
             placeholder="メモを入力..."
             rows={3}
           />
@@ -187,7 +187,7 @@ export function AddVoiceActorModal({
           <button
             onClick={handleSave}
             disabled={!newVoiceActorName.trim()}
-            className="flex-1 bg-[#ffc2d1] text-white py-3 rounded-xl font-bold hover:bg-[#ffb07c] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-[#ff6b9d] text-white py-3 rounded-xl font-bold hover:bg-[#ff8a65] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {editingVoiceActor ? '更新' : '追加'}
           </button>
