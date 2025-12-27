@@ -338,7 +338,7 @@ export function ProfileTab({
       <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
         <div className="flex items-center gap-3">
           <span className="text-xl">🔒</span>
-          <span className="dark:text-white font-medium">ハンドルを表示</span>
+          <span className="dark:text-white font-medium">ハンドルを非表示</span>
         </div>
         <button
           onClick={() => setIsHandleVisible(!isHandleVisible)}
