@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import type { UserProfile } from '../../lib/supabase';
-import { supabase } from '../../lib/supabase';
 
 // オタクタイプのプリセット定義
 const OTAKU_TYPES = [
@@ -22,6 +21,7 @@ interface SettingsModalProps {
   show: boolean;
   onClose: () => void;
   profile: UserProfile | null;
+  avatarPublicUrl: string | null;
   saveProfile: (updates: {
     username?: string;
     handle?: string | null;
@@ -37,6 +37,7 @@ export function SettingsModal({
   show,
   onClose,
   profile,
+  avatarPublicUrl,
   saveProfile,
 }: SettingsModalProps) {
   const [username, setUsername] = useState('');
@@ -71,17 +72,18 @@ export function SettingsModal({
         setOtakuMode('preset');
         setSelectedPreset(profile.otaku_type);
       }
-      
-      // アバタープレビューを設定
-      if (profile.avatar_url) {
-        // Supabase StorageのURLを取得
-        const { data: urlData } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(profile.avatar_url);
-        setAvatarPreview(urlData.publicUrl);
-      }
     }
   }, [profile]);
+
+  // アバターURLが変更されたときにプレビューを更新
+  useEffect(() => {
+    if (avatarPublicUrl) {
+      setAvatarPreview(avatarPublicUrl);
+    } else if (!avatarFile) {
+      // アバターファイルが選択されていない場合のみリセット
+      setAvatarPreview(null);
+    }
+  }, [avatarPublicUrl, avatarFile]);
 
   // 画像選択ハンドラ
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,7 +244,7 @@ export function SettingsModal({
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  🤖 自動判定
+                  自動判定
                 </button>
                 <button
                   type="button"
@@ -253,7 +255,7 @@ export function SettingsModal({
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  📋 選択
+                  選択
                 </button>
                 <button
                   type="button"
@@ -264,7 +266,7 @@ export function SettingsModal({
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  ✏️ カスタム
+                  カスタム
                 </button>
               </div>
 
@@ -282,7 +284,6 @@ export function SettingsModal({
                           : 'bg-gray-100 dark:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
-                      <span className="text-lg mr-1">{type.icon}</span>
                       <span className="text-sm text-gray-800 dark:text-white">{type.label}</span>
                     </button>
                   ))}

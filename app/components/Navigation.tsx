@@ -10,7 +10,7 @@ interface NavigationProps {
   user: User | null;
   userName: string;
   userIcon: string | null;
-  setShowSettings: (show: boolean) => void;
+  onOpenSettingsModal: () => void;
   setShowAuthModal: (show: boolean) => void;
 }
 
@@ -22,154 +22,118 @@ export function Navigation({
   user,
   userName,
   userIcon,
-  setShowSettings,
+  onOpenSettingsModal,
   setShowAuthModal,
 }: NavigationProps) {
   return (
-    <>
-      {/* ヘッダー */}
-      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 lg:ml-[200px]">
-        <div className="max-w-md md:max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 
-            className="text-xl font-bold tracking-tight"
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #e879d4 50%, #f093fb 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            アニメログ
-          </h1>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              title={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
-            >
-              {isDarkMode ? '☀️' : '🌙'}
-            </button>
-            {user ? (
-              <button
-                onClick={() => setShowSettings(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
-                  <img
-                    src={userIcon}
-                    alt="アイコン"
-                    className="w-8 h-8 rounded-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        const span = document.createElement('span');
-                        span.className = 'text-2xl';
-                        span.textContent = '👤';
-                        parent.insertBefore(span, target);
-                      }
-                    }}
-                  />
-                ) : (
-                  <span className="text-2xl">{userIcon || '👤'}</span>
-                )}
-                <span className="font-bold text-sm dark:text-white">{userName}</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="px-4 py-2 rounded-lg bg-white text-[#e879d4] font-semibold text-sm hover:bg-white/90 hover:-translate-y-0.5 transition-all"
-              >
-                ログイン
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
+    <header className="fixed top-0 left-0 right-0 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50">
+      <div className="h-full max-w-7xl mx-auto px-4 relative flex items-center">
+        {/* 左：ロゴ */}
+        <h1 
+          className="text-xl font-bold tracking-tight"
+          style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #e879d4 50%, #f093fb 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}
+        >
+          アニメログ
+        </h1>
 
-      {/* ボトムナビゲーション（スマホ・タブレット） */}
-      <nav className="block lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 z-10">
-        <div className="max-w-md mx-auto">
-          <div className="grid grid-cols-2">
-            <button
-              onClick={() => setActiveTab('home')}
-              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
-                activeTab === 'home'
-                  ? 'text-[#e879d4] dark:text-[#e879d4]'
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              <span className={`text-2xl transition-transform ${activeTab === 'home' ? 'scale-110' : 'scale-100'}`}>
-                📺
-              </span>
-              <span className="text-xs font-medium mt-1">ホーム</span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('mypage')}
-              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
-                activeTab === 'mypage'
-                  ? 'text-[#e879d4] dark:text-[#e879d4]'
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              <span className={`text-2xl transition-transform ${activeTab === 'mypage' ? 'scale-110' : 'scale-100'}`}>
-                👤
-              </span>
-              <span className="text-xs font-medium mt-1">マイページ</span>
-            </button>
-          </div>
+        {/* 中央：セグメントコントロール（PC/モバイル共通） */}
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <SegmentControl 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab} 
+          />
         </div>
-      </nav>
 
-      {/* サイドバーナビゲーション（PC） */}
-      <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 w-[200px] bg-white dark:bg-gray-800 border-r dark:border-gray-700 z-10 flex-col pt-20">
-        <div className="flex flex-col gap-1 p-3">
+        {/* 右側：ダークモード + プロフィール */}
+        <div className="flex items-center gap-3 ml-auto">
+          {/* ダークモードトグル */}
           <button
-            onClick={() => setActiveTab('home')}
-            className={`relative flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
-              activeTab === 'home'
-                ? 'text-[#e879d4] font-semibold border border-[#e879d4]/20'
-                : 'text-gray-500 dark:text-gray-400 font-medium hover:bg-[#e879d4]/8 hover:text-[#e879d4]'
-            }`}
-            style={activeTab === 'home' ? { background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(232, 121, 212, 0.15) 100%)' } : undefined}
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="px-5 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
+            title={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
           >
-            {activeTab === 'home' && (
-              <span 
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r"
-                style={{
-                  background: 'linear-gradient(180deg, #667eea 0%, #e879d4 100%)'
-                }}
-              />
-            )}
-            <span className="text-lg w-6 text-center">📺</span>
-            <span>ホーム</span>
+            <span className="text-base">{isDarkMode ? '☀️' : '🌙'}</span>
           </button>
-          
-          <button
-            onClick={() => setActiveTab('mypage')}
-            className={`relative flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
-              activeTab === 'mypage'
-                ? 'text-[#e879d4] font-semibold border border-[#e879d4]/20'
-                : 'text-gray-500 dark:text-gray-400 font-medium hover:bg-[#e879d4]/8 hover:text-[#e879d4]'
-            }`}
-            style={activeTab === 'mypage' ? { background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(232, 121, 212, 0.15) 100%)' } : undefined}
-          >
-            {activeTab === 'mypage' && (
-              <span 
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r"
-                style={{
-                  background: 'linear-gradient(180deg, #667eea 0%, #e879d4 100%)'
-                }}
-              />
-            )}
-            <span className="text-lg w-6 text-center">👤</span>
-            <span>マイページ</span>
-          </button>
+
+          {/* プロフィール → クリックでSettingsModal */}
+          {user ? (
+            <button
+              onClick={onOpenSettingsModal}
+              className="flex items-center gap-2 px-5 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
+                <img
+                  src={userIcon}
+                  alt="プロフィール"
+                  className="w-6 h-6 rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const span = document.createElement('span');
+                      span.className = 'text-base';
+                      span.textContent = '👤';
+                      parent.insertBefore(span, target);
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <span className="text-base">👤</span>
+                </div>
+              )}
+              <span className="text-base hidden sm:inline font-bold dark:text-white">{userName}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="px-5 py-2 rounded-lg bg-white text-[#e879d4] font-semibold text-base hover:bg-white/90 hover:-translate-y-0.5 transition-all"
+            >
+              ログイン
+            </button>
+          )}
         </div>
-      </nav>
-    </>
+      </div>
+    </header>
+  );
+}
+
+// ========== セグメントコントロール ==========
+interface SegmentControlProps {
+  activeTab: 'home' | 'mypage';
+  setActiveTab: (tab: 'home' | 'mypage') => void;
+}
+
+function SegmentControl({ activeTab, setActiveTab }: SegmentControlProps) {
+  return (
+    <div className="flex bg-gray-100 dark:bg-gray-800 rounded-full p-1">
+      <button
+        onClick={() => setActiveTab('home')}
+        className={`px-5 py-2 text-base font-medium rounded-full transition-all duration-200 ${
+          activeTab === 'home'
+            ? 'bg-white dark:bg-gray-700 text-[#e879d4] shadow-sm'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+        }`}
+      >
+        ホーム
+      </button>
+      <button
+        onClick={() => setActiveTab('mypage')}
+        className={`px-5 py-2 text-base font-medium rounded-full transition-all duration-200 ${
+          activeTab === 'mypage'
+            ? 'bg-white dark:bg-gray-700 text-[#e879d4] shadow-sm'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+        }`}
+      >
+        マイページ
+      </button>
+    </div>
   );
 }
 

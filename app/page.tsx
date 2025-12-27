@@ -347,12 +347,12 @@ export default function Home() {
         user={user}
         userName={userName}
         userIcon={userIcon}
-        setShowSettings={setShowSettings}
+        onOpenSettingsModal={() => setShowSettings(true)}
         setShowAuthModal={setShowAuthModal}
       />
 
       {/* メインコンテンツ */}
-      <main className="max-w-md md:max-w-6xl mx-auto px-4 py-6 pb-24 lg:pb-6 lg:ml-[200px]">
+      <main className="pt-20 max-w-md md:max-w-6xl mx-auto px-4 py-6">
         {activeTab === 'home' && (
           <HomeTab
             homeSubTab={homeSubTab}
@@ -453,6 +453,7 @@ export default function Home() {
         show={showSettings}
         onClose={handleCloseSettings}
         profile={profile}
+        avatarPublicUrl={avatarPublicUrl}
         saveProfile={saveProfile}
       />
 

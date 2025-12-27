@@ -5,6 +5,20 @@ import type { Anime, Season } from '../../../types';
 import { otakuTypes } from '../../../constants';
 import { QRCodeSVG } from 'qrcode.react';
 
+// SettingsModalと同じID→ラベルのマッピング
+const OTAKU_TYPE_ID_TO_LABEL: { [key: string]: { emoji: string; label: string } } = {
+  'analyst': { emoji: '🔍', label: '考察厨' },
+  'emotional': { emoji: '😭', label: '感情移入型' },
+  'visual': { emoji: '🎨', label: '作画厨' },
+  'audio': { emoji: '🎵', label: '音響派' },
+  'character': { emoji: '💕', label: 'キャラオタ' },
+  'passionate': { emoji: '🔥', label: '熱血派' },
+  'story': { emoji: '🎬', label: 'ストーリー重視' },
+  'slice_of_life': { emoji: '🌸', label: '日常系好き' },
+  'battle': { emoji: '⚔️', label: 'バトル好き' },
+  'entertainment': { emoji: '🎪', label: 'エンタメ重視' },
+};
+
 interface AnimeDNASectionProps {
   allAnimes: Anime[];
   seasons: Season[];
@@ -18,7 +32,6 @@ interface AnimeDNASectionProps {
   averageRating: number;
   setShowFavoriteAnimeModal: (show: boolean) => void;
   onOpenDNAModal: () => void;
-  onOpenSettingsModal: () => void; // 追加
 }
 
 export default function AnimeDNASection({
@@ -34,7 +47,6 @@ export default function AnimeDNASection({
   averageRating,
   setShowFavoriteAnimeModal,
   onOpenDNAModal,
-  onOpenSettingsModal,
 }: AnimeDNASectionProps) {
   const [isHandleVisible, setIsHandleVisible] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -57,38 +69,63 @@ export default function AnimeDNASection({
   const getOtakuTypeLabel = (type: string): string => {
     return type.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
   };
+
+  // オタクタイプから絵文字を抽出する関数
+  const getOtakuTypeEmoji = (type: string): string => {
+    const emojiMatch = type.match(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu);
+    return emojiMatch ? emojiMatch[0] : '🎵';
+  };
   
   // ユーザーが設定したオタクタイプを使用、なければ自動判定
   let otakuTypeValue = userOtakuType || '🎵 音響派';
   let otakuTypeLabel = '音響派';
+  let otakuTypeEmoji = '🎵';
   if (!userOtakuType) {
     // 自動判定
     if (tagCounts['考察'] && tagCounts['考察'] >= 3) {
       otakuTypeValue = '🔍 考察厨';
       otakuTypeLabel = '考察厨';
+      otakuTypeEmoji = '🔍';
     } else if (tagCounts['泣ける'] && tagCounts['泣ける'] >= 3) {
       otakuTypeValue = '😭 感情移入型';
       otakuTypeLabel = '感情移入型';
+      otakuTypeEmoji = '😭';
     } else if (tagCounts['作画神'] && tagCounts['作画神'] >= 3) {
       otakuTypeValue = '🎨 作画厨';
       otakuTypeLabel = '作画厨';
+      otakuTypeEmoji = '🎨';
     } else if (tagCounts['音楽最高'] && tagCounts['音楽最高'] >= 3) {
       otakuTypeValue = '🎵 音響派';
       otakuTypeLabel = '音響派';
+      otakuTypeEmoji = '🎵';
     } else if (tagCounts['キャラ萌え'] && tagCounts['キャラ萌え'] >= 3) {
       otakuTypeValue = '💕 キャラオタ';
       otakuTypeLabel = 'キャラオタ';
+      otakuTypeEmoji = '💕';
     } else if (tagCounts['熱い'] && tagCounts['熱い'] >= 3) {
       otakuTypeValue = '🔥 熱血派';
       otakuTypeLabel = '熱血派';
+      otakuTypeEmoji = '🔥';
     }
   } else {
-    // カスタム入力またはプリセットタイプ
-    const isPresetType = otakuTypes.some(t => t.value === userOtakuType);
-    if (isPresetType) {
-      otakuTypeLabel = getOtakuTypeLabel(userOtakuType);
+    // ID形式（slice_of_lifeなど）をラベルに変換
+    if (OTAKU_TYPE_ID_TO_LABEL[userOtakuType]) {
+      otakuTypeLabel = OTAKU_TYPE_ID_TO_LABEL[userOtakuType].label;
+      otakuTypeEmoji = OTAKU_TYPE_ID_TO_LABEL[userOtakuType].emoji;
+      otakuTypeValue = `${OTAKU_TYPE_ID_TO_LABEL[userOtakuType].emoji} ${OTAKU_TYPE_ID_TO_LABEL[userOtakuType].label}`;
     } else {
-      otakuTypeLabel = userOtakuType;
+      // カスタム入力またはプリセットタイプ（絵文字付き）
+      const isPresetType = otakuTypes.some(t => t.value === userOtakuType);
+      if (isPresetType) {
+        otakuTypeLabel = getOtakuTypeLabel(userOtakuType);
+        otakuTypeEmoji = getOtakuTypeEmoji(userOtakuType);
+        otakuTypeValue = userOtakuType;
+      } else {
+        // カスタムテキストの場合
+        otakuTypeLabel = userOtakuType;
+        otakuTypeValue = userOtakuType;
+        otakuTypeEmoji = getOtakuTypeEmoji(userOtakuType);
+      }
     }
   }
 
@@ -155,21 +192,17 @@ export default function AnimeDNASection({
                   )}
                 </div>
                 
-                {/* タイプバッジ（クリックでSettingsModalを開く） */}
-                <button
-                  onClick={onOpenSettingsModal}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:px-4 md:py-2 rounded-full backdrop-blur-sm border border-white/50 hover:border-white/70 hover:opacity-80 transition-all cursor-pointer" 
+                {/* タイプバッジ（表示のみ） */}
+                <div
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:px-4 md:py-2 rounded-full backdrop-blur-sm border border-white/50" 
                   style={{
                     background: 'rgba(255, 255, 255, 0.35)',
                     textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                     boxShadow: '0 2px 8px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.3)'
                   }}
-                  title="クリックして編集"
                 >
-                  <div className="dna-type-icon"></div>
                   <span className="text-white text-sm md:text-[13px] font-semibold">{otakuTypeLabel}</span>
-                  <span className="ml-1 text-xs opacity-60">✏️</span>
-                </button>
+                </div>
               </div>
               
               {/* ユーザー情報 */}

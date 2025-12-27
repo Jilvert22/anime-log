@@ -338,6 +338,18 @@ export function HomeTab({
       setExpandedSeasons(newSeasons);
     } else {
       newExpanded.add(year);
+      // 年を開いたら、登録済みの作品がある季節も自動的に開く
+      const newSeasons = new Set(expandedSeasons);
+      const yearData = yearSeasonData.find(y => y.year === year);
+      if (yearData) {
+        yearData.seasons.forEach(s => {
+          // 登録済みの作品がある季節のみ展開
+          if (s.animes.length > 0) {
+            newSeasons.add(`${year}-${s.season}`);
+          }
+        });
+        setExpandedSeasons(newSeasons);
+      }
     }
     setExpandedYears(newExpanded);
   }, [expandedYears, expandedSeasons, yearSeasonData, setExpandedYears, setExpandedSeasons]);

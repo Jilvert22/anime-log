@@ -48,7 +48,7 @@ interface MyPageTabProps {
 
 export default function MyPageTab(props: MyPageTabProps) {
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6">
       {/* ANIME DNAカード */}
       <AnimeDNASection 
         allAnimes={props.allAnimes}
@@ -63,7 +63,6 @@ export default function MyPageTab(props: MyPageTabProps) {
         averageRating={props.averageRating}
         setShowFavoriteAnimeModal={props.setShowFavoriteAnimeModal}
         onOpenDNAModal={props.onOpenDNAModal}
-        onOpenSettingsModal={props.onOpenSettingsModal}
       />
       
       {/* 統計・傾向とコレクション（同じレイヤー） */}
