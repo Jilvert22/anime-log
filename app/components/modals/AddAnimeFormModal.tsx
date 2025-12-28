@@ -231,7 +231,7 @@ export function AddAnimeFormModal({
                         {result.coverImage?.large || result.coverImage?.medium ? (
                           <div className="relative w-16 h-24 shrink-0">
                             <Image
-                              src={result.coverImage.large || result.coverImage.medium}
+                              src={(result.coverImage.large || result.coverImage.medium)!}
                               alt={result.title?.native || result.title?.romaji || ''}
                               width={64}
                               height={96}
@@ -440,7 +440,7 @@ export function AddAnimeFormModal({
                         {result.coverImage?.large || result.coverImage?.medium ? (
                           <div className="relative w-16 h-24 shrink-0">
                             <Image
-                              src={result.coverImage.large || result.coverImage.medium}
+                              src={(result.coverImage.large || result.coverImage.medium)!}
                               alt={result.title?.native || result.title?.romaji || ''}
                               width={64}
                               height={96}

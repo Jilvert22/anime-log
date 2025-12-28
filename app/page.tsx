@@ -434,7 +434,6 @@ export default function Home() {
         extractSeriesName={extractSeriesName}
         getSeasonName={getSeasonName}
         animeToSupabase={animeToSupabase}
-        supabaseToAnime={supabaseToAnime}
       />
 
       {/* 感想投稿モーダル */}
