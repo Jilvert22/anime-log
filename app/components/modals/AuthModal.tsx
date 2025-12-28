@@ -3,6 +3,67 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
+type PasswordStrength = {
+  level: 'weak' | 'fair' | 'good' | 'strong';
+  label: string;
+  message: string;
+  color: string;
+  bars: number;
+};
+
+function getPasswordStrength(password: string): PasswordStrength {
+  if (!password || password.length < 6) {
+    return {
+      level: 'weak',
+      label: '弱い',
+      message: '6文字以上必要です',
+      color: 'bg-red-500',
+      bars: 1,
+    };
+  }
+  
+  if (password.length < 8) {
+    return {
+      level: 'fair',
+      label: 'やや弱い',
+      message: '8文字以上を推奨',
+      color: 'bg-orange-500',
+      bars: 2,
+    };
+  }
+  
+  const hasNumber = /\d/.test(password);
+  const hasUpperCase = /[A-Z]/.test(password);
+  
+  if (hasNumber && hasUpperCase) {
+    return {
+      level: 'strong',
+      label: '強い',
+      message: '強いパスワードです',
+      color: 'bg-green-500',
+      bars: 4,
+    };
+  }
+  
+  if (hasNumber) {
+    return {
+      level: 'good',
+      label: '普通',
+      message: '数字と大文字を含めるとより安全',
+      color: 'bg-yellow-500',
+      bars: 3,
+    };
+  }
+  
+  return {
+    level: 'fair',
+    label: 'やや弱い',
+    message: '8文字以上を推奨',
+    color: 'bg-orange-500',
+    bars: 2,
+  };
+}
+
 export function AuthModal({
   show,
   onClose,
@@ -263,6 +324,37 @@ export function AuthModal({
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 placeholder="パスワードを入力"
               />
+              {/* パスワード強度表示（新規登録時のみ） */}
+              {authMode === 'signup' && authPassword && (
+                <div className="mt-2">
+                  <div className="flex gap-1 mb-1">
+                    {[1, 2, 3, 4].map((bar) => {
+                      const strength = getPasswordStrength(authPassword);
+                      return (
+                        <div
+                          key={bar}
+                          className={`h-1 flex-1 rounded ${
+                            bar <= strength.bars
+                              ? strength.color
+                              : 'bg-gray-200 dark:bg-gray-700'
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <p className={`text-xs ${
+                    getPasswordStrength(authPassword).level === 'weak'
+                      ? 'text-red-600 dark:text-red-400'
+                      : getPasswordStrength(authPassword).level === 'fair'
+                      ? 'text-orange-600 dark:text-orange-400'
+                      : getPasswordStrength(authPassword).level === 'good'
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-green-600 dark:text-green-400'
+                  }`}>
+                    {getPasswordStrength(authPassword).label} - {getPasswordStrength(authPassword).message}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* パスワードを忘れた方リンク（ログイン画面のみ） */}

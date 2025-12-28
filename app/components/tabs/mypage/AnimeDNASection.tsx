@@ -83,31 +83,31 @@ export default function AnimeDNASection({
     if (!userOtakuType) {
       // 自動判定
       if (tagCounts['考察'] && tagCounts['考察'] >= 3) {
-        return '🔍 考察厨';
+        return '考察厨';
       } else if (tagCounts['泣ける'] && tagCounts['泣ける'] >= 3) {
-        return '😭 感情移入型';
+        return '感情移入型';
       } else if (tagCounts['作画神'] && tagCounts['作画神'] >= 3) {
-        return '🎨 作画厨';
+        return '作画厨';
       } else if (tagCounts['音楽最高'] && tagCounts['音楽最高'] >= 3) {
-        return '🎵 音響派';
+        return '音響派';
       } else if (tagCounts['キャラ萌え'] && tagCounts['キャラ萌え'] >= 3) {
-        return '💕 キャラオタ';
+        return 'キャラオタ';
       } else if (tagCounts['熱い'] && tagCounts['熱い'] >= 3) {
-        return '🔥 熱血派';
+        return '熱血派';
       }
-      return '🎵 音響派'; // デフォルト
+      return '音響派'; // デフォルト
     }
     // ID形式をラベルに変換
     if (OTAKU_TYPE_ID_TO_LABEL[userOtakuType]) {
-      return `${OTAKU_TYPE_ID_TO_LABEL[userOtakuType].emoji} ${OTAKU_TYPE_ID_TO_LABEL[userOtakuType].label}`;
+      return OTAKU_TYPE_ID_TO_LABEL[userOtakuType].label;
     }
-    // カスタム入力またはプリセットタイプ（絵文字付き）
+    // カスタム入力またはプリセットタイプ（絵文字付きの可能性があるので除去）
     const isPresetType = otakuTypes.some(t => t.value === userOtakuType);
     if (isPresetType) {
-      return userOtakuType;
+      return getOtakuTypeLabel(userOtakuType);
     }
-    // カスタムテキストの場合
-    return userOtakuType;
+    // カスタムテキストの場合（絵文字が含まれている可能性があるので除去）
+    return getOtakuTypeLabel(userOtakuType);
   }, [userOtakuType, tagCounts]);
 
   // 最推し作品のデータを準備
