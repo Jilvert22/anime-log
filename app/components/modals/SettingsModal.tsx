@@ -119,8 +119,6 @@ export function SettingsModal({
       otakuTypeCustom = customType;
     }
 
-    console.log('[handleSave] saveProfile に渡す avatarFile:', avatarFile);
-
     const result = await saveProfile({
       username,
       handle: handle || null,

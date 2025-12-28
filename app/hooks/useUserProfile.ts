@@ -93,9 +93,6 @@ export function useUserProfile() {
 
   // ========== アバター画像アップロード ==========
   const uploadAvatar = useCallback(async (file: File): Promise<string | null> => {
-    // 1. 関数の開始時
-    console.log('[uploadAvatar] 関数開始', { fileName: file.name, fileSize: file.size, fileType: file.type });
-    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
@@ -115,18 +112,6 @@ export function useUserProfile() {
         }
       }
 
-      // 2. supabase.storage.upload() の直前
-      console.log('[uploadAvatar] アップロード直前', {
-        fileName,
-        fileInfo: {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          lastModified: file.lastModified,
-        },
-        userId: user.id,
-      });
-
       // 新しいアバターをアップロード
       const { data, error } = await supabase.storage
         .from('avatars')
@@ -134,15 +119,6 @@ export function useUserProfile() {
           cacheControl: '3600',
           upsert: false,
         });
-
-      // 3. upload() の結果
-      console.log('[uploadAvatar] アップロード結果', {
-        success: !error,
-        data: data ? { path: data.path, id: data.id, fullPath: data.fullPath } : null,
-        error: error ? {
-          message: error.message,
-        } : null,
-      });
 
       if (error) {
         console.error('Avatar upload error:', error);
@@ -173,14 +149,8 @@ export function useUserProfile() {
       const updateData: Partial<UserProfile> = {};
 
       // アバター画像のアップロード
-      console.log('[saveProfile] 受け取った updates:', {
-        hasAvatarFile: !!updates.avatarFile,
-        avatarFile: updates.avatarFile,
-        username: updates.username,
-      });
       if (updates.avatarFile) {
         const avatarPath = await uploadAvatar(updates.avatarFile);
-        console.log('[saveProfile] uploadAvatar の結果:', { avatarPath });
         if (avatarPath) {
           updateData.avatar_url = avatarPath;
         }
@@ -193,8 +163,6 @@ export function useUserProfile() {
       if (updates.is_public !== undefined) updateData.is_public = updates.is_public;
       if (updates.otaku_type !== undefined) updateData.otaku_type = updates.otaku_type;
       if (updates.otaku_type_custom !== undefined) updateData.otaku_type_custom = updates.otaku_type_custom;
-
-      console.log('[saveProfile] DB保存前の updateData:', updateData);
 
       // Supabaseに保存
       const { data, error } = await supabase
@@ -209,8 +177,6 @@ export function useUserProfile() {
         .select()
         .single();
 
-      console.log('[saveProfile] DB保存結果:', { data, error });
-
       if (error) {
         console.error('Profile save error:', error);
         return { success: false, error: error.message };
@@ -224,13 +190,8 @@ export function useUserProfile() {
         const { data: urlData } = supabase.storage
           .from('avatars')
           .getPublicUrl(data.avatar_url);
-        console.log('[saveProfile] 公開URL生成:', { 
-          avatar_url: data.avatar_url, 
-          publicUrl: urlData.publicUrl 
-        });
         setAvatarPublicUrl(urlData.publicUrl);
       } else {
-        console.log('[saveProfile] avatar_url が空');
         setAvatarPublicUrl(null);
       }
 
