@@ -100,3 +100,4 @@ ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 - `user_profiles`テーブルに`otaku_type`と`otaku_type_custom`カラムが存在するか確認
 - ブラウザのコンソールでエラーを確認
 
+

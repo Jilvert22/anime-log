@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
 
 interface NavigationProps {
@@ -51,11 +50,11 @@ export function Navigation({
         </div>
 
         {/* 右側：ダークモード + プロフィール */}
-        <div className="flex items-center gap-3 ml-auto">
+        <div className="flex items-center gap-2 sm:gap-3 ml-auto">
           {/* ダークモードトグル */}
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
-            className="px-5 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
+            className="px-2 py-1 sm:px-5 sm:py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center shrink-0"
             title={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
           >
             <span className="text-base">{isDarkMode ? '☀️' : '🌙'}</span>
@@ -68,29 +67,26 @@ export function Navigation({
               className="flex items-center gap-2 px-5 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
-                <div className="relative w-6 h-6 rounded-full overflow-hidden">
-                  <Image
+                <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0">
+                  <img
                     src={userIcon}
                     alt="プロフィール"
-                    width={24}
-                    height={24}
-                    className="rounded-full object-cover"
-                    unoptimized={userIcon.startsWith('data:')}
+                    className="w-full h-full rounded-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
                       const parent = target.parentElement;
-                      if (parent) {
+                      if (parent && !parent.querySelector('span')) {
                         const span = document.createElement('span');
-                        span.className = 'text-base';
+                        span.className = 'text-base absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-700';
                         span.textContent = '👤';
-                        parent.insertBefore(span, target);
+                        parent.appendChild(span);
                       }
                     }}
                   />
                 </div>
               ) : (
-                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
                   <span className="text-base">👤</span>
                 </div>
               )}
@@ -121,7 +117,7 @@ function SegmentControl({ activeTab, setActiveTab }: SegmentControlProps) {
     <div className="flex bg-gray-100 dark:bg-gray-800 rounded-full p-1">
       <button
         onClick={() => setActiveTab('home')}
-        className={`px-5 py-2 text-base font-medium rounded-full transition-all duration-200 ${
+        className={`px-2 py-1 sm:px-5 sm:py-2 text-xs sm:text-base font-medium rounded-full transition-all duration-200 ${
           activeTab === 'home'
             ? 'bg-white dark:bg-gray-700 text-[#e879d4] shadow-sm'
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -131,7 +127,7 @@ function SegmentControl({ activeTab, setActiveTab }: SegmentControlProps) {
       </button>
       <button
         onClick={() => setActiveTab('mypage')}
-        className={`px-5 py-2 text-base font-medium rounded-full transition-all duration-200 ${
+        className={`px-2 py-1 sm:px-5 sm:py-2 text-xs sm:text-base font-medium rounded-full transition-all duration-200 ${
           activeTab === 'mypage'
             ? 'bg-white dark:bg-gray-700 text-[#e879d4] shadow-sm'
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'

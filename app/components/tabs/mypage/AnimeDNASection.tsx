@@ -206,11 +206,27 @@ export default function AnimeDNASection({
           {/* アバター */}
           <div className="flex-shrink-0">
             {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
-              <img
-                src={userIcon}
-                alt="アイコン"
-                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl object-cover border-2 border-white/30 shadow-lg"
-              />
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
+                <img
+                  src={userIcon}
+                  alt="アイコン"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent && !parent.querySelector('.fallback-placeholder')) {
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'fallback-placeholder w-full h-full bg-white/10 flex items-center justify-center';
+                      const span = document.createElement('span');
+                      span.className = 'text-3xl sm:text-4xl';
+                      span.textContent = '👤';
+                      placeholder.appendChild(span);
+                      parent.appendChild(placeholder);
+                    }
+                  }}
+                />
+              </div>
             ) : (
               <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl bg-white/10 border-2 border-white/30 flex items-center justify-center shadow-lg">
                 <span className="text-3xl sm:text-4xl">👤</span>
