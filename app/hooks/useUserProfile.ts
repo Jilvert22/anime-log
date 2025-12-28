@@ -141,7 +141,6 @@ export function useUserProfile() {
         data: data ? { path: data.path, id: data.id, fullPath: data.fullPath } : null,
         error: error ? {
           message: error.message,
-          error: error.error,
         } : null,
       });
 
