@@ -1,5 +1,31 @@
 const ANILIST_API = 'https://graphql.anilist.co';
 
+export type AniListMedia = {
+  id: number;
+  title: {
+    native: string | null;
+    romaji: string | null;
+  };
+  coverImage: {
+    medium: string | null;
+    large: string | null;
+  } | null;
+  seasonYear: number | null;
+  season: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null;
+  genres: string[];
+  studios: {
+    nodes: {
+      name: string;
+    }[];
+  } | null;
+  externalLinks?: {
+    site: string;
+    url: string;
+  }[];
+  format?: string;
+  episodes?: number | null;
+};
+
 export async function searchAnime(query: string) {
   const graphqlQuery = {
     query: `
@@ -41,7 +67,7 @@ export async function searchAnime(query: string) {
   });
 
   const data = await response.json();
-  return data.data.Page.media;
+  return data.data.Page.media as AniListMedia[];
 }
 
 // クール検索関数
@@ -104,7 +130,11 @@ export async function searchAnimeBySeason(
 
   const data = await response.json();
   return {
-    media: data.data.Page.media,
-    pageInfo: data.data.Page.pageInfo
+    media: data.data.Page.media as AniListMedia[],
+    pageInfo: data.data.Page.pageInfo as {
+      total: number;
+      currentPage: number;
+      hasNextPage: boolean;
+    }
   };
 }

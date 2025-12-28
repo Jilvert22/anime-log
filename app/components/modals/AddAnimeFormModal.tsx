@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
 import type { Anime, Season } from '../../types';
-import { searchAnime, searchAnimeBySeason } from '../../lib/anilist';
+import { searchAnime, searchAnimeBySeason, type AniListMedia } from '../../lib/anilist';
 import { supabase } from '../../lib/supabase';
 import { translateGenre, sortSeasonsByTime } from '../../utils/helpers';
 import { availableTags } from '../../constants';
@@ -19,7 +20,6 @@ export function AddAnimeFormModal({
   extractSeriesName,
   getSeasonName,
   animeToSupabase,
-  supabaseToAnime,
 }: {
   show: boolean;
   onClose: () => void;
@@ -30,18 +30,29 @@ export function AddAnimeFormModal({
   user: User | null;
   extractSeriesName: (title: string) => string | undefined;
   getSeasonName: (season: string) => string;
-  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => any;
-  supabaseToAnime: (row: any) => Anime;
+  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => {
+    user_id: string;
+    season_name: string;
+    title: string;
+    image: string | null;
+    rating: number | null;
+    watched: boolean;
+    rewatch_count: number;
+    tags: string[] | null;
+    songs: Anime['songs'] | null;
+    quotes: Anime['quotes'] | null;
+    series_name: string | null;
+    studios: string[] | null;
+  };
 }) {
   const [addModalMode, setAddModalMode] = useState<'search' | 'season'>('search');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<AniListMedia[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedSearchResult, setSelectedSearchResult] = useState<any | null>(null);
   const [selectedSearchAnimeIds, setSelectedSearchAnimeIds] = useState<Set<number>>(new Set());
   const [selectedSeason, setSelectedSeason] = useState<'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [seasonSearchResults, setSeasonSearchResults] = useState<any[]>([]);
+  const [seasonSearchResults, setSeasonSearchResults] = useState<AniListMedia[]>([]);
   const [selectedSeasonAnimeIds, setSelectedSeasonAnimeIds] = useState<Set<number>>(new Set());
   const [isSeasonSearching, setIsSeasonSearching] = useState(false);
 
@@ -52,7 +63,6 @@ export function AddAnimeFormModal({
     
     setIsSearching(true);
     setSearchResults([]);
-    setSelectedSearchResult(null);
     
     try {
       const results = await searchAnime(searchQuery.trim());
@@ -65,16 +75,10 @@ export function AddAnimeFormModal({
     }
   };
 
-  const handleSelectSearchResult = (result: any) => {
-    setSelectedSearchResult(result);
-    // 複数選択モードではチェックボックスで管理
-  };
-
   const handleClose = () => {
     onClose();
     setSearchQuery('');
     setSearchResults([]);
-    setSelectedSearchResult(null);
     setSelectedSearchAnimeIds(new Set());
     setAddModalMode('search');
     setSelectedSeason(null);
@@ -224,14 +228,23 @@ export function AddAnimeFormModal({
                           }}
                           className="w-5 h-5 text-[#e879d4] rounded focus:ring-[#e879d4]"
                         />
-                        <img
-                          src={result.coverImage?.large || result.coverImage?.medium || '🎬'}
-                          alt={result.title?.native || result.title?.romaji}
-                          className="w-16 h-24 object-cover rounded shrink-0"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
-                          }}
-                        />
+                        {result.coverImage?.large || result.coverImage?.medium ? (
+                          <div className="relative w-16 h-24 shrink-0">
+                            <Image
+                              src={result.coverImage.large || result.coverImage.medium}
+                              alt={result.title?.native || result.title?.romaji || ''}
+                              width={64}
+                              height={96}
+                              className="object-cover rounded"
+                              unoptimized
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-24 flex items-center justify-center text-2xl shrink-0">🎬</div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm dark:text-white truncate">
                             {result.title?.native || result.title?.romaji}
@@ -273,7 +286,7 @@ export function AddAnimeFormModal({
                           rewatchCount: 1, // デフォルトで1周
                           tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
                           seriesName,
-                          studios: result.studios?.nodes?.map((s: any) => s.name) || [],
+                          studios: result.studios?.nodes?.map((s: { name: string }) => s.name) || [],
                         };
                       });
                       
@@ -313,14 +326,18 @@ export function AddAnimeFormModal({
                             animeToSupabase(anime, seasonName, user.id)
                           );
                           
-                          const { data, error } = await supabase
+                          const { error } = await supabase
                             .from('animes')
                             .insert(supabaseData)
                             .select();
                           
                           if (error) throw error;
-                        } catch (error: any) {
-                          const errorMessage = error?.message || error?.details || error?.hint || String(error) || '不明なエラー';
+                        } catch (error: unknown) {
+                          const errorMessage = error instanceof Error ? error.message : 
+                            (typeof error === 'object' && error !== null && 'message' in error ? String((error as { message?: string }).message) : 
+                            (typeof error === 'object' && error !== null && 'details' in error ? String((error as { details?: string }).details) :
+                            (typeof error === 'object' && error !== null && 'hint' in error ? String((error as { hint?: string }).hint) :
+                            String(error)))) || '不明なエラー';
                           alert(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`);
                         }
                       }
@@ -420,14 +437,23 @@ export function AddAnimeFormModal({
                           }}
                           className="w-5 h-5 text-[#e879d4] rounded focus:ring-[#e879d4]"
                         />
-                        <img
-                          src={result.coverImage?.large || result.coverImage?.medium || '🎬'}
-                          alt={result.title?.native || result.title?.romaji}
-                          className="w-16 h-24 object-cover rounded shrink-0"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
-                          }}
-                        />
+                        {result.coverImage?.large || result.coverImage?.medium ? (
+                          <div className="relative w-16 h-24 shrink-0">
+                            <Image
+                              src={result.coverImage.large || result.coverImage.medium}
+                              alt={result.title?.native || result.title?.romaji || ''}
+                              width={64}
+                              height={96}
+                              className="object-cover rounded"
+                              unoptimized
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-24 flex items-center justify-center text-2xl shrink-0">🎬</div>
+                        )}
                         <div className="flex-1 text-left">
                           <p className="font-bold text-sm dark:text-white">
                             {result.title?.native || result.title?.romaji}
@@ -518,19 +544,7 @@ export function AddAnimeFormModal({
                       // 制作会社を取得
                       const studios: string[] = [];
                       if (result?.studios?.nodes && Array.isArray(result.studios.nodes)) {
-                        studios.push(...result.studios.nodes.map((s: any) => s.name));
-                      }
-                      
-                      // シーズン名を取得（なければ未分類）
-                      let seasonName = '未分類';
-                      if (result.seasonYear && result.season) {
-                        const seasonNameMap: { [key: string]: string } = {
-                          'SPRING': '春',
-                          'SUMMER': '夏',
-                          'FALL': '秋',
-                          'WINTER': '冬',
-                        };
-                        seasonName = `${result.seasonYear}年${seasonNameMap[result.season]}`;
+                        studios.push(...result.studios.nodes.map((s: { name: string }) => s.name));
                       }
                       
                       return {
@@ -604,8 +618,8 @@ export function AddAnimeFormModal({
                     // Supabaseに保存（ログイン時のみ）
                     if (user) {
                       try {
-                        const supabaseData: any[] = [];
-                        newAnimes.forEach((anime, index) => {
+                        const supabaseData: ReturnType<typeof animeToSupabase>[] = [];
+                        newAnimes.forEach((anime) => {
                           const result = selectedAnimes.find(r => 
                             (r.title?.native || r.title?.romaji) === anime.title
                           );
@@ -622,14 +636,18 @@ export function AddAnimeFormModal({
                           supabaseData.push(animeToSupabase(anime, seasonName, user.id));
                         });
                         
-                        const { data, error } = await supabase
+                        const { error } = await supabase
                           .from('animes')
                           .insert(supabaseData)
                           .select();
                         
                         if (error) throw error;
-                      } catch (error: any) {
-                        const errorMessage = error?.message || error?.details || error?.hint || String(error) || '不明なエラー';
+                      } catch (error: unknown) {
+                        const errorMessage = error instanceof Error ? error.message : 
+                          (typeof error === 'object' && error !== null && 'message' in error ? String((error as { message?: string }).message) : 
+                          (typeof error === 'object' && error !== null && 'details' in error ? String((error as { details?: string }).details) :
+                          (typeof error === 'object' && error !== null && 'hint' in error ? String((error as { hint?: string }).hint) :
+                          String(error)))) || '不明なエラー';
                         alert(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`);
                       }
                     }

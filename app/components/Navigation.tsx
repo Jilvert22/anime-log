@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
 
 interface NavigationProps {
@@ -67,22 +68,27 @@ export function Navigation({
               className="flex items-center gap-2 px-5 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
-                <img
-                  src={userIcon}
-                  alt="プロフィール"
-                  className="w-6 h-6 rounded-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      const span = document.createElement('span');
-                      span.className = 'text-base';
-                      span.textContent = '👤';
-                      parent.insertBefore(span, target);
-                    }
-                  }}
-                />
+                <div className="relative w-6 h-6 rounded-full overflow-hidden">
+                  <Image
+                    src={userIcon}
+                    alt="プロフィール"
+                    width={24}
+                    height={24}
+                    className="rounded-full object-cover"
+                    unoptimized={userIcon.startsWith('data:')}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        const span = document.createElement('span');
+                        span.className = 'text-base';
+                        span.textContent = '👤';
+                        parent.insertBefore(span, target);
+                      }
+                    }}
+                  />
+                </div>
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                   <span className="text-base">👤</span>

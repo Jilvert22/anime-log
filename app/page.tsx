@@ -269,7 +269,6 @@ export default function Home() {
 
   const handleCloseFavoriteAnimeModal = useCallback(() => {
     setShowFavoriteAnimeModal(false);
-    // ProfileTabの編集状態をリセットする必要がある場合は、ここで処理
   }, []);
 
   const handleCloseUserProfileModal = useCallback(() => {
@@ -531,7 +530,6 @@ export default function Home() {
         onClose={handleCharacterClose}
         allAnimes={allAnimes}
         editingCharacter={editingCharacter}
-        favoriteCharacters={favoriteCharacters}
         onSave={handleCharacterSave}
       />
 

@@ -40,7 +40,7 @@ export function AnimeReviewSection({
   setShowReviewModal,
 }: AnimeReviewSectionProps) {
   // フィルタリング
-  let filteredReviews = animeReviews.filter(review => {
+  const filteredReviews = animeReviews.filter(review => {
     if (reviewFilter === 'overall' && review.type !== 'overall') return false;
     if (reviewFilter === 'episode' && review.type !== 'episode') return false;
     if (userSpoilerHidden && review.containsSpoiler) return false;

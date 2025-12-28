@@ -1,4 +1,3 @@
-import type { Season, Achievement, FavoriteCharacter } from '../types';
 
 // タグ一覧
 export const availableTags = [
@@ -44,100 +43,6 @@ export const characterPresetTags = [
   '幼馴染', '先輩', '後輩', 'ライバル',
   'メガネ', '黒髪', '銀髪', 'ケモミミ',
   'お嬢様', 'ギャル', '清楚', 'ボクっ娘',
-];
-
-// サンプルデータ（推しキャラ）
-export const sampleFavoriteCharacters: FavoriteCharacter[] = [
-  { id: 1, name: 'モモ', animeId: 1, animeName: 'ダンダダン', image: '👻', category: '推し', tags: ['ギャル', '天然'] },
-  { id: 2, name: 'フリーレン', animeId: 2, animeName: '葬送のフリーレン', image: '🧝', category: '尊い系', tags: ['クーデレ', '銀髪'] },
-  { id: 3, name: '後藤ひとり', animeId: 4, animeName: 'ぼっち・ざ・ろっく！', image: '🎸', category: '守りたい系', tags: ['黒髪', '天然'] },
-];
-
-// 実績データ
-export const achievements: Achievement[] = [
-  { id: 'first', name: '初めの一歩', desc: '初めてアニメを登録', icon: '🌱', rarity: 'common', condition: 1 },
-  { id: 'ten', name: '駆け出しオタク', desc: '10作品視聴', icon: '📺', rarity: 'common', condition: 10 },
-  { id: 'fifty', name: '中堅オタク', desc: '50作品視聴', icon: '🎖️', rarity: 'rare', condition: 50 },
-  { id: 'hundred', name: '歴戦の猛者', desc: '100作品視聴', icon: '🏅', rarity: 'epic', condition: 100 },
-  { id: 'rewatch3', name: '反復横跳び', desc: '1作品を3周', icon: '🔄', rarity: 'common', condition: 3 },
-  { id: 'rewatch10', name: '周回の鬼', desc: '1作品を10周', icon: '🌀', rarity: 'legendary', condition: 10 },
-  { id: 'godtaste', name: '神の舌', desc: '⭐5を10作品つける', icon: '👑', rarity: 'rare', condition: 10 },
-  // 感想関連実績
-  { id: 'review1', name: '初めての感想', desc: '初めて感想を投稿', icon: '✍️', rarity: 'common', condition: 1 },
-  { id: 'review10', name: '感想マスター', desc: '10件の感想を投稿', icon: '📝', rarity: 'rare', condition: 10 },
-  { id: 'review50', name: '感想の達人', desc: '50件の感想を投稿', icon: '📚', rarity: 'epic', condition: 50 },
-  { id: 'liked10', name: '人気の感想', desc: '感想に10いいね獲得', icon: '❤️', rarity: 'rare', condition: 10 },
-  { id: 'liked50', name: '感想のスター', desc: '感想に50いいね獲得', icon: '⭐', rarity: 'epic', condition: 50 },
-  { id: 'helpful10', name: '役に立つ感想', desc: '感想に10「役に立った」獲得', icon: '👍', rarity: 'rare', condition: 10 },
-];
-
-// サンプルデータ
-export const sampleSeasons: Season[] = [
-  {
-    name: '2024年秋',
-    animes: [
-      {
-        id: 1,
-        title: 'ダンダダン',
-        image: '🎃',
-        rating: 5,
-        watched: true,
-        rewatchCount: 2,
-        tags: ['熱い', '作画神'],
-        songs: {
-          op: { title: 'オトノケ', artist: 'Creepy Nuts', rating: 5, isFavorite: true },
-          ed: { title: 'TAIDADA', artist: 'ずっと真夜中でいいのに。', rating: 4, isFavorite: false },
-        },
-        quotes: [
-          { text: 'オカルンって呼んでいい？', character: 'モモ' },
-        ],
-      },
-      {
-        id: 2,
-        title: '葬送のフリーレン',
-        image: '🧝',
-        rating: 5,
-        watched: true,
-        rewatchCount: 5,
-        tags: ['泣ける', '考察'],
-        songs: {
-          op: { title: '勇者', artist: 'YOASOBI', rating: 5, isFavorite: true },
-          ed: { title: 'Anytime Anywhere', artist: 'milet', rating: 5, isFavorite: true },
-        },
-        quotes: [
-          { text: '人間の寿命は短いね', character: 'フリーレン' },
-          { text: '魔法はイメージだ', character: 'フリーレン' },
-        ],
-      },
-    ],
-  },
-  {
-    name: '2024年夏',
-    animes: [
-      { id: 3, title: '推しの子 2期', image: '🌟', rating: 5, watched: true, rewatchCount: 3 },
-    ],
-  },
-  {
-    name: '2024年冬',
-    animes: [
-      {
-        id: 4,
-        title: 'ぼっち・ざ・ろっく！',
-        image: '🎸',
-        rating: 5,
-        watched: true,
-        rewatchCount: 8,
-        tags: ['笑える', '音楽最高'],
-        songs: {
-          op: { title: '青春コンプレックス', artist: '結束バンド', rating: 5, isFavorite: true },
-          ed: { title: 'カラカラ', artist: '結束バンド', rating: 5, isFavorite: false },
-        },
-        quotes: [
-          { text: 'ギターと友達になれたんだね', character: '虹夏' },
-        ],
-      },
-    ],
-  },
 ];
 
 // 評価ラベル

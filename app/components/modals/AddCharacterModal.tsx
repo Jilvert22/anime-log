@@ -9,14 +9,12 @@ export function AddCharacterModal({
   onClose,
   allAnimes,
   editingCharacter,
-  favoriteCharacters,
   onSave,
 }: {
   show: boolean;
   onClose: () => void;
   allAnimes: Anime[];
   editingCharacter: FavoriteCharacter | null;
-  favoriteCharacters: FavoriteCharacter[];
   onSave: (character: FavoriteCharacter) => void;
 }) {
   const [newCharacterName, setNewCharacterName] = useState('');

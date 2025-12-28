@@ -61,28 +61,6 @@ export type Season = {
   animes: Anime[];
 };
 
-// 実績レアリティの型定義
-export type AchievementRarity = 'common' | 'rare' | 'epic' | 'legendary';
-
-// 実績の型定義
-export type Achievement = {
-  id: string;
-  name: string;
-  desc: string;
-  icon: string;
-  rarity: AchievementRarity;
-  condition: number;
-};
-
-// 布教リストの型定義
-export type EvangelistList = {
-  id: number;
-  title: string;
-  description: string;
-  animeIds: AnimeId[];
-  createdAt: Date;
-};
-
 // 推しキャラの型定義
 export type FavoriteCharacter = {
   id: number;
@@ -94,15 +72,3 @@ export type FavoriteCharacter = {
   tags: string[];
 };
 
-// 声優の型定義（削除予定）
-export type VoiceActor = {
-  id: number;
-  name: string;
-  animeIds: AnimeId[];
-  animeNames: string[];
-  image: string;
-  notes?: string;
-};
-
-// タブの型定義
-export type ActiveTab = 'home' | 'mypage';

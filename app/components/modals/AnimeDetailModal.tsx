@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import type { Anime, Season, Review } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -120,18 +121,23 @@ export function AnimeDetailModal({
                 const isImageUrl = selectedAnime.image && (selectedAnime.image.startsWith('http://') || selectedAnime.image.startsWith('https://'));
                 return isImageUrl ? (
                   <div className="flex justify-center mb-3">
-                    <img
-                      src={selectedAnime.image}
-                      alt={selectedAnime.title}
-                      className="w-32 h-44 object-cover rounded-xl shadow-lg"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                        const parent = (e.target as HTMLImageElement).parentElement;
-                        if (parent) {
-                          parent.innerHTML = '<span class="text-6xl">🎬</span>';
-                        }
-                      }}
-                    />
+                    <div className="relative w-32 h-44">
+                      <Image
+                        src={selectedAnime.image}
+                        alt={selectedAnime.title}
+                        width={128}
+                        height={176}
+                        className="object-cover rounded-xl shadow-lg"
+                        unoptimized
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          const parent = (e.target as HTMLImageElement).parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<span class="text-6xl">🎬</span>';
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
                 ) : (
                   <span className="text-6xl block mb-3">{selectedAnime.image || '🎬'}</span>
