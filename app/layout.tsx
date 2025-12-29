@@ -29,11 +29,17 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
+  themeColor: '#e879d4',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'アニメログ',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   other: {
-    'theme-color': '#667eea',
     'mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-status-bar-style': 'default',
   },
   openGraph: {
     title: "アニメログ",
