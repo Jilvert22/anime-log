@@ -79,13 +79,12 @@ function AnimeCardComponent({ anime, onClick }: { anime: Anime; onClick: () => v
               const tagInfo = availableTags.find(t => t.value === tag);
               // タグがavailableTagsにない場合は、ジャンル翻訳を試す
               const displayLabel = tagInfo?.label || translateGenre(tag) || tag;
-              const displayEmoji = tagInfo?.emoji || '';
               return (
                 <span
                   key={index}
                   className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full"
                 >
-                  {displayEmoji} {displayLabel}
+                  {displayLabel}
                 </span>
               );
             })}

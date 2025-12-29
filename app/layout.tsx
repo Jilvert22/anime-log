@@ -20,8 +20,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "アニメログ",
-  description: "アニメ視聴履歴を記録・管理するWebアプリ。クール別表示、評価、周回数管理、DNAカード生成など。",
+  title: 'アニメログ - あなたのアニメ視聴記録',
+  description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。視聴傾向の分析、感想の記録、積みアニメ管理など。',
+  metadataBase: new URL('https://anime-log-rho.vercel.app'),
   keywords: ["アニメ", "視聴履歴", "管理", "記録", "評価"],
   authors: [{ name: "アニメログ" }],
   icons: {
@@ -41,17 +42,26 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
   },
   openGraph: {
-    title: "アニメログ",
-    description: "アニメ視聴履歴を記録・管理するWebアプリ",
-    url: "https://animelog.jp",
-    siteName: "アニメログ",
-    locale: "ja_JP",
-    type: "website",
+    title: 'アニメログ - あなたのアニメ視聴記録',
+    description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。',
+    url: 'https://anime-log-rho.vercel.app',
+    siteName: 'アニメログ',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'アニメログ',
+      },
+    ],
+    locale: 'ja_JP',
+    type: 'website',
   },
   twitter: {
-    card: "summary_large_image",
-    title: "アニメログ",
-    description: "アニメ視聴履歴を記録・管理するWebアプリ",
+    card: 'summary_large_image',
+    title: 'アニメログ - あなたのアニメ視聴記録',
+    description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。',
+    images: ['/og-image.png'],
   },
 };
 

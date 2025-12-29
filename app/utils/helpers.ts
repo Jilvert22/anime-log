@@ -90,6 +90,39 @@ export function getSeasonName(seasonOrYear: string | number, quarter?: number): 
   return seasonMap[seasonOrYear as string] || (seasonOrYear as string);
 }
 
+// 現在のシーズンを取得する関数
+export function getCurrentSeason(): { year: number; season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'; seasonName: string } {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-12
+  
+  let season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
+  let seasonName: string;
+  
+  if (month >= 1 && month <= 3) {
+    season = 'WINTER';
+    seasonName = '冬';
+  } else if (month >= 4 && month <= 6) {
+    season = 'SPRING';
+    seasonName = '春';
+  } else if (month >= 7 && month <= 9) {
+    season = 'SUMMER';
+    seasonName = '夏';
+  } else {
+    season = 'FALL';
+    seasonName = '秋';
+  }
+  
+  return { year, season, seasonName };
+}
+
+// シーズン名が今シーズンかどうかを判定する関数
+export function isCurrentSeason(seasonName: string): boolean {
+  const current = getCurrentSeason();
+  const expectedSeasonName = `${current.year}年${current.seasonName}`;
+  return seasonName === expectedSeasonName;
+}
+
 // シーズン名を時系列順にソートする関数
 // シーズン名の形式: "YYYY年[春|夏|秋|冬]" または "未分類"
 // ソート順: 新しい年→古い年、同じ年は秋→夏→春→冬の順（秋が最新、アニメのクールは冬→春→夏→秋の順で放送されるため）、"未分類"は最後

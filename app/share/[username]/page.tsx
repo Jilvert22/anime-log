@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
-import ProfilePageClient from './ProfilePageClient'
+import { redirect } from 'next/navigation'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -55,8 +55,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const displayName = profile.username
   const otakuType = profile.otaku_type_custom || getOtakuTypeLabel(profile.otaku_type)
 
-  const title = `${displayName}のプロフィール | アニメログ`
-  const description = `${displayName}さん（${otakuType}）のアニメ視聴記録とANIME DNA`
+  const title = `${displayName}のANIME DNA | アニメログ`
+  const description = `${displayName}さん（${otakuType}）のアニメ視聴傾向をチェック！`
   const ogImageUrl = `https://anime-log-rho.vercel.app/api/og?username=${encodeURIComponent(username)}`
 
   return {
@@ -70,11 +70,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: `${displayName}のプロフィール`,
+          alt: `${displayName}のANIME DNA`,
         },
       ],
       type: 'profile',
-      url: `https://anime-log-rho.vercel.app/profile/${encodeURIComponent(username)}`,
+      url: `https://anime-log-rho.vercel.app/share/${encodeURIComponent(username)}`,
     },
     twitter: {
       card: 'summary_large_image',
@@ -85,10 +85,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function ProfilePage({ params }: Props) {
+export default async function SharePage({ params }: Props) {
   const { username } = await params
   
-  return <ProfilePageClient username={username} />
+  // プロフィールページにリダイレクト
+  redirect(`/profile/${encodeURIComponent(username)}`)
 }
-
 

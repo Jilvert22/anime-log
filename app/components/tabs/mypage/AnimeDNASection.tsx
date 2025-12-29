@@ -467,7 +467,9 @@ export default function AnimeDNASection({
               }}>
                 <div className="bg-white p-4 rounded-2xl">
                   <QRCodeSVG
-                    value={typeof window !== 'undefined' ? window.location.href : ''}
+                    value={typeof window !== 'undefined' 
+                      ? `https://anime-log-rho.vercel.app/share/${encodeURIComponent(userName)}`
+                      : ''}
                     size={200}
                     level="H"
                     includeMargin={true}
@@ -492,14 +494,17 @@ export default function AnimeDNASection({
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-mixed">プロフィールURL</p>
                   <p className="text-sm font-mono text-gray-700 dark:text-gray-300 truncate">
-                    {typeof window !== 'undefined' ? window.location.href : ''}
+                    {typeof window !== 'undefined' 
+                      ? `https://anime-log-rho.vercel.app/share/${encodeURIComponent(userName)}`
+                      : ''}
                   </p>
                 </div>
               </div>
               <button
                 onClick={async () => {
                   try {
-                    await navigator.clipboard.writeText(typeof window !== 'undefined' ? window.location.href : '');
+                    const shareUrl = `https://anime-log-rho.vercel.app/share/${encodeURIComponent(userName)}`;
+                    await navigator.clipboard.writeText(shareUrl);
                     alert('リンクをクリップボードにコピーしました');
                   } catch (error) {
                     console.error('Failed to copy link:', error);
@@ -520,10 +525,11 @@ export default function AnimeDNASection({
               <button
                 onClick={async () => {
                   try {
+                    const shareUrl = `https://anime-log-rho.vercel.app/share/${encodeURIComponent(userName)}`;
                     await navigator.share({
                       title: `${userName}のアニメDNA`,
                       text: `${userName}のアニメログをチェック！`,
-                      url: typeof window !== 'undefined' ? window.location.href : '',
+                      url: shareUrl,
                     });
                   } catch (error) {
                     // ユーザーがキャンセルした場合はエラーを無視

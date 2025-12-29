@@ -7,9 +7,12 @@ export function StarRating({ rating, size = 'text-3xl' }: { rating: number; size
           key={star}
           className={`${size} ${
             star <= rating
-              ? 'text-[#ffd700]'
-              : 'text-gray-300 opacity-30'
+              ? 'text-[#ffd700] drop-shadow-sm'
+              : 'text-gray-400 dark:text-gray-500 opacity-50'
           }`}
+          style={star <= rating ? {} : { 
+            textShadow: '0 0 1px rgba(0,0,0,0.2)'
+          }}
         >
           {star <= rating ? '★' : '☆'}
         </span>

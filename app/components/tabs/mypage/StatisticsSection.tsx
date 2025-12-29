@@ -118,7 +118,7 @@ export default function StatisticsSection({ allAnimes, seasons }: StatisticsSect
       ? `あなたは${topTags.map(([tag]) => {
           const tagInfo = availableTags.find(t => t.value === tag);
           if (tagInfo) {
-            return `${tagInfo.emoji}${tagInfo.label}`;
+            return tagInfo.label;
           }
           const translatedTag = translateGenre(tag);
           return translatedTag || tag;
@@ -204,7 +204,7 @@ export default function StatisticsSection({ allAnimes, seasons }: StatisticsSect
                     <div key={tag} className="space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-[#6b5b6e] dark:text-white font-mixed">
-                          {tagInfo?.emoji} {tagInfo?.label || tag}
+                          {tagInfo?.label || tag}
                         </span>
                         <span className="text-sm font-bold text-[#e879d4] dark:text-[#e879d4] font-mixed">
                           {Math.round((count / allAnimes.length) * 100)}%

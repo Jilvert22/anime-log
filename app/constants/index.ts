@@ -1,13 +1,13 @@
 
 // タグ一覧
 export const availableTags = [
-  { emoji: '😭', label: '泣ける', value: '泣ける' },
-  { emoji: '🔥', label: '熱い', value: '熱い' },
-  { emoji: '🤣', label: '笑える', value: '笑える' },
-  { emoji: '🤔', label: '考察', value: '考察' },
-  { emoji: '✨', label: '作画神', value: '作画神' },
-  { emoji: '🎵', label: '音楽最高', value: '音楽最高' },
-  { emoji: '💕', label: 'キャラ萌え', value: 'キャラ萌え' },
+  { label: '泣ける', value: '泣ける' },
+  { label: '熱い', value: '熱い' },
+  { label: '笑える', value: '笑える' },
+  { label: '考察', value: '考察' },
+  { label: '作画神', value: '作画神' },
+  { label: '音楽最高', value: '音楽最高' },
+  { label: 'キャラ萌え', value: 'キャラ萌え' },
 ];
 
 // プリセットカテゴリ

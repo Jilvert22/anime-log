@@ -86,9 +86,19 @@ export function AnimeDetailModal({
       onClick={() => setSelectedAnime(null)}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6"
+        className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* 右上の✖️ボタン（sticky） */}
+        <div className="sticky top-2 z-10 flex justify-end mb-2">
+          <button
+            onClick={() => setSelectedAnime(null)}
+            className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            aria-label="閉じる"
+          >
+            <span className="text-2xl leading-none">×</span>
+          </button>
+        </div>
         {/* タブ切り替え */}
         <div className="flex gap-2 mb-4 border-b dark:border-gray-700 pb-2">
           <button
@@ -169,8 +179,11 @@ export function AnimeDetailModal({
                     className={`text-3xl transition-all hover:scale-110 active:scale-95 ${
                       selectedAnime.rating >= rating
                         ? 'text-[#ffd700] drop-shadow-sm'
-                        : 'text-gray-300 opacity-30 hover:opacity-50'
+                        : 'text-gray-400 dark:text-gray-500 opacity-50 hover:opacity-80'
                     }`}
+                    style={selectedAnime.rating >= rating ? {} : { 
+                      textShadow: '0 0 1px rgba(0,0,0,0.2)'
+                    }}
                     title={`${rating}つ星`}
                   >
                     {selectedAnime.rating >= rating ? '★' : '☆'}
@@ -266,13 +279,13 @@ export function AnimeDetailModal({
                           }
                         );
                       }}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         isSelected
-                          ? 'bg-[#e879d4] text-white dark:bg-indigo-500'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          ? 'bg-[#e879d4] text-white dark:bg-indigo-500 shadow-md'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
                       }`}
                     >
-                      {tag.emoji} {tag.label}
+                      {tag.label}
                     </button>
                   );
                 })}
@@ -724,12 +737,6 @@ export function AnimeDetailModal({
                   className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors"
                 >
                   削除
-                </button>
-                <button
-                  onClick={() => setSelectedAnime(null)}
-                  className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
-                >
-                  閉じる
                 </button>
               </div>
             </div>
