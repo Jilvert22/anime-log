@@ -50,7 +50,7 @@ export function Navigation({
         </div>
 
         {/* 右側：ダークモード + プロフィール */}
-        <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+        <div className="flex items-center gap-0 ml-auto">
           {/* ダークモードトグル */}
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
@@ -64,7 +64,7 @@ export function Navigation({
           {user ? (
             <button
               onClick={onOpenSettingsModal}
-              className="flex items-center gap-2 px-5 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-2 pl-2 pr-5 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
                 <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0">

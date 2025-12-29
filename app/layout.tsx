@@ -21,13 +21,24 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "アニメログ",
-  description: "自分だけのアニメ視聴履歴を記録・管理するWebアプリ。クール別表示、評価、周回数管理、DNAカード生成など。",
+  description: "アニメ視聴履歴を記録・管理するWebアプリ。クール別表示、評価、周回数管理、DNAカード生成など。",
   keywords: ["アニメ", "視聴履歴", "管理", "記録", "評価"],
   authors: [{ name: "アニメログ" }],
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
+  other: {
+    'theme-color': '#667eea',
+    'mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+  },
   openGraph: {
     title: "アニメログ",
-    description: "自分だけのアニメ視聴履歴を記録・管理するWebアプリ",
-    url: "https://anime-log-rho.vercel.app",
+    description: "アニメ視聴履歴を記録・管理するWebアプリ",
+    url: "https://animelog.jp",
     siteName: "アニメログ",
     locale: "ja_JP",
     type: "website",
@@ -35,7 +46,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "アニメログ",
-    description: "自分だけのアニメ視聴履歴を記録・管理するWebアプリ",
+    description: "アニメ視聴履歴を記録・管理するWebアプリ",
   },
 };
 

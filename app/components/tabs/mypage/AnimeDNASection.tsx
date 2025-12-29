@@ -195,9 +195,23 @@ export default function AnimeDNASection({
       >
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="dna-logo-icon"></div>
-            <h2 className="text-white text-xl font-black">ANIME DNA</h2>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <img
+                src="/dna-icon.png"
+                alt="Anime DNA"
+                width={56}
+                height={56}
+                className="rounded-lg"
+                style={{
+                  backgroundColor: 'transparent',
+                  background: 'transparent',
+                  imageRendering: 'crisp-edges',
+                  display: 'block',
+                }}
+              />
+            </div>
+            <h2 className="text-white text-2xl font-black">ANIME DNA</h2>
           </div>
         </div>
         
@@ -206,7 +220,7 @@ export default function AnimeDNASection({
           {/* アバター */}
           <div className="flex-shrink-0">
             {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
                 <img
                   src={userIcon}
                   alt="アイコン"
@@ -228,7 +242,7 @@ export default function AnimeDNASection({
                 />
               </div>
             ) : (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl bg-white/10 border-2 border-white/30 flex items-center justify-center shadow-lg">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-xl bg-white/10 border-2 border-white/30 flex items-center justify-center shadow-lg">
                 <span className="text-3xl sm:text-4xl">👤</span>
               </div>
             )}

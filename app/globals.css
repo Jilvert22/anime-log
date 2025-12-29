@@ -102,38 +102,6 @@ body {
   --dna-accent-gold: var(--color-gold);
 }
 
-/* DNAアイコン */
-.dna-logo-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--color-cyan), var(--color-pink));
-  border-radius: 8px;
-  position: relative;
-  display: inline-block;
-  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
-}
-
-.dna-logo-icon::before,
-.dna-logo-icon::after {
-  content: '';
-  position: absolute;
-  width: 3px;
-  height: 16px;
-  background: white;
-  border-radius: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.dna-logo-icon::before {
-  transform: translateY(-50%) rotate(-30deg);
-  left: 10px;
-}
-
-.dna-logo-icon::after {
-  transform: translateY(-50%) rotate(30deg);
-  right: 10px;
-}
 
 /* 音符アイコン */
 .dna-type-icon {
