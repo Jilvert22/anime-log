@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { M_PLUS_Rounded_1c, Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
@@ -29,7 +29,6 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
-  themeColor: '#e879d4',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -54,6 +53,10 @@ export const metadata: Metadata = {
     title: "アニメログ",
     description: "アニメ視聴履歴を記録・管理するWebアプリ",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#e879d4',
 };
 
 export default function RootLayout({

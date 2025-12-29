@@ -2,6 +2,7 @@
   "name": "アニメログ",
   "short_name": "アニメログ",
   "description": "アニメの視聴記録・管理、レビュー投稿、視聴傾向分析ができるアプリ",
+  "categories": ["entertainment", "games", "lifestyle"],
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
