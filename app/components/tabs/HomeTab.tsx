@@ -868,8 +868,8 @@ export function HomeTab({
           user={user}
           seasons={seasons}
           setSeasons={setSeasons}
-          expandedSeasons={oldExpandedSeasons}
-          setExpandedSeasons={setOldExpandedSeasons}
+          expandedSeasons={expandedSeasons}
+          setExpandedSeasons={setExpandedSeasons}
         />
       )}
     </>
