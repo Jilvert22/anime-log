@@ -79,6 +79,7 @@ export function AuthModal({
   const [authError, setAuthError] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const handleAuth = async () => {
     setAuthError('');
@@ -94,6 +95,11 @@ export function AuthModal({
         setAuthPassword('');
         onAuthSuccess();
       } else {
+        // 新規登録時は利用規約への同意を確認
+        if (!agreedToTerms) {
+          setAuthError('利用規約とプライバシーポリシーへの同意が必要です');
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email: authEmail,
           password: authPassword,
@@ -102,6 +108,7 @@ export function AuthModal({
         // 登録成功時、確認メール送信画面を表示
         setEmailSent(true);
         setAuthPassword('');
+        setAgreedToTerms(false);
         // onAuthSuccess()は呼び出さない（まだ認証完了してないため）
       }
     } catch (error: any) {
@@ -130,6 +137,7 @@ export function AuthModal({
     setAuthPassword('');
     setEmailSent(false);
     setResetEmailSent(false);
+    setAgreedToTerms(false);
   };
 
   if (!show) return null;
@@ -171,6 +179,7 @@ export function AuthModal({
                 setAuthError('');
                 setEmailSent(false);
                 setResetEmailSent(false);
+                setAgreedToTerms(false);
               }}
               className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
                 authMode === 'signup'
@@ -357,6 +366,42 @@ export function AuthModal({
               )}
             </div>
 
+            {/* 利用規約への同意チェックボックス（新規登録時のみ） */}
+            {authMode === 'signup' && (
+              <div className="mb-4">
+                <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <span>
+                    <a
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#e879d4] hover:text-[#f09fe3] underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      利用規約
+                    </a>
+                    と
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#e879d4] hover:text-[#f09fe3] underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      プライバシーポリシー
+                    </a>
+                    に同意する
+                  </span>
+                </label>
+              </div>
+            )}
+
             {/* パスワードを忘れた方リンク（ログイン画面のみ） */}
             {authMode === 'login' && (
               <div className="mb-6 text-right">
@@ -383,7 +428,7 @@ export function AuthModal({
               </button>
               <button
                 onClick={handleAuth}
-                disabled={!authEmail || !authPassword}
+                disabled={!authEmail || !authPassword || (authMode === 'signup' && !agreedToTerms)}
                 className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {authMode === 'login' ? 'ログイン' : '登録'}

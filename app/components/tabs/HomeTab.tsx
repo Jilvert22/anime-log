@@ -5,6 +5,7 @@ import type { Anime, Season } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 import { GalleryTab } from './GalleryTab';
 import { WatchlistTab } from './WatchlistTab';
+import { Footer } from '../common/Footer';
 import { searchAnimeBySeason } from '../../lib/anilist';
 import { translateGenre, sortSeasonsByTime } from '../../utils/helpers';
 import { supabase, addToWatchlist } from '../../lib/supabase';
@@ -1226,6 +1227,9 @@ function SeriesView({
           アニメが登録されていません
         </p>
       )}
+      
+      {/* フッター */}
+      <Footer />
     </div>
   );
 }

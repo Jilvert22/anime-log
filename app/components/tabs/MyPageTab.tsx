@@ -6,6 +6,7 @@ import AnimeDNASection from './mypage/AnimeDNASection';
 import StatisticsSection from './mypage/StatisticsSection';
 import CollectionSection from './mypage/CollectionSection';
 import SettingsSection from './mypage/SettingsSection';
+import { Footer } from '../common/Footer';
 
 interface MyPageTabProps {
   allAnimes: Anime[];
@@ -107,6 +108,9 @@ export default function MyPageTab(props: MyPageTabProps) {
         onOpenSettingsModal={props.onOpenSettingsModal}
         handleLogout={props.handleLogout}
       />
+      
+      {/* フッター */}
+      <Footer />
     </div>
   );
 }
