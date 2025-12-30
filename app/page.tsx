@@ -35,7 +35,8 @@ import { useDarkMode } from './hooks/useDarkMode';
 import { useCountAnimation } from './hooks/useCountAnimation';
 import { useModalHandlers } from './hooks/useModalHandlers';
 import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName, shouldShowSeasonStartModal, markSeasonChecked } from './utils/helpers';
-import { getCurrentSeasonPlannedWatchlist, type WatchlistItem } from './lib/supabase';
+import { getCurrentSeasonPlannedWatchlist } from './lib/supabase';
+import type { WatchlistItem } from './lib/storage/types';
 import { useStorage } from './hooks/useStorage';
 
   // メインページ

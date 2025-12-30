@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { WatchlistItem } from '../../lib/supabase';
+import type { WatchlistItem } from '../../lib/storage/types';
 import { markSeasonChecked } from '../../utils/helpers';
 
 export function SeasonEndModal({
