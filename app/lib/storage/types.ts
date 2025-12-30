@@ -63,6 +63,6 @@ export interface IStorageService {
   ): Promise<WatchlistItem[]>;
   
   // マイグレーション用
-  migrateToSupabase?(): Promise<boolean>;
+  migrateToSupabase?(items: WatchlistItem[]): Promise<boolean>;
 }
 
