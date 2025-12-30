@@ -11,6 +11,7 @@ import { translateGenre, sortSeasonsByTime, getNextSeason, isNextSeason } from '
 import { getBroadcastInfo } from '../../lib/anilist';
 import { useStorage } from '../../hooks/useStorage';
 import type { WatchlistItem } from '../../lib/storage/types';
+import { supabase } from '../../lib/supabase';
 
 // フィルターの型
 type FilterType = 'all' | 'unrated' | 'unwatched';
