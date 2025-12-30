@@ -467,11 +467,6 @@ export function HomeTab({
 
   // 検索結果から作品を追加
   const addAnimeFromSearch = useCallback(async (result: any, year: string, season: string) => {
-    if (!user) {
-      console.warn('User not logged in');
-      return;
-    }
-
     try {
       // 必須フィールドの検証
       if (!result) {
@@ -497,7 +492,7 @@ export function HomeTab({
       const seriesName = extractSeriesName(title);
       const image = result.coverImage?.large || result.coverImage?.medium || '🎬';
       
-      console.log('Adding anime:', { anilistId, title, image, result });
+      console.log('Adding anime:', { anilistId, title, image, result, user: user ? 'logged in' : 'not logged in' });
       
       const newAnime: Anime = {
         id: maxId + 1,
@@ -511,17 +506,20 @@ export function HomeTab({
         studios: result.studios?.nodes?.map((s: any) => s.name) || [],
       };
 
-      // Supabaseに保存
-      const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
-      const { error } = await supabase
-        .from('animes')
-        .insert(supabaseData);
+      // ログインしている場合はSupabaseに保存
+      if (user) {
+        const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
+        const { error } = await supabase
+          .from('animes')
+          .insert(supabaseData);
 
-      if (error) {
-        console.error('Failed to add anime:', error);
-        alert(`アニメの追加に失敗しました: ${error.message || '不明なエラー'}`);
-        return;
+        if (error) {
+          console.error('Failed to add anime:', error);
+          alert(`アニメの追加に失敗しました: ${error.message || '不明なエラー'}`);
+          return;
+        }
       }
+      // ログインしていない場合はローカルストレージに保存（useAnimeDataフックが自動的に処理）
 
       // ローカル状態を更新
       const existingSeasonIndex = seasons.findIndex(s => s.name === seasonName);
@@ -955,9 +953,7 @@ export function HomeTab({
       )}
 
       {homeSubTab === 'current-season' && (
-        <SeasonWatchlistTab
-          user={user}
-        />
+        <SeasonWatchlistTab />
       )}
     </>
   );
