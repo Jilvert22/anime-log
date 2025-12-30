@@ -899,7 +899,7 @@ export function HomeTab({
                                       addedToWatchlistIds={addedToWatchlistIds}
                                       addAnimeFromSearch={addAnimeFromSearch}
                                       addToWatchlistFromSearch={addToWatchlistFromSearch}
-                                      addToCurrentSeasonWatchlist={addToCurrentSeasonWatchlist}
+                                      addToNextSeasonWatchlist={addToNextSeasonWatchlist}
                                       year={year}
                                       season={season}
                                     />
