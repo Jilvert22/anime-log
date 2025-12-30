@@ -4,7 +4,13 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase environment variables are not set. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project settings.');
+  console.error('Supabase environment variables are not set. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project settings.');
+  console.error('Current values:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseAnonKey,
+    urlLength: supabaseUrl.length,
+    keyLength: supabaseAnonKey.length,
+  });
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -13,6 +19,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       return fetch(url, {
         ...options,
         credentials: 'include',
+      }).catch((error) => {
+        console.error('Fetch error:', error);
+        throw error;
       });
     },
   },
@@ -21,6 +30,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     persistSession: true,
     storageKey: 'animelog-auth',
+    autoRefreshToken: true,
   },
 });
 

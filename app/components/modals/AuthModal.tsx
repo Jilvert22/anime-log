@@ -117,6 +117,19 @@ export function AuthModal({
   const handleAuth = async () => {
     setAuthError('');
     try {
+      // 環境変数のチェック
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        setAuthError('Supabaseの設定が正しくありません。管理者にお問い合わせください。');
+        console.error('Supabase environment variables are missing:', {
+          hasUrl: !!supabaseUrl,
+          hasKey: !!supabaseAnonKey,
+        });
+        return;
+      }
+
       if (authMode === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: authEmail,
@@ -149,7 +162,17 @@ export function AuthModal({
         // onAuthSuccess()は呼び出さない（まだ認証完了してないため）
       }
     } catch (error: any) {
-      setAuthError(error.message || 'エラーが発生しました');
+      console.error('Auth error:', error);
+      // より詳細なエラーメッセージを表示
+      if (error.message) {
+        // Supabaseのエラーメッセージをそのまま表示
+        setAuthError(error.message);
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        // ネットワークエラーの場合
+        setAuthError('ネットワークエラーが発生しました。インターネット接続を確認してください。');
+      } else {
+        setAuthError('エラーが発生しました。しばらく待ってから再度お試しください。');
+      }
     }
   };
 
