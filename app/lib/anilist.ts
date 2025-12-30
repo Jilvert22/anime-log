@@ -138,3 +138,26 @@ export async function searchAnimeBySeason(
     }
   };
 }
+
+// クール検索関数（全件取得）
+export async function searchAnimeBySeasonAll(
+  season: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER',
+  seasonYear: number,
+  perPage: number = 50
+): Promise<AniListMedia[]> {
+  const allMedia: AniListMedia[] = [];
+  let currentPage = 1;
+  let hasNextPage = true;
+
+  while (hasNextPage) {
+    const result = await searchAnimeBySeason(season, seasonYear, currentPage, perPage);
+    allMedia.push(...result.media);
+    hasNextPage = result.pageInfo.hasNextPage;
+    currentPage++;
+    
+    // 無限ループ防止（最大100ページ）
+    if (currentPage > 100) break;
+  }
+
+  return allMedia;
+}

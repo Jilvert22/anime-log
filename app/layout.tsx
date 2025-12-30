@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'アニメログ - あなたのアニメ視聴記録',
     description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。',
-    url: 'https://anime-log-rho.vercel.app',
+    url: 'https://animelog.jp',
     siteName: 'アニメログ',
     images: [
       {

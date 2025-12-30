@@ -5,8 +5,9 @@ import type { Anime, Season } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 import { GalleryTab } from './GalleryTab';
 import { WatchlistTab } from './WatchlistTab';
+import { SeasonWatchlistTab } from './SeasonWatchlistTab';
 import { searchAnimeBySeason } from '../../lib/anilist';
-import { translateGenre, sortSeasonsByTime } from '../../utils/helpers';
+import { translateGenre, sortSeasonsByTime, getNextSeason, isNextSeason } from '../../utils/helpers';
 import { supabase, addToWatchlist, getWatchlist, type WatchlistItem } from '../../lib/supabase';
 
 // フィルターの型
@@ -159,8 +160,8 @@ export function HomeTab({
   animeToSupabase,
   supabaseToAnime,
 }: {
-  homeSubTab: 'seasons' | 'series' | 'gallery' | 'watchlist';
-  setHomeSubTab: (tab: 'seasons' | 'series' | 'gallery' | 'watchlist') => void;
+  homeSubTab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season';
+  setHomeSubTab: (tab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => void;
   count: number;
   totalRewatchCount: number;
   averageRating: number;
@@ -599,6 +600,43 @@ export function HomeTab({
     }
   }, [user, loadWatchlist]);
 
+  // 来期の視聴予定に追加
+  const addToNextSeasonWatchlist = useCallback(async (result: any) => {
+    if (!user) {
+      alert('ログインが必要です');
+      return;
+    }
+
+    try {
+      if (!result || !result.id) {
+        console.error('Invalid result object:', result);
+        alert('アニメ情報の取得に失敗しました');
+        return;
+      }
+
+      const nextSeason = getNextSeason();
+      const success = await addToWatchlist({
+        anilist_id: result.id,
+        title: result.title?.native || result.title?.romaji || '',
+        image: result.coverImage?.large || null,
+        status: 'planned',
+        season_year: nextSeason.year,
+        season: nextSeason.season,
+      });
+
+      if (success) {
+        // 追加済みIDを更新
+        setAddedToWatchlistIds(prev => new Set(prev).add(result.id));
+        alert('来期の視聴予定に追加しました');
+      } else {
+        alert('視聴予定の追加に失敗しました');
+      }
+    } catch (error) {
+      console.error('Failed to add to next season watchlist:', error);
+      alert('視聴予定の追加に失敗しました');
+    }
+  }, [user]);
+
   // フィルター後の統計
   const filteredStats = useMemo(() => {
     const filteredAnimes = allAnimes.filter(filterAnime);
@@ -617,6 +655,7 @@ export function HomeTab({
           { id: 'series', label: 'シリーズ' },
           { id: 'gallery', label: 'ギャラリー' },
           { id: 'watchlist', label: '積みアニメ' },
+          { id: 'current-season', label: '来期視聴予定' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -802,6 +841,7 @@ export function HomeTab({
                                           addedToWatchlistIds={addedToWatchlistIds}
                                           addAnimeFromSearch={addAnimeFromSearch}
                                           addToWatchlistFromSearch={addToWatchlistFromSearch}
+                                          addToNextSeasonWatchlist={addToNextSeasonWatchlist}
                                           year={year}
                                           season={season}
                                         />
@@ -833,6 +873,7 @@ export function HomeTab({
                                       addedToWatchlistIds={addedToWatchlistIds}
                                       addAnimeFromSearch={addAnimeFromSearch}
                                       addToWatchlistFromSearch={addToWatchlistFromSearch}
+                                      addToCurrentSeasonWatchlist={addToCurrentSeasonWatchlist}
                                       year={year}
                                       season={season}
                                     />
@@ -883,6 +924,12 @@ export function HomeTab({
           setSeasons={setSeasons}
           expandedSeasons={expandedSeasons}
           setExpandedSeasons={setExpandedSeasons}
+        />
+      )}
+
+      {homeSubTab === 'current-season' && (
+        <SeasonWatchlistTab
+          user={user}
         />
       )}
     </>
@@ -1258,6 +1305,7 @@ function SearchResultsSection({
   addedToWatchlistIds,
   addAnimeFromSearch,
   addToWatchlistFromSearch,
+  addToNextSeasonWatchlist,
   year,
   season,
 }: {
@@ -1270,6 +1318,7 @@ function SearchResultsSection({
   addedToWatchlistIds: Set<number>;
   addAnimeFromSearch: (result: any, year: string, season: string) => Promise<void>;
   addToWatchlistFromSearch: (result: any, year?: string, season?: string) => Promise<void>;
+  addToNextSeasonWatchlist: (result: any) => Promise<void>;
   year: string;
   season: string;
 }) {
@@ -1323,25 +1372,49 @@ function SearchResultsSection({
             >
               追加
             </button>
-            {addedToWatchlistIds.has(result.id) ? (
-              <button
-                disabled
-                className="mt-1 w-full px-2 py-1 text-xs font-medium bg-gray-400 text-white rounded cursor-not-allowed"
-              >
-                積みアニメに追加済み
-              </button>
-            ) : (
-              <button
-                onClick={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  await addToWatchlistFromSearch(result, year, season);
-                }}
-                className="mt-1 w-full px-2 py-1 text-xs font-medium bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-              >
-                積みアニメに追加
-              </button>
-            )}
+            <div className="mt-1 space-y-1">
+              {addedToWatchlistIds.has(result.id) ? (
+                <button
+                  disabled
+                  className="w-full px-2 py-1 text-xs font-medium bg-gray-400 text-white rounded cursor-not-allowed"
+                >
+                  積みアニメに追加済み
+                </button>
+              ) : (
+                <button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await addToWatchlistFromSearch(result, year, season);
+                  }}
+                  className="w-full px-2 py-1 text-xs font-medium bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                >
+                  積みアニメに追加
+                </button>
+              )}
+              {(() => {
+                // 検索結果のアニメが来期シーズンかどうかを判定
+                // yearとseasonは検索したシーズンの情報なので、それが来期かどうかをチェック
+                const seasonYear = parseInt(year, 10);
+                const seasonEnum = season as 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
+                const isNext = isNextSeason(seasonYear, seasonEnum);
+                
+                if (!isNext) return null;
+                
+                return (
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      await addToNextSeasonWatchlist(result);
+                    }}
+                    className="w-full px-2 py-1 text-xs font-medium bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+                  >
+                    視聴予定に追加
+                  </button>
+                );
+              })()}
+            </div>
           </div>
         ))}
       </div>

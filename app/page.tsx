@@ -20,6 +20,7 @@ import { AddQuoteModal } from './components/modals/AddQuoteModal';
 import { DNAModal } from './components/modals/DNAModal';
 import { AddAnimeFormModal } from './components/modals/AddAnimeFormModal';
 import { AnimeDetailModal } from './components/modals/AnimeDetailModal';
+import { SeasonEndModal } from './components/modals/SeasonEndModal';
 import { Navigation } from './components/Navigation';
 import { useAnimeReviews } from './hooks/useAnimeReviews';
 import { useAuth } from './hooks/useAuth';
@@ -33,13 +34,16 @@ import { useTabs } from './hooks/useTabs';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useCountAnimation } from './hooks/useCountAnimation';
 import { useModalHandlers } from './hooks/useModalHandlers';
-import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName } from './utils/helpers';
+import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName, shouldShowSeasonStartModal, markSeasonChecked } from './utils/helpers';
+import { getCurrentSeasonPlannedWatchlist, updateWatchlistItem, removeFromWatchlist, type WatchlistItem } from './lib/supabase';
 
-// メインページ
+  // メインページ
 export default function Home() {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
   const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
+  const [showSeasonEndModal, setShowSeasonEndModal] = useState(false);
+  const [previousSeasonItems, setPreviousSeasonItems] = useState<WatchlistItem[]>([]);
   
   // モーダル状態管理をカスタムフックで管理
   const {
@@ -330,6 +334,79 @@ export default function Home() {
     }
   }, [selectedAnime, loadReviews]);
 
+  // 今期の視聴予定アニメを積みアニメに移動
+  const handleMoveToBacklog = useCallback(async () => {
+    if (!user || previousSeasonItems.length === 0) return;
+
+    try {
+      for (const item of previousSeasonItems) {
+        await updateWatchlistItem(item.anilist_id, {
+          status: null,
+          season_year: null,
+          season: null,
+        });
+      }
+      markSeasonChecked(); // 確認済みとしてマーク
+      setShowSeasonEndModal(false);
+      setPreviousSeasonItems([]);
+    } catch (error) {
+      console.error('Failed to move to backlog:', error);
+      alert('積みアニメへの移動に失敗しました');
+    }
+  }, [user, previousSeasonItems]);
+
+  // 今期の視聴予定アニメを削除
+  const handleDeletePreviousSeason = useCallback(async () => {
+    if (!user || previousSeasonItems.length === 0) return;
+
+    try {
+      for (const item of previousSeasonItems) {
+        await removeFromWatchlist(item.anilist_id);
+      }
+      markSeasonChecked(); // 確認済みとしてマーク
+      setShowSeasonEndModal(false);
+      setPreviousSeasonItems([]);
+    } catch (error) {
+      console.error('Failed to delete items:', error);
+      alert('削除に失敗しました');
+    }
+  }, [user, previousSeasonItems]);
+
+  // そのままにする（視聴中に移行はSeasonEndModal内で処理）
+  const handleKeepPreviousSeason = useCallback(() => {
+    markSeasonChecked(); // 確認済みとしてマーク
+    setShowSeasonEndModal(false);
+    setPreviousSeasonItems([]);
+  }, []);
+
+  // シーズン開始時のチェック（アプリ起動時）
+  // 「来期」が「今期」になった時点で、視聴予定（planned）のアニメをチェック
+  useEffect(() => {
+    const checkSeasonStart = async () => {
+      if (!user || isLoading) return;
+      
+      // 既に今シーズンの確認済みフラグがある場合はスキップ
+      if (!shouldShowSeasonStartModal()) {
+        return;
+      }
+      
+      try {
+        const items = await getCurrentSeasonPlannedWatchlist(user.id);
+        if (items.length > 0) {
+          setPreviousSeasonItems(items);
+          setShowSeasonEndModal(true);
+        } else {
+          // 視聴予定アニメがなくても確認済みとしてマーク
+          markSeasonChecked();
+        }
+      } catch (error) {
+        console.error('Failed to check season start:', error);
+      }
+    };
+
+    checkSeasonStart();
+  }, [user, isLoading]);
+
   // アニメが選択されたときに感想を読み込む
   useEffect(() => {
     if (selectedAnime && user) {
@@ -570,6 +647,15 @@ export default function Home() {
         userHandle={userHandle}
         userOtakuType={userOtakuType}
       />
+
+      {showSeasonEndModal && (
+        <SeasonEndModal
+          items={previousSeasonItems}
+          onMoveToBacklog={handleMoveToBacklog}
+          onDelete={handleDeletePreviousSeason}
+          onKeep={handleKeepPreviousSeason}
+        />
+      )}
 
     </div>
   );

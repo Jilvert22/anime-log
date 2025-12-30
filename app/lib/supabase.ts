@@ -476,6 +476,10 @@ export type WatchlistItem = {
   image: string | null;
   memo: string | null;
   created_at: string;
+  // 今シーズン視聴予定機能用
+  status?: 'planned' | 'watching' | 'completed' | null;
+  season_year?: number | null;
+  season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
 };
 
 // 積みアニメ一覧を取得
@@ -504,6 +508,10 @@ export async function addToWatchlist(item: {
   title: string;
   image?: string | null;
   memo?: string | null;
+  // 今シーズン視聴予定機能用
+  status?: 'planned' | 'watching' | 'completed' | null;
+  season_year?: number | null;
+  season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
 }): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
@@ -531,6 +539,9 @@ export async function addToWatchlist(item: {
       title: item.title,
       image: item.image || null,
       memo: item.memo || null,
+      status: item.status || null,
+      season_year: item.season_year || null,
+      season: item.season || null,
     });
   
   if (error) {
@@ -560,10 +571,15 @@ export async function removeFromWatchlist(anilistId: number): Promise<boolean> {
   return true;
 }
 
-// 積みアニメを更新（メモなど）
+// 積みアニメを更新（メモ、ステータスなど）
 export async function updateWatchlistItem(
   anilistId: number,
-  updates: { memo?: string | null }
+  updates: { 
+    memo?: string | null;
+    status?: 'planned' | 'watching' | 'completed' | null;
+    season_year?: number | null;
+    season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
+  }
 ): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
@@ -580,4 +596,98 @@ export async function updateWatchlistItem(
   }
   
   return true;
+}
+
+// 指定シーズンの視聴予定アニメを取得
+export async function getSeasonWatchlist(
+  userId: string,
+  year: number,
+  season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL',
+  status?: 'planned' | 'watching' | 'completed'
+): Promise<WatchlistItem[]> {
+  if (!userId) return [];
+  
+  let query = supabase
+    .from('watchlist')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('season_year', year)
+    .eq('season', season)
+    .not('status', 'is', null);
+  
+  if (status) {
+    query = query.eq('status', status);
+  }
+  
+  const { data, error } = await query.order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Failed to get season watchlist:', error);
+    return [];
+  }
+  
+  return data || [];
+}
+
+// 今期（現在のシーズン）の視聴予定アニメを取得
+export async function getCurrentSeasonWatchlist(
+  userId?: string,
+  status?: 'planned' | 'watching' | 'completed'
+): Promise<WatchlistItem[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  const targetUserId = userId || user?.id;
+  if (!targetUserId) return [];
+  
+  // 今期のシーズンを取得
+  const { getCurrentSeason } = await import('../utils/helpers');
+  const { year, season } = getCurrentSeason();
+  
+  return getSeasonWatchlist(targetUserId, year, season, status);
+}
+
+// 来期（次のシーズン）の視聴予定アニメを取得
+export async function getNextSeasonWatchlist(
+  userId?: string,
+  status?: 'planned' | 'watching' | 'completed'
+): Promise<WatchlistItem[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  const targetUserId = userId || user?.id;
+  if (!targetUserId) return [];
+  
+  // 来期のシーズンを取得
+  const { getNextSeason } = await import('../utils/helpers');
+  const { year, season } = getNextSeason();
+  
+  return getSeasonWatchlist(targetUserId, year, season, status);
+}
+
+// 今期（現在のシーズン）で視聴予定（planned）のアニメを取得
+// 「来期」が「今期」になった時点で、視聴予定のアニメをチェックするために使用
+export async function getCurrentSeasonPlannedWatchlist(
+  userId?: string
+): Promise<WatchlistItem[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  const targetUserId = userId || user?.id;
+  if (!targetUserId) return [];
+  
+  // 現在のシーズンを取得
+  const { getCurrentSeason } = await import('../utils/helpers');
+  const { year, season } = getCurrentSeason();
+  
+  // 今期で視聴予定（planned）のアニメを取得
+  const { data, error } = await supabase
+    .from('watchlist')
+    .select('*')
+    .eq('user_id', targetUserId)
+    .eq('season_year', year)
+    .eq('season', season)
+    .eq('status', 'planned')
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Failed to get current season planned watchlist:', error);
+    return [];
+  }
+  
+  return data || [];
 }

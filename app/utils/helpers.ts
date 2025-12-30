@@ -116,11 +116,59 @@ export function getCurrentSeason(): { year: number; season: 'WINTER' | 'SPRING' 
   return { year, season, seasonName };
 }
 
+// 来期（次のシーズン）を取得する関数
+export function getNextSeason(): { year: number; season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'; seasonName: string } {
+  const current = getCurrentSeason();
+  
+  const seasonOrder: ('WINTER' | 'SPRING' | 'SUMMER' | 'FALL')[] = ['WINTER', 'SPRING', 'SUMMER', 'FALL'];
+  const seasonNames: string[] = ['冬', '春', '夏', '秋'];
+  const currentIndex = seasonOrder.indexOf(current.season);
+  
+  if (currentIndex === 3) {
+    // FALL → 翌年のWINTER
+    return { year: current.year + 1, season: 'WINTER', seasonName: '冬' };
+  }
+  const nextIndex = currentIndex + 1;
+  return { year: current.year, season: seasonOrder[nextIndex], seasonName: seasonNames[nextIndex] };
+}
+
+// 指定された年とシーズンが来期かどうかを判定する関数
+export function isNextSeason(year: number, season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'): boolean {
+  const next = getNextSeason();
+  return next.year === year && next.season === season;
+}
+
 // シーズン名が今シーズンかどうかを判定する関数
 export function isCurrentSeason(seasonName: string): boolean {
   const current = getCurrentSeason();
   const expectedSeasonName = `${current.year}年${current.seasonName}`;
   return seasonName === expectedSeasonName;
+}
+
+// シーズン開始時のモーダル表示チェック用のlocalStorageキー
+const SEASON_CHECK_KEY = 'lastSeasonCheck';
+
+// シーズン開始時のモーダルを表示すべきかどうかを判定
+export function shouldShowSeasonStartModal(): boolean {
+  const { year, season } = getCurrentSeason();
+  const currentKey = `${year}-${season}`;
+  
+  // ブラウザ環境でのみlocalStorageを使用
+  if (typeof window === 'undefined') return false;
+  
+  const lastCheck = localStorage.getItem(SEASON_CHECK_KEY);
+  return lastCheck !== currentKey;
+}
+
+// シーズン開始時のモーダルを確認済みとしてマーク
+export function markSeasonChecked(): void {
+  const { year, season } = getCurrentSeason();
+  const currentKey = `${year}-${season}`;
+  
+  // ブラウザ環境でのみlocalStorageを使用
+  if (typeof window === 'undefined') return;
+  
+  localStorage.setItem(SEASON_CHECK_KEY, currentKey);
 }
 
 // シーズン名を時系列順にソートする関数
