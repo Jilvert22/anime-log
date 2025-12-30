@@ -5,7 +5,7 @@ import type { Anime, Season } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 import { GalleryTab } from './GalleryTab';
 import { WatchlistTab } from './WatchlistTab';
-import { SeasonWatchlistTab } from './SeasonWatchlistTab';
+import SeasonWatchlistTab from './SeasonWatchlistTab';
 import { searchAnimeBySeason } from '../../lib/anilist';
 import { translateGenre, sortSeasonsByTime, getNextSeason, isNextSeason } from '../../utils/helpers';
 import { getBroadcastInfo } from '../../lib/anilist';
