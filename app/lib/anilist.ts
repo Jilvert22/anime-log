@@ -84,15 +84,29 @@ export async function searchAnime(query: string) {
     variables: { search: query }
   };
 
-  const response = await fetch(ANILIST_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(graphqlQuery),
-    credentials: 'include'
-  });
+  try {
+    const response = await fetch(ANILIST_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(graphqlQuery)
+    });
 
-  const data = await response.json();
-  return data.data.Page.media as AniListMedia[];
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.errors) {
+      console.error('AniList API errors:', data.errors);
+      return [];
+    }
+    
+    return data.data?.Page?.media as AniListMedia[] || [];
+  } catch (error) {
+    console.error('Failed to search anime:', error);
+    return [];
+  }
 }
 
 // クール検索関数
@@ -159,22 +173,54 @@ export async function searchAnimeBySeason(
     }
   };
 
-  const response = await fetch(ANILIST_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(graphqlQuery),
-    credentials: 'include'
-  });
+  try {
+    const response = await fetch(ANILIST_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(graphqlQuery)
+    });
 
-  const data = await response.json();
-  return {
-    media: data.data.Page.media as AniListMedia[],
-    pageInfo: data.data.Page.pageInfo as {
-      total: number;
-      currentPage: number;
-      hasNextPage: boolean;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  };
+
+    const data = await response.json();
+    
+    if (data.errors) {
+      console.error('AniList API errors:', data.errors);
+      return {
+        media: [],
+        pageInfo: {
+          total: 0,
+          currentPage: page,
+          hasNextPage: false
+        }
+      };
+    }
+    
+    return {
+      media: data.data?.Page?.media as AniListMedia[] || [],
+      pageInfo: data.data?.Page?.pageInfo as {
+        total: number;
+        currentPage: number;
+        hasNextPage: boolean;
+      } || {
+        total: 0,
+        currentPage: page,
+        hasNextPage: false
+      }
+    };
+  } catch (error) {
+    console.error('Failed to search anime by season:', error);
+    return {
+      media: [],
+      pageInfo: {
+        total: 0,
+        currentPage: page,
+        hasNextPage: false
+      }
+    };
+  }
 }
 
 // クール検索関数（全件取得）
@@ -187,14 +233,19 @@ export async function searchAnimeBySeasonAll(
   let currentPage = 1;
   let hasNextPage = true;
 
-  while (hasNextPage) {
-    const result = await searchAnimeBySeason(season, seasonYear, currentPage, perPage);
-    allMedia.push(...result.media);
-    hasNextPage = result.pageInfo.hasNextPage;
-    currentPage++;
-    
-    // 無限ループ防止（最大100ページ）
-    if (currentPage > 100) break;
+  try {
+    while (hasNextPage) {
+      const result = await searchAnimeBySeason(season, seasonYear, currentPage, perPage);
+      allMedia.push(...result.media);
+      hasNextPage = result.pageInfo.hasNextPage;
+      currentPage++;
+      
+      // 無限ループ防止（最大100ページ）
+      if (currentPage > 100) break;
+    }
+  } catch (error) {
+    console.error('Failed to search anime by season (all):', error);
+    // エラーが発生しても、取得できた分は返す
   }
 
   return allMedia;

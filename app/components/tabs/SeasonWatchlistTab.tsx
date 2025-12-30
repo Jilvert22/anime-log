@@ -183,6 +183,7 @@ function SearchResultCard({
 type SeasonType = 'current' | 'next';
 
 export default function SeasonWatchlistTab() {
+  const storage = useStorage();
   const [selectedSeason, setSelectedSeason] = useState<SeasonType>('next'); // デフォルトは来期
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [filterStatus, setFilterStatus] = useState<'planned' | 'watching' | 'completed' | 'all'>('all');
