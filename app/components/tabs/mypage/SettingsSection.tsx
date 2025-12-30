@@ -109,6 +109,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
       });
 
       const data = await response.json();

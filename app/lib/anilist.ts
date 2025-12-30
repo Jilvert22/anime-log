@@ -24,6 +24,18 @@ export type AniListMedia = {
   }[];
   format?: string;
   episodes?: number | null;
+  airingSchedule?: {
+    nodes: {
+      airingAt: number;
+      timeUntilAiring: number;
+      episode: number;
+    }[];
+  } | null;
+  nextAiringEpisode?: {
+    airingAt: number;
+    timeUntilAiring: number;
+    episode: number;
+  } | null;
 };
 
 export async function searchAnime(query: string) {
@@ -53,6 +65,18 @@ export async function searchAnime(query: string) {
               site
               url
             }
+            airingSchedule(notYetAired: true, perPage: 1) {
+              nodes {
+                airingAt
+                timeUntilAiring
+                episode
+              }
+            }
+            nextAiringEpisode {
+              airingAt
+              timeUntilAiring
+              episode
+            }
           }
         }
       }
@@ -63,7 +87,8 @@ export async function searchAnime(query: string) {
   const response = await fetch(ANILIST_API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(graphqlQuery)
+    body: JSON.stringify(graphqlQuery),
+    credentials: 'include'
   });
 
   const data = await response.json();
@@ -110,6 +135,18 @@ export async function searchAnimeBySeason(
               site
               url
             }
+            airingSchedule(notYetAired: true, perPage: 1) {
+              nodes {
+                airingAt
+                timeUntilAiring
+                episode
+              }
+            }
+            nextAiringEpisode {
+              airingAt
+              timeUntilAiring
+              episode
+            }
           }
         }
       }
@@ -125,7 +162,8 @@ export async function searchAnimeBySeason(
   const response = await fetch(ANILIST_API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(graphqlQuery)
+    body: JSON.stringify(graphqlQuery),
+    credentials: 'include'
   });
 
   const data = await response.json();
@@ -160,4 +198,46 @@ export async function searchAnimeBySeasonAll(
   }
 
   return allMedia;
+}
+
+// 放送情報を取得（曜日と時間を返す）
+export function getBroadcastInfo(anime: AniListMedia): { day: number | null; time: string | null } {
+  // nextAiringEpisodeまたはairingScheduleから取得
+  let airingAt: number | null = null;
+  
+  if (anime.nextAiringEpisode?.airingAt) {
+    airingAt = anime.nextAiringEpisode.airingAt;
+  } else if (anime.airingSchedule?.nodes && anime.airingSchedule.nodes.length > 0) {
+    airingAt = anime.airingSchedule.nodes[0].airingAt;
+  }
+  
+  if (!airingAt) {
+    return { day: null, time: null };
+  }
+  
+  // Unixタイムスタンプ（秒）をミリ秒に変換
+  const date = new Date(airingAt * 1000);
+  
+  // 日本時間に変換（UTC+9）
+  // UTC時間から+9時間を計算
+  const utcHours = date.getUTCHours();
+  const utcMinutes = date.getUTCMinutes();
+  const utcDay = date.getUTCDay();
+  
+  // 日本時間（JST = UTC+9）を計算
+  let jstHours = utcHours + 9;
+  let jstDay = utcDay;
+  
+  // 24時を超えた場合の処理
+  if (jstHours >= 24) {
+    jstHours -= 24;
+    jstDay = (jstDay + 1) % 7;
+  }
+  
+  // 時間（HH:mm形式、24:00は00:00として扱う）
+  const hours = String(jstHours).padStart(2, '0');
+  const minutes = String(utcMinutes).padStart(2, '0');
+  const time = `${hours}:${minutes}`;
+  
+  return { day: jstDay, time };
 }

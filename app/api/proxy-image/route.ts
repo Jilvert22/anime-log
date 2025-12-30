@@ -8,7 +8,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      credentials: 'include'
+    });
     
     if (!response.ok) {
       return NextResponse.json({ error: 'Failed to fetch image' }, { status: response.status });

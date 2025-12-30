@@ -4,8 +4,9 @@ import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import type { Anime, Season } from '../../types';
 import { searchAnime, searchAnimeBySeason } from '../../lib/anilist';
-import { getWatchlist, addToWatchlist, removeFromWatchlist, updateWatchlistItem, type WatchlistItem as SupabaseWatchlistItem, supabase } from '../../lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import { useStorage } from '../../hooks/useStorage';
+import type { WatchlistItem } from '../../lib/storage/types';
+import { supabase } from '../../lib/supabase';
 import { animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName } from '../../utils/helpers';
 
 // 積みアニメカード
@@ -14,7 +15,7 @@ function WatchlistCard({
   onRemove,
   onMarkAsWatched,
 }: { 
-  item: SupabaseWatchlistItem; 
+  item: WatchlistItem; 
   onRemove: () => void;
   onMarkAsWatched: () => void;
 }) {
@@ -79,13 +80,14 @@ export function WatchlistTab({
 }: {
   setSelectedAnime: (anime: Anime | null) => void;
   onOpenAddForm: () => void;
-  user: User | null;
+  user: any;
   seasons: Season[];
   setSeasons: (seasons: Season[]) => void;
   expandedSeasons: Set<string>;
   setExpandedSeasons: (seasons: Set<string>) => void;
 }) {
-  const [watchlist, setWatchlist] = useState<SupabaseWatchlistItem[]>([]);
+  const storage = useStorage();
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -96,22 +98,20 @@ export function WatchlistTab({
   
   // 視聴済み確認モーダルの状態
   const [showWatchedModal, setShowWatchedModal] = useState(false);
-  const [selectedWatchlistItem, setSelectedWatchlistItem] = useState<SupabaseWatchlistItem | null>(null);
+  const [selectedWatchlistItem, setSelectedWatchlistItem] = useState<WatchlistItem | null>(null);
   const [watchedRating, setWatchedRating] = useState<number>(0);
   const [watchedSeasonYear, setWatchedSeasonYear] = useState<number>(new Date().getFullYear());
   const [watchedSeason, setWatchedSeason] = useState<'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'>('SPRING');
 
-  // Supabaseから積みアニメを読み込む
+  // 積みアニメを読み込む
   const loadWatchlist = useCallback(async () => {
-    if (!user) return;
-    
     try {
-      const items = await getWatchlist(user.id);
+      const items = await storage.getWatchlist();
       setWatchlist(items);
     } catch (error) {
       console.error('Failed to load watchlist:', error);
     }
-  }, [user]);
+  }, [storage]);
 
   useEffect(() => {
     loadWatchlist();
@@ -149,9 +149,7 @@ export function WatchlistTab({
 
   // 積みアニメに追加（重複チェックなし、複数登録可能）
   const handleAddToWatchlist = useCallback(async (anime: any) => {
-    if (!user) return;
-    
-    const success = await addToWatchlist({
+    const success = await storage.addToWatchlist({
       anilist_id: anime.id,
       title: anime.title.native || anime.title.romaji,
       image: anime.coverImage?.large || null,
@@ -163,22 +161,20 @@ export function WatchlistTab({
     } else {
       alert('積みアニメの追加に失敗しました');
     }
-  }, [user, loadWatchlist]);
+  }, [storage, loadWatchlist]);
 
   // 積みアニメから削除
   const handleRemoveFromWatchlist = useCallback(async (anilistId: number) => {
-    if (!user) return;
-    
-    const success = await removeFromWatchlist(anilistId);
+    const success = await storage.removeFromWatchlist(anilistId);
     if (success) {
       await loadWatchlist();
     } else {
       alert('削除に失敗しました');
     }
-  }, [user, loadWatchlist]);
+  }, [storage, loadWatchlist]);
 
   // 視聴済み確認モーダルを開く
-  const openWatchedModal = useCallback((item: SupabaseWatchlistItem) => {
+  const openWatchedModal = useCallback((item: WatchlistItem) => {
     setSelectedWatchlistItem(item);
     setWatchedRating(0);
     setWatchedSeasonYear(new Date().getFullYear());
@@ -294,7 +290,6 @@ export function WatchlistTab({
         <button 
           onClick={() => setShowAddForm(true)}
           className="w-full mb-4 py-4 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
-          disabled={!user}
         >
           + 積みアニメを追加
         </button>

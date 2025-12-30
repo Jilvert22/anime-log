@@ -1,19 +1,25 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
-import type { User } from '@supabase/supabase-js';
-import { getSeasonWatchlist, getCurrentSeasonWatchlist, getNextSeasonWatchlist, updateWatchlistItem, addToWatchlist, type WatchlistItem } from '../../lib/supabase';
+import { useStorage } from '../../hooks/useStorage';
+import type { WatchlistItem } from '../../lib/storage/types';
 import { getCurrentSeason, getNextSeason } from '../../utils/helpers';
-import { searchAnimeBySeasonAll, type AniListMedia } from '../../lib/anilist';
+import { searchAnimeBySeasonAll, getBroadcastInfo, type AniListMedia } from '../../lib/anilist';
 
 // 視聴予定アニメカード
 function SeasonWatchlistCard({ 
   item, 
   onStatusChange,
+  isSelectionMode,
+  isSelected,
+  onToggleSelect,
 }: { 
   item: WatchlistItem; 
   onStatusChange: (anilistId: number, newStatus: 'planned' | 'watching' | 'completed') => void;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const [imageError, setImageError] = useState(false);
   const isImageUrl = item.image && (item.image.startsWith('http://') || item.image.startsWith('https://'));
@@ -53,7 +59,19 @@ function SeasonWatchlistCard({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group">
+    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group relative ${isSelected ? 'ring-2 ring-[#e879d4]' : ''}`}>
+      {/* 選択モード時のチェックボックス */}
+      {isSelectionMode && (
+        <div className="absolute top-2 right-2 z-10">
+          <input
+            type="checkbox"
+            checked={isSelected || false}
+            onChange={onToggleSelect}
+            className="w-5 h-5 rounded border-gray-300 text-[#e879d4] focus:ring-[#e879d4] cursor-pointer"
+          />
+        </div>
+      )}
+      
       <div className="aspect-[3/4] bg-gradient-to-br from-[#e879d4] to-[#764ba2] relative">
         {isImageUrl && !imageError && item.image ? (
           <Image
@@ -79,21 +97,32 @@ function SeasonWatchlistCard({
           </div>
         )}
         
-        {/* ホバー時のステータス変更ボタン */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2">
-          {item.status && getNextStatus(item.status) && (
-            <button
-              onClick={handleStatusChange}
-              className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
-            >
-              {getStatusLabel(getNextStatus(item.status) || '')}にする
-            </button>
-          )}
-        </div>
+        {/* ホバー時のステータス変更ボタン（選択モード時は非表示） */}
+        {!isSelectionMode && (
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2">
+            {item.status && getNextStatus(item.status) && (
+              <button
+                onClick={handleStatusChange}
+                className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
+              >
+                {getStatusLabel(getNextStatus(item.status) || '')}にする
+              </button>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="p-2">
         <p className="text-sm font-medium text-gray-800 dark:text-white line-clamp-2">{item.title}</p>
+        {/* 放送情報表示 */}
+        {(item.broadcast_day !== null && item.broadcast_day !== undefined && item.broadcast_time) ? (
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            {(() => {
+              const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+              return `${dayNames[item.broadcast_day]} ${item.broadcast_time}`;
+            })()}
+          </p>
+        ) : null}
         {item.memo && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">{item.memo}</p>
         )}
@@ -153,15 +182,18 @@ function SearchResultCard({
 
 type SeasonType = 'current' | 'next';
 
-export function SeasonWatchlistTab({
-  user,
-}: {
-  user: User | null;
-}) {
+export default function SeasonWatchlistTab() {
   const [selectedSeason, setSelectedSeason] = useState<SeasonType>('next'); // デフォルトは来期
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [filterStatus, setFilterStatus] = useState<'planned' | 'watching' | 'completed' | 'all'>('all');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // 並び替え設定
+  const [sortOrder, setSortOrder] = useState<'broadcast' | 'created_desc' | 'created_asc' | 'title'>('broadcast');
+  
+  // 選択モード関連の状態
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   const currentSeason = getCurrentSeason();
   const nextSeason = getNextSeason();
@@ -177,16 +209,11 @@ export function SeasonWatchlistTab({
 
   // 選択されたシーズンの視聴予定アニメを読み込む
   const loadWatchlist = useCallback(async () => {
-    if (!user) {
-      setWatchlist([]);
-      return;
-    }
-    
     setIsLoading(true);
     try {
       const items = selectedSeason === 'current'
-        ? await getCurrentSeasonWatchlist(user.id, filterStatus === 'all' ? undefined : filterStatus)
-        : await getNextSeasonWatchlist(user.id, filterStatus === 'all' ? undefined : filterStatus);
+        ? await storage.getCurrentSeasonWatchlist(filterStatus === 'all' ? undefined : filterStatus)
+        : await storage.getNextSeasonWatchlist(filterStatus === 'all' ? undefined : filterStatus);
       setWatchlist(items);
     } catch (error) {
       console.error('Failed to load season watchlist:', error);
@@ -194,7 +221,7 @@ export function SeasonWatchlistTab({
     } finally {
       setIsLoading(false);
     }
-  }, [user, filterStatus, selectedSeason]);
+  }, [storage, filterStatus, selectedSeason]);
 
   useEffect(() => {
     loadWatchlist();
@@ -271,31 +298,34 @@ export function SeasonWatchlistTab({
     anilistId: number,
     newStatus: 'planned' | 'watching' | 'completed'
   ) => {
-    if (!user) return;
-    
-    const success = await updateWatchlistItem(anilistId, { status: newStatus });
-    if (success) {
-      await loadWatchlist();
-    } else {
+    try {
+      const success = await storage.updateWatchlistItem(anilistId, { status: newStatus });
+      if (success) {
+        await loadWatchlist();
+      } else {
+        alert('ステータスの更新に失敗しました');
+      }
+    } catch (error) {
+      console.error('Failed to update status:', error);
       alert('ステータスの更新に失敗しました');
     }
-  }, [user, loadWatchlist]);
+  }, [storage, loadWatchlist]);
 
   // 視聴予定に追加
   const handleAddToWatchlist = useCallback(async (anime: AniListMedia) => {
-    if (!user) {
-      alert('ログインが必要です');
-      return;
-    }
-
     try {
-      const success = await addToWatchlist({
+      // 放送情報を取得
+      const broadcastInfo = getBroadcastInfo(anime);
+      
+      const success = await storage.addToWatchlist({
         anilist_id: anime.id,
         title: anime.title?.native || anime.title?.romaji || '',
         image: anime.coverImage?.large || null,
         status: 'planned',
         season_year: activeSeason.year,
         season: activeSeason.season,
+        broadcast_day: broadcastInfo.day,
+        broadcast_time: broadcastInfo.time,
       });
 
       if (success) {
@@ -308,7 +338,7 @@ export function SeasonWatchlistTab({
       console.error('Failed to add to watchlist:', error);
       alert('視聴予定の追加に失敗しました');
     }
-  }, [user, activeSeason.year, activeSeason.season, loadWatchlist]);
+  }, [storage, activeSeason.year, activeSeason.season, loadWatchlist]);
 
   // 追加済みかどうかを判定
   const isAnimeAdded = useCallback((anilistId: number) => {
@@ -316,10 +346,136 @@ export function SeasonWatchlistTab({
   }, [watchlist]);
 
   // フィルタリング
-  const filteredWatchlist = watchlist.filter(item => {
-    if (filterStatus === 'all') return true;
-    return item.status === filterStatus;
-  });
+  const filteredWatchlist = useMemo(() => {
+    let filtered = watchlist.filter(item => {
+      if (filterStatus === 'all') return true;
+      return item.status === filterStatus;
+    });
+
+    // 並び替え
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortOrder) {
+        case 'broadcast': {
+          // 放送曜日順：broadcast_day昇順 → broadcast_time昇順 → 放送情報なしは最後
+          const aHasBroadcast = a.broadcast_day !== null && a.broadcast_day !== undefined && a.broadcast_time;
+          const bHasBroadcast = b.broadcast_day !== null && b.broadcast_day !== undefined && b.broadcast_time;
+          
+          if (!aHasBroadcast && !bHasBroadcast) return 0;
+          if (!aHasBroadcast) return 1; // aが放送情報なし → 後ろ
+          if (!bHasBroadcast) return -1; // bが放送情報なし → 後ろ
+          
+          // 曜日で比較
+          if (a.broadcast_day! !== b.broadcast_day!) {
+            return a.broadcast_day! - b.broadcast_day!;
+          }
+          
+          // 同じ曜日の場合は時間で比較
+          if (a.broadcast_time && b.broadcast_time) {
+            const aTime = a.broadcast_time.split(':').map(Number);
+            const bTime = b.broadcast_time.split(':').map(Number);
+            const aMinutes = aTime[0] * 60 + aTime[1];
+            const bMinutes = bTime[0] * 60 + bTime[1];
+            return aMinutes - bMinutes;
+          }
+          
+          return 0;
+        }
+        
+        case 'created_desc': {
+          // 追加日（新しい順）
+          const aDate = new Date(a.created_at).getTime();
+          const bDate = new Date(b.created_at).getTime();
+          return bDate - aDate;
+        }
+        
+        case 'created_asc': {
+          // 追加日（古い順）
+          const aDate = new Date(a.created_at).getTime();
+          const bDate = new Date(b.created_at).getTime();
+          return aDate - bDate;
+        }
+        
+        case 'title': {
+          // タイトル順（あいうえお順/ABC順）
+          const aTitle = a.title || '';
+          const bTitle = b.title || '';
+          return aTitle.localeCompare(bTitle, 'ja');
+        }
+        
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [watchlist, filterStatus, sortOrder]);
+
+  // 選択モードの切り替え
+  const toggleSelectionMode = useCallback(() => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      setSelectedIds(new Set());
+    }
+  }, [isSelectionMode]);
+
+  // 個別選択の切り替え
+  const toggleSelectItem = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // すべて選択
+  const selectAll = useCallback(() => {
+    setSelectedIds(new Set(filteredWatchlist.map(item => item.id)));
+  }, [filteredWatchlist]);
+
+  // 選択解除
+  const deselectAll = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  // 一括ステータス変更
+  const handleBulkStatusChange = useCallback(async (newStatus: 'planned' | 'watching' | 'completed') => {
+    if (selectedIds.size === 0) return;
+
+    const ids = Array.from(selectedIds);
+    const success = await storage.updateWatchlistItemsStatus(ids, newStatus);
+    
+    if (success) {
+      await loadWatchlist();
+      setSelectedIds(new Set());
+      setIsSelectionMode(false);
+    } else {
+      alert('ステータスの更新に失敗しました');
+    }
+  }, [storage, selectedIds, loadWatchlist]);
+
+  // 一括削除
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+
+    if (!confirm(`${selectedIds.size}件のアニメを削除しますか？`)) {
+      return;
+    }
+
+    const ids = Array.from(selectedIds);
+    const success = await storage.deleteWatchlistItems(ids);
+    
+    if (success) {
+      await loadWatchlist();
+      setSelectedIds(new Set());
+      setIsSelectionMode(false);
+    } else {
+      alert('削除に失敗しました');
+    }
+  }, [storage, selectedIds, loadWatchlist]);
 
   return (
     <>
@@ -411,8 +567,69 @@ export function SeasonWatchlistTab({
         </div>
       )}
 
+      {/* 一括アクションバー（選択モード中のみ表示） */}
+      {isSelectionMode && (
+        <div className="mb-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {selectedIds.size}件選択中
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={selectAll}
+                className="px-3 py-1.5 text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                すべて選択
+              </button>
+              <button
+                onClick={deselectAll}
+                className="px-3 py-1.5 text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                選択解除
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleBulkStatusChange('watching')}
+              disabled={selectedIds.size === 0}
+              className="px-3 py-2 text-xs font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              視聴中に変更
+            </button>
+            <button
+              onClick={() => handleBulkStatusChange('completed')}
+              disabled={selectedIds.size === 0}
+              className="px-3 py-2 text-xs font-medium bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              視聴完了に変更
+            </button>
+            <button
+              onClick={() => handleBulkStatusChange('planned')}
+              disabled={selectedIds.size === 0}
+              className="px-3 py-2 text-xs font-medium bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              視聴予定に戻す
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={selectedIds.size === 0}
+              className="px-3 py-2 text-xs font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              削除
+            </button>
+            <button
+              onClick={toggleSelectionMode}
+              className="px-3 py-2 text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors ml-auto"
+            >
+              キャンセル
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* フィルター/タブ */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide items-center">
         {[
           { id: 'all' as const, label: 'すべて' },
           { id: 'planned' as const, label: '視聴予定' },
@@ -436,6 +653,33 @@ export function SeasonWatchlistTab({
             )}
           </button>
         ))}
+        <button
+          onClick={toggleSelectionMode}
+          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ml-auto ${
+            isSelectionMode
+              ? 'bg-red-500 text-white'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+          }`}
+        >
+          {isSelectionMode ? '編集中' : '編集'}
+        </button>
+      </div>
+
+      {/* 並び替えセレクトボックス */}
+      <div className="mb-4 flex items-center gap-2">
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+          並び替え:
+        </label>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
+          className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+        >
+          <option value="broadcast">放送曜日順</option>
+          <option value="created_desc">追加日（新しい順）</option>
+          <option value="created_asc">追加日（古い順）</option>
+          <option value="title">タイトル順</option>
+        </select>
       </div>
 
       {/* ローディング */}
@@ -453,6 +697,9 @@ export function SeasonWatchlistTab({
               key={item.id}
               item={item}
               onStatusChange={handleStatusChange}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedIds.has(item.id)}
+              onToggleSelect={() => toggleSelectItem(item.id)}
             />
           ))}
         </div>

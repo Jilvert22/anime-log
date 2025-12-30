@@ -35,10 +35,12 @@ import { useDarkMode } from './hooks/useDarkMode';
 import { useCountAnimation } from './hooks/useCountAnimation';
 import { useModalHandlers } from './hooks/useModalHandlers';
 import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName, shouldShowSeasonStartModal, markSeasonChecked } from './utils/helpers';
-import { getCurrentSeasonPlannedWatchlist, updateWatchlistItem, removeFromWatchlist, type WatchlistItem } from './lib/supabase';
+import { getCurrentSeasonPlannedWatchlist, type WatchlistItem } from './lib/supabase';
+import { useStorage } from './hooks/useStorage';
 
   // メインページ
 export default function Home() {
+  const storage = useStorage();
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
   const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
@@ -333,14 +335,14 @@ export default function Home() {
       await loadReviews(selectedAnime.id);
     }
   }, [selectedAnime, loadReviews]);
-
+  
   // 今期の視聴予定アニメを積みアニメに移動
   const handleMoveToBacklog = useCallback(async () => {
-    if (!user || previousSeasonItems.length === 0) return;
+    if (previousSeasonItems.length === 0) return;
 
     try {
       for (const item of previousSeasonItems) {
-        await updateWatchlistItem(item.anilist_id, {
+        await storage.updateWatchlistItem(item.anilist_id, {
           status: null,
           season_year: null,
           season: null,
@@ -353,15 +355,15 @@ export default function Home() {
       console.error('Failed to move to backlog:', error);
       alert('積みアニメへの移動に失敗しました');
     }
-  }, [user, previousSeasonItems]);
+  }, [storage, previousSeasonItems]);
 
   // 今期の視聴予定アニメを削除
   const handleDeletePreviousSeason = useCallback(async () => {
-    if (!user || previousSeasonItems.length === 0) return;
+    if (previousSeasonItems.length === 0) return;
 
     try {
       for (const item of previousSeasonItems) {
-        await removeFromWatchlist(item.anilist_id);
+        await storage.removeFromWatchlist(item.anilist_id);
       }
       markSeasonChecked(); // 確認済みとしてマーク
       setShowSeasonEndModal(false);
@@ -370,7 +372,7 @@ export default function Home() {
       console.error('Failed to delete items:', error);
       alert('削除に失敗しました');
     }
-  }, [user, previousSeasonItems]);
+  }, [storage, previousSeasonItems]);
 
   // そのままにする（視聴中に移行はSeasonEndModal内で処理）
   const handleKeepPreviousSeason = useCallback(() => {
@@ -383,7 +385,7 @@ export default function Home() {
   // 「来期」が「今期」になった時点で、視聴予定（planned）のアニメをチェック
   useEffect(() => {
     const checkSeasonStart = async () => {
-      if (!user || isLoading) return;
+      if (isLoading) return;
       
       // 既に今シーズンの確認済みフラグがある場合はスキップ
       if (!shouldShowSeasonStartModal()) {
@@ -391,7 +393,7 @@ export default function Home() {
       }
       
       try {
-        const items = await getCurrentSeasonPlannedWatchlist(user.id);
+        const items = await storage.getCurrentSeasonWatchlist('planned');
         if (items.length > 0) {
           setPreviousSeasonItems(items);
           setShowSeasonEndModal(true);
@@ -405,14 +407,14 @@ export default function Home() {
     };
 
     checkSeasonStart();
-  }, [user, isLoading]);
+  }, [storage, isLoading]);
 
   // アニメが選択されたときに感想を読み込む
   useEffect(() => {
-    if (selectedAnime && user) {
+    if (selectedAnime) {
       loadReviews(selectedAnime.id);
     }
-  }, [selectedAnime?.id, user, loadReviews]);
+  }, [selectedAnime?.id, loadReviews]);
   return (
     <div className="min-h-screen bg-[#fef6f0] dark:bg-gray-900">
       <Navigation
@@ -530,6 +532,7 @@ export default function Home() {
         profile={profile}
         avatarPublicUrl={avatarPublicUrl}
         saveProfile={saveProfile}
+        user={user}
       />
 
       <FavoriteAnimeModal

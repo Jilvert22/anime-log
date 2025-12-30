@@ -7,7 +7,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase environment variables are not set. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project settings.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  global: {
+    fetch: (url, options = {}) => {
+      return fetch(url, {
+        ...options,
+        credentials: 'include',
+      });
+    },
+  },
+  auth: {
+    flowType: 'pkce',
+    detectSessionInUrl: true,
+    persistSession: true,
+    storageKey: 'animelog-auth',
+  },
+});
 
 // SNS機能用の型定義
 export type UserProfile = {
@@ -480,6 +495,9 @@ export type WatchlistItem = {
   status?: 'planned' | 'watching' | 'completed' | null;
   season_year?: number | null;
   season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
+  // 放送情報
+  broadcast_day?: number | null; // 0-6 (0=日曜)
+  broadcast_time?: string | null; // HH:mm形式
 };
 
 // 積みアニメ一覧を取得
@@ -512,6 +530,9 @@ export async function addToWatchlist(item: {
   status?: 'planned' | 'watching' | 'completed' | null;
   season_year?: number | null;
   season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
+  // 放送情報
+  broadcast_day?: number | null;
+  broadcast_time?: string | null;
 }): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
@@ -542,6 +563,8 @@ export async function addToWatchlist(item: {
       status: item.status || null,
       season_year: item.season_year || null,
       season: item.season || null,
+      broadcast_day: item.broadcast_day || null,
+      broadcast_time: item.broadcast_time || null,
     });
   
   if (error) {
@@ -592,6 +615,47 @@ export async function updateWatchlistItem(
   
   if (error) {
     console.error('Failed to update watchlist item:', error);
+    return false;
+  }
+  
+  return true;
+}
+
+// 複数アイテムのステータスを一括更新
+export async function updateWatchlistItemsStatus(
+  ids: string[],
+  status: 'planned' | 'watching' | 'completed' | null
+): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || ids.length === 0) return false;
+  
+  const { error } = await supabase
+    .from('watchlist')
+    .update({ status })
+    .eq('user_id', user.id)
+    .in('id', ids);
+  
+  if (error) {
+    console.error('Failed to update watchlist items status:', error);
+    return false;
+  }
+  
+  return true;
+}
+
+// 複数アイテムを一括削除
+export async function deleteWatchlistItems(ids: string[]): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || ids.length === 0) return false;
+  
+  const { error } = await supabase
+    .from('watchlist')
+    .delete()
+    .eq('user_id', user.id)
+    .in('id', ids);
+  
+  if (error) {
+    console.error('Failed to delete watchlist items:', error);
     return false;
   }
   

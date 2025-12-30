@@ -80,6 +80,39 @@ export function AuthModal({
   const [emailSent, setEmailSent] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
+
+  // localStorageからSupabaseへのマイグレーション
+  const migrateLocalStorageToSupabase = async () => {
+    try {
+      setIsMigrating(true);
+      const { getLocalStorageService } = await import('../../lib/storage');
+      const { getSupabaseStorageService } = await import('../../lib/storage');
+      
+      const localStorageService = getLocalStorageService();
+      const supabaseService = getSupabaseStorageService();
+      
+      // localStorageから全データを取得
+      const items = localStorageService.getAllWatchlistItems();
+      
+      if (items.length > 0) {
+        // Supabaseに移行
+        const success = await supabaseService.migrateToSupabase(items);
+        
+        if (success) {
+          // 移行成功後、localStorageをクリア
+          localStorageService.clearWatchlist();
+          console.log(`Migrated ${items.length} items from localStorage to Supabase`);
+        } else {
+          console.error('Migration failed');
+        }
+      }
+    } catch (error) {
+      console.error('Migration error:', error);
+    } finally {
+      setIsMigrating(false);
+    }
+  };
 
   const handleAuth = async () => {
     setAuthError('');
@@ -90,6 +123,10 @@ export function AuthModal({
           password: authPassword,
         });
         if (error) throw error;
+        
+        // ログイン成功後、マイグレーションを実行
+        await migrateLocalStorageToSupabase();
+        
         onClose();
         setAuthEmail('');
         setAuthPassword('');
@@ -428,10 +465,10 @@ export function AuthModal({
               </button>
               <button
                 onClick={handleAuth}
-                disabled={!authEmail || !authPassword || (authMode === 'signup' && !agreedToTerms)}
+                disabled={!authEmail || !authPassword || (authMode === 'signup' && !agreedToTerms) || isMigrating}
                 className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {authMode === 'login' ? 'ログイン' : '登録'}
+                {isMigrating ? 'データ移行中...' : (authMode === 'login' ? 'ログイン' : '登録')}
               </button>
             </div>
           </>

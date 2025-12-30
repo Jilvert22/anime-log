@@ -69,9 +69,12 @@ export function SeasonEndModal({
               setIsProcessing(true);
               try {
                 // 各アイテムのステータスをwatchingに変更
-                const { updateWatchlistItem } = await import('../../lib/supabase');
+                const { useStorage } = await import('../../hooks/useStorage');
+                const storage = useStorage();
                 for (const item of items) {
-                  await updateWatchlistItem(item.anilist_id, { status: 'watching' });
+                  if (item.anilist_id) {
+                    await storage.updateWatchlistItem(item.anilist_id, { status: 'watching' });
+                  }
                 }
                 markSeasonChecked(); // 確認済みとしてマーク
                 onKeep(); // モーダルを閉じる

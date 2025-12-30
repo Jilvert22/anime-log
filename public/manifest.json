@@ -4,6 +4,7 @@
   "description": "アニメの視聴記録・管理、レビュー投稿、視聴傾向分析ができるアプリ",
   "categories": ["entertainment", "games", "lifestyle"],
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#e879d4",

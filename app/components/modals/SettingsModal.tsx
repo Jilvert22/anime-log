@@ -31,6 +31,7 @@ interface SettingsModalProps {
     otaku_type?: string;
     otaku_type_custom?: string | null;
   }) => Promise<{ success: boolean; error?: string }>;
+  user: any;
 }
 
 export function SettingsModal({
@@ -39,6 +40,7 @@ export function SettingsModal({
   profile,
   avatarPublicUrl,
   saveProfile,
+  user,
 }: SettingsModalProps) {
   const [username, setUsername] = useState('');
   const [handle, setHandle] = useState('');
@@ -141,6 +143,15 @@ export function SettingsModal({
   if (!show) return null;
 
   return (
+    <>
+      {/* 未ログイン時の説明文 */}
+      {!user && (
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-lg z-40">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            データは端末に保存されています。他の端末と同期したい場合やデータを永続的に保存したい場合はログインしてください。
+          </p>
+        </div>
+      )}
     <div 
       className="fixed inset-0 bg-black/50 z-50 flex"
       onClick={onClose}
@@ -364,5 +375,6 @@ export function SettingsModal({
         </div>
       </div>
     </div>
+    </>
   );
 }

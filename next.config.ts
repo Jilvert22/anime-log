@@ -26,6 +26,22 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development', // 開発環境では無効化
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200,
+        },
+        networkTimeoutSeconds: 10,
+        fetchOptions: {
+          credentials: 'include',
+        },
+      },
+    },
+  ],
 });
 
 export default pwaConfig(nextConfig);
