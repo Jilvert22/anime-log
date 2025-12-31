@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { M_PLUS_Rounded_1c, Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { Providers } from "./providers";
 import "./globals.css";
 
 // M PLUS Rounded 1c（日本語用）
@@ -79,7 +80,9 @@ export default function RootLayout({
   return (
     <html lang="ja" className={`${mPlusRounded.variable} ${poppins.variable}`}>
       <body className="font-mixed antialiased">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Analytics />
       </body>
     </html>

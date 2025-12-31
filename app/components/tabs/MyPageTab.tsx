@@ -7,60 +7,55 @@ import StatisticsSection from './mypage/StatisticsSection';
 import CollectionSection from './mypage/CollectionSection';
 import SettingsSection from './mypage/SettingsSection';
 import { Footer } from '../common/Footer';
+import { useUserProfileContext } from '../../contexts/UserProfileContext';
+import { useModalContext } from '../../contexts/ModalContext';
 
 interface MyPageTabProps {
   allAnimes: Anime[];
   seasons: Season[];
-  userName: string;
-  userIcon: string | null;
-  userHandle: string | null;
-  userOtakuType: string;
-  setUserOtakuType: (type: string) => void;
-  favoriteAnimeIds: number[];
-  setFavoriteAnimeIds: (ids: number[]) => void;
   averageRating: number;
   favoriteCharacters: FavoriteCharacter[];
   setFavoriteCharacters: (characters: FavoriteCharacter[]) => void;
-  characterFilter: string | null;
-  setCharacterFilter: (filter: string | null) => void;
-  quoteSearchQuery: string;
-  setQuoteSearchQuery: (query: string) => void;
-  quoteFilterType: 'all' | 'anime' | 'character';
-  setQuoteFilterType: (type: 'all' | 'anime' | 'character') => void;
-  selectedAnimeForFilter: number | null;
-  setSelectedAnimeForFilter: (id: number | null) => void;
   setSeasons: (seasons: Season[]) => void;
   user: User | null;
   supabaseClient: SupabaseClientType;
-  onOpenDNAModal: () => void;
-  onOpenSettingsModal: () => void;
-  setShowFavoriteAnimeModal: (show: boolean) => void;
-  onOpenCharacterModal: () => void;
-  onEditCharacter: (character: FavoriteCharacter) => void;
-  onOpenAddQuoteModal: () => void;
-  onEditQuote: (animeId: number, quoteIndex: number) => void;
   setSelectedAnime: (anime: Anime | null) => void;
-  setShowSongModal: (show: boolean) => void;
   handleLogout: () => void;
 }
 
 export default function MyPageTab(props: MyPageTabProps) {
+  // Contextからユーザープロフィール情報を取得
+  const {
+    userName,
+    userIcon,
+    userHandle,
+    userOtakuType,
+    setUserOtakuType,
+    favoriteAnimeIds,
+    setFavoriteAnimeIds,
+  } = useUserProfileContext();
+  
+  // Contextからモーダル関連の状態とアクションを取得
+  const { modals, actions, formStates } = useModalContext();
+  
+  // モーダルハンドラ（キャラクター関連は後でContext化する可能性があるが、今回はpropsとして受け取る）
+  // 注意: useModalHandlersはfavoriteCharactersに依存するため、ここでは使用しない
   return (
     <div className="space-y-6">
       {/* ANIME DNAカード */}
       <AnimeDNASection 
         allAnimes={props.allAnimes}
         seasons={props.seasons}
-        userName={props.userName}
-        userIcon={props.userIcon}
-        userHandle={props.userHandle}
-        userOtakuType={props.userOtakuType}
-        setUserOtakuType={props.setUserOtakuType}
-        favoriteAnimeIds={props.favoriteAnimeIds}
-        setFavoriteAnimeIds={props.setFavoriteAnimeIds}
+        userName={userName}
+        userIcon={userIcon}
+        userHandle={userHandle}
+        userOtakuType={userOtakuType}
+        setUserOtakuType={setUserOtakuType}
+        favoriteAnimeIds={favoriteAnimeIds}
+        setFavoriteAnimeIds={setFavoriteAnimeIds}
         averageRating={props.averageRating}
-        setShowFavoriteAnimeModal={props.setShowFavoriteAnimeModal}
-        onOpenDNAModal={props.onOpenDNAModal}
+        setShowFavoriteAnimeModal={modals.setShowFavoriteAnimeModal}
+        onOpenDNAModal={() => modals.setShowDNAModal(true)}
       />
       
       {/* 統計・傾向とコレクション（同じレイヤー） */}
@@ -80,26 +75,29 @@ export default function MyPageTab(props: MyPageTabProps) {
           supabaseClient={props.supabaseClient}
           favoriteCharacters={props.favoriteCharacters}
           setFavoriteCharacters={props.setFavoriteCharacters}
-          characterFilter={props.characterFilter}
-          setCharacterFilter={props.setCharacterFilter}
-          onOpenAddCharacterModal={props.onOpenCharacterModal}
-          onEditCharacter={props.onEditCharacter}
-          quoteSearchQuery={props.quoteSearchQuery}
-          setQuoteSearchQuery={props.setQuoteSearchQuery}
-          quoteFilterType={props.quoteFilterType}
-          setQuoteFilterType={props.setQuoteFilterType}
-          selectedAnimeForFilter={props.selectedAnimeForFilter}
-          setSelectedAnimeForFilter={props.setSelectedAnimeForFilter}
-          onOpenAddQuoteModal={props.onOpenAddQuoteModal}
-          onEditQuote={props.onEditQuote}
+          characterFilter={formStates.characterFilter}
+          setCharacterFilter={formStates.setCharacterFilter}
+          onOpenAddCharacterModal={() => modals.setShowAddCharacterModal(true)}
+          onEditCharacter={(character: FavoriteCharacter) => {
+            formStates.setEditingCharacter(character);
+            modals.setShowAddCharacterModal(true);
+          }}
+          quoteSearchQuery={formStates.quoteSearchQuery}
+          setQuoteSearchQuery={formStates.setQuoteSearchQuery}
+          quoteFilterType={formStates.quoteFilterType}
+          setQuoteFilterType={formStates.setQuoteFilterType}
+          selectedAnimeForFilter={formStates.selectedAnimeForFilter}
+          setSelectedAnimeForFilter={formStates.setSelectedAnimeForFilter}
+          onOpenAddQuoteModal={actions.openAddQuoteModal}
+          onEditQuote={actions.editQuote}
           setSelectedAnime={props.setSelectedAnime}
-          setShowSongModal={props.setShowSongModal}
+          setShowSongModal={modals.setShowSongModal}
         />
       </div>
       
       {/* 設定 */}
       <SettingsSection 
-        onOpenSettingsModal={props.onOpenSettingsModal}
+        onOpenSettingsModal={() => modals.setShowSettings(true)}
         handleLogout={props.handleLogout}
       />
       

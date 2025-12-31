@@ -1,119 +1,98 @@
-# Step 3: useSocialの保留処理 - 完了レポート
+# Step 3: モーダル管理Contextの作成 - 完了報告
 
-## 判断: 保留（削除せず整理のみ）
+## 作成したファイル
 
-SNS機能として将来実装予定のため、削除せずに整理のみ実施しました。
+### ModalContext.tsx (58行)
+- 場所: `app/contexts/ModalContext.tsx`
+- 内容:
+  - `ModalProvider`: useModals、useFormStates、useAnimeDataContext、useModalActionsを組み合わせてContextを提供
+  - `useModalContext`: Contextから値を取得するカスタムフック
+  - エラーハンドリング: Provider外での使用時にエラーをスロー
+  - 依存関係: setSelectedAnimeをpropsとして受け取り、useAnimeDataContextからallAnimesを取得
 
----
+## Provider配置場所
 
-## 実施内容
+**app/components/HomeClient.tsx**
+- HomeClientのreturn内で`<ModalProvider setSelectedAnime={setSelectedAnime}>`でラップ
+- AnimeDataContextを使用するため、AnimeDataProviderの内側に配置
+- setSelectedAnimeはHomeClientで管理されているため、propsとして渡す
 
-### 1. useSocial.tsにTODOコメントを追加
+## 移行したコンポーネント
 
-ファイル先頭に以下のJSDocコメントを追加しました：
+### MyPageTab.tsx
+- **削減したprops数: 13個**
+  - モーダル関連（8個）:
+    - `onOpenDNAModal` → `modals.setShowDNAModal(true)`
+    - `onOpenSettingsModal` → `modals.setShowSettings(true)`
+    - `setShowFavoriteAnimeModal` → `modals.setShowFavoriteAnimeModal`
+    - `onOpenCharacterModal` → `modals.setShowAddCharacterModal(true)`
+    - `onEditCharacter` → inline実装（formStates.setEditingCharacter + modals.setShowAddCharacterModal）
+    - `onOpenAddQuoteModal` → `actions.openAddQuoteModal`
+    - `onEditQuote` → `actions.editQuote`
+    - `setShowSongModal` → `modals.setShowSongModal`
+  - フォーム状態関連（5個）:
+    - `characterFilter`, `setCharacterFilter` → `formStates.characterFilter`, `formStates.setCharacterFilter`
+    - `quoteSearchQuery`, `setQuoteSearchQuery` → `formStates.quoteSearchQuery`, `formStates.setQuoteSearchQuery`
+    - `quoteFilterType`, `setQuoteFilterType` → `formStates.quoteFilterType`, `formStates.setQuoteFilterType`
+    - `selectedAnimeForFilter`, `setSelectedAnimeForFilter` → `formStates.selectedAnimeForFilter`, `formStates.setSelectedAnimeForFilter`
 
-```typescript
-/**
- * SNS機能（フォロー/フォロワー管理）のカスタムフック
- * 
- * @status 未使用（将来実装予定）
- * @todo SNS機能実装時に有効化
- * @see Phase 5でAPI層は移行済み（app/lib/api/social.ts）
- */
-```
+- **変更内容**:
+  - `useModalContext()`フックをインポート
+  - Contextから`modals`、`actions`、`formStates`を取得
+  - propsの型定義から該当項目を削除
+  - CollectionSectionやSettingsSectionへのprops渡しをContextから取得した値に変更
 
-**目的:**
-- 未使用であることを明確に示す
-- 将来実装予定であることを明記
-- API層の移行状況を参照可能にする
+## HomeClient.tsx → MyPageTab
 
-### 2. HomeClient.tsxのダミー値を整理
+- **変更前**: 28個のprops
+- **変更後**: 9個のprops
+- **削減数**: 19個のpropsを削減
 
-既存のコメント（158-159行目）を整理し、より詳細な説明を追加しました：
+- **残っているprops**:
+  - `allAnimes`, `seasons`, `averageRating`（アニメデータ）
+  - `favoriteCharacters`, `setFavoriteCharacters`（コレクション）
+  - `setSeasons`（アニメデータ更新）
+  - `user`, `supabaseClient`（認証・データベース）
+  - `setSelectedAnime`（アニメ選択状態）
+  - `handleLogout`（ログアウト処理）
 
-```typescript
-// TODO: SNS機能実装時にuseSocialを有効化
-// 現在はダミー値を使用（フォロー/フォロワー機能は未実装）
-// 実装時は以下のコメントを外し、useSocialフックを使用してください：
-// const {
-//   userSearchQuery,
-//   setUserSearchQuery,
-//   ...
-// } = useSocial(user);
-
-// ダミー値（SNS機能未実装時のプレースホルダー）
-const userSearchQuery = '';
-const setUserSearchQuery = () => {};
-...
-```
-
-**改善点:**
-- 実装時に必要な手順を明確に記載
-- コメントアウトされた`useSocial`の使用例を提示
-- ダミー値の目的を明記
-
----
-
-## 変更ファイル
-
-1. **`app/hooks/useSocial.ts`**
-   - ファイル先頭にJSDocコメントを追加
-
-2. **`app/components/HomeClient.tsx`**
-   - ダミー値セクションに説明コメントを追加
-   - 実装時の手順をコメントアウトで提示
-
----
+- **注意**: 
+  - HomeClient内ではまだ`useModals`、`useFormStates`、`useModalActions`を使用しています（モーダルコンポーネントのレンダリングに必要）
+  - `useModalHandlers`は`favoriteCharacters`に依存するため、今回はContextに含めていません。`onEditCharacter`は一時的にinline実装に変更しました
+  - 今後、`favoriteCharacters`もContext化することで、`useModalHandlers`もContextに含めることができます
 
 ## ビルド結果
 
-✅ **成功**
+**成功** ✓
 
 ```
-✓ Compiled successfully
-✓ Generating static pages
-✓ Build completed successfully
+✓ Compiled successfully in 2.9s
+✓ Generating static pages using 7 workers (10/10) in 258.0ms
 ```
 
----
+TypeScriptの型チェックも通過し、エラーはありませんでした。
 
-## 最終報告
+## 技術的な詳細
 
-```
-対応: TODOコメント追加 ✅
-変更ファイル: useSocial.ts, HomeClient.tsx
-ビルド結果: 成功 ✅
-```
+### Contextの構造
+- `modals`: useModalsの戻り値（各モーダルの表示状態とセッター）
+- `actions`: useModalActionsの戻り値（モーダル操作のヘルパー関数）
+- `formStates`: useFormStatesの戻り値（フォーム状態管理）
 
----
+### 依存関係の解決
+- `useModalActions`は`allAnimes`と`setSelectedAnime`を必要とします
+- `allAnimes`は`useAnimeDataContext`から取得
+- `setSelectedAnime`はHomeClientで管理されているため、ModalProviderのpropsとして渡す
 
-## 改善点
-
-### ✅ 達成したこと
-
-1. **未使用コードの明確化**
-   - `useSocial`が未使用であることを明確に示すコメントを追加
-   - 将来実装予定であることを明記
-
-2. **実装時の手順を明確化**
-   - `HomeClient.tsx`に実装時に必要な手順をコメントで提示
-   - 開発者が実装時に迷わないよう配慮
-
-3. **コードの可読性向上**
-   - ダミー値の目的を明記
-   - 将来の実装を見据えた整理
-
-### 📝 注意事項
-
-- `useSocial`フックは削除せず、将来の実装に備えて保持
-- API層（`app/lib/api/social.ts`）はPhase 5で移行済み
-- 実装時は`HomeClient.tsx`のコメントアウトされたコードを参考にできる
-
----
+### onEditCharacterの実装
+- 以前は`useModalHandlers`の`handleEditCharacter`を使用
+- `useModalHandlers`は`favoriteCharacters`に依存するため、Contextに含めていません
+- 一時的に、`formStates.setEditingCharacter`と`modals.setShowAddCharacterModal`を組み合わせたinline実装に変更
+- 将来的には、`favoriteCharacters`もContext化することで、`useModalHandlers`をContextに含めることができます
 
 ## 次のステップ
 
-Step 3は完了しました。`useSocial`は将来の実装に備えて整理されました。
-
-次のステップ（Step 4以降）に進む準備ができています。
-
+1. 他のコンポーネント（HomeTab、各種モーダル等）でもContextを使用するように段階的に移行
+2. `favoriteCharacters`のContext化を検討（コレクションContextの作成）
+3. `useModalHandlers`をContextに含めることで、`onEditCharacter`の実装を統一
+4. HomeClient内の`useModals`等の使用箇所を確認し、必要に応じてContextに移行

@@ -12,6 +12,8 @@ import { getBroadcastInfo } from '../../lib/anilist';
 import { useStorage } from '../../hooks/useStorage';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { supabase } from '../../lib/supabase';
+import { useAnimeDataContext } from '../../contexts/AnimeDataContext';
+import { useCountAnimation } from '../../hooks/useCountAnimation';
 
 // フィルターの型
 type FilterType = 'all' | 'unrated' | 'unwatched';
@@ -145,19 +147,11 @@ function SeasonHeader({
 export function HomeTab({
   homeSubTab,
   setHomeSubTab,
-  count,
-  totalRewatchCount,
-  averageRating,
-  seasons,
   expandedYears,
   setExpandedYears,
-  expandedSeasons,
-  setExpandedSeasons,
   onOpenAddForm,
   setSelectedAnime,
-  allAnimes,
   user,
-  setSeasons,
   extractSeriesName,
   getSeasonName,
   animeToSupabase,
@@ -165,24 +159,29 @@ export function HomeTab({
 }: {
   homeSubTab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season';
   setHomeSubTab: (tab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => void;
-  count: number;
-  totalRewatchCount: number;
-  averageRating: number;
-  seasons: Season[];
   expandedYears: Set<string>;
   setExpandedYears: (years: Set<string>) => void;
-  expandedSeasons: Set<string>;  // "2024-春" のような形式
-  setExpandedSeasons: (seasons: Set<string>) => void;
   onOpenAddForm: () => void;
   setSelectedAnime: (anime: Anime | null) => void;
-  allAnimes: Anime[];
   user: User | null;
-  setSeasons: (seasons: Season[]) => void;
   extractSeriesName: (title: string) => string | undefined;
   getSeasonName: (season: string) => string;
   animeToSupabase: (anime: Anime, seasonName: string, userId: string) => SupabaseAnimeRow;
   supabaseToAnime: (row: SupabaseAnimeRow) => Anime;
 }) {
+  // Contextからアニメデータを取得
+  const {
+    seasons,
+    setSeasons,
+    expandedSeasons,
+    setExpandedSeasons,
+    allAnimes,
+    averageRating,
+    totalRewatchCount,
+  } = useAnimeDataContext();
+  
+  // カウントアニメーションを計算
+  const count = useCountAnimation(allAnimes.length);
   const [filter, setFilter] = useState<FilterType>('all');
   const [showAllSeasons, setShowAllSeasons] = useState(false); // すべての年・季節を表示するか
   const [seasonSearchResults, setSeasonSearchResults] = useState<Map<string, AniListSearchResult[]>>(new Map()); // シーズン検索結果

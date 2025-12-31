@@ -26,18 +26,19 @@ import { Navigation } from './Navigation';
 import { useAnimeReviews } from '../hooks/useAnimeReviews';
 import { useAuth } from '../hooks/useAuth';
 import { useUserProfile } from '../hooks/useUserProfile';
-import { useAnimeData } from '../hooks/useAnimeData';
+import { useAnimeDataContext } from '../contexts/AnimeDataContext';
 import { useModals } from '../hooks/useModals';
-import { useCollection } from '../hooks/useCollection';
 import { useFormStates } from '../hooks/useFormStates';
+import { useModalActions } from '../hooks/useModalActions';
+import { useCollection } from '../hooks/useCollection';
 import { useTabs } from '../hooks/useTabs';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useCountAnimation } from '../hooks/useCountAnimation';
 import { useModalHandlers } from '../hooks/useModalHandlers';
-import { useModalActions } from '../hooks/useModalActions';
 import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName, shouldShowSeasonStartModal, markSeasonChecked } from '../utils/helpers';
 import type { WatchlistItem } from '../lib/storage/types';
 import { useStorage } from '../hooks/useStorage';
+import { ModalProvider } from '../contexts/ModalContext';
 
 interface HomeClientProps {
   // Server Componentで取得した初期データがあればここに追加
@@ -49,30 +50,6 @@ export default function HomeClient({}: HomeClientProps) {
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
   const [showSeasonEndModal, setShowSeasonEndModal] = useState(false);
   const [previousSeasonItems, setPreviousSeasonItems] = useState<WatchlistItem[]>([]);
-  
-  // モーダル状態管理をカスタムフックで管理
-  const {
-    showSettings,
-    setShowSettings,
-    showFavoriteAnimeModal,
-    setShowFavoriteAnimeModal,
-    showAddForm,
-    setShowAddForm,
-    showDNAModal,
-    setShowDNAModal,
-    showShareModal,
-    setShowShareModal,
-    showAuthModal,
-    setShowAuthModal,
-    showAddCharacterModal,
-    setShowAddCharacterModal,
-    showAddQuoteModal,
-    setShowAddQuoteModal,
-    showSongModal,
-    setShowSongModal,
-    showReviewModal,
-    setShowReviewModal,
-  } = useModals();
   
   // 認証管理をカスタムフックで管理
   const { user, isLoading, handleLogout: logout } = useAuth();
@@ -112,7 +89,7 @@ export default function HomeClient({}: HomeClientProps) {
     setFavoriteCharacters,
   } = useCollection();
   
-  // アニメデータ管理をカスタムフックで管理
+  // アニメデータ管理をContextから取得
   const {
     seasons,
     setSeasons,
@@ -121,12 +98,35 @@ export default function HomeClient({}: HomeClientProps) {
     allAnimes,
     averageRating,
     totalRewatchCount,
-  } = useAnimeData(user, isLoading);
+  } = useAnimeDataContext();
   
   // カウントアニメーションをカスタムフックで管理
   const count = useCountAnimation(allAnimes.length);
   
-  // フォーム状態管理をカスタムフックで管理
+  // モーダル状態管理（HomeClient内でまだ使用中）
+  // MyPageTab等ではuseModalContextを使用
+  const {
+    showSettings,
+    setShowSettings,
+    showFavoriteAnimeModal,
+    setShowFavoriteAnimeModal,
+    showAddForm,
+    setShowAddForm,
+    showDNAModal,
+    setShowDNAModal,
+    showAuthModal,
+    setShowAuthModal,
+    showAddCharacterModal,
+    setShowAddCharacterModal,
+    showAddQuoteModal,
+    setShowAddQuoteModal,
+    showSongModal,
+    setShowSongModal,
+    showReviewModal,
+    setShowReviewModal,
+  } = useModals();
+  
+  // フォーム状態管理
   const {
     editingCharacter,
     setEditingCharacter,
@@ -142,7 +142,7 @@ export default function HomeClient({}: HomeClientProps) {
     setSelectedAnimeForFilter,
   } = useFormStates();
   
-  // モーダルハンドラーをカスタムフックで管理
+  // モーダルハンドラー
   const {
     handleCharacterSave,
     handleCharacterClose,
@@ -156,7 +156,7 @@ export default function HomeClient({}: HomeClientProps) {
     setShowAddCharacterModal,
   });
   
-  // モーダルアクションをカスタムフックで管理
+  // モーダルアクション
   const {
     openAddForm,
     closeAddForm,
@@ -354,7 +354,8 @@ export default function HomeClient({}: HomeClientProps) {
   }, [selectedAnime?.id, loadReviews]);
 
   return (
-    <div className="min-h-screen bg-[#fef6f0] dark:bg-gray-900">
+    <ModalProvider setSelectedAnime={setSelectedAnime}>
+      <div className="min-h-screen bg-[#fef6f0] dark:bg-gray-900">
       <Navigation
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -373,19 +374,11 @@ export default function HomeClient({}: HomeClientProps) {
           <HomeTab
             homeSubTab={homeSubTab}
             setHomeSubTab={setHomeSubTab}
-            count={count}
-            totalRewatchCount={totalRewatchCount}
-            averageRating={averageRating}
-            seasons={seasons}
             expandedYears={expandedYears}
             setExpandedYears={setExpandedYears}
-            expandedSeasons={expandedSeasons}
-            setExpandedSeasons={setExpandedSeasons}
             onOpenAddForm={openAddForm}
             setSelectedAnime={setSelectedAnime}
-            allAnimes={allAnimes}
             user={user}
-            setSeasons={setSeasons}
             extractSeriesName={extractSeriesName}
             getSeasonName={getSeasonName}
             animeToSupabase={animeToSupabase}
@@ -397,41 +390,13 @@ export default function HomeClient({}: HomeClientProps) {
           <MyPageTab
             allAnimes={allAnimes}
             seasons={seasons}
-            userName={userName}
-            userIcon={userIcon}
-            userHandle={userHandle}
-            userOtakuType={userOtakuType}
-            setUserOtakuType={(type: string) => {
-              // localStorageに保存（後方互換性のため）
-              if (typeof window !== 'undefined') {
-                localStorage.setItem('userOtakuType', type);
-              }
-            }}
-            favoriteAnimeIds={favoriteAnimeIds}
-            setFavoriteAnimeIds={setFavoriteAnimeIds}
             averageRating={averageRating}
             favoriteCharacters={favoriteCharacters}
             setFavoriteCharacters={setFavoriteCharacters}
-            characterFilter={characterFilter}
-            setCharacterFilter={setCharacterFilter}
-            quoteSearchQuery={quoteSearchQuery}
-            setQuoteSearchQuery={setQuoteSearchQuery}
-            quoteFilterType={quoteFilterType}
-            setQuoteFilterType={setQuoteFilterType}
-            selectedAnimeForFilter={selectedAnimeForFilter}
-            setSelectedAnimeForFilter={setSelectedAnimeForFilter}
             setSeasons={setSeasons}
             user={user}
             supabaseClient={supabase}
-            onOpenDNAModal={() => setShowDNAModal(true)}
-            onOpenSettingsModal={() => setShowSettings(true)}
-            setShowFavoriteAnimeModal={setShowFavoriteAnimeModal}
-            onOpenCharacterModal={handleOpenAddCharacterModal}
-            onEditCharacter={handleEditCharacter}
-            onOpenAddQuoteModal={openAddQuoteModal}
-            onEditQuote={editQuote}
             setSelectedAnime={setSelectedAnime}
-            setShowSongModal={setShowSongModal}
             handleLogout={handleLogout}
           />
         )}
@@ -592,7 +557,8 @@ export default function HomeClient({}: HomeClientProps) {
         />
       )}
 
-    </div>
+      </div>
+    </ModalProvider>
   );
 }
 
