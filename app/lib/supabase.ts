@@ -14,17 +14,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  global: {
-    fetch: (url, options = {}) => {
-      return fetch(url, {
-        ...options,
-        credentials: 'include',
-      }).catch((error) => {
-        console.error('Fetch error:', error);
-        throw error;
-      });
-    },
-  },
   auth: {
     flowType: 'pkce',
     detectSessionInUrl: true,
