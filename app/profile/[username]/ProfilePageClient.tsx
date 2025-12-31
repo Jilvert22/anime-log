@@ -3,15 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import type { UserProfile } from '../../lib/supabase';
+import type { UserProfile } from '../../lib/api';
 import { 
   getProfileByUsername, 
   getPublicAnimes, 
   getFollowCounts,
   isFollowing,
+} from '../../lib/api';
+import {
   followUser,
   unfollowUser
-} from '../../lib/supabase';
+} from '../../lib/api';
 import type { User } from '@supabase/supabase-js';
 
 // アニメの型定義
@@ -100,6 +102,7 @@ export default function ProfilePageClient({ username }: ProfilePageClientProps) 
       setFollowCounts(counts);
     } catch (error) {
       console.error('Failed to toggle follow:', error);
+      alert('フォロー操作に失敗しました');
     }
   };
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { getSession, signOut, updateEmail, updatePassword } from '../../../lib/api';
 import { useAuth } from '../../../hooks/useAuth';
 
 type PasswordStrength = {
@@ -98,7 +99,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
 
     try {
       // 認証トークンを取得
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getSession();
       if (!session) {
         throw new Error('認証が必要です');
       }
@@ -119,7 +120,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
       }
 
       // 成功時は即座にリダイレクト（エラーハンドリングをスキップ）
-      await supabase.auth.signOut();
+      await signOut();
       window.location.href = '/';
       return; // これ以降の処理を実行しない
     } catch (error: unknown) {
@@ -139,11 +140,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         throw new Error('有効なメールアドレスを入力してください');
       }
 
-      const { error } = await supabase.auth.updateUser({ email: newEmail });
-
-      if (error) {
-        throw new Error(error.message || 'メールアドレスの変更に失敗しました');
-      }
+      await updateEmail(newEmail);
 
       setChangeSuccess('確認メールを送信しました');
       setNewEmail('');
@@ -175,11 +172,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         throw new Error('新しいパスワードが一致しません');
       }
 
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-
-      if (error) {
-        throw new Error(error.message || 'パスワードの変更に失敗しました');
-      }
+      await updatePassword(newPassword);
 
       setChangeSuccess('パスワードを変更しました');
       setNewPassword('');

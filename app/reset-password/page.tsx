@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
+import { updatePassword } from '../lib/api';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -34,12 +35,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
     
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password,
-      });
-      
-      if (updateError) throw updateError;
-      
+      await updatePassword(password);
       setSuccess(true);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'パスワードの更新に失敗しました';

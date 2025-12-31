@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { UserProfile } from '../../lib/supabase';
+import type { UserProfile } from '../../lib/api';
 import type { User } from '../../types';
 
 // オタクタイプのプリセット定義

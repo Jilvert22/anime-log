@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { onAuthStateChange } from '../lib/api';
 import type { User } from '@supabase/supabase-js';
 
 interface NavigationProps {
@@ -42,14 +43,12 @@ export function Navigation({
       return;
     }
     
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const unsubscribe = onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
     return () => {
-      subscription.unsubscribe();
+      unsubscribe();
     };
   }, []);
   return (

@@ -6,7 +6,7 @@ import type {
   Season, 
   Anime
 } from '../types';
-import type { UserProfile } from '../lib/supabase';
+import type { UserProfile } from '../lib/api';
 import { HomeTab } from './tabs/HomeTab';
 import MyPageTab from './tabs/MyPageTab';
 import { ReviewModal } from './modals/ReviewModal';

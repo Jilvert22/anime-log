@@ -8,7 +8,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { availableTags, ratingLabels } from '../../constants';
 import { AnimeReviewSection } from './AnimeReviewSection';
 import { updateAnimeInSeasons } from '../../utils/animeUpdates';
-import { addToWatchlist } from '../../lib/supabase';
+import { addToWatchlist } from '../../lib/api';
 
 interface AnimeDetailModalProps {
   selectedAnime: Anime;
@@ -690,15 +690,15 @@ export function AnimeDetailModal({
                     
                     // アニメを積みアニメに追加（AniList IDはないので、タイトルと画像で追加）
                     // AniList IDは後で検索できるように、-1を設定（AniList ID未設定のマーカー）
-                    const success = await addToWatchlist({
-                      anilist_id: -1, // AniList ID未設定のマーカー
-                      title: selectedAnime.title,
-                      image: selectedAnime.image || null,
-                    });
-                    
-                    if (success) {
+                    try {
+                      await addToWatchlist({
+                        anilist_id: -1, // AniList ID未設定のマーカー
+                        title: selectedAnime.title,
+                        image: selectedAnime.image || null,
+                      });
                       alert('積みアニメに追加しました');
-                    } else {
+                    } catch (error) {
+                      console.error('積みアニメの追加に失敗しました:', error);
                       alert('積みアニメの追加に失敗しました');
                     }
                   }}

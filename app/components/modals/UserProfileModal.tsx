@@ -1,7 +1,7 @@
 'use client';
 
 import type { User } from '@supabase/supabase-js';
-import type { UserProfile } from '../../lib/supabase';
+import type { UserProfile } from '../../lib/api';
 import type { Anime } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 

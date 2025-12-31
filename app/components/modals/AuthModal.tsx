@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { getSupabaseEnv } from '../../lib/env';
 import { supabase } from '../../lib/supabase';
+import { signInWithPassword, signUp, resetPasswordForEmail } from '../../lib/api';
 
 type PasswordStrength = {
   level: 'weak' | 'fair' | 'good' | 'strong';
@@ -133,16 +134,7 @@ export function AuthModal({
       }
 
       if (authMode === 'login') {
-        if (!supabase) {
-          setAuthError('Supabaseクライアントが利用できません。環境変数を確認してください。');
-          return;
-        }
-        
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: authEmail,
-          password: authPassword,
-        });
-        if (error) throw error;
+        await signInWithPassword(authEmail, authPassword);
         
         // ログイン成功後、マイグレーションを実行
         await migrateLocalStorageToSupabase();
@@ -157,16 +149,8 @@ export function AuthModal({
           setAuthError('利用規約とプライバシーポリシーへの同意が必要です');
           return;
         }
-        if (!supabase) {
-          setAuthError('Supabaseクライアントが利用できません。環境変数を確認してください。');
-          return;
-        }
         
-        const { data, error } = await supabase.auth.signUp({
-          email: authEmail,
-          password: authPassword,
-        });
-        if (error) throw error;
+        await signUp(authEmail, authPassword);
         // 登録成功時、確認メール送信画面を表示
         setEmailSent(true);
         setAuthPassword('');
@@ -177,15 +161,8 @@ export function AuthModal({
       console.error('Auth error:', error);
       // より詳細なエラーメッセージを表示
       if (error instanceof Error) {
-        if (error.message) {
-          // Supabaseのエラーメッセージをそのまま表示
-          setAuthError(error.message);
-        } else if (error instanceof TypeError && error.message.includes('fetch')) {
-          // ネットワークエラーの場合
-          setAuthError('ネットワークエラーが発生しました。インターネット接続を確認してください。');
-        } else {
-          setAuthError('エラーが発生しました。しばらく待ってから再度お試しください。');
-        }
+        // 新APIのエラーメッセージは既に日本語化されている
+        setAuthError(error.message || 'エラーが発生しました。しばらく待ってから再度お試しください。');
       } else {
         setAuthError('エラーが発生しました。しばらく待ってから再度お試しください。');
       }
@@ -195,15 +172,7 @@ export function AuthModal({
   const handlePasswordReset = async () => {
     setAuthError('');
     try {
-      if (!supabase) {
-        setAuthError('Supabaseクライアントが利用できません。環境変数を確認してください。');
-        return;
-      }
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(authEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
+      await resetPasswordForEmail(authEmail);
       // リセットメール送信成功時、確認画面を表示
       setResetEmailSent(true);
     } catch (error: unknown) {

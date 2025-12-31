@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { UserProfile } from '../lib/supabase';
+import type { UserProfile } from '../lib/api';
 
 function UserCardComponent({ 
   user, 

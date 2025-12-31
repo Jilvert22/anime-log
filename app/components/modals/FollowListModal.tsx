@@ -1,8 +1,8 @@
 'use client';
 
 import type { User } from '@supabase/supabase-js';
-import type { UserProfile } from '../../lib/supabase';
-import { getFollowing, getFollowers } from '../../lib/supabase';
+import type { UserProfile } from '../../lib/api';
+import { getFollowing, getFollowers } from '../../lib/api';
 import { UserCard } from '../UserCard';
 
 export function FollowListModal({
@@ -42,9 +42,14 @@ export function FollowListModal({
         <div className="flex gap-3 mb-4">
           <button
             onClick={async () => {
-              setFollowListType('following');
-              const following = await getFollowing(user.id);
-              setFollowListUsers(following);
+              try {
+                setFollowListType('following');
+                const following = await getFollowing(user.id);
+                setFollowListUsers(following);
+              } catch (error) {
+                console.error('フォロー中一覧の取得に失敗しました:', error);
+                setFollowListUsers([]);
+              }
             }}
             className={`flex-1 py-2 rounded-xl font-medium transition-colors ${
               followListType === 'following'
@@ -56,9 +61,14 @@ export function FollowListModal({
           </button>
           <button
             onClick={async () => {
-              setFollowListType('followers');
-              const followers = await getFollowers(user.id);
-              setFollowListUsers(followers);
+              try {
+                setFollowListType('followers');
+                const followers = await getFollowers(user.id);
+                setFollowListUsers(followers);
+              } catch (error) {
+                console.error('フォロワー一覧の取得に失敗しました:', error);
+                setFollowListUsers([]);
+              }
             }}
             className={`flex-1 py-2 rounded-xl font-medium transition-colors ${
               followListType === 'followers'

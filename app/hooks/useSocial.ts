@@ -2,19 +2,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { UserProfile } from '../lib/supabase';
+import type { UserProfile } from '../lib/api';
 import type { Anime } from '../types';
 import {
   searchUsers,
   getPublicProfile,
   getPublicAnimes,
   isFollowing,
-  followUser,
-  unfollowUser,
   getFollowCounts,
   getFollowers,
   getFollowing,
-} from '../lib/supabase';
+  followUser,
+  unfollowUser,
+} from '../lib/api';
 import { supabaseToAnime } from '../utils/helpers';
 import type { SupabaseAnimeRow } from '../types';
 
@@ -128,20 +128,20 @@ export function useSocial(user: User | null) {
     const currentlyFollowing = userFollowStatus[userId] || false;
 
     try {
-      const success = currentlyFollowing
-        ? await unfollowUser(userId)
-        : await followUser(userId);
-
-      if (success) {
-        setUserFollowStatus((prev) => ({
-          ...prev,
-          [userId]: !currentlyFollowing,
-        }));
-
-        // フォロー数を更新
-        const counts = await getFollowCounts(user.id);
-        setFollowCounts(counts);
+      if (currentlyFollowing) {
+        await unfollowUser(userId);
+      } else {
+        await followUser(userId);
       }
+
+      setUserFollowStatus((prev) => ({
+        ...prev,
+        [userId]: !currentlyFollowing,
+      }));
+
+      // フォロー数を更新
+      const counts = await getFollowCounts(user.id);
+      setFollowCounts(counts);
     } catch (error) {
       console.error('フォロー操作に失敗しました:', error);
       alert('フォロー操作に失敗しました');

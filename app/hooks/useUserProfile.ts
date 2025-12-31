@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { UserProfile } from '../lib/supabase';
+import type { UserProfile } from '../lib/api';
+import { upsertUserProfile, onAuthStateChange } from '../lib/api';
 
 export function useUserProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -156,49 +157,34 @@ export function useUserProfile() {
         }
       }
 
-      // その他のフィールド
-      if (updates.username !== undefined) updateData.username = updates.username;
-      if (updates.handle !== undefined) updateData.handle = updates.handle;
-      if (updates.bio !== undefined) updateData.bio = updates.bio;
-      if (updates.is_public !== undefined) updateData.is_public = updates.is_public;
-      if (updates.otaku_type !== undefined) updateData.otaku_type = updates.otaku_type;
-      if (updates.otaku_type_custom !== undefined) updateData.otaku_type_custom = updates.otaku_type_custom;
-
-      // Supabaseに保存
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .upsert({
-          id: user.id,
-          ...updateData,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'id'
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Profile save error:', error);
-        return { success: false, error: error.message };
-      }
+      // 新APIを使用してプロフィールを保存
+      const savedProfile = await upsertUserProfile({
+        username: updates.username ?? profile?.username ?? 'ユーザー',
+        handle: updates.handle !== undefined ? updates.handle : (profile?.handle ?? null),
+        bio: updates.bio !== undefined && updates.bio !== null ? updates.bio : (profile?.bio ? profile.bio : undefined),
+        is_public: updates.is_public ?? profile?.is_public ?? false,
+        otaku_type: updates.otaku_type ?? profile?.otaku_type ?? null,
+        otaku_type_custom: updates.otaku_type_custom ?? profile?.otaku_type_custom ?? null,
+        avatar_url: updateData.avatar_url ?? profile?.avatar_url ?? null,
+      });
 
       // 状態を更新
-      setProfile(data);
+      setProfile(savedProfile);
       
       // アバターURLを更新
-      if (data.avatar_url) {
+      if (savedProfile.avatar_url) {
         const { data: urlData } = supabase.storage
           .from('avatars')
-          .getPublicUrl(data.avatar_url);
+          .getPublicUrl(savedProfile.avatar_url);
         setAvatarPublicUrl(urlData.publicUrl);
       } else {
         setAvatarPublicUrl(null);
       }
 
       // localStorageにもキャッシュ
-      localStorage.setItem('userProfile', JSON.stringify(data));
+      localStorage.setItem('userProfile', JSON.stringify(savedProfile));
 
-      return { success: true, data };
+      return { success: true, data: savedProfile };
     } catch (err) {
       console.error('Profile save error:', err);
       return { success: false, error: 'Unknown error' };
@@ -218,7 +204,7 @@ export function useUserProfile() {
     loadProfile();
 
     // 認証状態の変化を監視
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const unsubscribe = onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         loadProfile();
       } else if (event === 'SIGNED_OUT') {
@@ -228,7 +214,7 @@ export function useUserProfile() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, [loadProfile]);
 
   // localStorageからfavoriteAnimeIdsを読み込み
