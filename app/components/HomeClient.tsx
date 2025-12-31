@@ -34,6 +34,7 @@ import { useTabs } from '../hooks/useTabs';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useCountAnimation } from '../hooks/useCountAnimation';
 import { useModalHandlers } from '../hooks/useModalHandlers';
+import { useModalActions } from '../hooks/useModalActions';
 import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName, shouldShowSeasonStartModal, markSeasonChecked } from '../utils/helpers';
 import type { WatchlistItem } from '../lib/storage/types';
 import { useStorage } from '../hooks/useStorage';
@@ -155,6 +156,34 @@ export default function HomeClient({}: HomeClientProps) {
     setShowAddCharacterModal,
   });
   
+  // モーダルアクションをカスタムフックで管理
+  const {
+    openAddForm,
+    closeAddForm,
+    closeReviewModal,
+    closeSettings,
+    closeFavoriteAnimeModal,
+    closeAuthModal,
+    openAddQuoteModal,
+    closeAddQuoteModal,
+    saveAddQuoteModal,
+    editQuote,
+    closeSongModal,
+    closeDNAModal,
+  } = useModalActions({
+    setShowAddForm,
+    setShowReviewModal,
+    setShowSettings,
+    setShowFavoriteAnimeModal,
+    setShowAuthModal,
+    setShowAddQuoteModal,
+    setShowSongModal,
+    setShowDNAModal,
+    setEditingQuote,
+    setSelectedAnime,
+    allAnimes,
+  });
+  
   // TODO: SNS機能実装時にuseSocialを有効化
   // 現在はダミー値を使用（フォロー/フォロワー機能は未実装）
   // 実装時は以下のコメントを外し、useSocialフックを使用してください：
@@ -229,70 +258,13 @@ export default function HomeClient({}: HomeClientProps) {
     await logout();
   }, [logout]);
 
-  // イベントハンドラのメモ化
-  const handleOpenAddForm = useCallback(() => {
-    setShowAddForm(true);
-  }, []);
-
-  const handleCloseAddForm = useCallback(() => {
-    setShowAddForm(false);
-  }, []);
-
-  const handleCloseReviewModal = useCallback(() => {
-    setShowReviewModal(false);
-  }, []);
-
-  const handleCloseSettings = useCallback(() => {
-    setShowSettings(false);
-  }, []);
-
-  const handleCloseFavoriteAnimeModal = useCallback(() => {
-    setShowFavoriteAnimeModal(false);
-  }, []);
-
+  // ダミーのモーダルハンドラ（SNS機能未実装のため）
   const handleCloseUserProfileModal = useCallback(() => {
     setShowUserProfileModal(false);
   }, []);
 
   const handleCloseFollowListModal = useCallback(() => {
     setShowFollowListModal(false);
-  }, []);
-
-  const handleCloseAuthModal = useCallback(() => {
-    setShowAuthModal(false);
-  }, []);
-
-  const handleCloseAddQuoteModal = useCallback(() => {
-    setShowAddQuoteModal(false);
-    setEditingQuote(null);
-  }, []);
-
-  const handleCloseSongModal = useCallback(() => {
-    setShowSongModal(false);
-    setSelectedAnime(null);
-  }, []);
-
-  const handleCloseDNAModal = useCallback(() => {
-    setShowDNAModal(false);
-  }, []);
-
-  const handleOpenAddQuoteModal = useCallback(() => {
-    setEditingQuote(null);
-    setShowAddQuoteModal(true);
-  }, []);
-
-  const handleEditQuote = useCallback((animeId: number, quoteIndex: number) => {
-    const anime = allAnimes.find(a => a.id === animeId);
-    if (anime?.quotes?.[quoteIndex]) {
-      setEditingQuote({ animeId, quoteIndex });
-      setShowAddQuoteModal(true);
-    }
-  }, [allAnimes]);
-
-
-  const handleSaveAddQuoteModal = useCallback(() => {
-    setShowAddQuoteModal(false);
-    setEditingQuote(null);
   }, []);
 
   const handleReviewPosted = useCallback(async () => {
@@ -409,7 +381,7 @@ export default function HomeClient({}: HomeClientProps) {
             setExpandedYears={setExpandedYears}
             expandedSeasons={expandedSeasons}
             setExpandedSeasons={setExpandedSeasons}
-            onOpenAddForm={handleOpenAddForm}
+            onOpenAddForm={openAddForm}
             setSelectedAnime={setSelectedAnime}
             allAnimes={allAnimes}
             user={user}
@@ -456,8 +428,8 @@ export default function HomeClient({}: HomeClientProps) {
             setShowFavoriteAnimeModal={setShowFavoriteAnimeModal}
             onOpenCharacterModal={handleOpenAddCharacterModal}
             onEditCharacter={handleEditCharacter}
-            onOpenAddQuoteModal={handleOpenAddQuoteModal}
-            onEditQuote={handleEditQuote}
+            onOpenAddQuoteModal={openAddQuoteModal}
+            onEditQuote={editQuote}
             setSelectedAnime={setSelectedAnime}
             setShowSongModal={setShowSongModal}
             handleLogout={handleLogout}
@@ -467,7 +439,7 @@ export default function HomeClient({}: HomeClientProps) {
 
       <AddAnimeFormModal
         show={showAddForm}
-        onClose={handleCloseAddForm}
+        onClose={closeAddForm}
         seasons={seasons}
         setSeasons={setSeasons}
         expandedSeasons={expandedSeasons}
@@ -481,7 +453,7 @@ export default function HomeClient({}: HomeClientProps) {
       {/* 感想投稿モーダル */}
       <ReviewModal
         show={showReviewModal}
-        onClose={handleCloseReviewModal}
+        onClose={closeReviewModal}
         selectedAnime={selectedAnime}
         user={user}
         userName={userName}
@@ -491,7 +463,7 @@ export default function HomeClient({}: HomeClientProps) {
 
       <SettingsModal
         show={showSettings}
-        onClose={handleCloseSettings}
+        onClose={closeSettings}
         profile={profile}
         avatarPublicUrl={avatarPublicUrl}
         saveProfile={saveProfile}
@@ -500,7 +472,7 @@ export default function HomeClient({}: HomeClientProps) {
 
       <FavoriteAnimeModal
         show={showFavoriteAnimeModal}
-        onClose={handleCloseFavoriteAnimeModal}
+        onClose={closeFavoriteAnimeModal}
         allAnimes={allAnimes}
         favoriteAnimeIds={favoriteAnimeIds}
         setFavoriteAnimeIds={setFavoriteAnimeIds}
@@ -533,7 +505,7 @@ export default function HomeClient({}: HomeClientProps) {
       {/* 認証モーダル */}
       <AuthModal
         show={showAuthModal}
-        onClose={handleCloseAuthModal}
+        onClose={closeAuthModal}
         onAuthSuccess={() => {
           // 認証成功後の処理（必要に応じて）
         }}
@@ -574,18 +546,18 @@ export default function HomeClient({}: HomeClientProps) {
 
       <AddQuoteModal
         show={showAddQuoteModal}
-        onClose={handleCloseAddQuoteModal}
+        onClose={closeAddQuoteModal}
         allAnimes={allAnimes}
         seasons={seasons}
         setSeasons={setSeasons}
         user={user}
         editingQuote={editingQuote}
-        onSave={handleSaveAddQuoteModal}
+        onSave={saveAddQuoteModal}
       />
 
       <SongModal
         show={showSongModal}
-        onClose={handleCloseSongModal}
+        onClose={closeSongModal}
         selectedAnime={selectedAnime}
         setSelectedAnime={setSelectedAnime}
         allAnimes={allAnimes}
@@ -599,7 +571,7 @@ export default function HomeClient({}: HomeClientProps) {
 
       <DNAModal
         show={showDNAModal}
-        onClose={handleCloseDNAModal}
+        onClose={closeDNAModal}
         allAnimes={allAnimes}
         favoriteAnimeIds={favoriteAnimeIds}
         count={count}
