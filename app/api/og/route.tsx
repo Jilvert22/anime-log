@@ -1,11 +1,9 @@
 import { ImageResponse } from '@vercel/og'
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/app/lib/supabase/server'
+import { getSiteUrl } from '@/app/lib/env'
 
-export const runtime = 'edge'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Edge Runtimeを削除（Node.js runtimeを使用）
 
 // オタクタイプID→ラベルのマッピング
 const OTAKU_TYPE_ID_TO_LABEL: { [key: string]: string } = {
@@ -68,7 +66,7 @@ export async function GET(request: NextRequest) {
   }
 
   // ユーザー情報を取得
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  const supabase = await createServerSupabaseClient()
   
   const { data: profile } = await supabase
     .from('user_profiles')
@@ -205,7 +203,7 @@ export async function GET(request: NextRequest) {
             color: 'rgba(255,255,255,0.5)',
           }}
         >
-          anime-log-rho.vercel.app
+          {new URL(getSiteUrl()).hostname}
         </div>
       </div>
     ),

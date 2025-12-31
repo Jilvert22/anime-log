@@ -1,7 +1,7 @@
 'use client';
 
 import type { User } from '@supabase/supabase-js';
-import type { Anime, Season, FavoriteCharacter } from '../../types';
+import type { Anime, Season, FavoriteCharacter, SupabaseClientType } from '../../types';
 import AnimeDNASection from './mypage/AnimeDNASection';
 import StatisticsSection from './mypage/StatisticsSection';
 import CollectionSection from './mypage/CollectionSection';
@@ -31,7 +31,7 @@ interface MyPageTabProps {
   setSelectedAnimeForFilter: (id: number | null) => void;
   setSeasons: (seasons: Season[]) => void;
   user: User | null;
-  supabaseClient: any;
+  supabaseClient: SupabaseClientType;
   onOpenDNAModal: () => void;
   onOpenSettingsModal: () => void;
   setShowFavoriteAnimeModal: (show: boolean) => void;

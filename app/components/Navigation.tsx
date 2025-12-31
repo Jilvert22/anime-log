@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
 interface NavigationProps {
@@ -19,12 +21,37 @@ export function Navigation({
   setActiveTab,
   isDarkMode,
   setIsDarkMode,
-  user,
+  user: userProp,
   userName,
   userIcon,
   onOpenSettingsModal,
   setShowAuthModal,
 }: NavigationProps) {
+  // 認証状態をローカルでも監視して、確実に更新されるようにする
+  const [user, setUser] = useState<User | null>(userProp);
+
+  useEffect(() => {
+    // プロップから受け取ったuserを同期
+    setUser(userProp);
+  }, [userProp]);
+
+  useEffect(() => {
+    // 認証状態の変化を監視
+    if (!supabase) {
+      console.warn('[Navigation] Supabaseクライアントが利用できません');
+      return;
+    }
+    
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
   return (
     <header className="fixed top-0 left-0 right-0 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50">
       <div className="h-full max-w-7xl mx-auto px-4 relative flex items-center">

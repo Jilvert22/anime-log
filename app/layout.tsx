@@ -19,10 +19,12 @@ const poppins = Poppins({
   variable: '--font-poppins',
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://animelog.jp'
+
 export const metadata: Metadata = {
   title: 'アニメログ - あなたのアニメ視聴記録',
   description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。視聴傾向の分析、感想の記録、積みアニメ管理など。',
-  metadataBase: new URL('https://anime-log-rho.vercel.app'),
+  metadataBase: new URL(siteUrl),
   keywords: ["アニメ", "視聴履歴", "管理", "記録", "評価"],
   authors: [{ name: "アニメログ" }],
   icons: {

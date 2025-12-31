@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { UserProfile } from '../../lib/supabase';
+import type { User } from '../../types';
 
 // オタクタイプのプリセット定義
 const OTAKU_TYPES = [
@@ -31,7 +32,7 @@ interface SettingsModalProps {
     otaku_type?: string;
     otaku_type_custom?: string | null;
   }) => Promise<{ success: boolean; error?: string }>;
-  user: any;
+  user: User | null;
 }
 
 export function SettingsModal({

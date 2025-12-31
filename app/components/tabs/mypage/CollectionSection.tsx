@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { Anime, Season, FavoriteCharacter } from '../../../types';
+import type { Anime, Season, FavoriteCharacter, SupabaseClientType } from '../../../types';
 import { characterCategories } from '../../../constants';
 import { MusicTab } from '../MusicTab';
 
@@ -11,7 +11,7 @@ interface CollectionSectionProps {
   seasons: Season[];
   setSeasons: (seasons: Season[]) => void;
   user: User | null;
-  supabaseClient: any;
+  supabaseClient: SupabaseClientType;
   favoriteCharacters: FavoriteCharacter[];
   setFavoriteCharacters: (characters: FavoriteCharacter[]) => void;
   characterFilter: string | null;

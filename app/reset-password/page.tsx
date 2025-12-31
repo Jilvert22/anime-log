@@ -41,8 +41,9 @@ export default function ResetPasswordPage() {
       if (updateError) throw updateError;
       
       setSuccess(true);
-    } catch (error: any) {
-      setError(error.message || 'パスワードの更新に失敗しました');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'パスワードの更新に失敗しました';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

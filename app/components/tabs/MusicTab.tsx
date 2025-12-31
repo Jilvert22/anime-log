@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Anime, Season } from '../../types';
+import type { Anime, Season, User, SupabaseClientType } from '../../types';
 import { StarRating } from '../StarRating';
 
 export function MusicTab({
@@ -24,8 +24,8 @@ export function MusicTab({
   setNewSongTitle: (title: string) => void;
   setNewSongArtist: (artist: string) => void;
   setShowSongModal: (show: boolean) => void;
-  user: any;
-  supabase: any;
+  user: User | null;
+  supabase: SupabaseClientType;
 }) {
   const [musicSearchQuery, setMusicSearchQuery] = useState('');
   const [musicFilterType, setMusicFilterType] = useState<'all' | 'op' | 'ed' | 'artist'>('all');
@@ -270,7 +270,7 @@ export function MusicTab({
                               
                               if (error) throw error;
                             } catch (error) {
-                              console.error('Failed to delete song in Supabase:', error);
+                              console.error('Supabaseでの曲の削除に失敗しました:', error);
                             }
                           }
                           

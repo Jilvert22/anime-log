@@ -80,7 +80,7 @@ export function useAnimeReviews(user: User | null) {
         const likedReviewIds = new Set(likesData?.map(l => l.review_id) || []);
         const helpfulReviewIds = new Set(helpfulData?.map(h => h.review_id) || []);
         
-        const reviews: Review[] = reviewsData.map((r: any) => ({
+        const reviews: Review[] = reviewsData.map((r) => ({
           id: r.id,
           animeId: animeId, // 数値IDを保持
           userId: r.user_id,

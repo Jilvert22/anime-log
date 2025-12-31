@@ -122,8 +122,9 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
       await supabase.auth.signOut();
       window.location.href = '/';
       return; // これ以降の処理を実行しない
-    } catch (error: any) {
-      setDeleteError(error.message || 'アカウントの削除に失敗しました');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'アカウントの削除に失敗しました';
+      setDeleteError(errorMessage);
       setDeleteLoading(false);
     }
   };
@@ -152,8 +153,9 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         setShowEmailChange(false);
         setChangeSuccess('');
       }, 3000);
-    } catch (error: any) {
-      setChangeError(error.message || 'メールアドレスの変更に失敗しました');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'メールアドレスの変更に失敗しました';
+      setChangeError(errorMessage);
     } finally {
       setChangeLoading(false);
     }
@@ -189,8 +191,9 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         setShowPasswordChange(false);
         setChangeSuccess('');
       }, 3000);
-    } catch (error: any) {
-      setChangeError(error.message || 'パスワードの変更に失敗しました');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'パスワードの変更に失敗しました';
+      setChangeError(errorMessage);
     } finally {
       setChangeLoading(false);
     }

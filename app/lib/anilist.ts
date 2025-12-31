@@ -5,6 +5,7 @@ export type AniListMedia = {
   title: {
     native: string | null;
     romaji: string | null;
+    english?: string | null;
   };
   coverImage: {
     medium: string | null;
@@ -98,13 +99,13 @@ export async function searchAnime(query: string) {
     const data = await response.json();
     
     if (data.errors) {
-      console.error('AniList API errors:', data.errors);
+      console.error('AniList API エラー:', data.errors);
       return [];
     }
     
     return data.data?.Page?.media as AniListMedia[] || [];
   } catch (error) {
-    console.error('Failed to search anime:', error);
+    console.error('アニメ検索に失敗しました:', error);
     return [];
   }
 }
@@ -187,7 +188,7 @@ export async function searchAnimeBySeason(
     const data = await response.json();
     
     if (data.errors) {
-      console.error('AniList API errors:', data.errors);
+      console.error('AniList API エラー:', data.errors);
       return {
         media: [],
         pageInfo: {
@@ -211,7 +212,7 @@ export async function searchAnimeBySeason(
       }
     };
   } catch (error) {
-    console.error('Failed to search anime by season:', error);
+    console.error('シーズン検索に失敗しました:', error);
     return {
       media: [],
       pageInfo: {
@@ -244,7 +245,7 @@ export async function searchAnimeBySeasonAll(
       if (currentPage > 100) break;
     }
   } catch (error) {
-    console.error('Failed to search anime by season (all):', error);
+    console.error('シーズン検索（全件取得）に失敗しました:', error);
     // エラーが発生しても、取得できた分は返す
   }
 

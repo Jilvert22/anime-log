@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import type { Anime, Season } from '../../types';
+import type { Anime, Season, User, AniListSearchResult } from '../../types';
 import { searchAnime, searchAnimeBySeason } from '../../lib/anilist';
 import { useStorage } from '../../hooks/useStorage';
 import type { WatchlistItem } from '../../lib/storage/types';
@@ -80,7 +80,7 @@ export function WatchlistTab({
 }: {
   setSelectedAnime: (anime: Anime | null) => void;
   onOpenAddForm: () => void;
-  user: any;
+  user: User | null;
   seasons: Season[];
   setSeasons: (seasons: Season[]) => void;
   expandedSeasons: Set<string>;
@@ -109,7 +109,7 @@ export function WatchlistTab({
       const items = await storage.getWatchlist();
       setWatchlist(items);
     } catch (error) {
-      console.error('Failed to load watchlist:', error);
+      console.error('積みアニメの読み込みに失敗しました:', error);
     }
   }, [storage]);
 
@@ -126,7 +126,7 @@ export function WatchlistTab({
       const results = await searchAnime(searchQuery);
       setSearchResults(results || []);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error('アニメ検索に失敗しました:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -140,7 +140,7 @@ export function WatchlistTab({
       const result = await searchAnimeBySeason(season, seasonYear, 1, 20);
       setSearchResults(result.media || []);
     } catch (error) {
-      console.error('Season search failed:', error);
+      console.error('シーズン検索に失敗しました:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -148,10 +148,10 @@ export function WatchlistTab({
   }, [season, seasonYear]);
 
   // 積みアニメに追加（重複チェックなし、複数登録可能）
-  const handleAddToWatchlist = useCallback(async (anime: any) => {
+  const handleAddToWatchlist = useCallback(async (anime: AniListSearchResult) => {
     const success = await storage.addToWatchlist({
       anilist_id: anime.id,
-      title: anime.title.native || anime.title.romaji,
+      title: anime.title.native || anime.title.romaji || '',
       image: anime.coverImage?.large || null,
     });
     
@@ -190,7 +190,7 @@ export function WatchlistTab({
       // AniListからアニメ情報を取得
       const { searchAnime } = await import('../../lib/anilist');
       const results = await searchAnime(selectedWatchlistItem.title);
-      const animeData = results?.find((a: any) => a.id === selectedWatchlistItem.anilist_id);
+      const animeData = results?.find((a: AniListSearchResult) => a.id === selectedWatchlistItem.anilist_id);
       
       if (!animeData) {
         alert('アニメ情報の取得に失敗しました');
@@ -213,7 +213,7 @@ export function WatchlistTab({
         rewatchCount: 0,
         tags: [],
         seriesName: extractSeriesName(animeData.title.native || animeData.title.romaji || selectedWatchlistItem.title),
-        studios: animeData.studios?.nodes?.map((s: any) => s.name) || [],
+        studios: animeData.studios?.nodes?.map((s) => s.name) || [],
       };
 
       // シーズンに追加
@@ -254,9 +254,10 @@ export function WatchlistTab({
           .select();
         
         if (error) throw error;
-      } catch (error: any) {
-        console.error('Failed to save anime:', error);
-        alert(`アニメの保存に失敗しました: ${error.message}`);
+      } catch (error: unknown) {
+        console.error('アニメの保存に失敗しました:', error);
+        const errorMessage = error instanceof Error ? error.message : 'アニメの保存に失敗しました';
+        alert(`アニメの保存に失敗しました${errorMessage !== 'アニメの保存に失敗しました' ? `: ${errorMessage}` : ''}`);
         return;
       }
 
@@ -269,9 +270,10 @@ export function WatchlistTab({
       // モーダルを閉じる
       setShowWatchedModal(false);
       setSelectedWatchlistItem(null);
-    } catch (error: any) {
-      console.error('Failed to mark as watched:', error);
-      alert(`エラーが発生しました: ${error.message}`);
+    } catch (error: unknown) {
+      console.error('視聴済みマークに失敗しました:', error);
+      const errorMessage = error instanceof Error ? error.message : 'エラーが発生しました';
+      alert(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`);
     }
   }, [selectedWatchlistItem, user, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, handleRemoveFromWatchlist]);
 

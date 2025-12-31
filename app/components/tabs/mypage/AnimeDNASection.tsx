@@ -8,6 +8,10 @@ import { otakuTypes } from '../../../constants';
 import { QRCodeSVG } from 'qrcode.react';
 import DNACardForExport from './DNACardForExport';
 
+import { getSiteUrl } from '../../../lib/env';
+
+const siteUrl = getSiteUrl();
+
 // SettingsModalと同じID→ラベルのマッピング
 const OTAKU_TYPE_ID_TO_LABEL: { [key: string]: { emoji: string; label: string } } = {
   'analyst': { emoji: '🔍', label: '考察厨' },
@@ -366,7 +370,7 @@ export default function AnimeDNASection({
             setIsSaving(true);
 
             try {
-              // 1. 一時的なコンテナを作成
+              // 1. 非表示コンテナを作成（画像生成用）
               const container = document.createElement('div');
               container.style.position = 'absolute';
               container.style.left = '-9999px';
@@ -468,7 +472,7 @@ export default function AnimeDNASection({
                 <div className="bg-white p-4 rounded-2xl">
                   <QRCodeSVG
                     value={typeof window !== 'undefined' 
-                      ? `https://anime-log-rho.vercel.app/share/${encodeURIComponent(userName)}`
+                      ? `${siteUrl}/share/${encodeURIComponent(userName)}`
                       : ''}
                     size={200}
                     level="H"
@@ -495,7 +499,7 @@ export default function AnimeDNASection({
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-mixed">プロフィールURL</p>
                   <p className="text-sm font-mono text-gray-700 dark:text-gray-300 truncate">
                     {typeof window !== 'undefined' 
-                      ? `https://anime-log-rho.vercel.app/share/${encodeURIComponent(userName)}`
+                      ? `${siteUrl}/share/${encodeURIComponent(userName)}`
                       : ''}
                   </p>
                 </div>
@@ -503,11 +507,11 @@ export default function AnimeDNASection({
               <button
                 onClick={async () => {
                   try {
-                    const shareUrl = `https://anime-log-rho.vercel.app/share/${encodeURIComponent(userName)}`;
+                    const shareUrl = `${siteUrl}/share/${encodeURIComponent(userName)}`;
                     await navigator.clipboard.writeText(shareUrl);
                     alert('リンクをクリップボードにコピーしました');
                   } catch (error) {
-                    console.error('Failed to copy link:', error);
+                    console.error('リンクのコピーに失敗しました:', error);
                     alert('リンクのコピーに失敗しました');
                   }
                 }}
@@ -525,7 +529,7 @@ export default function AnimeDNASection({
               <button
                 onClick={async () => {
                   try {
-                    const shareUrl = `https://anime-log-rho.vercel.app/share/${encodeURIComponent(userName)}`;
+                    const shareUrl = `${siteUrl}/share/${encodeURIComponent(userName)}`;
                     await navigator.share({
                       title: `${userName}のアニメDNA`,
                       text: `${userName}のアニメログをチェック！`,
@@ -534,7 +538,7 @@ export default function AnimeDNASection({
                   } catch (error) {
                     // ユーザーがキャンセルした場合はエラーを無視
                     if ((error as Error).name !== 'AbortError') {
-                      console.error('Share failed:', error);
+                      console.error('シェアに失敗しました:', error);
                     }
                   }
                 }}

@@ -16,6 +16,7 @@ import {
   getFollowing,
 } from '../lib/supabase';
 import { supabaseToAnime } from '../utils/helpers';
+import type { SupabaseAnimeRow } from '../types';
 
 type FollowStatus = Record<string, boolean>;
 type FollowCounts = { following: number; followers: number };
@@ -45,7 +46,7 @@ export function useSocial(user: User | null) {
         const counts = await getFollowCounts(user.id);
         setFollowCounts(counts);
       } catch (error) {
-        console.error('Failed to load follow counts:', error);
+        console.error('フォロー数の読み込みに失敗しました:', error);
       }
     };
 
@@ -63,7 +64,7 @@ export function useSocial(user: User | null) {
           : await getFollowers(user.id);
         setFollowListUsers(list);
       } catch (error) {
-        console.error('Failed to load follow list:', error);
+        console.error('フォロー/フォロワー一覧の読み込みに失敗しました:', error);
       }
     };
 
@@ -89,7 +90,7 @@ export function useSocial(user: User | null) {
         setUserFollowStatus((prev) => ({ ...prev, ...followStatus }));
       }
     } catch (error) {
-      console.error('Failed to search users:', error);
+      console.error('ユーザー検索に失敗しました:', error);
     } finally {
       setIsSearchingUsers(false);
     }
@@ -109,11 +110,11 @@ export function useSocial(user: User | null) {
       ]);
 
       setSelectedUserProfile(profile);
-      setSelectedUserAnimes(animes.map((a) => supabaseToAnime(a)));
+      setSelectedUserAnimes(animes.map((a) => supabaseToAnime(a as SupabaseAnimeRow)));
       setUserFollowStatus((prev) => ({ ...prev, [userId]: following }));
       setShowUserProfileModal(true);
     } catch (error) {
-      console.error('Failed to view user profile:', error);
+      console.error('ユーザープロフィールの取得に失敗しました:', error);
       alert('プロフィールの取得に失敗しました');
     }
   }, []);
@@ -142,7 +143,7 @@ export function useSocial(user: User | null) {
         setFollowCounts(counts);
       }
     } catch (error) {
-      console.error('Failed to toggle follow:', error);
+      console.error('フォロー操作に失敗しました:', error);
       alert('フォロー操作に失敗しました');
     }
   }, [user, userFollowStatus]);

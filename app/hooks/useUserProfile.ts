@@ -291,7 +291,7 @@ export function useUserProfile() {
     setUserIcon: (file: File) => saveProfile({ avatarFile: file }),
     setUserHandle: (handle: string | null) => saveProfile({ handle }),
     setUserOtakuType: (type: string) => {
-      // 一時的なlocalStorage更新（後でSupabaseに保存される）
+      // localStorageに保存（後でSupabaseに保存される）
       if (typeof window !== 'undefined') {
         localStorage.setItem('userOtakuType', type);
       }

@@ -9,25 +9,66 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // 現在のセッションを確認
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    const initSession = async () => {
+      try {
+        if (!supabase) {
+          console.warn('[useAuth] Supabaseクライアントが利用できません');
+          if (mounted) {
+            setIsLoading(false);
+          }
+          return;
+        }
+        
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session error:', error);
+        }
+        if (mounted) {
+          setUser(session?.user ?? null);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Failed to get session:', error);
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initSession();
 
     // 認証状態の変化を監視
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    if (supabase) {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (mounted) {
+          setUser(session?.user ?? null);
+          setIsLoading(false);
+        }
+      });
 
-    return () => subscription.unsubscribe();
+      return () => {
+        mounted = false;
+        subscription.unsubscribe();
+      };
+    } else {
+      return () => {
+        mounted = false;
+      };
+    }
   }, []);
 
   const handleLogout = useCallback(async (): Promise<boolean> => {
     try {
+      if (!supabase) {
+        console.warn('[useAuth] Supabaseクライアントが利用できません');
+        return false;
+      }
+      
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       return true;

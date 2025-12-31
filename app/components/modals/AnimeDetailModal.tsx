@@ -689,9 +689,9 @@ export function AnimeDetailModal({
                     }
                     
                     // アニメを積みアニメに追加（AniList IDはないので、タイトルと画像で追加）
-                    // AniList IDは後で検索できるように、-1を設定
+                    // AniList IDは後で検索できるように、-1を設定（AniList ID未設定のマーカー）
                     const success = await addToWatchlist({
-                      anilist_id: -1, // 後で検索可能にするため一時的に-1
+                      anilist_id: -1, // AniList ID未設定のマーカー
                       title: selectedAnime.title,
                       image: selectedAnime.image || null,
                     });
@@ -723,7 +723,7 @@ export function AnimeDetailModal({
                           if (error) throw error;
                         }
                       } catch (error) {
-                        console.error('Failed to delete anime from Supabase:', error);
+                        console.error('Supabaseからのアニメ削除に失敗しました:', error);
                       }
                     }
 

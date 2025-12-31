@@ -1,33 +1,30 @@
-import { createClient } from '@supabase/supabase-js';
+// クライアント側で使用するSupabaseクライアント
+// 注意: サーバー側では createServerSupabaseClient を使用してください
+import { createBrowserSupabaseClient } from './supabase/client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// クライアント側用のSupabaseクライアントをエクスポート
+// このクライアントはブラウザでのみ使用可能です
+// 遅延評価により、モジュール読み込み時のエラーを回避
+let supabaseInstance: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase environment variables are not set. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project settings.');
-  console.error('Current values:', {
-    hasUrl: !!supabaseUrl,
-    hasKey: !!supabaseAnonKey,
-    urlLength: supabaseUrl.length,
-    keyLength: supabaseAnonKey.length,
-  });
+function getSupabaseClient(): SupabaseClient {
+  if (typeof window === 'undefined') {
+    // サーバー側では使用しない
+    throw new Error('supabase client should only be used in client components');
+  }
+  
+  if (!supabaseInstance) {
+    supabaseInstance = createBrowserSupabaseClient();
+  }
+  
+  return supabaseInstance;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  global: {
-    fetch: (url, options = {}) => {
-      return fetch(url, {
-        ...options,
-        credentials: 'omit', // CORSエラーを防ぐため、credentialsをomitに設定
-      });
-    },
-  },
-  auth: {
-    flowType: 'pkce',
-    detectSessionInUrl: true,
-    persistSession: true,
-    storageKey: 'animelog-auth',
-    autoRefreshToken: true,
+// getterプロパティとしてエクスポート（遅延評価）
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    return getSupabaseClient()[prop as keyof SupabaseClient];
   },
 });
 

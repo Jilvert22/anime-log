@@ -1,5 +1,5 @@
 import { genreTranslation } from '../constants';
-import type { Anime } from '../types';
+import type { Anime, SupabaseAnimeRow } from '../types';
 
 // ジャンルを日本語に変換
 export const translateGenre = (genre: string): string => {
@@ -25,12 +25,12 @@ export function animeToSupabase(anime: Anime, seasonName: string, userId: string
 }
 
 // データマッピング関数：Supabase形式 → Anime型
-export function supabaseToAnime(row: any): Anime {
+export function supabaseToAnime(row: SupabaseAnimeRow): Anime {
   return {
-    id: row.id,
+    id: row.id ?? 0, // idが存在しない場合は0をデフォルト値として使用
     title: row.title,
-    image: row.image,
-    rating: row.rating,
+    image: row.image ?? '', // nullの場合は空文字列に変換
+    rating: row.rating ?? 0, // nullの場合は0に変換
     watched: row.watched,
     rewatchCount: row.rewatch_count ?? 0,
     tags: row.tags || [],
@@ -174,7 +174,7 @@ export function markSeasonChecked(): void {
 // シーズン名を時系列順にソートする関数
 // シーズン名の形式: "YYYY年[春|夏|秋|冬]" または "未分類"
 // ソート順: 新しい年→古い年、同じ年は秋→夏→春→冬の順（秋が最新、アニメのクールは冬→春→夏→秋の順で放送されるため）、"未分類"は最後
-export function sortSeasonsByTime(seasons: { name: string; animes: any[] }[]): { name: string; animes: any[] }[] {
+export function sortSeasonsByTime(seasons: { name: string; animes: Anime[] }[]): { name: string; animes: Anime[] }[] {
   const seasonOrder: { [key: string]: number } = {
     '秋': 0,  // 最新
     '夏': 1,

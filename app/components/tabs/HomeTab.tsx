@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import type { Anime, Season } from '../../types';
+import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 import { GalleryTab } from './GalleryTab';
 import { WatchlistTab } from './WatchlistTab';
@@ -176,16 +176,16 @@ export function HomeTab({
   onOpenAddForm: () => void;
   setSelectedAnime: (anime: Anime | null) => void;
   allAnimes: Anime[];
-  user: any;
+  user: User | null;
   setSeasons: (seasons: Season[]) => void;
   extractSeriesName: (title: string) => string | undefined;
   getSeasonName: (season: string) => string;
-  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => any;
-  supabaseToAnime: (row: any) => Anime;
+  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => SupabaseAnimeRow;
+  supabaseToAnime: (row: SupabaseAnimeRow) => Anime;
 }) {
   const [filter, setFilter] = useState<FilterType>('all');
   const [showAllSeasons, setShowAllSeasons] = useState(false); // すべての年・季節を表示するか
-  const [seasonSearchResults, setSeasonSearchResults] = useState<Map<string, any[]>>(new Map()); // シーズン検索結果
+  const [seasonSearchResults, setSeasonSearchResults] = useState<Map<string, AniListSearchResult[]>>(new Map()); // シーズン検索結果
   const [loadingSeasons, setLoadingSeasons] = useState<Set<string>>(new Set()); // ローディング中のシーズン
   const [expandedSeasonSearches, setExpandedSeasonSearches] = useState<Set<string>>(new Set()); // 展開されている検索結果
   const [showUnregisteredOnly, setShowUnregisteredOnly] = useState(false); // 未登録シーズンのみ表示
@@ -201,7 +201,7 @@ export function HomeTab({
       setWatchlistItems(items);
       setAddedToWatchlistIds(new Set(items.map(item => item.anilist_id).filter(id => id !== -1 && id !== null && id !== undefined)));
     } catch (error) {
-      console.error('Failed to load watchlist:', error);
+      console.error('積みアニメの読み込みに失敗しました:', error);
       setWatchlistItems([]);
       setAddedToWatchlistIds(new Set());
     }
@@ -416,7 +416,7 @@ export function HomeTab({
         allAnimes.map(a => a.title.toLowerCase().trim())
       );
       
-      const filteredResults = result.media.filter((anime: any) => {
+      const filteredResults = result.media.filter((anime: AniListSearchResult) => {
         const titleNative = (anime.title?.native || '').toLowerCase().trim();
         const titleRomaji = (anime.title?.romaji || '').toLowerCase().trim();
         return !registeredTitles.has(titleNative) && !registeredTitles.has(titleRomaji);
@@ -429,7 +429,7 @@ export function HomeTab({
       });
       return Promise.resolve();
     } catch (error) {
-      console.error('Failed to search season animes:', error);
+      console.error('シーズンアニメ検索に失敗しました:', error);
       return Promise.resolve();
     } finally {
       setLoadingSeasons(prev => {
@@ -466,18 +466,18 @@ export function HomeTab({
   }, [expandedSeasons, setExpandedSeasons, yearSeasonData, seasonSearchResults, loadingSeasons, searchSeasonAnimes, setExpandedSeasonSearches]);
 
   // 検索結果から作品を追加
-  const addAnimeFromSearch = useCallback(async (result: any, year: string, season: string) => {
+  const addAnimeFromSearch = useCallback(async (result: AniListSearchResult, year: string, season: string) => {
     try {
       // 必須フィールドの検証
       if (!result) {
-        console.error('Result is null or undefined');
+        console.error('検索結果がnullまたはundefinedです');
         alert('アニメ情報が取得できませんでした');
         return;
       }
 
       const anilistId = result.id;
       if (!anilistId || typeof anilistId !== 'number' || isNaN(anilistId)) {
-        console.error('Invalid anilist_id:', anilistId, result);
+        console.error('無効なAniList ID:', anilistId, result);
         alert('アニメIDが無効です');
         return;
       }
@@ -487,7 +487,7 @@ export function HomeTab({
       const maxId = allAnimeIds.length > 0 ? Math.max(...allAnimeIds) : 0;
       const seasonName = `${year}年${season}`;
       
-      // タイトルの取得（デフォルト値付き）
+      // タイトルの取得
       const title = result.title?.native || result.title?.romaji || result.title?.english || 'タイトル不明';
       const seriesName = extractSeriesName(title);
       const image = result.coverImage?.large || result.coverImage?.medium || '🎬';
@@ -503,7 +503,7 @@ export function HomeTab({
         rewatchCount: 1,
         tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
         seriesName,
-        studios: result.studios?.nodes?.map((s: any) => s.name) || [],
+        studios: result.studios?.nodes?.map((s) => s.name) || [],
       };
 
       // ログインしている場合はSupabaseに保存
@@ -514,8 +514,9 @@ export function HomeTab({
           .insert(supabaseData);
 
         if (error) {
-          console.error('Failed to add anime:', error);
-          alert(`アニメの追加に失敗しました: ${error.message || '不明なエラー'}`);
+          console.error('アニメの追加に失敗しました:', error);
+          const errorMessage = error.message || '不明なエラー';
+          alert(`アニメの追加に失敗しました${errorMessage !== '不明なエラー' ? `: ${errorMessage}` : ''}`);
           return;
         }
       }
@@ -545,7 +546,7 @@ export function HomeTab({
         const results = newMap.get(key) || [];
         const titleNative = (result.title?.native || '').toLowerCase().trim();
         const titleRomaji = (result.title?.romaji || '').toLowerCase().trim();
-        const filteredResults = results.filter((r: any) => {
+        const filteredResults = results.filter((r: AniListSearchResult) => {
           const rTitleNative = (r.title?.native || '').toLowerCase().trim();
           const rTitleRomaji = (r.title?.romaji || '').toLowerCase().trim();
           return r.id !== result.id && 
@@ -562,29 +563,30 @@ export function HomeTab({
         return newMap;
       });
     } catch (error) {
-      console.error('Failed to add anime from search:', error);
-      alert(`アニメの追加に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`);
+      console.error('検索結果からのアニメ追加に失敗しました:', error);
+      const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+      alert(`アニメの追加に失敗しました${errorMessage !== '不明なエラー' ? `: ${errorMessage}` : ''}`);
     }
   }, [user, seasons, setSeasons, extractSeriesName, animeToSupabase]);
 
   // 積みアニメに追加
-  const addToWatchlistFromSearch = useCallback(async (result: any, year?: string, season?: string) => {
+  const addToWatchlistFromSearch = useCallback(async (result: AniListSearchResult, year?: string, season?: string) => {
     try {
       // resultオブジェクトが正しく渡されているか確認
       if (!result) {
-        console.error('Result is null or undefined');
+        console.error('検索結果がnullまたはundefinedです');
         alert('アニメ情報が取得できませんでした');
         return;
       }
 
       const anilistId = result.id;
       if (!anilistId || typeof anilistId !== 'number' || isNaN(anilistId)) {
-        console.error('Invalid anilist_id:', anilistId, result);
+        console.error('無効なAniList ID:', anilistId, result);
         alert('アニメIDが無効です');
         return;
       }
 
-      // タイトルの取得（デフォルト値付き）
+      // タイトルの取得
       const title = result.title?.native || result.title?.romaji || result.title?.english || 'タイトル不明';
       const image = result.coverImage?.large || result.coverImage?.medium || null;
 
@@ -620,16 +622,16 @@ export function HomeTab({
         alert('積みアニメの追加に失敗しました');
       }
     } catch (error) {
-      console.error('Failed to add to watchlist:', error);
+      console.error('積みアニメへの追加に失敗しました:', error);
       alert(`積みアニメの追加に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`);
     }
   }, [storage]);
 
   // 来期の視聴予定に追加
-  const addToNextSeasonWatchlist = useCallback(async (result: any) => {
+  const addToNextSeasonWatchlist = useCallback(async (result: AniListSearchResult) => {
     try {
       if (!result || !result.id) {
-        console.error('Invalid result object:', result);
+        console.error('無効な検索結果オブジェクト:', result);
         alert('アニメ情報の取得に失敗しました');
         return;
       }
@@ -657,7 +659,7 @@ export function HomeTab({
         alert('視聴予定の追加に失敗しました');
       }
     } catch (error) {
-      console.error('Failed to add to next season watchlist:', error);
+      console.error('来期積みアニメへの追加に失敗しました:', error);
       alert('視聴予定の追加に失敗しました');
     }
   }, [storage]);
@@ -1081,7 +1083,7 @@ function SeriesView({
       const results = await searchAnime(seriesName);
       
       // 登録済みでない作品をフィルタリング（タイトルで比較）
-      const unregistered = results.filter((anime: any) => {
+      const unregistered = results.filter((anime: AniListSearchResult) => {
         const animeId = anime.id.toString();
         // 非表示にした提案を除外
         if (dismissedSuggestions.has(animeId)) {
@@ -1109,7 +1111,7 @@ function SeriesView({
         });
       }
     } catch (error) {
-      console.error('Failed to fetch suggestions:', error);
+      console.error('提案の取得に失敗しました:', error);
     } finally {
       setLoadingSuggestions(prev => {
         const newSet = new Set(prev);
@@ -1146,7 +1148,7 @@ function SeriesView({
     setSuggestedSeasons(prev => {
       const newMap = new Map(prev);
       newMap.forEach((suggestions, key) => {
-        const filtered = suggestions.filter((s: any) => s.id.toString() !== animeId);
+        const filtered = suggestions.filter((s: AniListSearchResult) => s.id.toString() !== animeId);
         if (filtered.length === 0) {
           newMap.delete(key);
         } else {
@@ -1208,7 +1210,7 @@ function SeriesView({
                       このシリーズの他の作品が見つかりました
                     </p>
                     <div className="space-y-2">
-                      {suggestions.slice(0, 3).map((suggestion: any) => (
+                      {suggestions.slice(0, 3).map((suggestion: AniListSearchResult) => (
                         <div
                           key={suggestion.id}
                           className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -1221,7 +1223,7 @@ function SeriesView({
                           {suggestion.coverImage?.medium && (
                             <img
                               src={suggestion.coverImage.medium}
-                              alt={suggestion.title.romaji || suggestion.title.native}
+                              alt={suggestion.title.romaji || suggestion.title.native || ''}
                               className="w-12 h-16 object-cover rounded"
                             />
                           )}
@@ -1332,16 +1334,16 @@ function SearchResultsSection({
   year,
   season,
 }: {
-  searchResults: any[];
+  searchResults: AniListSearchResult[];
   seasonKey: string;
   expandedSeasons: Set<string>;
   setExpandedSeasons: (seasons: Set<string>) => void;
   expandedSeasonSearches: Set<string>;
   setExpandedSeasonSearches: (searches: Set<string>) => void;
   addedToWatchlistIds: Set<number>;
-  addAnimeFromSearch: (result: any, year: string, season: string) => Promise<void>;
-  addToWatchlistFromSearch: (result: any, year?: string, season?: string) => Promise<void>;
-  addToNextSeasonWatchlist: (result: any) => Promise<void>;
+  addAnimeFromSearch: (result: AniListSearchResult, year: string, season: string) => Promise<void>;
+  addToWatchlistFromSearch: (result: AniListSearchResult, year?: string, season?: string) => Promise<void>;
+  addToNextSeasonWatchlist: (result: AniListSearchResult) => Promise<void>;
   year: string;
   season: string;
 }) {
@@ -1373,7 +1375,7 @@ function SearchResultsSection({
         </div>
       </div>
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 pb-4">
-        {searchResults.map((result: any) => {
+        {searchResults.map((result: AniListSearchResult) => {
           const anilistId = result?.id;
           const isValidId = anilistId && typeof anilistId === 'number' && !isNaN(anilistId);
           const isLoading = loadingIds.has(anilistId);
@@ -1415,7 +1417,7 @@ function SearchResultsSection({
                   try {
                     await addAnimeFromSearch(result, year, season);
                   } catch (error) {
-                    console.error('Error adding anime:', error);
+                    console.error('アニメの追加に失敗しました:', error);
                   } finally {
                     setLoadingIds(prev => {
                       const newSet = new Set(prev);
@@ -1449,7 +1451,7 @@ function SearchResultsSection({
                       try {
                         await addToWatchlistFromSearch(result, year, season);
                       } catch (error) {
-                        console.error('Error adding to watchlist:', error);
+                        console.error('積みアニメへの追加に失敗しました:', error);
                       } finally {
                         setLoadingIds(prev => {
                           const newSet = new Set(prev);
@@ -1484,7 +1486,7 @@ function SearchResultsSection({
                         try {
                           await addToNextSeasonWatchlist(result);
                         } catch (error) {
-                          console.error('Error adding to next season watchlist:', error);
+                          console.error('来期積みアニメへの追加に失敗しました:', error);
                         } finally {
                           setLoadingIds(prev => {
                             const newSet = new Set(prev);

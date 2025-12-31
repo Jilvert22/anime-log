@@ -72,3 +72,39 @@ export type FavoriteCharacter = {
   tags: string[];
 };
 
+// Supabaseのanimesテーブルの行型（新規作成時はidが不要）
+export type SupabaseAnimeRow = {
+  id?: number; // 新規作成時はオプショナル
+  user_id: string;
+  season_name: string;
+  title: string;
+  image: string | null;
+  rating: number | null;
+  watched: boolean;
+  rewatch_count: number;
+  tags: string[] | null;
+  songs: {
+    op?: Song;
+    ed?: Song;
+  } | null;
+  quotes: Quote[] | null;
+  series_name: string | null;
+  studios: string[] | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+// AniList APIの検索結果型（HomeTabで使用）
+// AniListMediaのエイリアスとして定義（型定義の重複を解消）
+import type { AniListMedia } from '../lib/anilist';
+export type AniListSearchResult = AniListMedia;
+
+// Supabaseクライアント型（Database型が定義されていない場合はanyを使用）
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+export type SupabaseClientType = SupabaseClient<any>;
+
+// ユーザー型（@supabase/supabase-jsから）
+import type { User } from '@supabase/supabase-js';
+export type { User };
+

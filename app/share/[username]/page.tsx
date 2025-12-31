@@ -1,9 +1,7 @@
 import { Metadata } from 'next'
-import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/app/lib/supabase/server'
 import { redirect } from 'next/navigation'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+import { getSiteUrl } from '@/app/lib/env'
 
 // オタクタイプID→ラベルのマッピング
 const OTAKU_TYPE_ID_TO_LABEL: { [key: string]: string } = {
@@ -36,7 +34,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params
   
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  const supabase = await createServerSupabaseClient()
   
   const { data: profile } = await supabase
     .from('user_profiles')
@@ -55,9 +53,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const displayName = profile.username
   const otakuType = profile.otaku_type_custom || getOtakuTypeLabel(profile.otaku_type)
 
+  const siteUrl = getSiteUrl()
   const title = `${displayName}のANIME DNA | アニメログ`
   const description = `${displayName}さん（${otakuType}）のアニメ視聴傾向をチェック！`
-  const ogImageUrl = `https://anime-log-rho.vercel.app/api/og?username=${encodeURIComponent(username)}`
+  const ogImageUrl = `${siteUrl}/api/og?username=${encodeURIComponent(username)}`
 
   return {
     title,
@@ -74,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
       ],
       type: 'profile',
-      url: `https://anime-log-rho.vercel.app/share/${encodeURIComponent(username)}`,
+      url: `${siteUrl}/share/${encodeURIComponent(username)}`,
     },
     twitter: {
       card: 'summary_large_image',
