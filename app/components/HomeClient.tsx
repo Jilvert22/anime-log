@@ -46,7 +46,6 @@ export default function HomeClient({}: HomeClientProps) {
   const storage = useStorage();
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
-  const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
   const [showSeasonEndModal, setShowSeasonEndModal] = useState(false);
   const [previousSeasonItems, setPreviousSeasonItems] = useState<WatchlistItem[]>([]);
   
@@ -116,8 +115,8 @@ export default function HomeClient({}: HomeClientProps) {
   const {
     seasons,
     setSeasons,
-    expandedSeasons: oldExpandedSeasons,
-    setExpandedSeasons: setOldExpandedSeasons,
+    expandedSeasons,
+    setExpandedSeasons,
     allAnimes,
     averageRating,
     totalRewatchCount,
@@ -128,42 +127,18 @@ export default function HomeClient({}: HomeClientProps) {
   
   // フォーム状態管理をカスタムフックで管理
   const {
-    newCharacterName,
-    setNewCharacterName,
-    newCharacterAnimeId,
-    setNewCharacterAnimeId,
-    newCharacterImage,
-    setNewCharacterImage,
-    newCharacterCategory,
-    setNewCharacterCategory,
-    newCharacterTags,
-    setNewCharacterTags,
-    newCustomTag,
-    setNewCustomTag,
     editingCharacter,
     setEditingCharacter,
     characterFilter,
     setCharacterFilter,
     editingQuote,
     setEditingQuote,
-    newQuoteAnimeId,
-    setNewQuoteAnimeId,
-    newQuoteText,
-    setNewQuoteText,
-    newQuoteCharacter,
-    setNewQuoteCharacter,
     quoteSearchQuery,
     setQuoteSearchQuery,
     quoteFilterType,
     setQuoteFilterType,
     selectedAnimeForFilter,
     setSelectedAnimeForFilter,
-    songType,
-    setSongType,
-    newSongTitle,
-    setNewSongTitle,
-    newSongArtist,
-    setNewSongArtist,
   } = useFormStates();
   
   // モーダルハンドラーをカスタムフックで管理
@@ -178,16 +153,38 @@ export default function HomeClient({}: HomeClientProps) {
     editingCharacter,
     setEditingCharacter,
     setShowAddCharacterModal,
-    setNewCharacterName,
-    setNewCharacterAnimeId,
-    setNewCharacterImage,
-    setNewCharacterCategory,
-    setNewCharacterTags,
-    setNewCustomTag,
   });
   
-  // SNS機能は現在無効化されています
-  // 将来的に有効化する場合は、useSocialフックを使用してください
+  // TODO: SNS機能実装時にuseSocialを有効化
+  // 現在はダミー値を使用（フォロー/フォロワー機能は未実装）
+  // 実装時は以下のコメントを外し、useSocialフックを使用してください：
+  // const {
+  //   userSearchQuery,
+  //   setUserSearchQuery,
+  //   searchedUsers,
+  //   isSearchingUsers,
+  //   selectedUserProfile,
+  //   setSelectedUserProfile,
+  //   selectedUserAnimes,
+  //   setSelectedUserAnimes,
+  //   showUserProfileModal,
+  //   setShowUserProfileModal,
+  //   userFollowStatus,
+  //   setUserFollowStatus,
+  //   followCounts,
+  //   setFollowCounts,
+  //   showFollowListModal,
+  //   setShowFollowListModal,
+  //   followListType,
+  //   setFollowListType,
+  //   followListUsers,
+  //   setFollowListUsers,
+  //   handleUserSearch,
+  //   handleViewUserProfile,
+  //   handleToggleFollow,
+  // } = useSocial(user);
+  
+  // ダミー値（SNS機能未実装時のプレースホルダー）
   const userSearchQuery = '';
   const setUserSearchQuery = () => {};
   const searchedUsers: UserProfile[] = [];
@@ -272,10 +269,7 @@ export default function HomeClient({}: HomeClientProps) {
 
   const handleCloseSongModal = useCallback(() => {
     setShowSongModal(false);
-    setSongType(null);
     setSelectedAnime(null);
-    setNewSongTitle('');
-    setNewSongArtist('');
   }, []);
 
   const handleCloseDNAModal = useCallback(() => {
@@ -284,9 +278,6 @@ export default function HomeClient({}: HomeClientProps) {
 
   const handleOpenAddQuoteModal = useCallback(() => {
     setEditingQuote(null);
-    setNewQuoteAnimeId(null);
-    setNewQuoteText('');
-    setNewQuoteCharacter('');
     setShowAddQuoteModal(true);
   }, []);
 
@@ -294,8 +285,6 @@ export default function HomeClient({}: HomeClientProps) {
     const anime = allAnimes.find(a => a.id === animeId);
     if (anime?.quotes?.[quoteIndex]) {
       setEditingQuote({ animeId, quoteIndex });
-      setNewQuoteText(anime.quotes[quoteIndex].text);
-      setNewQuoteCharacter(anime.quotes[quoteIndex].character || '');
       setShowAddQuoteModal(true);
     }
   }, [allAnimes]);
@@ -470,9 +459,6 @@ export default function HomeClient({}: HomeClientProps) {
             onOpenAddQuoteModal={handleOpenAddQuoteModal}
             onEditQuote={handleEditQuote}
             setSelectedAnime={setSelectedAnime}
-            setSongType={setSongType}
-            setNewSongTitle={setNewSongTitle}
-            setNewSongArtist={setNewSongArtist}
             setShowSongModal={setShowSongModal}
             handleLogout={handleLogout}
           />
@@ -484,8 +470,8 @@ export default function HomeClient({}: HomeClientProps) {
         onClose={handleCloseAddForm}
         seasons={seasons}
         setSeasons={setSeasons}
-        expandedSeasons={oldExpandedSeasons}
-        setExpandedSeasons={setOldExpandedSeasons}
+        expandedSeasons={expandedSeasons}
+        setExpandedSeasons={setExpandedSeasons}
         user={user}
         extractSeriesName={extractSeriesName}
         getSeasonName={getSeasonName}
@@ -575,9 +561,6 @@ export default function HomeClient({}: HomeClientProps) {
           setExpandedSpoilerReviews={setExpandedSpoilerReviews}
           setShowReviewModal={setShowReviewModal}
           setShowSongModal={setShowSongModal}
-          setSongType={setSongType}
-          setNewSongTitle={setNewSongTitle}
-          setNewSongArtist={setNewSongArtist}
         />
       )}
 
@@ -609,9 +592,9 @@ export default function HomeClient({}: HomeClientProps) {
         seasons={seasons}
         setSeasons={setSeasons}
         user={user}
-        initialSongType={songType}
-        initialSongTitle={newSongTitle}
-        initialSongArtist={newSongArtist}
+        initialSongType={null}
+        initialSongTitle=""
+        initialSongArtist=""
       />
 
       <DNAModal

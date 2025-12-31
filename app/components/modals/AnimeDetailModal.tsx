@@ -30,9 +30,6 @@ interface AnimeDetailModalProps {
   setExpandedSpoilerReviews: (set: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setShowReviewModal: (show: boolean) => void;
   setShowSongModal: (show: boolean) => void;
-  setSongType: (type: 'op' | 'ed' | null) => void;
-  setNewSongTitle: (title: string) => void;
-  setNewSongArtist: (artist: string) => void;
 }
 
 export function AnimeDetailModal({
@@ -55,9 +52,6 @@ export function AnimeDetailModal({
   setExpandedSpoilerReviews,
   setShowReviewModal,
   setShowSongModal,
-  setSongType,
-  setNewSongTitle,
-  setNewSongArtist,
 }: AnimeDetailModalProps) {
   const [animeDetailTab, setAnimeDetailTab] = useState<'info' | 'reviews'>('info');
 
@@ -356,9 +350,6 @@ export function AnimeDetailModal({
                   {!selectedAnime.songs?.op && (
                     <button
                       onClick={() => {
-                        setSongType('op');
-                        setNewSongTitle('');
-                        setNewSongArtist('');
                         setShowSongModal(true);
                       }}
                       className="text-xs bg-[#e879d4] text-white px-3 py-1 rounded-lg hover:bg-[#f09fe3] transition-colors"
@@ -487,9 +478,6 @@ export function AnimeDetailModal({
                   {!selectedAnime.songs?.ed && (
                     <button
                       onClick={() => {
-                        setSongType('ed');
-                        setNewSongTitle('');
-                        setNewSongArtist('');
                         setShowSongModal(true);
                       }}
                       className="text-xs bg-[#e879d4] text-white px-3 py-1 rounded-lg hover:bg-[#f09fe3] transition-colors"

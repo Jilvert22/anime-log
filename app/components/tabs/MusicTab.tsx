@@ -9,9 +9,6 @@ export function MusicTab({
   seasons,
   setSeasons,
   setSelectedAnime,
-  setSongType,
-  setNewSongTitle,
-  setNewSongArtist,
   setShowSongModal,
   user,
   supabase,
@@ -20,9 +17,6 @@ export function MusicTab({
   seasons: Season[];
   setSeasons: (seasons: Season[]) => void;
   setSelectedAnime: (anime: Anime | null) => void;
-  setSongType: (type: 'op' | 'ed' | null) => void;
-  setNewSongTitle: (title: string) => void;
-  setNewSongArtist: (artist: string) => void;
   setShowSongModal: (show: boolean) => void;
   user: User | null;
   supabase: SupabaseClientType;
@@ -111,9 +105,6 @@ export function MusicTab({
         <button
           onClick={() => {
             setSelectedAnime(null);
-            setSongType(null);
-            setNewSongTitle('');
-            setNewSongArtist('');
             setShowSongModal(true);
           }}
           className="text-sm bg-[#e879d4] text-white px-4 py-2 rounded-lg hover:bg-[#f09fe3] transition-colors"
@@ -229,9 +220,6 @@ export function MusicTab({
                     <button
                       onClick={() => {
                         setSelectedAnime(anime || null);
-                        setSongType(song.type);
-                        setNewSongTitle(song.title);
-                        setNewSongArtist(song.artist);
                         setShowSongModal(true);
                       }}
                       className="bg-blue-500 text-white p-1 rounded-lg hover:bg-blue-600 transition-colors"

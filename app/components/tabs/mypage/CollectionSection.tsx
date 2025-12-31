@@ -27,9 +27,6 @@ interface CollectionSectionProps {
   onOpenAddQuoteModal: () => void;
   onEditQuote: (animeId: number, quoteIndex: number) => void;
   setSelectedAnime: (anime: Anime | null) => void;
-  setSongType: (type: 'op' | 'ed' | null) => void;
-  setNewSongTitle: (title: string) => void;
-  setNewSongArtist: (artist: string) => void;
   setShowSongModal: (show: boolean) => void;
 }
 
@@ -296,9 +293,6 @@ export default function CollectionSection(props: CollectionSectionProps) {
             count={counts.songs}
             onAdd={() => {
               props.setSelectedAnime(null);
-              props.setSongType(null);
-              props.setNewSongTitle('');
-              props.setNewSongArtist('');
               props.setShowSongModal(true);
             }}
           >
@@ -307,9 +301,6 @@ export default function CollectionSection(props: CollectionSectionProps) {
               seasons={props.seasons} 
               setSeasons={props.setSeasons}
               setSelectedAnime={props.setSelectedAnime}
-              setSongType={props.setSongType}
-              setNewSongTitle={props.setNewSongTitle}
-              setNewSongArtist={props.setNewSongArtist}
               setShowSongModal={props.setShowSongModal}
               user={props.user}
               supabase={props.supabaseClient}

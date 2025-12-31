@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * SNS機能（フォロー/フォロワー管理）のカスタムフック
+ * 
+ * @status 未使用（将来実装予定）
+ * @todo SNS機能実装時に有効化
+ * @see Phase 5でAPI層は移行済み（app/lib/api/social.ts）
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { UserProfile } from '../lib/api';

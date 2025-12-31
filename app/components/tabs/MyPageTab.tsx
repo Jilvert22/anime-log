@@ -40,9 +40,6 @@ interface MyPageTabProps {
   onOpenAddQuoteModal: () => void;
   onEditQuote: (animeId: number, quoteIndex: number) => void;
   setSelectedAnime: (anime: Anime | null) => void;
-  setSongType: (type: 'op' | 'ed' | null) => void;
-  setNewSongTitle: (title: string) => void;
-  setNewSongArtist: (artist: string) => void;
   setShowSongModal: (show: boolean) => void;
   handleLogout: () => void;
 }
@@ -96,9 +93,6 @@ export default function MyPageTab(props: MyPageTabProps) {
           onOpenAddQuoteModal={props.onOpenAddQuoteModal}
           onEditQuote={props.onEditQuote}
           setSelectedAnime={props.setSelectedAnime}
-          setSongType={props.setSongType}
-          setNewSongTitle={props.setNewSongTitle}
-          setNewSongArtist={props.setNewSongArtist}
           setShowSongModal={props.setShowSongModal}
         />
       </div>

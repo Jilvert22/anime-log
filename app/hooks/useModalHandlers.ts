@@ -9,12 +9,6 @@ interface UseModalHandlersProps {
   editingCharacter: FavoriteCharacter | null;
   setEditingCharacter: (character: FavoriteCharacter | null) => void;
   setShowAddCharacterModal: (show: boolean) => void;
-  setNewCharacterName: (name: string) => void;
-  setNewCharacterAnimeId: (id: number | null) => void;
-  setNewCharacterImage: (image: string) => void;
-  setNewCharacterCategory: (category: string) => void;
-  setNewCharacterTags: (tags: string[]) => void;
-  setNewCustomTag: (tag: string) => void;
 }
 
 export function useModalHandlers({
@@ -23,12 +17,6 @@ export function useModalHandlers({
   editingCharacter,
   setEditingCharacter,
   setShowAddCharacterModal,
-  setNewCharacterName,
-  setNewCharacterAnimeId,
-  setNewCharacterImage,
-  setNewCharacterCategory,
-  setNewCharacterTags,
-  setNewCustomTag,
 }: UseModalHandlersProps) {
 
   // キャラクター保存
@@ -55,21 +43,9 @@ export function useModalHandlers({
 
   // キャラクター追加モーダルを開く
   const handleOpenAddCharacterModal = useCallback(() => {
-    setNewCharacterName('');
-    setNewCharacterAnimeId(null);
-    setNewCharacterImage('👤');
-    setNewCharacterCategory('');
-    setNewCharacterTags([]);
-    setNewCustomTag('');
     setEditingCharacter(null);
     setShowAddCharacterModal(true);
   }, [
-    setNewCharacterName,
-    setNewCharacterAnimeId,
-    setNewCharacterImage,
-    setNewCharacterCategory,
-    setNewCharacterTags,
-    setNewCustomTag,
     setEditingCharacter,
     setShowAddCharacterModal,
   ]);
@@ -78,22 +54,10 @@ export function useModalHandlers({
   const handleEditCharacter = useCallback(
     (character: FavoriteCharacter) => {
       setEditingCharacter(character);
-      setNewCharacterName(character.name);
-      setNewCharacterAnimeId(character.animeId);
-      setNewCharacterImage(character.image);
-      setNewCharacterCategory(character.category);
-      setNewCharacterTags([...character.tags]);
-      setNewCustomTag('');
       setShowAddCharacterModal(true);
     },
     [
       setEditingCharacter,
-      setNewCharacterName,
-      setNewCharacterAnimeId,
-      setNewCharacterImage,
-      setNewCharacterCategory,
-      setNewCharacterTags,
-      setNewCustomTag,
       setShowAddCharacterModal,
     ]
   );
