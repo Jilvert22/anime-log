@@ -14,6 +14,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  global: {
+    fetch: (url, options = {}) => {
+      return fetch(url, {
+        ...options,
+        credentials: 'omit', // CORSエラーを防ぐため、credentialsをomitに設定
+      });
+    },
+  },
   auth: {
     flowType: 'pkce',
     detectSessionInUrl: true,
