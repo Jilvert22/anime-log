@@ -7,8 +7,8 @@
  * @param name 環境変数名
  * @param description 環境変数の説明（エラーメッセージ用）
  * @param isClientSide クライアント側での呼び出しかどうか
- * @returns 環境変数の値（開発環境で未設定の場合は空文字）
- * @throws Error 環境変数が未設定の場合（本番環境のみ）
+ * @returns 環境変数の値（開発環境またはクライアント側で未設定の場合は空文字）
+ * @throws Error 環境変数が未設定の場合（本番環境のサーバー側のみ）
  */
 export function getRequiredEnv(
   name: string,
@@ -22,13 +22,14 @@ export function getRequiredEnv(
     const desc = description || name;
     const isDev = process.env.NODE_ENV === 'development';
     
-    // 開発環境では警告のみで、空文字を返す（エラーをスローしない）
-    if (isDev) {
+    // 開発環境またはクライアント側では警告のみで、空文字を返す（エラーをスローしない）
+    // クライアント側では、環境変数が未設定でも後続の処理で適切にエラーハンドリングされる
+    if (isDev || isClientSide) {
       console.warn(`[環境変数警告] ${name}が未設定です。`);
       return ''; 
     }
     
-    // 本番環境ではエラーをスロー
+    // 本番環境のサーバー側ではエラーをスロー
     throw new Error(`必須の環境変数「${name}」が設定されていません。`);
   }
   return value;
