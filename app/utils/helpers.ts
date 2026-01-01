@@ -64,6 +64,18 @@ export function extractSeriesName(title: string): string {
   return title;
 }
 
+// 季節名に月の範囲を追加する関数
+export function getSeasonNameWithMonths(seasonName: string): string {
+  const monthRanges: { [key: string]: string } = {
+    '冬': '1~3月',
+    '春': '4~6月',
+    '夏': '7~9月',
+    '秋': '10~12月',
+  };
+  const months = monthRanges[seasonName] || '';
+  return months ? `${seasonName} (${months})` : seasonName;
+}
+
 // シーズン名を日本語に変換、または年とクォーターからシーズン名を生成する関数
 // オーバーロード: 文字列を受け取る場合（既存コードとの互換性）
 export function getSeasonName(season: string): string;
@@ -101,16 +113,16 @@ export function getCurrentSeason(): { year: number; season: 'WINTER' | 'SPRING' 
   
   if (month >= 1 && month <= 3) {
     season = 'WINTER';
-    seasonName = '冬';
+    seasonName = '冬 (1~3月)';
   } else if (month >= 4 && month <= 6) {
     season = 'SPRING';
-    seasonName = '春';
+    seasonName = '春 (4~6月)';
   } else if (month >= 7 && month <= 9) {
     season = 'SUMMER';
-    seasonName = '夏';
+    seasonName = '夏 (7~9月)';
   } else {
     season = 'FALL';
-    seasonName = '秋';
+    seasonName = '秋 (10~12月)';
   }
   
   return { year, season, seasonName };
@@ -121,12 +133,12 @@ export function getNextSeason(): { year: number; season: 'WINTER' | 'SPRING' | '
   const current = getCurrentSeason();
   
   const seasonOrder: ('WINTER' | 'SPRING' | 'SUMMER' | 'FALL')[] = ['WINTER', 'SPRING', 'SUMMER', 'FALL'];
-  const seasonNames: string[] = ['冬', '春', '夏', '秋'];
+  const seasonNames: string[] = ['冬 (1~3月)', '春 (4~6月)', '夏 (7~9月)', '秋 (10~12月)'];
   const currentIndex = seasonOrder.indexOf(current.season);
   
   if (currentIndex === 3) {
     // FALL → 翌年のWINTER
-    return { year: current.year + 1, season: 'WINTER', seasonName: '冬' };
+    return { year: current.year + 1, season: 'WINTER', seasonName: '冬 (1~3月)' };
   }
   const nextIndex = currentIndex + 1;
   return { year: current.year, season: seasonOrder[nextIndex], seasonName: seasonNames[nextIndex] };

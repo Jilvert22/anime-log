@@ -33,6 +33,7 @@ interface SettingsModalProps {
     otaku_type_custom?: string | null;
   }) => Promise<{ success: boolean; error?: string }>;
   user: User | null;
+  handleLogout?: () => void;
 }
 
 export function SettingsModal({
@@ -42,6 +43,7 @@ export function SettingsModal({
   avatarPublicUrl,
   saveProfile,
   user,
+  handleLogout,
 }: SettingsModalProps) {
   const [username, setUsername] = useState('');
   const [handle, setHandle] = useState('');
@@ -373,6 +375,23 @@ export function SettingsModal({
               {saving ? '保存中...' : '保存'}
             </button>
           </div>
+
+          {/* ========== ログアウトボタン ========== */}
+          {user && handleLogout && (
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => {
+                  if (confirm('ログアウトしますか？')) {
+                    handleLogout();
+                    onClose();
+                  }
+                }}
+                className="w-full px-4 py-2 rounded-xl border border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium"
+              >
+                ログアウト
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

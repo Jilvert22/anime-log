@@ -78,6 +78,18 @@ export const SeasonHeader = memo(function SeasonHeader({
     return { total, godTier, avgRating };
   }, [animes]);
 
+  // 季節名に月の範囲を追加
+  const getSeasonWithMonths = (seasonName: string): string => {
+    const monthRanges: { [key: string]: string } = {
+      '冬': '1~3月',
+      '春': '4~6月',
+      '夏': '7~9月',
+      '秋': '10~12月',
+    };
+    const months = monthRanges[seasonName] || '';
+    return months ? `${seasonName} (${months})` : seasonName;
+  };
+
   return (
     <div className={`w-full flex items-center justify-between py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors ml-4 ${
       isEmpty ? 'border border-dashed border-gray-300 dark:border-gray-600' : ''
@@ -91,7 +103,7 @@ export const SeasonHeader = memo(function SeasonHeader({
             {isExpanded ? '▼' : '▶'}
           </span>
           <span className={`font-medium ${isEmpty ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
-            {season}
+            {getSeasonWithMonths(season)}
             {isEmpty && <span className="ml-2 text-xs">(未登録)</span>}
           </span>
         </div>

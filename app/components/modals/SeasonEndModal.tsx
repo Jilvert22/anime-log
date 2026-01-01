@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import type { WatchlistItem } from '../../lib/storage/types';
-import { markSeasonChecked } from '../../utils/helpers';
 
 export function SeasonEndModal({
   items,
@@ -65,19 +64,9 @@ export function SeasonEndModal({
         <div className="flex flex-col gap-2">
           <button
             onClick={async () => {
-              // 視聴中に移行
               setIsProcessing(true);
               try {
-                // 各アイテムのステータスをwatchingに変更
-                const { useStorage } = await import('../../hooks/useStorage');
-                const storage = useStorage();
-                for (const item of items) {
-                  if (item.anilist_id) {
-                    await storage.updateWatchlistItem(item.anilist_id, { status: 'watching' });
-                  }
-                }
-                markSeasonChecked(); // 確認済みとしてマーク
-                onKeep(); // モーダルを閉じる
+                await onKeep(); // 親コンポーネントで視聴中への移行処理を実行
               } catch (error) {
                 console.error('Failed to update to watching:', error);
                 alert('視聴中への移行に失敗しました');

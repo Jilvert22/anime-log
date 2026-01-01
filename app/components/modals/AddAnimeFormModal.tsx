@@ -6,7 +6,7 @@ import type { User } from '@supabase/supabase-js';
 import type { Anime, Season } from '../../types';
 import { searchAnime, searchAnimeBySeason, type AniListMedia } from '../../lib/anilist';
 import { supabase } from '../../lib/supabase';
-import { translateGenre, sortSeasonsByTime } from '../../utils/helpers';
+import { translateGenre, sortSeasonsByTime, getSeasonNameWithMonths } from '../../utils/helpers';
 import { availableTags } from '../../constants';
 
 export function AddAnimeFormModal({
@@ -465,7 +465,7 @@ export function AddAnimeFormModal({
                           )}
                           {result.seasonYear && (
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {result.seasonYear}年 {result.season ? getSeasonName(result.season) : ''}
+                              {result.seasonYear}年 {result.season ? getSeasonNameWithMonths(getSeasonName(result.season)) : ''}
                             </p>
                           )}
                           {result.genres && result.genres.length > 0 && (

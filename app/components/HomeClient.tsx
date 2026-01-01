@@ -338,12 +338,25 @@ export default function HomeClient({}: HomeClientProps) {
     }
   }, [storage, previousSeasonItems]);
 
-  // そのままにする（視聴中に移行はSeasonEndModal内で処理）
-  const handleKeepPreviousSeason = useCallback(() => {
-    markSeasonChecked(); // 確認済みとしてマーク
-    setShowSeasonEndModal(false);
-    setPreviousSeasonItems([]);
-  }, []);
+  // 視聴中に移行
+  const handleKeepPreviousSeason = useCallback(async () => {
+    if (previousSeasonItems.length === 0) return;
+    
+    try {
+      // 各アイテムのステータスをwatchingに変更
+      for (const item of previousSeasonItems) {
+        if (item.anilist_id) {
+          await storage.updateWatchlistItem(item.anilist_id, { status: 'watching' });
+        }
+      }
+      markSeasonChecked(); // 確認済みとしてマーク
+      setShowSeasonEndModal(false);
+      setPreviousSeasonItems([]);
+    } catch (error) {
+      console.error('視聴中への移行に失敗しました:', error);
+      alert('視聴中への移行に失敗しました');
+    }
+  }, [storage, previousSeasonItems]);
 
   // シーズン開始時のチェック（アプリ起動時）
   // 「来期」が「今期」になった時点で、視聴予定（planned）のアニメをチェック
@@ -460,6 +473,7 @@ export default function HomeClient({}: HomeClientProps) {
         avatarPublicUrl={avatarPublicUrl}
         saveProfile={saveProfile}
         user={user}
+        handleLogout={handleLogout}
       />
 
       <FavoriteAnimeModal

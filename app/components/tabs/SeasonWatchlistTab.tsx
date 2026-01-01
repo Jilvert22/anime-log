@@ -494,23 +494,25 @@ export default function SeasonWatchlistTab() {
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => setSelectedSeason('current')}
-          className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
+          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex flex-col items-center justify-center gap-1 ${
             selectedSeason === 'current'
               ? 'bg-[#e879d4] text-white'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
           }`}
         >
-          今期（{currentSeason.year}年 {currentSeason.seasonName}）
+          <span className="text-base font-semibold">今期</span>
+          <span className="text-sm opacity-90">{currentSeason.year}年 {currentSeason.seasonName}</span>
         </button>
         <button
           onClick={() => setSelectedSeason('next')}
-          className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
+          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex flex-col items-center justify-center gap-1 ${
             selectedSeason === 'next'
               ? 'bg-[#e879d4] text-white'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
           }`}
         >
-          来期（{nextSeason.year}年 {nextSeason.seasonName}）
+          <span className="text-base font-semibold">来期</span>
+          <span className="text-sm opacity-90">{nextSeason.year}年 {nextSeason.seasonName}</span>
         </button>
       </div>
 

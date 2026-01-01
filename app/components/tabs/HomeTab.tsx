@@ -188,7 +188,7 @@ export function HomeTab({
               + アニメを追加
             </button>
             
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {/* フィルター */}
               <select
                 value={filter}
