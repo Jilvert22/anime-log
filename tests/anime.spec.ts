@@ -105,26 +105,59 @@ test.describe('アニメ追加・削除', () => {
     await expect(page.getByText('新しいアニメを追加')).not.toBeVisible({ timeout: 10000 });
     
     // 12. 追加されたアニメが表示されることを確認（少し待ってから）
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(2000);
+    
+    // ページをリロードして、追加されたアニメが表示されることを確認
+    await page.reload();
+    await page.waitForTimeout(2000);
+    
+    // クール別タブが選択されていることを確認（デフォルト）
+    const seasonsTab = page.getByRole('button', { name: 'クール別' });
+    const isSeasonsTabActive = await seasonsTab.getAttribute('class').then(classes => classes?.includes('bg-[#e879d4]')).catch(() => false);
+    if (!isSeasonsTabActive) {
+      await seasonsTab.click();
+      await page.waitForTimeout(1000);
+    }
+    
+    // アニメが追加されたクールを展開する（最新のクールを探して展開）
+    // 「進撃の巨人」は2013年4月クールの可能性が高い
+    const seasonHeaders = page.locator('button').filter({ hasText: /2013|春|Spring/ });
+    const seasonHeaderCount = await seasonHeaders.count();
+    if (seasonHeaderCount > 0) {
+      // 最初の2013年のクールヘッダーをクリックして展開
+      await seasonHeaders.first().click();
+      await page.waitForTimeout(1000);
+    }
     
     // アニメが追加されたことを確認
     // 方法1: タイトルテキストで確認（「進撃」または「巨人」を含むテキスト）
-    const animeTitle = page.getByText(/進撃|巨人/).first();
-    const titleVisible = await animeTitle.isVisible({ timeout: 5000 }).catch(() => false);
+    // より確実なセレクター: AnimeCard内のタイトル要素を探す
+    const animeTitle = page.locator('p.font-bold.text-sm').filter({ hasText: /進撃|巨人/ }).first();
+    let titleVisible = await animeTitle.isVisible({ timeout: 5000 }).catch(() => false);
     
     if (!titleVisible) {
-      // 方法2: アニメカードの画像で確認（alt属性にタイトルが含まれる可能性がある）
+      // 方法2: より広範囲でテキストを探す
+      const broadTitle = page.getByText(/進撃|巨人/).first();
+      titleVisible = await broadTitle.isVisible({ timeout: 5000 }).catch(() => false);
+    }
+    
+    if (!titleVisible) {
+      // 方法3: アニメカードの画像で確認（alt属性にタイトルが含まれる可能性がある）
       const animeImage = page.locator('img[alt*="進撃"], img[alt*="巨人"]').first();
       const imageVisible = await animeImage.isVisible({ timeout: 5000 }).catch(() => false);
       
       if (!imageVisible) {
-        // 方法3: 統計カードの作品数が増えていることを確認
+        // 方法4: 統計カードの作品数が増えていることを確認
         const statsCard = page.locator('text=作品').first();
-        await expect(statsCard).toBeVisible({ timeout: 5000 });
+        const statsVisible = await statsCard.isVisible({ timeout: 5000 }).catch(() => false);
         
-        // 最低限、ページが正常に表示されていることを確認
-        await expect(page.locator('body')).toBeVisible();
-        console.log('アニメが追加された可能性がありますが、タイトルや画像で確認できませんでした。');
+        if (statsVisible) {
+          // 最低限、ページが正常に表示されていることを確認
+          await expect(page.locator('body')).toBeVisible();
+          console.log('アニメが追加された可能性がありますが、タイトルや画像で確認できませんでした。');
+        } else {
+          throw new Error('アニメが追加されていない可能性があります。統計カードも見つかりませんでした。');
+        }
       } else {
         await expect(animeImage).toBeVisible();
       }
@@ -194,9 +227,34 @@ test.describe('アニメ追加・削除', () => {
     await page.reload();
     await page.waitForTimeout(2000);
     
+    // クール別タブが選択されていることを確認（デフォルト）
+    const seasonsTab = page.getByRole('button', { name: 'クール別' });
+    const isSeasonsTabActive = await seasonsTab.getAttribute('class').then(classes => classes?.includes('bg-[#e879d4]')).catch(() => false);
+    if (!isSeasonsTabActive) {
+      await seasonsTab.click();
+      await page.waitForTimeout(1000);
+    }
+    
+    // アニメが追加されたクールを展開する（最新のクールを探して展開）
+    // 「進撃の巨人」は2013年4月クールの可能性が高い
+    const seasonHeaders = page.locator('button').filter({ hasText: /2013|春|Spring/ });
+    const seasonHeaderCount = await seasonHeaders.count();
+    if (seasonHeaderCount > 0) {
+      // 最初の2013年のクールヘッダーをクリックして展開
+      await seasonHeaders.first().click();
+      await page.waitForTimeout(1000);
+    }
+    
     // タイトルテキストで探す（複数の方法を試す）
-    let animeTitle = page.getByText(/進撃|巨人/).first();
+    // より確実なセレクター: AnimeCard内のタイトル要素を探す
+    let animeTitle = page.locator('p.font-bold.text-sm').filter({ hasText: /進撃|巨人/ }).first();
     let titleVisible = await animeTitle.isVisible({ timeout: 10000 }).catch(() => false);
+    
+    if (!titleVisible) {
+      // より広範囲でテキストを探す
+      animeTitle = page.getByText(/進撃|巨人/).first();
+      titleVisible = await animeTitle.isVisible({ timeout: 5000 }).catch(() => false);
+    }
     
     // タイトルが見つからない場合は、アニメカードの画像で探す
     if (!titleVisible) {
@@ -226,20 +284,27 @@ test.describe('アニメ追加・削除', () => {
     
     if (!modalAlreadyOpen) {
       // アニメカードを探す
-      // より単純な方法: タイトルテキストを含むdiv要素を探す
-      // アニメカードは通常、rounded-2xlクラスを持つ
-      const simpleCard = page.locator('div[class*="rounded-2xl"]')
+      // より確実な方法: AnimeCardの構造を利用
+      // AnimeCardは rounded-2xl クラスを持つdiv要素で、タイトルを含む
+      const animeCard = page.locator('div[class*="rounded-2xl"]')
         .filter({ hasText: /進撃|巨人/ })
         .first();
       
-      const simpleVisible = await simpleCard.isVisible({ timeout: 5000 }).catch(() => false);
+      const cardVisible = await animeCard.isVisible({ timeout: 5000 }).catch(() => false);
       
-      if (simpleVisible) {
-        await simpleCard.click();
+      if (cardVisible) {
+        await animeCard.click();
       } else {
-        // 最後の手段: タイトルテキストを直接クリック
-        animeTitle = page.getByText(/進撃|巨人/).first();
-        await animeTitle.click();
+        // タイトル要素の親要素（アニメカード）をクリック
+        const titleParent = animeTitle.locator('xpath=ancestor::div[contains(@class, "rounded-2xl")]').first();
+        const parentVisible = await titleParent.isVisible({ timeout: 5000 }).catch(() => false);
+        
+        if (parentVisible) {
+          await titleParent.click();
+        } else {
+          // 最後の手段: タイトルテキストを直接クリック
+          await animeTitle.click();
+        }
       }
     }
     
@@ -278,8 +343,15 @@ test.describe('アニメ追加・削除', () => {
     await page.waitForTimeout(2000);
     
     // 削除されたアニメのタイトルが表示されていないことを確認
-    const deletedAnimeTitle = page.getByText(/進撃|巨人/).first();
-    const stillVisible = await deletedAnimeTitle.isVisible({ timeout: 5000 }).catch(() => false);
+    // より確実なセレクターを使用
+    const deletedAnimeTitle = page.locator('p.font-bold.text-sm').filter({ hasText: /進撃|巨人/ }).first();
+    let stillVisible = await deletedAnimeTitle.isVisible({ timeout: 5000 }).catch(() => false);
+    
+    if (!stillVisible) {
+      // より広範囲でテキストを探す
+      const broadTitle = page.getByText(/進撃|巨人/).first();
+      stillVisible = await broadTitle.isVisible({ timeout: 5000 }).catch(() => false);
+    }
     
     // アニメが削除されていることを確認（タイトルが表示されない、または統計カードの作品数が減っている）
     if (stillVisible) {

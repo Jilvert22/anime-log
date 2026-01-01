@@ -2,8 +2,10 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// .env.test を読み込む
-dotenv.config({ path: path.resolve(__dirname, '.env.test') });
+// .env.test を読み込む（CI環境では環境変数が既に設定されている）
+if (!process.env.CI) {
+  dotenv.config({ path: path.resolve(__dirname, '.env.test') });
+}
 
 export default defineConfig({
   testDir: './tests',

@@ -9,6 +9,11 @@ export async function middleware(request: NextRequest) {
 
   const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseEnv()
 
+  // 環境変数が設定されていない場合は、そのままレスポンスを返す
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return supabaseResponse
+  }
+
   const supabase = createServerClient(
     supabaseUrl,
     supabaseAnonKey,

@@ -151,12 +151,30 @@ export function AuthModal({
           return;
         }
         
-        await signUp(authEmail, authPassword);
-        // 登録成功時、確認メール送信画面を表示
-        setEmailSent(true);
-        setAuthPassword('');
-        setAgreedToTerms(false);
-        // onAuthSuccess()は呼び出さない（まだ認証完了してないため）
+        try {
+          const result = await signUp(authEmail, authPassword);
+          
+          // 登録成功時、確認メール送信画面を表示
+          setEmailSent(true);
+          setAuthPassword('');
+          setAgreedToTerms(false);
+          // onAuthSuccess()は呼び出さない（まだ認証完了してないため）
+        } catch (error) {
+          // エラーメッセージに「既に登録されています」が含まれているかチェック
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage.includes('既に登録されています') || 
+              errorMessage.includes('already registered') ||
+              errorMessage.includes('User already registered')) {
+            setAuthError('このメールアドレスは既に登録されています。ログインタブからログインしてください。');
+            setAuthPassword('');
+            setAgreedToTerms(false);
+            // ログインタブに切り替える
+            setAuthMode('login');
+          } else {
+            // その他のエラーはそのまま表示
+            throw error;
+          }
+        }
       }
     } catch (error: unknown) {
       console.error('Auth error:', error);
