@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, memo } from 'react';
 import Image from 'next/image';
 import type { Anime, Season, User, AniListSearchResult } from '../../types';
 import { searchAnime, searchAnimeBySeason } from '../../lib/anilist';
@@ -10,7 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName } from '../../utils/helpers';
 
 // 積みアニメカード
-function WatchlistCard({ 
+const WatchlistCard = memo(function WatchlistCard({ 
   item, 
   onRemove,
   onMarkAsWatched,
@@ -67,7 +67,7 @@ function WatchlistCard({
       </div>
     </div>
   );
-}
+});
 
 export function WatchlistTab({
   setSelectedAnime,
@@ -277,6 +277,16 @@ export function WatchlistTab({
     }
   }, [selectedWatchlistItem, user, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, handleRemoveFromWatchlist]);
 
+  // 削除ハンドラーをuseCallbackでメモ化（anilistIdを受け取る）
+  const handleRemove = useCallback((anilistId: number) => {
+    handleRemoveFromWatchlist(anilistId);
+  }, [handleRemoveFromWatchlist]);
+
+  // 視聴済みマークハンドラーをuseCallbackでメモ化（itemを受け取る）
+  const handleMarkAsWatchedClick = useCallback((item: WatchlistItem) => {
+    openWatchedModal(item);
+  }, [openWatchedModal]);
+
   return (
     <>
       {/* 説明 */}
@@ -421,8 +431,8 @@ export function WatchlistTab({
             <WatchlistCard
               key={item.id}
               item={item}
-              onRemove={() => handleRemoveFromWatchlist(item.anilist_id)}
-              onMarkAsWatched={() => openWatchedModal(item)}
+              onRemove={() => handleRemove(item.anilist_id)}
+              onMarkAsWatched={() => handleMarkAsWatchedClick(item)}
             />
           ))}
         </div>

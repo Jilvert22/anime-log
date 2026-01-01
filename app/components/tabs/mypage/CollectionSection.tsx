@@ -108,27 +108,34 @@ export default function CollectionSection(props: CollectionSectionProps) {
     ? props.favoriteCharacters.filter(c => c.category === props.characterFilter)
     : props.favoriteCharacters;
 
-  const allQuotesList: Array<{ text: string; character?: string; animeTitle: string; animeId: number }> = [];
-  props.allAnimes.forEach((anime) => {
-    anime.quotes?.forEach((quote) => {
-      allQuotesList.push({ ...quote, animeTitle: anime.title, animeId: anime.id });
+  // allQuotesListをuseMemoでメモ化
+  const allQuotesList = useMemo(() => {
+    const quotes: Array<{ text: string; character?: string; animeTitle: string; animeId: number }> = [];
+    props.allAnimes.forEach((anime) => {
+      anime.quotes?.forEach((quote) => {
+        quotes.push({ ...quote, animeTitle: anime.title, animeId: anime.id });
+      });
     });
-  });
+    return quotes;
+  }, [props.allAnimes]);
 
-  const filteredQuotes = allQuotesList.filter(quote => {
-    if (props.quoteSearchQuery && !quote.text.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()) &&
-        !quote.animeTitle.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()) &&
-        !(quote.character && quote.character.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()))) {
-      return false;
-    }
-    if (props.quoteFilterType === 'anime' && props.selectedAnimeForFilter && quote.animeId !== props.selectedAnimeForFilter) {
-      return false;
-    }
-    if (props.quoteFilterType === 'character' && !quote.character) {
-      return false;
-    }
-    return true;
-  });
+  // filteredQuotesをuseMemoでメモ化
+  const filteredQuotes = useMemo(() => {
+    return allQuotesList.filter(quote => {
+      if (props.quoteSearchQuery && !quote.text.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()) &&
+          !quote.animeTitle.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()) &&
+          !(quote.character && quote.character.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()))) {
+        return false;
+      }
+      if (props.quoteFilterType === 'anime' && props.selectedAnimeForFilter && quote.animeId !== props.selectedAnimeForFilter) {
+        return false;
+      }
+      if (props.quoteFilterType === 'character' && !quote.character) {
+        return false;
+      }
+      return true;
+    });
+  }, [allQuotesList, props.quoteSearchQuery, props.quoteFilterType, props.selectedAnimeForFilter]);
 
   return (
     <div className="bg-white dark:bg-gray-800/40 rounded-2xl p-5 backdrop-blur shadow-md">

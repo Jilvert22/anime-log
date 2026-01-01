@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useProfile } from './useProfile';
 import { useAvatar } from './useAvatar';
 import { useFavoriteAnime } from './useFavoriteAnime';
@@ -38,6 +38,38 @@ export function useUserProfile() {
   const userBio = profile.profile?.bio || '';
   const myProfile = profile.profile;
 
+  // 既存のsetterも維持（必要に応じて）- useCallbackでメモ化
+  const setUserName = useCallback((name: string) => {
+    profile.saveProfile({ username: name });
+  }, [profile.saveProfile]);
+  
+  const setUserIcon = useCallback((file: File) => {
+    profile.saveProfile({ avatarFile: file });
+  }, [profile.saveProfile]);
+  
+  const setUserHandle = useCallback((handle: string | null) => {
+    profile.saveProfile({ handle });
+  }, [profile.saveProfile]);
+  
+  const setUserOtakuType = useCallback((type: string) => {
+    // localStorageに保存（後でSupabaseに保存される）
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userOtakuType', type);
+    }
+  }, []);
+  
+  const setIsProfilePublic = useCallback((isPublic: boolean) => {
+    profile.saveProfile({ is_public: isPublic });
+  }, [profile.saveProfile]);
+  
+  const setUserBio = useCallback((bio: string) => {
+    profile.saveProfile({ bio });
+  }, [profile.saveProfile]);
+  
+  const setMyProfile = useCallback((newProfile: UserProfile | null) => {
+    profile.setProfile(newProfile);
+  }, [profile.setProfile]);
+
   return {
     // 新しいAPI
     profile: profile.profile,
@@ -61,17 +93,12 @@ export function useUserProfile() {
     setFavoriteAnimeIds,
     
     // 既存のsetterも維持（必要に応じて）
-    setUserName: (name: string) => profile.saveProfile({ username: name }),
-    setUserIcon: (file: File) => profile.saveProfile({ avatarFile: file }),
-    setUserHandle: (handle: string | null) => profile.saveProfile({ handle }),
-    setUserOtakuType: (type: string) => {
-      // localStorageに保存（後でSupabaseに保存される）
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('userOtakuType', type);
-      }
-    },
-    setIsProfilePublic: (isPublic: boolean) => profile.saveProfile({ is_public: isPublic }),
-    setUserBio: (bio: string) => profile.saveProfile({ bio }),
-    setMyProfile: (newProfile: UserProfile | null) => profile.setProfile(newProfile),
+    setUserName,
+    setUserIcon,
+    setUserHandle,
+    setUserOtakuType,
+    setIsProfilePublic,
+    setUserBio,
+    setMyProfile,
   };
 }

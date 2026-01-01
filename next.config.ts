@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 // @ts-ignore - next-pwa doesn't have type definitions
 import withPWA from "next-pwa";
+// @ts-ignore - @next/bundle-analyzer doesn't have type definitions
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig: NextConfig = {
   images: {
@@ -50,4 +56,5 @@ const pwaConfig = withPWA({
   ],
 });
 
-export default pwaConfig(nextConfig);
+// bundle-analyzerとPWAの両方を適用
+export default withBundleAnalyzer(pwaConfig(nextConfig));

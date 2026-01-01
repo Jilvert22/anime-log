@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { supabase } from '../lib/supabase';
 import type { 
   Season, 
@@ -8,21 +9,47 @@ import type {
 } from '../types';
 import type { UserProfile } from '../lib/api';
 import { HomeTab } from './tabs/HomeTab';
-import MyPageTab from './tabs/MyPageTab';
 import { ReviewModal } from './modals/ReviewModal';
 import { SettingsModal } from './modals/SettingsModal';
 import { AuthModal } from './modals/AuthModal';
 import { FavoriteAnimeModal } from './modals/FavoriteAnimeModal';
-import { SongModal } from './modals/SongModal';
-import { UserProfileModal } from './modals/UserProfileModal';
-import { FollowListModal } from './modals/FollowListModal';
-import { AddCharacterModal } from './modals/AddCharacterModal';
-import { AddQuoteModal } from './modals/AddQuoteModal';
-import { DNAModal } from './modals/DNAModal';
 import { AddAnimeFormModal } from './modals/AddAnimeFormModal';
 import { AnimeDetailModal } from './modals/AnimeDetailModal';
-import { SeasonEndModal } from './modals/SeasonEndModal';
 import { Navigation } from './Navigation';
+
+// 頻繁に使わないモーダルを動的インポート
+const MyPageTab = dynamic(() => import('./tabs/MyPageTab'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
+});
+
+const SongModal = dynamic(() => import('./modals/SongModal').then(mod => ({ default: mod.SongModal })), {
+  ssr: false,
+});
+
+const UserProfileModal = dynamic(() => import('./modals/UserProfileModal').then(mod => ({ default: mod.UserProfileModal })), {
+  ssr: false,
+});
+
+const FollowListModal = dynamic(() => import('./modals/FollowListModal').then(mod => ({ default: mod.FollowListModal })), {
+  ssr: false,
+});
+
+const AddCharacterModal = dynamic(() => import('./modals/AddCharacterModal').then(mod => ({ default: mod.AddCharacterModal })), {
+  ssr: false,
+});
+
+const AddQuoteModal = dynamic(() => import('./modals/AddQuoteModal').then(mod => ({ default: mod.AddQuoteModal })), {
+  ssr: false,
+});
+
+const DNAModal = dynamic(() => import('./modals/DNAModal').then(mod => ({ default: mod.DNAModal })), {
+  ssr: false,
+});
+
+const SeasonEndModal = dynamic(() => import('./modals/SeasonEndModal').then(mod => ({ default: mod.SeasonEndModal })), {
+  ssr: false,
+});
 import { useAnimeReviews } from '../hooks/useAnimeReviews';
 import { useAuth } from '../hooks/useAuth';
 import { useUserProfile } from '../hooks/useUserProfile';

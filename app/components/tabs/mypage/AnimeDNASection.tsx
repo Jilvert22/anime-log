@@ -1,12 +1,17 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import html2canvas from 'html2canvas';
+import dynamic from 'next/dynamic';
 import { createRoot } from 'react-dom/client';
 import type { Anime, Season } from '../../../types';
 import { otakuTypes } from '../../../constants';
-import { QRCodeSVG } from 'qrcode.react';
 import DNACardForExport from './DNACardForExport';
+
+// QRCodeSVGを動的インポート
+const QRCodeSVG = dynamic(
+  () => import('qrcode.react').then(mod => ({ default: mod.QRCodeSVG })),
+  { ssr: false }
+);
 
 import { getSiteUrl } from '../../../lib/env';
 
@@ -398,7 +403,8 @@ export default function AnimeDNASection({
               // 4. 画像を読み込む時間を待つ（プロキシ経由の画像取得を待つ）
               await new Promise(resolve => setTimeout(resolve, 1500));
 
-              // 5. html2canvasで画像化
+              // 5. html2canvasで画像化（動的インポート）
+              const html2canvas = (await import('html2canvas')).default;
               const targetElement = container.firstChild as HTMLElement;
               
               if (!targetElement) {

@@ -1,11 +1,25 @@
 'use client';
 
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef, memo } from 'react';
+import dynamic from 'next/dynamic';
 import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../../types';
 import { AnimeCard } from '../AnimeCard';
-import { GalleryTab } from './GalleryTab';
-import { WatchlistTab } from './WatchlistTab';
-import SeasonWatchlistTab from './SeasonWatchlistTab';
+
+// タブコンポーネントを動的インポート（初期表示タブ以外）
+const GalleryTab = dynamic(() => import('./GalleryTab').then(mod => ({ default: mod.GalleryTab })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
+});
+
+const WatchlistTab = dynamic(() => import('./WatchlistTab').then(mod => ({ default: mod.WatchlistTab })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
+});
+
+const SeasonWatchlistTab = dynamic(() => import('./SeasonWatchlistTab'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
+});
 import { searchAnimeBySeason } from '../../lib/anilist';
 import { translateGenre, sortSeasonsByTime, getNextSeason, isNextSeason } from '../../utils/helpers';
 import { getBroadcastInfo } from '../../lib/anilist';
@@ -19,7 +33,7 @@ import { useCountAnimation } from '../../hooks/useCountAnimation';
 type FilterType = 'all' | 'unrated' | 'unwatched';
 
 // YearHeaderコンポーネント
-function YearHeader({ 
+const YearHeader = memo(function YearHeader({ 
   year, 
   animes, 
   isExpanded, 
@@ -64,10 +78,10 @@ function YearHeader({
       </div>
     </button>
   );
-}
+});
 
 // SeasonHeaderコンポーネント
-function SeasonHeader({ 
+const SeasonHeader = memo(function SeasonHeader({ 
   season, 
   animes, 
   isExpanded, 
@@ -142,7 +156,7 @@ function SeasonHeader({
       )}
     </div>
   );
-}
+});
 
 export function HomeTab({
   homeSubTab,
@@ -463,6 +477,20 @@ export function HomeTab({
     }
     setExpandedSeasons(newExpanded);
   }, [expandedSeasons, setExpandedSeasons, yearSeasonData, seasonSearchResults, loadingSeasons, searchSeasonAnimes, setExpandedSeasonSearches]);
+
+  // 登録済みクールの検索ハンドラー（useCallbackでメモ化）
+  const handleSeasonSearch = useCallback((year: string, season: string) => {
+    const seasonKey = `${year}-${season}`;
+    // 登録済みクールの検索
+    if (!seasonSearchResults.has(seasonKey) && !loadingSeasons.has(seasonKey)) {
+      searchSeasonAnimes(year, season, false).then(() => {
+        setExpandedSeasonSearches(prev => new Set(prev).add(seasonKey));
+      });
+    } else if (seasonSearchResults.has(seasonKey)) {
+      // 既に検索結果がある場合は展開
+      setExpandedSeasonSearches(prev => new Set(prev).add(seasonKey));
+    }
+  }, [seasonSearchResults, loadingSeasons, searchSeasonAnimes, setExpandedSeasonSearches]);
 
   // 検索結果から作品を追加
   const addAnimeFromSearch = useCallback(async (result: AniListSearchResult, year: string, season: string) => {
@@ -825,17 +853,7 @@ export function HomeTab({
                             isExpanded={isExpanded}
                             onToggle={() => toggleSeason(year, season)}
                             isEmpty={isEmpty}
-                            onSearch={!isEmpty ? () => {
-                              // 登録済みクールの検索
-                              if (!seasonSearchResults.has(seasonKey) && !loadingSeasons.has(seasonKey)) {
-                                searchSeasonAnimes(year, season, false).then(() => {
-                                  setExpandedSeasonSearches(prev => new Set(prev).add(seasonKey));
-                                });
-                              } else if (seasonSearchResults.has(seasonKey)) {
-                                // 既に検索結果がある場合は展開
-                                setExpandedSeasonSearches(prev => new Set(prev).add(seasonKey));
-                              }
-                            } : undefined}
+                            onSearch={!isEmpty ? () => handleSeasonSearch(year, season) : undefined}
                           />
                           
                           {isExpanded && (

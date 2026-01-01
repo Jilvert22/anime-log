@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useMemo } from 'react';
 import { useModals } from '../hooks/useModals';
 import { useModalActions } from '../hooks/useModalActions';
 import { useFormStates } from '../hooks/useFormStates';
@@ -39,8 +39,15 @@ export function ModalProvider({ children, setSelectedAnime }: ModalProviderProps
     allAnimes,
   });
   
+  // valueをメモ化（setState関数はReactが保証する安定した参照のため依存配列から除外）
+  const value = useMemo(() => ({
+    modals,
+    actions,
+    formStates,
+  }), [modals, actions, formStates]);
+  
   return (
-    <ModalContext.Provider value={{ modals, actions, formStates }}>
+    <ModalContext.Provider value={value}>
       {children}
     </ModalContext.Provider>
   );

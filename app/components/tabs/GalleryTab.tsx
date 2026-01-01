@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import Image from 'next/image';
 import type { Anime } from '../../types';
 
 // サムネイルのみのカード
-function ThumbnailCard({ 
+const ThumbnailCard = memo(function ThumbnailCard({ 
   anime, 
   onClick, 
   selected, 
@@ -66,7 +66,7 @@ function ThumbnailCard({
       </div>
     </div>
   );
-}
+});
 
 // フォルダの型定義
 type Folder = {
@@ -148,6 +148,11 @@ export function GalleryTab({
     setSelectedAnimeIds(new Set());
     setNewFolderName('');
   }, []);
+
+  // アニメクリックハンドラーをuseCallbackでメモ化
+  const handleAnimeClick = useCallback((anime: Anime) => {
+    setSelectedAnime(anime);
+  }, [setSelectedAnime]);
 
   return (
     <>
@@ -250,7 +255,7 @@ export function GalleryTab({
             <ThumbnailCard
               key={anime.id}
               anime={anime}
-              onClick={() => setSelectedAnime(anime)}
+              onClick={() => handleAnimeClick(anime)}
               selected={selectedAnimeIds.has(anime.id)}
               onSelect={toggleSelection}
               selectionMode={selectionMode}

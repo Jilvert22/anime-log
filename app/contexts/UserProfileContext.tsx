@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useMemo } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
 
 // 型定義
@@ -11,8 +11,12 @@ const UserProfileContext = createContext<UserProfileContextType | null>(null);
 // Provider
 export function UserProfileProvider({ children }: { children: ReactNode }) {
   const profile = useUserProfile();
+  
+  // valueをメモ化（profileオブジェクト全体を依存配列に含める）
+  const value = useMemo(() => profile, [profile]);
+  
   return (
-    <UserProfileContext.Provider value={profile}>
+    <UserProfileContext.Provider value={value}>
       {children}
     </UserProfileContext.Provider>
   );
