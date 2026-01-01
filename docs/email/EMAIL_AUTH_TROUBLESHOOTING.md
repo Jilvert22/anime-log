@@ -14,15 +14,15 @@ Supabaseダッシュボード → Authentication → URL Configuration で以下
 
 **Site URL（必須）**
 - ローカル: `http://localhost:3000`
-- 本番: `https://anime-log-rho.vercel.app`（または実際の本番URL）
+- 本番: `https://animelog.jp`（または実際の本番URL）
 
 **Redirect URLs（許可リスト）**
 以下のURLを追加：
 ```
 http://localhost:3000/**
 http://localhost:3000/auth/callback
-https://anime-log-rho.vercel.app/**
-https://anime-log-rho.vercel.app/auth/callback
+https://animelog.jp/**
+https://animelog.jp/auth/callback
 ```
 
 **注意**: `**` はワイルドカードで、すべてのパスを許可します。
@@ -46,7 +46,7 @@ Vercelダッシュボード → Settings → Environment Variables で以下を�
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-NEXT_PUBLIC_SITE_URL=https://anime-log-rho.vercel.app
+NEXT_PUBLIC_SITE_URL=https://animelog.jp
 ```
 
 **確認方法**:

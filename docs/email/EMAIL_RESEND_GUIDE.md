@@ -51,7 +51,7 @@ async function resendConfirmationEmail(email) {
     type: 'signup',
     email: email,
     options: {
-      emailRedirectTo: 'https://anime-log-rho.vercel.app/auth/callback'
+      emailRedirectTo: 'https://animelog.jp/auth/callback'
     }
   });
 

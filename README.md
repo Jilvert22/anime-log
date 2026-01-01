@@ -2,7 +2,9 @@
 
 自分だけのアニメ視聴履歴を記録・管理するWebアプリ
 
-🔗 **本番URL**: https://anime-log-rho.vercel.app/
+🔗 **本番URL**: https://animelog.jp/
+
+📖 **詳細なプロジェクトドキュメント**: [PROJECT.md](./PROJECT.md) を参照してください
 
 ## 特徴
 

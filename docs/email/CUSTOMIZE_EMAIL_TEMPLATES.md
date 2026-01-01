@@ -104,7 +104,7 @@ Supabaseから送信される認証メール（確認メール、パスワード
 メールテンプレートで使用するサイト名を設定します。
 
 1. **「Authentication」** → **「URL Configuration」** を選択
-2. **「Site URL」** を設定（例: `https://anime-log-rho.vercel.app`）
+2. **「Site URL」** を設定（例: `https://animelog.jp`）
 3. サイト名は自動的にドメインから取得されますが、カスタマイズしたい場合はメールテンプレート内で直接記述することもできます
 
 ### 6. プレビューとテスト

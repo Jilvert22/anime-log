@@ -130,12 +130,12 @@ SMTP Password: [AWS SESのSMTPパスワード]
 1. Supabaseダッシュボード → **Authentication** → **URL Configuration**
 2. **Site URL** が本番URLに設定されているか確認：
    ```
-   https://anime-log-rho.vercel.app
+   https://animelog.jp
    ```
 3. **Redirect URLs** に以下が含まれているか確認：
    ```
-   https://anime-log-rho.vercel.app/**
-   https://anime-log-rho.vercel.app/auth/callback
+   https://animelog.jp/**
+   https://animelog.jp/auth/callback
    ```
 
 ### 7. テスト方法
@@ -153,7 +153,7 @@ const { data, error } = await supabase.auth.resend({
   type: 'signup',
   email: 'rikunagayasu34+test@gmail.com',
   options: {
-    emailRedirectTo: 'https://anime-log-rho.vercel.app/auth/callback'
+    emailRedirectTo: 'https://animelog.jp/auth/callback'
   }
 });
 
