@@ -62,7 +62,13 @@ export function useProfile({ updateAvatarUrl, uploadAvatar }: UseProfileProps) {
           .single();
         
         if (createError) {
-          console.error('Profile create error:', createError);
+          console.error('Profile create error:', {
+            code: createError.code,
+            message: createError.message,
+            details: createError.details,
+            hint: createError.hint,
+            error: createError,
+          });
         } else if (created) {
           setProfile(created);
           localStorage.setItem('userProfile', JSON.stringify(created));

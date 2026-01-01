@@ -115,9 +115,17 @@ export async function signUp(
       throw new AuthenticationError('パスワードは6文字以上で入力してください');
     }
     
+    // メール確認後のリダイレクトURLを設定
+    const redirectTo = typeof window !== 'undefined' 
+      ? `${window.location.origin}/auth/callback`
+      : undefined;
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: redirectTo,
+      },
     });
     
     if (error) {
