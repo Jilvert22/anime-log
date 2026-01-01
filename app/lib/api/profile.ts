@@ -13,6 +13,13 @@ import {
   logError,
   normalizeError,
 } from './errors';
+import {
+  validateUsername,
+  validateHandle,
+  validateLength,
+  INPUT_LIMITS,
+  throwIfInvalid,
+} from '../validation';
 import type { UserProfile, UserProfileInput } from './types';
 
 /**
@@ -89,6 +96,28 @@ export async function uploadAvatar(file: File): Promise<string> {
 export async function upsertUserProfile(profile: UserProfileInput): Promise<UserProfile> {
   try {
     const user = await requireAuth();
+
+    // 入力値のバリデーション
+    // usernameの検証
+    if (profile.username) {
+      throwIfInvalid(validateUsername(profile.username));
+    }
+
+    // bioの検証
+    if (profile.bio !== undefined && profile.bio !== null) {
+      throwIfInvalid(validateLength(profile.bio, '自己紹介', INPUT_LIMITS.bio));
+    }
+
+    // handleの検証（正規化前の値で検証）
+    if (profile.handle) {
+      const handleValidation = validateHandle(profile.handle);
+      throwIfInvalid(handleValidation);
+    }
+
+    // otaku_type_customの検証
+    if (profile.otaku_type_custom !== undefined && profile.otaku_type_custom !== null) {
+      throwIfInvalid(validateLength(profile.otaku_type_custom, 'カスタムオタクタイプ', INPUT_LIMITS.otakuTypeCustom));
+    }
 
     // 既存のプロフィールを取得
     const { data: existingProfile } = await supabase

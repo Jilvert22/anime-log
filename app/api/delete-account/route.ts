@@ -4,6 +4,55 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getSupabaseEnv, getSupabaseServiceRoleKey } from '@/app/lib/env';
 
+// レート制限の設定
+const RATE_LIMIT = {
+  maxAttempts: 3,        // 最大試行回数
+  windowMs: 60 * 60 * 1000,  // 1時間（ミリ秒）
+};
+
+// インメモリレート制限ストア
+// 注意: 本番環境で複数のインスタンスが存在する場合、Vercel KVやUpstash Redisなどの
+// 永続的なストレージを使用することを推奨
+const deleteAttempts = new Map<string, { count: number; resetTime: number }>();
+
+/**
+ * レート制限をチェック
+ * @param userId ユーザーID
+ * @returns レート制限内の場合はtrue、超過の場合はfalse
+ */
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const record = deleteAttempts.get(userId);
+  
+  // レコードが存在しない、または時間ウィンドウがリセットされている場合
+  if (!record || now > record.resetTime) {
+    deleteAttempts.set(userId, { count: 1, resetTime: now + RATE_LIMIT.windowMs });
+    return true;
+  }
+  
+  // 試行回数が上限に達している場合
+  if (record.count >= RATE_LIMIT.maxAttempts) {
+    return false;
+  }
+  
+  // 試行回数をインクリメント
+  record.count++;
+  return true;
+}
+
+/**
+ * 古いレコードをクリーンアップ（メモリリーク防止）
+ * 定期的に呼び出されることを想定（現在は各リクエスト時に簡易チェック）
+ */
+function cleanupOldRecords() {
+  const now = Date.now();
+  for (const [userId, record] of deleteAttempts.entries()) {
+    if (now > record.resetTime) {
+      deleteAttempts.delete(userId);
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Route Handler用のSupabaseクライアントを作成（認証確認用）
@@ -46,6 +95,17 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = user.id;
+
+    // 古いレコードをクリーンアップ
+    cleanupOldRecords();
+
+    // レート制限チェック
+    if (!checkRateLimit(userId)) {
+      return NextResponse.json(
+        { error: 'リクエストが多すぎます。しばらく時間をおいてから再度お試しください。' },
+        { status: 429 }
+      );
+    }
 
     // Supabaseクライアントを作成（サービスロールキーを使用）
     const supabaseServiceKey = getSupabaseServiceRoleKey();

@@ -12,6 +12,11 @@ import {
   logError,
   normalizeError,
 } from './errors';
+import {
+  validateLength,
+  INPUT_LIMITS,
+  throwIfInvalid,
+} from '../validation';
 import type { WatchlistItem, WatchlistItemInput, WatchlistItemUpdate, Season } from './types';
 
 /**
@@ -53,6 +58,11 @@ export async function getWatchlist(userId?: string): Promise<WatchlistItem[]> {
 export async function addToWatchlist(item: WatchlistItemInput): Promise<WatchlistItem> {
   try {
     const user = await requireAuth();
+
+    // memoのバリデーション
+    if (item.memo !== undefined && item.memo !== null) {
+      throwIfInvalid(validateLength(item.memo, 'メモ', INPUT_LIMITS.watchlistMemo));
+    }
 
     // anilist_idが-1でない場合は重複チェック
     if (item.anilist_id !== -1) {
@@ -140,6 +150,11 @@ export async function updateWatchlistItem(
 ): Promise<WatchlistItem> {
   try {
     const user = await requireAuth();
+
+    // memoのバリデーション
+    if (updates.memo !== undefined && updates.memo !== null) {
+      throwIfInvalid(validateLength(updates.memo, 'メモ', INPUT_LIMITS.watchlistMemo));
+    }
 
     const { data, error } = await supabase
       .from('watchlist')

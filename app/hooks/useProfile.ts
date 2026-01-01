@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from '../lib/api';
 import { upsertUserProfile, onAuthStateChange } from '../lib/api';
+import { ApiError } from '../lib/api/errors';
 
 interface UseProfileProps {
   updateAvatarUrl: (avatarUrl: string | null) => void;
@@ -148,7 +149,16 @@ export function useProfile({ updateAvatarUrl, uploadAvatar }: UseProfileProps) {
       return { success: true, data: savedProfile };
     } catch (err) {
       console.error('Profile save error:', err);
-      return { success: false, error: 'Unknown error' };
+      
+      // エラーメッセージを取得
+      let errorMessage = 'プロフィールの保存に失敗しました';
+      if (err instanceof ApiError) {
+        errorMessage = err.message;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
+      return { success: false, error: errorMessage };
     }
   }, [profile, uploadAvatar, updateAvatarUrl]);
 

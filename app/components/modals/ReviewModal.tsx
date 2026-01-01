@@ -4,6 +4,8 @@ import { useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { Anime } from '../../types';
 import { supabase } from '../../lib/supabase';
+import { INPUT_LIMITS, validateLength, throwIfInvalid } from '../../lib/validation';
+import { ValidationError } from '../../lib/api/errors';
 
 export function ReviewModal({
   show,
@@ -34,6 +36,20 @@ export function ReviewModal({
     
     if (reviewMode === 'episode' && !newReviewEpisodeNumber) {
       alert('話数を入力してください');
+      return;
+    }
+
+    // 感想内容のバリデーション
+    try {
+      throwIfInvalid(validateLength(newReviewContent, '感想', INPUT_LIMITS.reviewContent));
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        alert(error.message);
+      } else if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('感想の長さが制限を超えています');
+      }
       return;
     }
 
@@ -157,9 +173,21 @@ export function ReviewModal({
           <textarea
             value={newReviewContent}
             onChange={(e) => setNewReviewContent(e.target.value)}
+            maxLength={INPUT_LIMITS.reviewContent.max}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white min-h-[120px]"
             placeholder="感想を入力してください..."
           />
+          <div className="mt-1 text-right">
+            <span
+              className={`text-xs ${
+                newReviewContent.length > INPUT_LIMITS.reviewContent.max * 0.9
+                  ? 'text-red-500'
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              {newReviewContent.length} / {INPUT_LIMITS.reviewContent.max}
+            </span>
+          </div>
         </div>
 
         {/* ネタバレチェック */}
