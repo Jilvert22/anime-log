@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { getSupabaseEnv } from '../../lib/env';
 import { supabase } from '../../lib/supabase';
 import { signInWithPassword, signUp, resetPasswordForEmail } from '../../lib/api';
+import { TermsPrivacyModal } from './TermsPrivacyModal';
 
 type PasswordStrength = {
   level: 'weak' | 'fair' | 'good' | 'strong';
@@ -84,6 +85,8 @@ export function AuthModal({
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isMigrating, setIsMigrating] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // localStorageからSupabaseへのマイグレーション
   const migrateLocalStorageToSupabase = async () => {
@@ -496,25 +499,29 @@ export function AuthModal({
                     className="mt-1 w-4 h-4 text-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                   />
                   <span>
-                    <a
-                      href="/terms"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowTermsModal(true);
+                      }}
                       className="text-[#e879d4] hover:text-[#f09fe3] underline"
-                      onClick={(e) => e.stopPropagation()}
                     >
                       利用規約
-                    </a>
+                    </button>
                     と
-                    <a
-                      href="/privacy"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowPrivacyModal(true);
+                      }}
                       className="text-[#e879d4] hover:text-[#f09fe3] underline"
-                      onClick={(e) => e.stopPropagation()}
                     >
                       プライバシーポリシー
-                    </a>
+                    </button>
                     に同意する
                   </span>
                 </label>
@@ -556,6 +563,20 @@ export function AuthModal({
           </>
         )}
       </div>
+
+      {/* 利用規約モーダル */}
+      <TermsPrivacyModal
+        show={showTermsModal}
+        type="terms"
+        onClose={() => setShowTermsModal(false)}
+      />
+
+      {/* プライバシーポリシーモーダル */}
+      <TermsPrivacyModal
+        show={showPrivacyModal}
+        type="privacy"
+        onClose={() => setShowPrivacyModal(false)}
+      />
     </div>
   );
 }

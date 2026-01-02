@@ -16,6 +16,7 @@ import { FavoriteAnimeModal } from './modals/FavoriteAnimeModal';
 import { AddAnimeFormModal } from './modals/AddAnimeFormModal';
 import { AnimeDetailModal } from './modals/AnimeDetailModal';
 import { Navigation } from './Navigation';
+import { PWAInstallBanner } from './PWAInstallBanner';
 
 // 頻繁に使わないモーダルを動的インポート
 const MyPageTab = dynamic(() => import('./tabs/MyPageTab'), {
@@ -616,6 +617,9 @@ export default function HomeClient({}: HomeClientProps) {
           onKeep={handleKeepPreviousSeason}
         />
       )}
+
+      {/* PWAインストールバナー */}
+      <PWAInstallBanner />
 
       </div>
     </ModalProvider>

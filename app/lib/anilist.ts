@@ -22,6 +22,7 @@ export type AniListMedia = {
   externalLinks?: {
     site: string;
     url: string;
+    type?: string;
   }[];
   format?: string;
   episodes?: number | null;
@@ -37,6 +38,17 @@ export type AniListMedia = {
     timeUntilAiring: number;
     episode: number;
   } | null;
+  description?: string | null;
+  tags?: {
+    name: string;
+  }[];
+  duration?: number | null;
+  source?: string | null;
+  trailer?: {
+    id: string | null;
+    site: string | null;
+  } | null;
+  averageScore?: number | null;
 };
 
 export async function searchAnime(query: string) {
@@ -292,4 +304,81 @@ export function getBroadcastInfo(anime: AniListMedia): { day: number | null; tim
   const time = `${hours}:${minutes}`;
   
   return { day: jstDay, time };
+}
+
+// アニメの詳細情報を取得（AniList IDから）
+export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | null> {
+  const graphqlQuery = {
+    query: `
+      query ($id: Int) {
+        Media(id: $id, type: ANIME) {
+          id
+          title {
+            native
+            romaji
+            english
+          }
+          coverImage {
+            medium
+            large
+          }
+          description
+          genres
+          tags {
+            name
+          }
+          episodes
+          duration
+          source
+          studios {
+            nodes {
+              name
+            }
+          }
+          trailer {
+            id
+            site
+          }
+          averageScore
+          nextAiringEpisode {
+            airingAt
+            timeUntilAiring
+            episode
+          }
+          externalLinks {
+            url
+            site
+            type
+          }
+          seasonYear
+          season
+        }
+      }
+    `,
+    variables: { id: anilistId }
+  };
+
+  try {
+    const response = await fetch(ANILIST_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(graphqlQuery)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.errors) {
+      console.error('AniList API エラー:', data.errors);
+      return null;
+    }
+    
+    return data.data?.Media as AniListMedia | null;
+  } catch (error) {
+    console.error('アニメ詳細情報の取得に失敗しました:', error);
+    return null;
+  }
 }

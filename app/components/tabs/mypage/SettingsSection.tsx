@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { getSession, signOut, updateEmail, updatePassword } from '../../../lib/api';
 import { useAuth } from '../../../hooks/useAuth';
+import { usePWAInstall } from '../../../hooks/usePWAInstall';
+import { track } from '@vercel/analytics/react';
 
 type PasswordStrength = {
   level: 'weak' | 'fair' | 'good' | 'strong';
@@ -73,10 +75,12 @@ interface SettingsSectionProps {
 
 export default function SettingsSection({ onOpenSettingsModal, handleLogout }: SettingsSectionProps) {
   const { user } = useAuth();
+  const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
+  const [showPWAInstallModal, setShowPWAInstallModal] = useState(false);
   
   // メールアドレス変更用のstate
   const [showEmailChange, setShowEmailChange] = useState(false);
@@ -231,10 +235,44 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
     }
   };
 
+  const handlePWAInstall = async () => {
+    // 設定画面からのインストールクリックイベントを送信
+    track('pwa_install_settings_clicked', { platform: isIOS ? 'ios' : 'android' });
+    if (isIOS) {
+      setShowPWAInstallModal(true);
+    } else {
+      const success = await install();
+      if (success) {
+        setShowPWAInstallModal(false);
+      }
+    }
+  };
+
   return (
     <>
       <section className="space-y-2">
         <h2 className="text-xl font-bold px-4 text-[#6b5b6e] dark:text-white font-mixed">⚙️ 設定</h2>
+        
+        {/* PWAインストール（未インストール時のみ表示） */}
+        {!isInstalled && (
+          <div className="px-4">
+            <div className="bg-gradient-to-r from-[#e879d4] to-[#f09fe3] rounded-lg border border-gray-200 dark:border-gray-700 shadow-md">
+              <button
+                onClick={handlePWAInstall}
+                className="w-full px-4 py-4 flex items-center justify-between hover:opacity-90 transition-opacity"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📱</span>
+                  <div className="text-left">
+                    <div className="text-white font-bold text-base">アプリをインストール</div>
+                    <div className="text-white/90 text-sm">ホーム画面に追加でより快適に</div>
+                  </div>
+                </div>
+                <span className="text-white text-xl">→</span>
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* アカウント設定（折りたたみ可能） */}
         <div className="px-4">
@@ -670,6 +708,57 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 {removeDuplicatesLoading ? '削除中...' : '削除する'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* PWAインストール案内モーダル（iOS用） */}
+      {showPWAInstallModal && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowPWAInstallModal(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-4">📱</div>
+              <h2 className="text-xl font-bold mb-2 dark:text-white">
+                ホーム画面に追加
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                iOSの場合、以下の手順でアプリをインストールできます：
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-6 text-left">
+              <div className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Safariの下部にある<strong>共有ボタン（□↑）</strong>をタップ
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <strong>「ホーム画面に追加」</strong>を選択
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <strong>「追加」</strong>をタップ
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowPWAInstallModal(false)}
+              className="w-full bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
+            >
+              閉じる
+            </button>
           </div>
         </div>
       )}

@@ -147,6 +147,19 @@ export default function TermsPage() {
               以上
             </p>
           </div>
+
+          {/* 同意して登録画面に戻るボタン */}
+          <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => {
+                // 登録画面に戻る（ホームページに遷移）
+                window.location.href = '/';
+              }}
+              className="w-full bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
+            >
+              同意して登録画面に戻る
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useStorage } from '../../hooks/useStorage';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { getCurrentSeason, getNextSeason } from '../../utils/helpers';
 import { searchAnimeBySeasonAll, getBroadcastInfo, type AniListMedia } from '../../lib/anilist';
+import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
 
 // 視聴予定アニメカード
 function SeasonWatchlistCard({ 
@@ -14,12 +15,14 @@ function SeasonWatchlistCard({
   isSelectionMode,
   isSelected,
   onToggleSelect,
+  onCardClick,
 }: { 
   item: WatchlistItem; 
   onStatusChange: (anilistId: number, newStatus: 'planned' | 'watching' | 'completed') => void;
   isSelectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: () => void;
+  onCardClick?: () => void;
 }) {
   const [imageError, setImageError] = useState(false);
   const isImageUrl = item.image && (item.image.startsWith('http://') || item.image.startsWith('https://'));
@@ -59,10 +62,18 @@ function SeasonWatchlistCard({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group relative ${isSelected ? 'ring-2 ring-[#e879d4]' : ''}`}>
+    <div 
+      className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group relative cursor-pointer ${isSelected ? 'ring-2 ring-[#e879d4]' : ''}`}
+      onClick={(e) => {
+        if (!isSelectionMode && onCardClick) {
+          e.stopPropagation();
+          onCardClick();
+        }
+      }}
+    >
       {/* 選択モード時のチェックボックス */}
       {isSelectionMode && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
             checked={isSelected || false}
@@ -102,7 +113,10 @@ function SeasonWatchlistCard({
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2">
             {item.status && getNextStatus(item.status) && (
               <button
-                onClick={handleStatusChange}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStatusChange();
+                }}
                 className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
               >
                 {getStatusLabel(getNextStatus(item.status) || '')}にする
@@ -136,13 +150,15 @@ function SearchResultCard({
   anime,
   isAdded,
   onAdd,
+  onCardClick,
 }: {
   anime: AniListMedia;
   isAdded: boolean;
   onAdd: () => void;
+  onCardClick?: () => void;
 }) {
   return (
-    <div className="relative group">
+    <div className="relative group cursor-pointer" onClick={onCardClick}>
       {anime.coverImage?.large ? (
         <Image
           src={anime.coverImage.large}
@@ -158,6 +174,10 @@ function SearchResultCard({
           🎬
         </div>
       )}
+      {/* ホバー時のオーバーレイ */}
+      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+        <span className="text-white text-sm font-medium">詳細を見る</span>
+      </div>
       <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
         {anime.title?.native || anime.title?.romaji || 'タイトル不明'}
       </p>
@@ -195,6 +215,10 @@ export default function SeasonWatchlistTab() {
   // 選択モード関連の状態
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  // 詳細表示関連の状態
+  const [selectedItem, setSelectedItem] = useState<WatchlistItem | null>(null);
+  const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<AniListMedia | null>(null);
   
   const currentSeason = getCurrentSeason();
   const nextSeason = getNextSeason();
@@ -557,6 +581,7 @@ export default function SeasonWatchlistTab() {
                   anime={anime}
                   isAdded={isAnimeAdded(anime.id)}
                   onAdd={() => handleAddToWatchlist(anime)}
+                  onCardClick={() => setSelectedAnimeMedia(anime)}
                 />
               ))}
             </div>
@@ -703,6 +728,7 @@ export default function SeasonWatchlistTab() {
               isSelectionMode={isSelectionMode}
               isSelected={selectedIds.has(item.id)}
               onToggleSelect={() => toggleSelectItem(item.id)}
+              onCardClick={() => setSelectedItem(item)}
             />
           ))}
         </div>
@@ -720,6 +746,21 @@ export default function SeasonWatchlistTab() {
           </p>
         </div>
       ) : null}
+
+      {/* 詳細情報ボトムシート */}
+      <WatchlistDetailSheet
+        item={selectedItem}
+        animeMedia={selectedAnimeMedia}
+        onClose={() => {
+          setSelectedItem(null);
+          setSelectedAnimeMedia(null);
+        }}
+        onUpdate={() => {
+          loadWatchlist();
+          setSelectedItem(null);
+          setSelectedAnimeMedia(null);
+        }}
+      />
     </>
   );
 }
