@@ -18,25 +18,28 @@ export async function GET(request: Request) {
       )
     }
 
+    // リダイレクト先のURL
+    const redirectUrl = new URL(next, requestUrl.origin)
+    let redirectResponse = NextResponse.redirect(redirectUrl)
+
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+        getAll() {
+          return cookieStore.getAll()
         },
-        set(name: string, value: string, options: any) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set({ name, value, ...options })
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+            // リダイレクトレスポンスを再作成してCookieを設定
+            redirectResponse = NextResponse.redirect(redirectUrl)
+            cookiesToSet.forEach(({ name, value, options }) => {
+              redirectResponse.cookies.set(name, value, options)
+            })
           } catch (error) {
             // Cookieの設定に失敗した場合でも続行
-            console.error('Failed to set cookie:', error)
-          }
-        },
-        remove(name: string, options: any) {
-          try {
-            cookieStore.set({ name, value: '', ...options })
-          } catch (error) {
-            // Cookieの削除に失敗した場合でも続行
-            console.error('Failed to remove cookie:', error)
+            console.error('Failed to set cookies:', error)
           }
         },
       },
@@ -50,9 +53,12 @@ export async function GET(request: Request) {
         new URL(`/?error=${encodeURIComponent(error.message)}`, requestUrl.origin)
       )
     }
+
+    // 認証成功後、Cookieが設定されたリダイレクトレスポンスを返す
+    return redirectResponse
   }
 
-  // 認証成功後、指定されたページまたはホームにリダイレクト
+  // コードがない場合、指定されたページまたはホームにリダイレクト
   return NextResponse.redirect(new URL(next, requestUrl.origin))
 }
 
