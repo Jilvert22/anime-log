@@ -25,6 +25,8 @@ function SeasonWatchlistCard({
   onCardClick?: () => void;
 }) {
   const [imageError, setImageError] = useState(false);
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const isImageUrl = item.image && (item.image.startsWith('http://') || item.image.startsWith('https://'));
 
   const getStatusLabel = (status: string) => {
@@ -54,22 +56,67 @@ function SeasonWatchlistCard({
     }
   };
 
-  const handleStatusChange = () => {
-    const nextStatus = getNextStatus(item.status);
-    if (nextStatus && item.anilist_id) {
-      onStatusChange(item.anilist_id, nextStatus);
+  const handleStatusChange = (newStatus: 'planned' | 'watching' | 'completed') => {
+    if (item.anilist_id) {
+      onStatusChange(item.anilist_id, newStatus);
+      setShowStatusMenu(false);
     }
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (isSelectionMode) {
+      return;
+    }
+    
+    // ステータスメニューが表示されている場合は、詳細を開く
+    if (showStatusMenu) {
+      if (onCardClick) {
+        onCardClick();
+      }
+      setShowStatusMenu(false);
+      return;
+    }
+
+    // カードをタップしたらステータスメニューを表示
+    e.stopPropagation();
+    setShowStatusMenu(true);
+  };
+
+  // メニュー外をクリックしたら閉じる
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+        setShowStatusMenu(false);
+      }
+    };
+
+    if (showStatusMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      };
+    }
+  }, [showStatusMenu]);
+
+  // 利用可能なステータスオプションを取得
+  const getAvailableStatuses = (): Array<{ status: 'planned' | 'watching' | 'completed'; label: string; color: string }> => {
+    const allStatuses: Array<{ status: 'planned' | 'watching' | 'completed'; label: string; color: string }> = [
+      { status: 'planned', label: '視聴予定', color: 'bg-blue-500' },
+      { status: 'watching', label: '視聴中', color: 'bg-yellow-500' },
+      { status: 'completed', label: '視聴完了', color: 'bg-green-500' },
+    ];
+    
+    // 現在のステータス以外を返す
+    return allStatuses.filter(s => s.status !== item.status);
   };
 
   return (
     <div 
+      ref={cardRef}
       className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group relative cursor-pointer ${isSelected ? 'ring-2 ring-[#e879d4]' : ''}`}
-      onClick={(e) => {
-        if (!isSelectionMode && onCardClick) {
-          e.stopPropagation();
-          onCardClick();
-        }
-      }}
+      onClick={handleCardClick}
     >
       {/* 選択モード時のチェックボックス */}
       {isSelectionMode && (
@@ -108,20 +155,50 @@ function SeasonWatchlistCard({
           </div>
         )}
         
-        {/* ホバー時のステータス変更ボタン（選択モード時は非表示） */}
-        {!isSelectionMode && (
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2">
+        {/* ホバー時のステータス変更ボタン（デスクトップ用、選択モード時は非表示） */}
+        {!isSelectionMode && !showStatusMenu && (
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2 pointer-events-none md:pointer-events-auto">
             {item.status && getNextStatus(item.status) && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleStatusChange();
+                  handleStatusChange(getNextStatus(item.status)!);
                 }}
                 className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
               >
                 {getStatusLabel(getNextStatus(item.status) || '')}にする
               </button>
             )}
+          </div>
+        )}
+
+        {/* タップ時のステータス変更メニュー（モバイル用） */}
+        {!isSelectionMode && showStatusMenu && (
+          <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2 p-3 z-20">
+            <p className="text-white text-xs font-medium mb-1">ステータスを変更</p>
+            <div className="w-full flex flex-col gap-2">
+              {getAvailableStatuses().map((statusOption) => (
+                <button
+                  key={statusOption.status}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStatusChange(statusOption.status);
+                  }}
+                  className={`w-full py-2 ${statusOption.color} hover:opacity-90 text-white text-xs font-medium rounded-lg transition-opacity`}
+                >
+                  {statusOption.label}にする
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowStatusMenu(false);
+              }}
+              className="w-full py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg transition-colors mt-1"
+            >
+              キャンセル
+            </button>
           </div>
         )}
       </div>

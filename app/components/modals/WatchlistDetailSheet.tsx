@@ -17,6 +17,13 @@ interface WatchlistDetailSheetProps {
 }
 
 export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: WatchlistDetailSheetProps) {
+  console.log('🎬 WatchlistDetailSheet レンダリング', {
+    hasItem: !!item,
+    itemId: item?.id,
+    hasAnimeMedia: !!animeMedia,
+    animeMediaId: animeMedia?.id,
+  });
+  
   const [animeDetail, setAnimeDetail] = useState<AniListMedia | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedDescription, setExpandedDescription] = useState(false);
@@ -30,6 +37,11 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
   const [showCustomTime, setShowCustomTime] = useState(false);
   const storage = useStorage();
   const { user } = useAuth();
+  
+  console.log('👤 useAuth結果', {
+    hasUser: !!user,
+    userId: user?.id,
+  });
 
   // 表示するタイトルを決定（item優先、次にanimeMedia、最後にanimeDetail）
   const displayTitle = item?.title || 
@@ -63,10 +75,29 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
   }, [item]);
 
   useEffect(() => {
+    // デバッグ用カウンター
+    const countEl = document.getElementById('debug-useeffect-count');
+    if (countEl) {
+      const current = parseInt(countEl.textContent || '0', 10);
+      countEl.textContent = String(current + 1);
+    }
+    
+    console.log('🔍 通知設定useEffect実行', {
+      hasUser: !!user,
+      userId: user?.id,
+      hasItem: !!item,
+      itemId: item?.id,
+      itemObject: item,
+    });
+    
     // userとitemの両方が揃ったら通知設定を読み込む
     if (user && item?.id) {
+      console.log('✅ 条件満たしたので通知設定を読み込み開始');
       loadNotificationSettings();
     } else {
+      console.log('❌ 条件を満たしていないため通知設定をリセット', {
+        reason: !user ? 'userなし' : !item?.id ? 'item.idなし' : '不明',
+      });
       // userまたはitemがない場合は通知設定をリセット
       setNotificationEnabled(false);
       setNotificationTiming(['1hour']);
@@ -76,7 +107,15 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
   }, [user, item?.id]);
 
   const loadNotificationSettings = async () => {
+    console.log('loadNotificationSettings開始', {
+      hasUser: !!user,
+      userId: user?.id,
+      hasItem: !!item,
+      itemId: item?.id,
+    });
+    
     if (!user || !item?.id) {
+      console.log('loadNotificationSettings: userまたはitemがないためリセット');
       // itemがない場合は通知設定をリセット
       setNotificationEnabled(false);
       setNotificationTiming(['1hour']);
@@ -86,9 +125,11 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
     }
     
     // ローディング状態を設定（読み込み開始）
+    console.log('loadNotificationSettings: 読み込み開始、loadingNotificationをtrueに設定');
     setLoadingNotification(true);
     
     try {
+      console.log('loadNotificationSettings: Supabaseクエリ実行');
       const { data, error } = await supabase
         .from('notification_settings')
         .select('enabled, timing')
@@ -117,6 +158,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
       }
       
       if (data) {
+        console.log('loadNotificationSettings: データ取得成功', data);
         setNotificationEnabled(data.enabled);
         const timing = data.timing || ['1hour'];
         setNotificationTiming(timing);
@@ -131,6 +173,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
           setShowCustomTime(false);
         }
       } else {
+        console.log('loadNotificationSettings: データなし、デフォルト値を設定');
         setNotificationEnabled(false);
         setNotificationTiming(['1hour']);
         setShowCustomTime(false);
@@ -143,6 +186,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
       setShowCustomTime(false);
     } finally {
       // 必ずローディング状態を解除
+      console.log('loadNotificationSettings: 完了、loadingNotificationをfalseに設定');
       setLoadingNotification(false);
     }
   };
@@ -589,6 +633,18 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                   <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
                     通知設定
                   </h3>
+                  {/* デバッグ情報（常に表示） */}
+                  <div className="mb-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs">
+                    <div className="font-bold mb-1">🔍 デバッグ情報:</div>
+                    <div>loadingNotification: <strong>{String(loadingNotification)}</strong></div>
+                    <div>user: <strong>{user ? `存在 (${user.id?.substring(0, 8)}...)` : 'なし'}</strong></div>
+                    <div>item: <strong>{item ? '存在' : 'なし'}</strong></div>
+                    <div>item.id: <strong>{item?.id || 'なし'}</strong></div>
+                    <div>item?.anilist_id: <strong>{item?.anilist_id || 'なし'}</strong></div>
+                    <div>notificationEnabled: <strong>{String(notificationEnabled)}</strong></div>
+                    <div>disabled条件: <strong>{String(loadingNotification || !user || !item?.id)}</strong></div>
+                    <div>useEffect実行回数: <strong id="debug-useeffect-count">-</strong></div>
+                  </div>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -596,16 +652,31 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                       </label>
                       <button
                         onClick={() => {
+                          console.log('通知トグルクリック', {
+                            loadingNotification,
+                            hasUser: !!user,
+                            hasItem: !!item,
+                            itemId: item?.id,
+                            notificationEnabled,
+                          });
                           if (!loadingNotification && user && item?.id) {
                             handleNotificationToggle(!notificationEnabled);
                           } else {
-                            console.warn('通知設定を変更できません', { loadingNotification, hasUser: !!user, hasItem: !!item, itemId: item?.id });
+                            console.warn('通知設定を変更できません', {
+                              loadingNotification,
+                              hasUser: !!user,
+                              hasItem: !!item,
+                              itemId: item?.id,
+                            });
                           }
                         }}
                         disabled={loadingNotification || !user || !item?.id}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           notificationEnabled ? 'bg-[#e879d4]' : 'bg-gray-300 dark:bg-gray-600'
                         } ${loadingNotification || !user || !item?.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        style={{
+                          pointerEvents: loadingNotification || !user || !item?.id ? 'none' : 'auto',
+                        }}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
