@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getAnimeDetail, getBroadcastInfo, type AniListMedia } from '../../lib/anilist';
+import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { useStorage } from '../../hooks/useStorage';
 import { supabase } from '../../lib/supabase';
@@ -12,12 +13,14 @@ import { useAuth } from '../../hooks/useAuth';
 
 interface WatchlistDetailSheetProps {
   item?: WatchlistItem | null;
-  animeMedia?: AniListMedia | null;
+  animeMedia?: AniListMedia | AniListMediaWithStreaming | null;
   onClose: () => void;
   onUpdate?: () => void;
+  isWatchlistMode?: boolean; // 積みアニメモードかどうか
+  onMarkAsWatched?: (item: WatchlistItem) => void; // 視聴済みにするコールバック（積みアニメ用）
 }
 
-export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: WatchlistDetailSheetProps) {
+export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWatchlistMode = false, onMarkAsWatched }: WatchlistDetailSheetProps) {
   const [animeDetail, setAnimeDetail] = useState<AniListMedia | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedDescription, setExpandedDescription] = useState(false);
@@ -410,13 +413,22 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
   // itemもanimeMediaもない場合は表示しない
   if (!item && !animeMedia) return null;
 
-  const description = animeDetail?.description 
+  // Annictから取得した日本語あらすじを優先
+  const annictSynopsis = (animeMedia as AniListMediaWithStreaming)?.synopsisJa || null;
+  const anilistDescription = animeDetail?.description 
     ? animeDetail.description.replace(/<[^>]*>/g, '') // HTMLタグを除去
     : null;
+  
+  // 表示するあらすじを決定（Annict優先、次にAniList）
+  const description = annictSynopsis || anilistDescription;
+  const isJapaneseDescription = annictSynopsis ? true : (anilistDescription ? hasJapaneseCharacters(anilistDescription) : false);
   const shouldTruncateDescription = description && description.length > 200;
   const displayDescription = expandedDescription || !shouldTruncateDescription
     ? description
     : description?.substring(0, 200) + '...';
+  
+  // Annictから取得した放送情報を優先
+  const annictBroadcastTime = (animeMedia as AniListMediaWithStreaming)?.broadcastTime || null;
 
   // 配信サイトのフィルタリング（日本向けサービスを優先）
   const streamingSites = animeDetail?.externalLinks?.filter(link => {
@@ -475,8 +487,26 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
             </div>
           ) : (
             <>
-              {/* ステータス変更（itemがある場合のみ表示） */}
-              {item && (
+              {/* 積みアニメモード: 視聴済みにするボタン */}
+              {item && isWatchlistMode && onMarkAsWatched && (
+                <section>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    アクション
+                  </h3>
+                  <button
+                    onClick={() => {
+                      onMarkAsWatched(item);
+                      onClose();
+                    }}
+                    className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
+                  >
+                    視聴済みにする
+                  </button>
+                </section>
+              )}
+
+              {/* 来期視聴アニメモード: ステータス変更 */}
+              {item && !isWatchlistMode && (
                 <section>
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     視聴ステータス
@@ -504,13 +534,18 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                 </section>
               )}
 
-              {/* あらすじ */}
+              {/* あらすじ - 日本語優先 */}
               {description && (
                 <section>
                   <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
                     あらすじ
                   </h3>
-                  {!hasJapaneseCharacters(description) && (
+                  {annictSynopsis && (animeMedia as AniListMediaWithStreaming)?.synopsisSource && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      出典: {(animeMedia as AniListMediaWithStreaming).synopsisSource}
+                    </p>
+                  )}
+                  {!isJapaneseDescription && (
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                       ※日本語版がないため英語で表示しています
                     </p>
@@ -529,7 +564,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                 </section>
               )}
 
-              {/* 放送曜日・時間 */}
+              {/* 放送曜日・時間 - Annict優先 */}
               <section>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-lg font-bold text-gray-800 dark:text-white">
@@ -597,47 +632,56 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                   </div>
                 ) : (
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {broadcastDay !== null && broadcastDay !== undefined && broadcastTime
-                      ? `${dayNames[broadcastDay]} ${broadcastTime}`
-                      : '未設定'}
+                    {annictBroadcastTime 
+                      ? annictBroadcastTime
+                      : (broadcastDay !== null && broadcastDay !== undefined && broadcastTime
+                        ? `${dayNames[broadcastDay]} ${broadcastTime}`
+                        : '未設定')}
                   </p>
                 )}
               </section>
 
               {/* 通知設定 - 将来の実装用にコメントアウト */}
 
-              {/* 配信サイト */}
+              {/* 配信サイト - Annict優先 */}
               <section>
                 <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
                   配信サイト
                 </h3>
-                {streamingSites.length > 0 ? (
-                  <div className="space-y-2">
-                    {streamingSites.map((link, index) => (
-                      <a
-                        key={index}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                      >
-                        <p className="text-sm font-medium text-gray-800 dark:text-white">
-                          {link.site}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                          {link.url}
-                        </p>
-                      </a>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    配信情報がありません
+                {(() => {
+                  // Annictから取得した配信情報を優先
+                  const annictStreamingServices = (animeMedia as AniListMediaWithStreaming)?.streamingServices || [];
+                  const itemStreamingSites = item?.streaming_sites || [];
+                  
+                  // 優先順位: Annict > item > AniList
+                  const displayStreamingServices = annictStreamingServices.length > 0 
+                    ? annictStreamingServices 
+                    : (itemStreamingSites.length > 0 
+                      ? itemStreamingSites 
+                      : streamingSites.map(link => link.site));
+                  
+                  return displayStreamingServices.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {displayStreamingServices.map((service, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-1 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
+                        >
+                          {service}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      配信情報がありません
+                    </p>
+                  );
+                })()}
+                {streamingSites.length > 0 && (animeMedia as AniListMediaWithStreaming)?.streamingServices?.length === 0 && !item?.streaming_sites && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    ※ AniListの情報は海外データベースのため、日本の配信情報が不完全な場合があります
                   </p>
                 )}
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                  ※ AniListの情報は海外データベースのため、日本の配信情報が不完全な場合があります
-                </p>
               </section>
 
               {/* 話数 */}
@@ -700,29 +744,6 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                 </section>
               )}
 
-              {/* 平均スコア */}
-              {animeDetail?.averageScore && (
-                <section>
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
-                    平均スコア
-                  </h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {animeDetail.averageScore} / 100
-                  </p>
-                </section>
-              )}
-
-              {/* 1話の長さ */}
-              {animeDetail?.duration && (
-                <section>
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
-                    1話の長さ
-                  </h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {animeDetail.duration}分
-                  </p>
-                </section>
-              )}
             </>
           )}
         </div>

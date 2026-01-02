@@ -48,6 +48,8 @@ export type WatchlistItem = {
   // 放送情報
   broadcast_day?: number | null; // 0-6 (0=日曜)
   broadcast_time?: string | null; // HH:mm形式
+  // 配信情報
+  streaming_sites?: string[] | null;
 };
 
 /**
@@ -63,6 +65,7 @@ export type WatchlistItemInput = {
   season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
   broadcast_day?: number | null;
   broadcast_time?: string | null;
+  streaming_sites?: string[] | null;
 };
 
 /**

@@ -22,6 +22,15 @@ export type AnnictProgram = {
   channel: AnnictChannel;
 };
 
+export type AnnictCast = {
+  character: {
+    name: string;
+  };
+  person: {
+    name: string;
+  };
+};
+
 export type AnnictWork = {
   annictId: number;
   title: string;
@@ -31,6 +40,9 @@ export type AnnictWork = {
   twitterHashtag: string | null;
   programs: {
     nodes: AnnictProgram[];
+  };
+  casts?: {
+    nodes: AnnictCast[];
   };
 };
 
@@ -107,6 +119,29 @@ export function extractBroadcastChannels(programs: AnnictProgram[]): string[] {
   return Array.from(channels);
 }
 
+/**
+ * プログラム一覧から放送日時を抽出（最初の放送情報を取得）
+ */
+export function extractBroadcastTime(programs: AnnictProgram[]): string | null {
+  if (programs.length === 0) return null;
+  
+  // 最初の放送情報を取得
+  const firstProgram = programs[0];
+  if (!firstProgram.startedAt) return null;
+  
+  try {
+    const date = new Date(firstProgram.startedAt);
+    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+    const day = dayNames[date.getDay()];
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day} ${hours}:${minutes}`;
+  } catch (error) {
+    console.error('放送日時の解析に失敗しました:', error);
+    return null;
+  }
+}
+
 // ============================================
 // API関数
 // ============================================
@@ -171,6 +206,16 @@ export async function searchAnnictBySeason(
               }
             }
           }
+          casts {
+            nodes {
+              character {
+                name
+              }
+              person {
+                name
+              }
+            }
+          }
         }
       }
     }
@@ -207,6 +252,16 @@ export async function searchAnnictByTitle(
             nodes {
               startedAt
               channel {
+                name
+              }
+            }
+          }
+          casts {
+            nodes {
+              character {
+                name
+              }
+              person {
                 name
               }
             }
@@ -278,6 +333,10 @@ export function titlesMatch(title1: string, title2: string): boolean {
 export type AniListMediaWithStreaming = AniListMedia & {
   streamingServices?: string[];
   broadcastChannels?: string[];
+  synopsisJa?: string | null;  // 日本語あらすじ
+  synopsisSource?: string | null;  // あらすじ出典
+  broadcastTime?: string | null;  // 放送日時（Annictから取得）
+  casts?: { character: string; actor: string }[];  // キャスト情報
 };
 
 export function mergeWithAnnictData(
@@ -293,10 +352,20 @@ export function mergeWithAnnictData(
     });
 
     if (matchedAnnict) {
+      // キャスト情報を整形
+      const casts = matchedAnnict.casts?.nodes?.map(cast => ({
+        character: cast.character.name,
+        actor: cast.person.name,
+      })) || [];
+
       return {
         ...anilistItem,
         streamingServices: extractStreamingServices(matchedAnnict.programs.nodes),
         broadcastChannels: extractBroadcastChannels(matchedAnnict.programs.nodes),
+        synopsisJa: null, // Annict APIにはsynopsisフィールドが存在しないため、AniListのdescriptionを使用
+        synopsisSource: null,
+        broadcastTime: extractBroadcastTime(matchedAnnict.programs.nodes),
+        casts: casts.length > 0 ? casts : undefined,
       };
     }
 

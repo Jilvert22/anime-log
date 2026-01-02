@@ -45,6 +45,7 @@ export class LocalStorageService implements IStorageService {
     season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
     broadcast_day?: number | null;
     broadcast_time?: string | null;
+    streaming_sites?: string[] | null;
   }): Promise<boolean> {
     try {
       const items = this.getWatchlistFromStorage();
@@ -69,6 +70,7 @@ export class LocalStorageService implements IStorageService {
         season: item.season || null,
         broadcast_day: item.broadcast_day || null,
         broadcast_time: item.broadcast_time || null,
+        streaming_sites: item.streaming_sites || null,
       };
 
       items.push(newItem);
@@ -205,4 +207,5 @@ export class LocalStorageService implements IStorageService {
     }
   }
 }
+
 

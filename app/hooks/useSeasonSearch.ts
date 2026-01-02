@@ -5,7 +5,9 @@ import { translateGenre, sortSeasonsByTime, getNextSeason } from '../utils/helpe
 import { getBroadcastInfo } from '../lib/anilist';
 import { supabase } from '../lib/supabase';
 import { useStorage } from './useStorage';
+import { useAnimeSearchWithStreaming } from './useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../lib/storage/types';
+import type { AniListMediaWithStreaming } from '../lib/api/annict';
 
 interface UseSeasonSearchParams {
   allAnimes: Anime[];
@@ -24,13 +26,14 @@ export function useSeasonSearch({
   extractSeriesName,
   animeToSupabase,
 }: UseSeasonSearchParams) {
-  const [seasonSearchResults, setSeasonSearchResults] = useState<Map<string, AniListSearchResult[]>>(new Map());
+  const [seasonSearchResults, setSeasonSearchResults] = useState<Map<string, AniListMediaWithStreaming[]>>(new Map());
   const [loadingSeasons, setLoadingSeasons] = useState<Set<string>>(new Set());
   const [expandedSeasonSearches, setExpandedSeasonSearches] = useState<Set<string>>(new Set());
   const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([]);
   const [addedToWatchlistIds, setAddedToWatchlistIds] = useState<Set<number>>(new Set());
   
   const storage = useStorage();
+  const { searchBySeason } = useAnimeSearchWithStreaming();
 
   // 積みアニメリストを読み込む
   const loadWatchlist = useCallback(async () => {
@@ -50,7 +53,7 @@ export function useSeasonSearch({
     loadWatchlist();
   }, [loadWatchlist]);
 
-  // シーズンの作品を検索
+  // シーズンの作品を検索（配信情報付き）
   const searchSeasonAnimes = useCallback(async (year: string, season: string, forceRefresh: boolean = false) => {
     const key = `${year}-${season}`;
     if (!forceRefresh && (loadingSeasons.has(key) || seasonSearchResults.has(key))) {
@@ -71,14 +74,15 @@ export function useSeasonSearch({
       if (!anilistSeason) return Promise.resolve();
 
       const yearNum = parseInt(year, 10);
-      const result = await searchAnimeBySeason(anilistSeason, yearNum, 1, 50);
+      // useAnimeSearchWithStreamingを使用して配信情報付きで検索
+      const results = await searchBySeason(anilistSeason, yearNum, 1, 50);
       
       // 既に登録済みのアニメを除外
       const registeredTitles = new Set(
         allAnimes.map(a => a.title.toLowerCase().trim())
       );
       
-      const filteredResults = result.media.filter((anime: AniListSearchResult) => {
+      const filteredResults = results.filter((anime: AniListMediaWithStreaming) => {
         const titleNative = (anime.title?.native || '').toLowerCase().trim();
         const titleRomaji = (anime.title?.romaji || '').toLowerCase().trim();
         return !registeredTitles.has(titleNative) && !registeredTitles.has(titleRomaji);
@@ -100,7 +104,7 @@ export function useSeasonSearch({
         return newSet;
       });
     }
-  }, [loadingSeasons, seasonSearchResults, allAnimes]);
+  }, [loadingSeasons, seasonSearchResults, allAnimes, searchBySeason]);
 
   // 登録済みクールの検索ハンドラー（useCallbackでメモ化）
   const handleSeasonSearch = useCallback((year: string, season: string) => {
@@ -117,7 +121,7 @@ export function useSeasonSearch({
   }, [seasonSearchResults, loadingSeasons, searchSeasonAnimes, setExpandedSeasonSearches]);
 
   // 検索結果から作品を追加
-  const addAnimeFromSearch = useCallback(async (result: AniListSearchResult, year: string, season: string) => {
+  const addAnimeFromSearch = useCallback(async (result: AniListMediaWithStreaming, year: string, season: string) => {
     try {
       // 必須フィールドの検証
       if (!result) {
@@ -155,6 +159,7 @@ export function useSeasonSearch({
         tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
         seriesName,
         studios: result.studios?.nodes?.map((s) => s.name) || [],
+        streamingSites: result.streamingServices || [],
       };
 
       // ログインしている場合はSupabaseに保存
@@ -197,7 +202,7 @@ export function useSeasonSearch({
         const results = newMap.get(key) || [];
         const titleNative = (result.title?.native || '').toLowerCase().trim();
         const titleRomaji = (result.title?.romaji || '').toLowerCase().trim();
-        const filteredResults = results.filter((r: AniListSearchResult) => {
+        const filteredResults = results.filter((r: AniListMediaWithStreaming) => {
           const rTitleNative = (r.title?.native || '').toLowerCase().trim();
           const rTitleRomaji = (r.title?.romaji || '').toLowerCase().trim();
           return r.id !== result.id && 
@@ -218,7 +223,7 @@ export function useSeasonSearch({
   }, [user, seasons, setSeasons, extractSeriesName, animeToSupabase, setSeasonSearchResults]);
 
   // 積みアニメに追加
-  const addToWatchlistFromSearch = useCallback(async (result: AniListSearchResult, year?: string, season?: string) => {
+  const addToWatchlistFromSearch = useCallback(async (result: AniListMediaWithStreaming, year?: string, season?: string) => {
     try {
       // resultオブジェクトが正しく渡されているか確認
       if (!result) {
@@ -244,6 +249,7 @@ export function useSeasonSearch({
         anilist_id: anilistId,
         title: title,
         image: image,
+        streaming_sites: result.streamingServices || null,
       });
 
       if (success) {
@@ -276,7 +282,7 @@ export function useSeasonSearch({
   }, [storage, setSeasonSearchResults, setAddedToWatchlistIds]);
 
   // 来期の視聴予定に追加
-  const addToNextSeasonWatchlist = useCallback(async (result: AniListSearchResult) => {
+  const addToNextSeasonWatchlist = useCallback(async (result: AniListMediaWithStreaming) => {
     try {
       if (!result || !result.id) {
         console.error('無効な検索結果オブジェクト:', result);
@@ -297,6 +303,7 @@ export function useSeasonSearch({
         season: nextSeason.season,
         broadcast_day: broadcastInfo.day,
         broadcast_time: broadcastInfo.time,
+        streaming_sites: result.streamingServices || null,
       });
 
       if (success) {

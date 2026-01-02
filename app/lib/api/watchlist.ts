@@ -92,6 +92,7 @@ export async function addToWatchlist(item: WatchlistItemInput): Promise<Watchlis
         season: item.season || null,
         broadcast_day: item.broadcast_day || null,
         broadcast_time: item.broadcast_time || null,
+        streaming_sites: item.streaming_sites || null,
       })
       .select()
       .single();

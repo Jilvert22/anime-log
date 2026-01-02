@@ -3,9 +3,11 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { useStorage } from '../../hooks/useStorage';
+import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { getCurrentSeason, getNextSeason } from '../../utils/helpers';
-import { searchAnimeBySeasonAll, getBroadcastInfo, type AniListMedia } from '../../lib/anilist';
+import { getBroadcastInfo, type AniListMedia } from '../../lib/anilist';
+import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
 
 // 視聴予定アニメカード
@@ -136,6 +138,24 @@ function SeasonWatchlistCard({
         {item.memo && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">{item.memo}</p>
         )}
+        {/* 配信バッジ */}
+        {item.streaming_sites && item.streaming_sites.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {item.streaming_sites.slice(0, 3).map((service, idx) => (
+              <span
+                key={idx}
+                className="px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
+              >
+                {service}
+              </span>
+            ))}
+            {item.streaming_sites.length > 3 && (
+              <span className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                +{item.streaming_sites.length - 3}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -148,7 +168,7 @@ function SearchResultCard({
   onAdd,
   onCardClick,
 }: {
-  anime: AniListMedia;
+  anime: AniListMediaWithStreaming;
   isAdded: boolean;
   onAdd: () => void;
   onCardClick?: () => void;
@@ -182,6 +202,24 @@ function SearchResultCard({
       <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
         {anime.title?.native || anime.title?.romaji || 'タイトル不明'}
       </p>
+      {/* 配信バッジ */}
+      {anime.streamingServices && anime.streamingServices.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1">
+          {anime.streamingServices.slice(0, 3).map((service, idx) => (
+            <span
+              key={idx}
+              className="px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
+            >
+              {service}
+            </span>
+          ))}
+          {anime.streamingServices.length > 3 && (
+            <span className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+              +{anime.streamingServices.length - 3}
+            </span>
+          )}
+        </div>
+      )}
       <button
         onClick={(e) => {
           e.preventDefault();
@@ -219,7 +257,7 @@ export default function SeasonWatchlistTab() {
   
   // 詳細表示関連の状態
   const [selectedItem, setSelectedItem] = useState<WatchlistItem | null>(null);
-  const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<AniListMedia | null>(null);
+  const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<AniListMediaWithStreaming | null>(null);
   
   const currentSeason = getCurrentSeason();
   const nextSeason = getNextSeason();
@@ -227,11 +265,12 @@ export default function SeasonWatchlistTab() {
   
   // アニメ一覧の展開/折りたたみ状態
   const [isAnimeListExpanded, setIsAnimeListExpanded] = useState(false);
-  const [allSeasonAnime, setAllSeasonAnime] = useState<AniListMedia[]>([]);
-  const [displayedAnime, setDisplayedAnime] = useState<AniListMedia[]>([]);
+  const [allSeasonAnime, setAllSeasonAnime] = useState<AniListMediaWithStreaming[]>([]);
+  const [displayedAnime, setDisplayedAnime] = useState<AniListMediaWithStreaming[]>([]);
   const [isLoadingAnime, setIsLoadingAnime] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const { searchBySeason } = useAnimeSearchWithStreaming();
 
   // 選択されたシーズンの視聴予定アニメを読み込む
   const loadWatchlist = useCallback(async () => {
@@ -253,19 +292,20 @@ export default function SeasonWatchlistTab() {
     loadWatchlist();
   }, [loadWatchlist]);
 
-  // 選択されたシーズンのアニメを全件取得
+  // 選択されたシーズンのアニメを取得（配信情報付き）
   const loadSeasonAnime = useCallback(async () => {
     setIsLoadingAnime(true);
     try {
-      // 全件取得（ページネーション処理込み）
-      const allMedia = await searchAnimeBySeasonAll(
+      // 配信情報付きで検索（最初の50件を取得）
+      const results = await searchBySeason(
         activeSeason.season,
         activeSeason.year,
+        1,
         50
       );
       
-      setAllSeasonAnime(allMedia);
-      setDisplayedAnime(allMedia);
+      setAllSeasonAnime(results);
+      setDisplayedAnime(results);
     } catch (error) {
       console.error('Failed to load season anime:', error);
       setAllSeasonAnime([]);
@@ -273,7 +313,7 @@ export default function SeasonWatchlistTab() {
     } finally {
       setIsLoadingAnime(false);
     }
-  }, [activeSeason.season, activeSeason.year]);
+  }, [activeSeason.season, activeSeason.year, searchBySeason]);
 
   // 一覧を展開/折りたたみ
   const toggleAnimeList = useCallback(() => {
@@ -338,7 +378,7 @@ export default function SeasonWatchlistTab() {
   }, [storage, loadWatchlist]);
 
   // 視聴予定に追加
-  const handleAddToWatchlist = useCallback(async (anime: AniListMedia) => {
+  const handleAddToWatchlist = useCallback(async (anime: AniListMediaWithStreaming) => {
     try {
       // 放送情報を取得
       const broadcastInfo = getBroadcastInfo(anime);
@@ -352,6 +392,7 @@ export default function SeasonWatchlistTab() {
         season: activeSeason.season,
         broadcast_day: broadcastInfo.day,
         broadcast_time: broadcastInfo.time,
+        streaming_sites: anime.streamingServices || null,
       });
 
       if (success) {

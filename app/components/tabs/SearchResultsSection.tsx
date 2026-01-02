@@ -2,19 +2,20 @@
 
 import { useState, useCallback } from 'react';
 import type { AniListSearchResult } from '../../types';
+import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { isNextSeason } from '../../utils/helpers';
 
 interface SearchResultsSectionProps {
-  searchResults: AniListSearchResult[];
+  searchResults: AniListMediaWithStreaming[];
   seasonKey: string;
   expandedSeasons: Set<string>;
   setExpandedSeasons: (seasons: Set<string>) => void;
   expandedSeasonSearches: Set<string>;
   setExpandedSeasonSearches: (searches: Set<string>) => void;
   addedToWatchlistIds: Set<number>;
-  addAnimeFromSearch: (result: AniListSearchResult, year: string, season: string) => Promise<void>;
-  addToWatchlistFromSearch: (result: AniListSearchResult, year?: string, season?: string) => Promise<void>;
-  addToNextSeasonWatchlist: (result: AniListSearchResult) => Promise<void>;
+  addAnimeFromSearch: (result: AniListMediaWithStreaming, year: string, season: string) => Promise<void>;
+  addToWatchlistFromSearch: (result: AniListMediaWithStreaming, year?: string, season?: string) => Promise<void>;
+  addToNextSeasonWatchlist: (result: AniListMediaWithStreaming) => Promise<void>;
   year: string;
   season: string;
 }
@@ -61,7 +62,7 @@ export function SearchResultsSection({
         </div>
       </div>
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 pb-4">
-        {searchResults.map((result: AniListSearchResult) => {
+        {searchResults.map((result: AniListMediaWithStreaming) => {
           const anilistId = result?.id;
           const isValidId = anilistId && typeof anilistId === 'number' && !isNaN(anilistId);
           const isLoading = loadingIds.has(anilistId);
@@ -93,6 +94,24 @@ export function SearchResultsSection({
               <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
                 {title}
               </p>
+              {/* 配信バッジ */}
+              {result.streamingServices && result.streamingServices.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {result.streamingServices.slice(0, 3).map((service, idx) => (
+                    <span
+                      key={idx}
+                      className="px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
+                    >
+                      {service}
+                    </span>
+                  ))}
+                  {result.streamingServices.length > 3 && (
+                    <span className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                      +{result.streamingServices.length - 3}
+                    </span>
+                  )}
+                </div>
+              )}
               <button
                 onClick={async (e) => {
                   e.stopPropagation();

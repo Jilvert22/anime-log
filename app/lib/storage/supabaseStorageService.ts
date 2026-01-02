@@ -32,6 +32,7 @@ export class SupabaseStorageService implements IStorageService {
     season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
     broadcast_day?: number | null;
     broadcast_time?: string | null;
+    streaming_sites?: string[] | null;
   }): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
@@ -63,6 +64,7 @@ export class SupabaseStorageService implements IStorageService {
         season: item.season || null,
         broadcast_day: item.broadcast_day || null,
         broadcast_time: item.broadcast_time || null,
+        streaming_sites: item.streaming_sites || null,
       });
     
     if (error) {
@@ -231,6 +233,7 @@ export class SupabaseStorageService implements IStorageService {
           season: item.season,
           broadcast_day: item.broadcast_day,
           broadcast_time: item.broadcast_time,
+          streaming_sites: item.streaming_sites,
         }));
 
       if (itemsToAdd.length === 0) return true;
@@ -251,4 +254,5 @@ export class SupabaseStorageService implements IStorageService {
     }
   }
 }
+
 
