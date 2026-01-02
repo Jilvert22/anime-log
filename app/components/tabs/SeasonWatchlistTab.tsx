@@ -114,20 +114,10 @@ function SeasonWatchlistCard({
           </div>
         )}
         
-        {/* ホバー時のクイックステータス変更ボタン（デスクトップ用、選択モード時は非表示） */}
+        {/* ホバー時の「詳細を表示」テキスト（デスクトップ用、選択モード時は非表示） */}
         {!isSelectionMode && (
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2 pointer-events-none md:pointer-events-auto">
-            {item.status && getNextStatus(item.status) && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStatusChange();
-                }}
-                className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
-              >
-                {getStatusLabel(getNextStatus(item.status) || '')}にする
-              </button>
-            )}
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none md:pointer-events-none">
+            <span className="text-white text-sm font-medium">詳細を表示</span>
           </div>
         )}
       </div>
