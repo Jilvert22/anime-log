@@ -192,54 +192,78 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
   };
 
   const handleNotificationToggle = async (enabled: boolean) => {
+    console.log('🔔 handleNotificationToggle開始', {
+      enabled,
+      hasUser: !!user,
+      userId: user?.id,
+      hasItem: !!item,
+      itemId: item?.id,
+      loadingNotification,
+    });
+    
     if (!user || !item?.id) {
-      console.warn('通知設定を変更できません: userまたはitemが存在しません', { user: !!user, item: !!item, itemId: item?.id });
+      console.warn('❌ 通知設定を変更できません: userまたはitemが存在しません', { user: !!user, item: !!item, itemId: item?.id });
       return;
     }
     
     if (loadingNotification) {
-      console.warn('通知設定の変更中です。しばらくお待ちください。');
+      console.warn('⏳ 通知設定の変更中です。しばらくお待ちください。');
       return;
     }
     
     // 通知をONにする場合、権限をリクエスト
     if (enabled) {
+      console.log('🔔 通知をONにするため、権限をリクエスト');
       try {
         const permission = await Notification.requestPermission();
+        console.log('🔔 通知権限の結果:', permission);
         if (permission !== 'granted') {
           // 権限が拒否された場合は設定を保存しない
+          console.warn('❌ 通知権限が拒否されました');
           alert('通知を有効にするには、ブラウザの通知権限が必要です。\n\niOSではホーム画面に追加すると通知が届きます。');
           return;
         }
+        console.log('✅ 通知権限が許可されました');
       } catch (error) {
-        console.error('通知権限のリクエストに失敗しました:', error);
+        console.error('❌ 通知権限のリクエストに失敗しました:', error);
         alert('通知権限のリクエストに失敗しました');
         return;
       }
     }
     
+    console.log('🔄 loadingNotificationをtrueに設定');
     setLoadingNotification(true);
     try {
       if (enabled) {
+        console.log('📱 プッシュ通知に購読開始');
         // プッシュ通知に購読
         try {
           await subscribeToPushNotifications(user);
+          console.log('✅ プッシュ通知の購読成功');
         } catch (error) {
-          console.error('プッシュ通知の購読に失敗しました:', error);
+          console.error('❌ プッシュ通知の購読に失敗しました:', error);
           alert('プッシュ通知の購読に失敗しました。後でもう一度お試しください。');
           setLoadingNotification(false);
           return;
         }
       } else {
+        console.log('📱 プッシュ通知の購読解除開始');
         // プッシュ通知の購読を解除
         try {
           await unsubscribeFromPushNotifications(user);
+          console.log('✅ プッシュ通知の購読解除成功');
         } catch (error) {
-          console.error('プッシュ通知の購読解除に失敗しました:', error);
+          console.error('⚠️ プッシュ通知の購読解除に失敗しました（続行）:', error);
           // 購読解除に失敗しても通知設定は保存する
         }
       }
       
+      console.log('💾 通知設定をSupabaseに保存開始', {
+        userId: user.id,
+        watchlistId: item.id,
+        enabled,
+        timing: notificationTiming,
+      });
       // 通知設定をSupabaseに保存
       const { error } = await supabase
         .from('notification_settings')
@@ -256,20 +280,25 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
       if (error) {
         // 406エラーの場合は警告のみ
         if (error.message?.includes('406') || String(error).includes('406')) {
-          console.warn('通知設定の保存で406エラーが発生しました（APIの互換性問題の可能性）:', error);
+          console.warn('⚠️ 通知設定の保存で406エラーが発生しました（APIの互換性問題の可能性）:', error);
           // 状態は既に更新されているので、エラーを無視して続行
         } else {
+          console.error('❌ 通知設定の保存エラー:', error);
           throw error;
         }
+      } else {
+        console.log('✅ 通知設定の保存成功');
       }
       
+      console.log('🔄 notificationEnabledを更新:', enabled);
       setNotificationEnabled(enabled);
     } catch (error) {
-      console.error('通知設定の更新に失敗しました:', error);
+      console.error('❌ 通知設定の更新に失敗しました:', error);
       alert('通知設定の更新に失敗しました');
       // エラー時は状態を元に戻す
       setNotificationEnabled(!enabled);
     } finally {
+      console.log('🔄 loadingNotificationをfalseに設定');
       setLoadingNotification(false);
     }
   };
@@ -438,6 +467,25 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
     }
   };
 
+  const handleStatusChange = async (newStatus: 'planned' | 'watching' | 'completed') => {
+    if (!item?.anilist_id) return;
+    
+    try {
+      const success = await storage.updateWatchlistItem(item.anilist_id, {
+        status: newStatus,
+      });
+      
+      if (success) {
+        onUpdate?.();
+      } else {
+        alert('ステータスの更新に失敗しました');
+      }
+    } catch (error) {
+      console.error('ステータスの更新に失敗しました:', error);
+      alert('ステータスの更新に失敗しました');
+    }
+  };
+
   const handleSaveBroadcast = async () => {
     if (!item?.anilist_id) return;
     
@@ -456,6 +504,24 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
     } catch (error) {
       console.error('放送情報の更新に失敗しました:', error);
       alert('放送情報の更新に失敗しました');
+    }
+  };
+
+  const getStatusLabel = (status: string | null | undefined) => {
+    switch (status) {
+      case 'planned': return '視聴予定';
+      case 'watching': return '視聴中';
+      case 'completed': return '視聴完了';
+      default: return '未設定';
+    }
+  };
+
+  const getStatusColor = (status: string | null | undefined) => {
+    switch (status) {
+      case 'planned': return 'bg-blue-500';
+      case 'watching': return 'bg-yellow-500';
+      case 'completed': return 'bg-green-500';
+      default: return 'bg-gray-500';
     }
   };
 
@@ -527,6 +593,35 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
             </div>
           ) : (
             <>
+              {/* ステータス変更（itemがある場合のみ表示） */}
+              {item && (
+                <section>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    視聴ステータス
+                  </h3>
+                  <div className="flex gap-2">
+                    {[
+                      { status: 'planned' as const, label: '視聴予定', color: 'bg-blue-500' },
+                      { status: 'watching' as const, label: '視聴中', color: 'bg-yellow-500' },
+                      { status: 'completed' as const, label: '視聴完了', color: 'bg-green-500' },
+                    ].map((statusOption) => (
+                      <button
+                        key={statusOption.status}
+                        onClick={() => handleStatusChange(statusOption.status)}
+                        disabled={item.status === statusOption.status}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                          item.status === statusOption.status
+                            ? `${statusOption.color} text-white ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-800 ring-gray-400`
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        } disabled:opacity-100 disabled:cursor-default`}
+                      >
+                        {statusOption.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* あらすじ */}
               {description && (
                 <section>
