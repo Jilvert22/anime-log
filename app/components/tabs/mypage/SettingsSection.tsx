@@ -92,6 +92,12 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
   const [changeLoading, setChangeLoading] = useState(false);
   const [changeError, setChangeError] = useState('');
   const [changeSuccess, setChangeSuccess] = useState('');
+  
+  // 重複削除用のstate
+  const [showRemoveDuplicatesConfirm, setShowRemoveDuplicatesConfirm] = useState(false);
+  const [removeDuplicatesLoading, setRemoveDuplicatesLoading] = useState(false);
+  const [removeDuplicatesError, setRemoveDuplicatesError] = useState('');
+  const [removeDuplicatesSuccess, setRemoveDuplicatesSuccess] = useState('');
 
   const handleDeleteAccount = async () => {
     setDeleteError('');
@@ -192,6 +198,39 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
     }
   };
 
+  const handleRemoveDuplicates = async () => {
+    setRemoveDuplicatesError('');
+    setRemoveDuplicatesSuccess('');
+    setRemoveDuplicatesLoading(true);
+
+    try {
+      const response = await fetch('/api/remove-duplicate-animes', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '重複アニメの削除に失敗しました');
+      }
+
+      setRemoveDuplicatesSuccess(data.message || `${data.deletedCount}件の重複アニメを削除しました`);
+      
+      // 3秒後にモーダルを閉じてページをリロード
+      setTimeout(() => {
+        setShowRemoveDuplicatesConfirm(false);
+        setRemoveDuplicatesSuccess('');
+        window.location.reload();
+      }, 3000);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '重複アニメの削除に失敗しました';
+      setRemoveDuplicatesError(errorMessage);
+    } finally {
+      setRemoveDuplicatesLoading(false);
+    }
+  };
+
   return (
     <>
       <section className="space-y-2">
@@ -246,9 +285,19 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                     setChangeError('');
                     setChangeSuccess('');
                   }}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-gray-700 dark:text-gray-200 font-mixed"
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-gray-700 dark:text-gray-200 font-mixed border-b border-gray-200 dark:border-gray-700"
                 >
                   パスワードを変更
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowRemoveDuplicatesConfirm(true);
+                    setRemoveDuplicatesError('');
+                    setRemoveDuplicatesSuccess('');
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-orange-600 dark:text-orange-400 font-mixed"
+                >
+                  重複アニメを削除
                 </button>
               </div>
             </div>
@@ -551,6 +600,74 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors disabled:bg-red-400 disabled:cursor-not-allowed"
               >
                 {deleteLoading ? '削除中...' : '削除する'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 重複削除確認モーダル */}
+      {showRemoveDuplicatesConfirm && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            if (!removeDuplicatesLoading) {
+              setShowRemoveDuplicatesConfirm(false);
+              setRemoveDuplicatesError('');
+              setRemoveDuplicatesSuccess('');
+            }
+          }}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-4">🔍</div>
+              <h2 className="text-xl font-bold mb-2 dark:text-white">
+                重複アニメを削除
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                同じタイトルのアニメが複数ある場合、最も古いものを残して残りを削除します。
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                この操作は取り消せません。
+              </p>
+            </div>
+
+            {/* 成功メッセージ */}
+            {removeDuplicatesSuccess && (
+              <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-sm">
+                {removeDuplicatesSuccess}
+              </div>
+            )}
+
+            {/* エラーメッセージ */}
+            {removeDuplicatesError && (
+              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm">
+                {removeDuplicatesError}
+              </div>
+            )}
+
+            {/* ボタン */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRemoveDuplicatesConfirm(false);
+                  setRemoveDuplicatesError('');
+                  setRemoveDuplicatesSuccess('');
+                }}
+                disabled={removeDuplicatesLoading}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleRemoveDuplicates}
+                disabled={removeDuplicatesLoading}
+                className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors disabled:bg-orange-400 disabled:cursor-not-allowed"
+              >
+                {removeDuplicatesLoading ? '削除中...' : '削除する'}
               </button>
             </div>
           </div>

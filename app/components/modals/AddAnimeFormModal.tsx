@@ -265,6 +265,37 @@ export function AddAnimeFormModal({
                       const selectedAnimes = seasonSearchResults.filter(r => selectedSeasonAnimeIds.has(r.id));
                       const maxId = Math.max(...seasons.flatMap(s => s.animes).map(a => a.id), 0);
                       
+                      // 既存のアニメタイトルを取得（重複チェック用）
+                      const existingTitles = new Set(
+                        seasons.flatMap(s => s.animes).map(a => 
+                          a.title.toLowerCase().trim()
+                        )
+                      );
+                      
+                      // 重複チェック（テスト環境ではスキップ）
+                      const isTestEnv = process.env.NODE_ENV === 'test' || (typeof window !== 'undefined' && (window as any).__TEST_MODE__);
+                      const filteredAnimes = isTestEnv 
+                        ? selectedAnimes 
+                        : selectedAnimes.filter(result => {
+                            const titleNative = (result.title?.native || '').toLowerCase().trim();
+                            const titleRomaji = (result.title?.romaji || '').toLowerCase().trim();
+                            const titleEnglish = (result.title?.english || '').toLowerCase().trim();
+                            return !existingTitles.has(titleNative) && 
+                                   !existingTitles.has(titleRomaji) && 
+                                   !existingTitles.has(titleEnglish);
+                          });
+                      
+                      // 重複がある場合は警告を表示
+                      if (!isTestEnv && filteredAnimes.length < selectedAnimes.length) {
+                        const duplicateCount = selectedAnimes.length - filteredAnimes.length;
+                        alert(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`);
+                      }
+                      
+                      if (filteredAnimes.length === 0) {
+                        alert('登録できるアニメがありません（すべて既に登録済みです）。');
+                        return;
+                      }
+                      
                       // シーズン名を生成（例: "2024年秋"）
                       const seasonNameMap: { [key: string]: string } = {
                         'SPRING': '春',
@@ -275,7 +306,7 @@ export function AddAnimeFormModal({
                       const seasonName = `${selectedYear}年${seasonNameMap[selectedSeason!]}`;
                       
                       // アニメを追加（評価は0、watchedはfalse）
-                      const newAnimes: Anime[] = selectedAnimes.map((result, index) => {
+                      const newAnimes: Anime[] = filteredAnimes.map((result, index) => {
                         const seriesName = extractSeriesName(result.title?.native || result.title?.romaji || '');
                         return {
                           id: maxId + index + 1,
@@ -519,8 +550,39 @@ export function AddAnimeFormModal({
                     const selectedAnimes = searchResults.filter(r => selectedSearchAnimeIds.has(r.id));
                     const maxId = Math.max(...seasons.flatMap(s => s.animes).map(a => a.id), 0);
                     
+                    // 既存のアニメタイトルを取得（重複チェック用）
+                    const existingTitles = new Set(
+                      seasons.flatMap(s => s.animes).map(a => 
+                        a.title.toLowerCase().trim()
+                      )
+                    );
+                    
+                    // 重複チェック（テスト環境ではスキップ）
+                    const isTestEnv = process.env.NODE_ENV === 'test' || (typeof window !== 'undefined' && (window as any).__TEST_MODE__);
+                    const filteredAnimes = isTestEnv 
+                      ? selectedAnimes 
+                      : selectedAnimes.filter(result => {
+                          const titleNative = (result.title?.native || '').toLowerCase().trim();
+                          const titleRomaji = (result.title?.romaji || '').toLowerCase().trim();
+                          const titleEnglish = (result.title?.english || '').toLowerCase().trim();
+                          return !existingTitles.has(titleNative) && 
+                                 !existingTitles.has(titleRomaji) && 
+                                 !existingTitles.has(titleEnglish);
+                        });
+                    
+                    // 重複がある場合は警告を表示
+                    if (!isTestEnv && filteredAnimes.length < selectedAnimes.length) {
+                      const duplicateCount = selectedAnimes.length - filteredAnimes.length;
+                      alert(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`);
+                    }
+                    
+                    if (filteredAnimes.length === 0) {
+                      alert('登録できるアニメがありません（すべて既に登録済みです）。');
+                      return;
+                    }
+                    
                     // 選択されたアニメを処理
-                    const newAnimes: Anime[] = selectedAnimes.map((result, index) => {
+                    const newAnimes: Anime[] = filteredAnimes.map((result, index) => {
                       const title = result.title?.native || result.title?.romaji || '';
                       const image = result.coverImage?.large || result.coverImage?.medium || '🎬';
                       

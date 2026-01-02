@@ -65,7 +65,30 @@ import { useModalHandlers } from '../hooks/useModalHandlers';
 import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName, shouldShowSeasonStartModal, markSeasonChecked } from '../utils/helpers';
 import type { WatchlistItem } from '../lib/storage/types';
 import { useStorage } from '../hooks/useStorage';
-import { ModalProvider } from '../contexts/ModalContext';
+import { ModalProvider, useModalContext } from '../contexts/ModalContext';
+
+// FavoriteAnimeModalを表示する内部コンポーネント（ModalContextを使用）
+function FavoriteAnimeModalWrapper({
+  allAnimes,
+  favoriteAnimeIds,
+  setFavoriteAnimeIds,
+}: {
+  allAnimes: Anime[];
+  favoriteAnimeIds: number[];
+  setFavoriteAnimeIds: (ids: number[]) => void;
+}) {
+  const { modals, actions } = useModalContext();
+  
+  return (
+    <FavoriteAnimeModal
+      show={modals.showFavoriteAnimeModal}
+      onClose={actions.closeFavoriteAnimeModal}
+      allAnimes={allAnimes}
+      favoriteAnimeIds={favoriteAnimeIds}
+      setFavoriteAnimeIds={setFavoriteAnimeIds}
+    />
+  );
+}
 
 interface HomeClientProps {
   // Server Componentで取得した初期データがあればここに追加
@@ -135,8 +158,6 @@ export default function HomeClient({}: HomeClientProps) {
   const {
     showSettings,
     setShowSettings,
-    showFavoriteAnimeModal,
-    setShowFavoriteAnimeModal,
     showAddForm,
     setShowAddForm,
     showDNAModal,
@@ -189,7 +210,6 @@ export default function HomeClient({}: HomeClientProps) {
     closeAddForm,
     closeReviewModal,
     closeSettings,
-    closeFavoriteAnimeModal,
     closeAuthModal,
     openAddQuoteModal,
     closeAddQuoteModal,
@@ -201,7 +221,7 @@ export default function HomeClient({}: HomeClientProps) {
     setShowAddForm,
     setShowReviewModal,
     setShowSettings,
-    setShowFavoriteAnimeModal,
+    setShowFavoriteAnimeModal: () => {}, // ModalContextで管理されるため、ここでは空関数
     setShowAuthModal,
     setShowAddQuoteModal,
     setShowSongModal,
@@ -476,9 +496,7 @@ export default function HomeClient({}: HomeClientProps) {
         handleLogout={handleLogout}
       />
 
-      <FavoriteAnimeModal
-        show={showFavoriteAnimeModal}
-        onClose={closeFavoriteAnimeModal}
+      <FavoriteAnimeModalWrapper
         allAnimes={allAnimes}
         favoriteAnimeIds={favoriteAnimeIds}
         setFavoriteAnimeIds={setFavoriteAnimeIds}

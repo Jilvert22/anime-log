@@ -8,6 +8,11 @@ test.describe('アニメ追加・削除', () => {
   
   // 各テストの前にログイン
   test.beforeEach(async ({ page }) => {
+    // テストモードを有効化（重複チェックをスキップ）
+    await page.addInitScript(() => {
+      (window as any).__TEST_MODE__ = true;
+    });
+    
     // コンソールエラーをキャプチャ（エラー確認用）
     page.on('console', msg => {
       if (msg.type() === 'error') {

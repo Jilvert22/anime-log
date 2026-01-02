@@ -147,8 +147,17 @@ export function WatchlistTab({
     }
   }, [season, seasonYear]);
 
-  // 積みアニメに追加（重複チェックなし、複数登録可能）
+  // 積みアニメに追加（重複チェックあり）
   const handleAddToWatchlist = useCallback(async (anime: AniListSearchResult) => {
+    // 既に登録済みかチェック
+    const existingItems = await storage.getWatchlist();
+    const isAlreadyAdded = existingItems.some(item => item.anilist_id === anime.id);
+    
+    if (isAlreadyAdded) {
+      alert('このアニメは既に積みアニメに追加されています');
+      return;
+    }
+    
     const success = await storage.addToWatchlist({
       anilist_id: anime.id,
       title: anime.title.native || anime.title.romaji || '',
@@ -333,7 +342,7 @@ export function WatchlistTab({
           </div>
 
           {searchMode === 'name' ? (
-            <div className="flex gap-2 mb-3">
+            <div className="flex flex-col sm:flex-row gap-2 mb-3">
               <input
                 type="text"
                 placeholder="アニメを検索..."
@@ -342,53 +351,59 @@ export function WatchlistTab({
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchAnime()}
                 className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
               />
-              <button
-                onClick={handleSearchAnime}
-                disabled={isSearching || !searchQuery.trim()}
-                className="px-4 py-2 bg-[#e879d4] text-white rounded-lg text-sm font-medium hover:bg-[#d45dbf] transition-colors disabled:opacity-50"
-              >
-                {isSearching ? '検索中...' : '検索'}
-              </button>
-              <button
-                onClick={() => { setShowAddForm(false); setSearchQuery(''); setSearchResults([]); }}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              >
-                キャンセル
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-3 mb-3">
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="年"
-                  value={seasonYear}
-                  onChange={(e) => setSeasonYear(Number(e.target.value))}
-                  className="w-24 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
-                />
-                <select
-                  value={season}
-                  onChange={(e) => setSeason(e.target.value as typeof season)}
-                  className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
-                >
-                  <option value="WINTER">冬</option>
-                  <option value="SPRING">春</option>
-                  <option value="SUMMER">夏</option>
-                  <option value="FALL">秋</option>
-                </select>
+              <div className="flex gap-2 sm:flex-row">
                 <button
-                  onClick={handleSearchBySeason}
-                  disabled={isSearching}
-                  className="px-4 py-2 bg-[#e879d4] text-white rounded-lg text-sm font-medium hover:bg-[#d45dbf] transition-colors disabled:opacity-50"
+                  onClick={handleSearchAnime}
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-[#e879d4] text-white rounded-lg text-sm font-medium hover:bg-[#d45dbf] transition-colors disabled:opacity-50"
                 >
                   {isSearching ? '検索中...' : '検索'}
                 </button>
                 <button
-                  onClick={() => { setShowAddForm(false); setSearchResults([]); }}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  onClick={() => { setShowAddForm(false); setSearchQuery(''); setSearchResults([]); }}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   キャンセル
                 </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 mb-3">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="年"
+                    value={seasonYear}
+                    onChange={(e) => setSeasonYear(Number(e.target.value))}
+                    className="w-24 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                  />
+                  <select
+                    value={season}
+                    onChange={(e) => setSeason(e.target.value as typeof season)}
+                    className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                  >
+                    <option value="WINTER">冬</option>
+                    <option value="SPRING">春</option>
+                    <option value="SUMMER">夏</option>
+                    <option value="FALL">秋</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSearchBySeason}
+                    disabled={isSearching}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-[#e879d4] text-white rounded-lg text-sm font-medium hover:bg-[#d45dbf] transition-colors disabled:opacity-50"
+                  >
+                    {isSearching ? '検索中...' : '検索'}
+                  </button>
+                  <button
+                    onClick={() => { setShowAddForm(false); setSearchResults([]); }}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    キャンセル
+                  </button>
+                </div>
               </div>
             </div>
           )}

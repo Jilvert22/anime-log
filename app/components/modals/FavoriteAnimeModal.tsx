@@ -21,7 +21,16 @@ export function FavoriteAnimeModal({
   if (!show) return null;
 
   const handleSave = () => {
-    localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
+    // useFavoriteAnimeフックのuseEffectが自動的にlocalStorageに保存するため、
+    // ここでのlocalStorage.setItemは不要（二重保存を避ける）
+    // ただし、念のため明示的に保存する
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('favoriteAnimeIds', JSON.stringify(favoriteAnimeIds));
+      } catch (e) {
+        console.error('Failed to save favoriteAnimeIds', e);
+      }
+    }
     if (onSave) {
       onSave();
     }
