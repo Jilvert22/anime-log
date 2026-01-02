@@ -7,7 +7,8 @@ import type { WatchlistItem } from '../../lib/storage/types';
 import { useStorage } from '../../hooks/useStorage';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../lib/push-notifications';
+// 通知設定 - 将来の実装用にコメントアウト
+// import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../lib/push-notifications';
 
 interface WatchlistDetailSheetProps {
   item?: WatchlistItem | null;
@@ -17,31 +18,20 @@ interface WatchlistDetailSheetProps {
 }
 
 export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: WatchlistDetailSheetProps) {
-  console.log('🎬 WatchlistDetailSheet レンダリング', {
-    hasItem: !!item,
-    itemId: item?.id,
-    hasAnimeMedia: !!animeMedia,
-    animeMediaId: animeMedia?.id,
-  });
-  
   const [animeDetail, setAnimeDetail] = useState<AniListMedia | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedDescription, setExpandedDescription] = useState(false);
   const [editingBroadcast, setEditingBroadcast] = useState(false);
   const [broadcastDay, setBroadcastDay] = useState<number | null>(null);
   const [broadcastTime, setBroadcastTime] = useState<string>('');
-  const [notificationEnabled, setNotificationEnabled] = useState(false);
-  const [notificationTiming, setNotificationTiming] = useState<string[]>(['1hour']);
-  const [loadingNotification, setLoadingNotification] = useState(false);
-  const [customTime, setCustomTime] = useState<string>('09:00');
-  const [showCustomTime, setShowCustomTime] = useState(false);
+  // 通知設定 - 将来の実装用にコメントアウト
+  // const [notificationEnabled, setNotificationEnabled] = useState(false);
+  // const [notificationTiming, setNotificationTiming] = useState<string[]>(['1hour']);
+  // const [loadingNotification, setLoadingNotification] = useState(false);
+  // const [customTime, setCustomTime] = useState<string>('09:00');
+  // const [showCustomTime, setShowCustomTime] = useState(false);
   const storage = useStorage();
   const { user } = useAuth();
-  
-  console.log('👤 useAuth結果', {
-    hasUser: !!user,
-    userId: user?.id,
-  });
 
   // 表示するタイトルを決定（item優先、次にanimeMedia、最後にanimeDetail）
   const displayTitle = item?.title || 
@@ -74,367 +64,259 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
     }
   }, [item]);
 
-  useEffect(() => {
-    // デバッグ用カウンター
-    const countEl = document.getElementById('debug-useeffect-count');
-    if (countEl) {
-      const current = parseInt(countEl.textContent || '0', 10);
-      countEl.textContent = String(current + 1);
-    }
-    
-    console.log('🔍 通知設定useEffect実行', {
-      hasUser: !!user,
-      userId: user?.id,
-      hasItem: !!item,
-      itemId: item?.id,
-      itemObject: item,
-    });
-    
-    // userとitemの両方が揃ったら通知設定を読み込む
-    if (user && item?.id) {
-      console.log('✅ 条件満たしたので通知設定を読み込み開始');
-      loadNotificationSettings();
-    } else {
-      console.log('❌ 条件を満たしていないため通知設定をリセット', {
-        reason: !user ? 'userなし' : !item?.id ? 'item.idなし' : '不明',
-      });
-      // userまたはitemがない場合は通知設定をリセット
-      setNotificationEnabled(false);
-      setNotificationTiming(['1hour']);
-      setShowCustomTime(false);
-      setLoadingNotification(false);
-    }
-  }, [user, item?.id]);
+  // 通知設定 - 将来の実装用にコメントアウト
+  // useEffect(() => {
+  //   // userとitemの両方が揃ったら通知設定を読み込む
+  //   if (user && item?.id) {
+  //     loadNotificationSettings();
+  //   } else {
+  //     // userまたはitemがない場合は通知設定をリセット
+  //     setNotificationEnabled(false);
+  //     setNotificationTiming(['1hour']);
+  //     setShowCustomTime(false);
+  //     setLoadingNotification(false);
+  //   }
+  // }, [user, item?.id]);
 
-  const loadNotificationSettings = async () => {
-    console.log('loadNotificationSettings開始', {
-      hasUser: !!user,
-      userId: user?.id,
-      hasItem: !!item,
-      itemId: item?.id,
-    });
-    
-    if (!user || !item?.id) {
-      console.log('loadNotificationSettings: userまたはitemがないためリセット');
-      // itemがない場合は通知設定をリセット
-      setNotificationEnabled(false);
-      setNotificationTiming(['1hour']);
-      setShowCustomTime(false);
-      setLoadingNotification(false);
-      return;
-    }
-    
-    // ローディング状態を設定（読み込み開始）
-    console.log('loadNotificationSettings: 読み込み開始、loadingNotificationをtrueに設定');
-    setLoadingNotification(true);
-    
-    try {
-      console.log('loadNotificationSettings: Supabaseクエリ実行');
-      const { data, error } = await supabase
-        .from('notification_settings')
-        .select('enabled, timing')
-        .eq('user_id', user.id)
-        .eq('watchlist_id', item.id)
-        .maybeSingle();
-      
-      if (error) {
-        // maybeSingle()を使用しているため、PGRST116エラーは発生しない
-        // 406エラーはAPIの互換性問題の可能性があるため、警告のみ
-        if (error.message?.includes('406') || String(error).includes('406')) {
-          console.warn('通知設定の取得で406エラーが発生しました（APIの互換性問題の可能性）:', error);
-          // デフォルト値を設定して続行（finallyでloadingNotificationをfalseにする）
-          setNotificationEnabled(false);
-          setNotificationTiming(['1hour']);
-          setShowCustomTime(false);
-          return;
-        }
-        
-        console.error('通知設定の取得に失敗しました:', error);
-        // エラー時もデフォルト値を設定（finallyでloadingNotificationをfalseにする）
-        setNotificationEnabled(false);
-        setNotificationTiming(['1hour']);
-        setShowCustomTime(false);
-        return;
-      }
-      
-      if (data) {
-        console.log('loadNotificationSettings: データ取得成功', data);
-        setNotificationEnabled(data.enabled);
-        const timing = data.timing || ['1hour'];
-        setNotificationTiming(timing);
-        
-        // カスタム時間を抽出
-        const customTiming = timing.find((t: string) => t.startsWith('custom:'));
-        if (customTiming) {
-          const time = customTiming.replace('custom:', '');
-          setCustomTime(time);
-          setShowCustomTime(true);
-        } else {
-          setShowCustomTime(false);
-        }
-      } else {
-        console.log('loadNotificationSettings: データなし、デフォルト値を設定');
-        setNotificationEnabled(false);
-        setNotificationTiming(['1hour']);
-        setShowCustomTime(false);
-      }
-    } catch (error) {
-      console.error('通知設定の取得に失敗しました:', error);
-      // エラー時もデフォルト値を設定
-      setNotificationEnabled(false);
-      setNotificationTiming(['1hour']);
-      setShowCustomTime(false);
-    } finally {
-      // 必ずローディング状態を解除
-      console.log('loadNotificationSettings: 完了、loadingNotificationをfalseに設定');
-      setLoadingNotification(false);
-    }
-  };
+  // 通知設定 - 将来の実装用にコメントアウト
+  // const loadNotificationSettings = async () => {
+  //   if (!user || !item?.id) {
+  //     setNotificationEnabled(false);
+  //     setNotificationTiming(['1hour']);
+  //     setShowCustomTime(false);
+  //     setLoadingNotification(false);
+  //     return;
+  //   }
+  //   
+  //   setLoadingNotification(true);
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from('notification_settings')
+  //       .select('enabled, timing')
+  //       .eq('user_id', user.id)
+  //       .eq('watchlist_id', item.id)
+  //       .maybeSingle();
+  //     
+  //     if (error) {
+  //       if (error.message?.includes('406') || String(error).includes('406')) {
+  //         console.warn('通知設定の取得で406エラーが発生しました:', error);
+  //       }
+  //       setNotificationEnabled(false);
+  //       setNotificationTiming(['1hour']);
+  //       setShowCustomTime(false);
+  //       return;
+  //     }
+  //     
+  //     if (data) {
+  //       setNotificationEnabled(data.enabled);
+  //       const timing = data.timing || ['1hour'];
+  //       setNotificationTiming(timing);
+  //       
+  //       const customTiming = timing.find((t: string) => t.startsWith('custom:'));
+  //       if (customTiming) {
+  //         const time = customTiming.replace('custom:', '');
+  //         setCustomTime(time);
+  //         setShowCustomTime(true);
+  //       } else {
+  //         setShowCustomTime(false);
+  //       }
+  //     } else {
+  //       setNotificationEnabled(false);
+  //       setNotificationTiming(['1hour']);
+  //       setShowCustomTime(false);
+  //     }
+  //   } catch (error) {
+  //     console.error('通知設定の取得に失敗しました:', error);
+  //     setNotificationEnabled(false);
+  //     setNotificationTiming(['1hour']);
+  //     setShowCustomTime(false);
+  //   } finally {
+  //     setLoadingNotification(false);
+  //   }
+  // };
 
-  const handleNotificationToggle = async (enabled: boolean) => {
-    console.log('🔔 handleNotificationToggle開始', {
-      enabled,
-      hasUser: !!user,
-      userId: user?.id,
-      hasItem: !!item,
-      itemId: item?.id,
-      loadingNotification,
-    });
-    
-    if (!user || !item?.id) {
-      console.warn('❌ 通知設定を変更できません: userまたはitemが存在しません', { user: !!user, item: !!item, itemId: item?.id });
-      return;
-    }
-    
-    if (loadingNotification) {
-      console.warn('⏳ 通知設定の変更中です。しばらくお待ちください。');
-      return;
-    }
-    
-    // 通知をONにする場合、権限をリクエスト
-    if (enabled) {
-      console.log('🔔 通知をONにするため、権限をリクエスト');
-      try {
-        const permission = await Notification.requestPermission();
-        console.log('🔔 通知権限の結果:', permission);
-        if (permission !== 'granted') {
-          // 権限が拒否された場合は設定を保存しない
-          console.warn('❌ 通知権限が拒否されました');
-          alert('通知を有効にするには、ブラウザの通知権限が必要です。\n\niOSではホーム画面に追加すると通知が届きます。');
-          return;
-        }
-        console.log('✅ 通知権限が許可されました');
-      } catch (error) {
-        console.error('❌ 通知権限のリクエストに失敗しました:', error);
-        alert('通知権限のリクエストに失敗しました');
-        return;
-      }
-    }
-    
-    console.log('🔄 loadingNotificationをtrueに設定');
-    setLoadingNotification(true);
-    try {
-      if (enabled) {
-        console.log('📱 プッシュ通知に購読開始');
-        // プッシュ通知に購読
-        try {
-          await subscribeToPushNotifications(user);
-          console.log('✅ プッシュ通知の購読成功');
-        } catch (error) {
-          console.error('❌ プッシュ通知の購読に失敗しました:', error);
-          alert('プッシュ通知の購読に失敗しました。後でもう一度お試しください。');
-          setLoadingNotification(false);
-          return;
-        }
-      } else {
-        console.log('📱 プッシュ通知の購読解除開始');
-        // プッシュ通知の購読を解除
-        try {
-          await unsubscribeFromPushNotifications(user);
-          console.log('✅ プッシュ通知の購読解除成功');
-        } catch (error) {
-          console.error('⚠️ プッシュ通知の購読解除に失敗しました（続行）:', error);
-          // 購読解除に失敗しても通知設定は保存する
-        }
-      }
-      
-      console.log('💾 通知設定をSupabaseに保存開始', {
-        userId: user.id,
-        watchlistId: item.id,
-        enabled,
-        timing: notificationTiming,
-      });
-      // 通知設定をSupabaseに保存
-      const { error } = await supabase
-        .from('notification_settings')
-        .upsert({
-          user_id: user.id,
-          watchlist_id: item.id,
-          enabled,
-          timing: notificationTiming,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id,watchlist_id'
-        });
-      
-      if (error) {
-        // 406エラーの場合は警告のみ
-        if (error.message?.includes('406') || String(error).includes('406')) {
-          console.warn('⚠️ 通知設定の保存で406エラーが発生しました（APIの互換性問題の可能性）:', error);
-          // 状態は既に更新されているので、エラーを無視して続行
-        } else {
-          console.error('❌ 通知設定の保存エラー:', error);
-          throw error;
-        }
-      } else {
-        console.log('✅ 通知設定の保存成功');
-      }
-      
-      console.log('🔄 notificationEnabledを更新:', enabled);
-      setNotificationEnabled(enabled);
-    } catch (error) {
-      console.error('❌ 通知設定の更新に失敗しました:', error);
-      alert('通知設定の更新に失敗しました');
-      // エラー時は状態を元に戻す
-      setNotificationEnabled(!enabled);
-    } finally {
-      console.log('🔄 loadingNotificationをfalseに設定');
-      setLoadingNotification(false);
-    }
-  };
+  // 通知設定 - 将来の実装用にコメントアウト
+  // const handleNotificationToggle = async (enabled: boolean) => {
+  //   if (!user || !item?.id) {
+  //     return;
+  //   }
+  //   
+  //   if (loadingNotification) {
+  //     return;
+  //   }
+  //   
+  //   if (enabled) {
+  //     try {
+  //       const permission = await Notification.requestPermission();
+  //       if (permission !== 'granted') {
+  //         alert('通知を有効にするには、ブラウザの通知権限が必要です。\n\niOSではホーム画面に追加すると通知が届きます。');
+  //         return;
+  //       }
+  //     } catch (error) {
+  //       console.error('通知権限のリクエストに失敗しました:', error);
+  //       alert('通知権限のリクエストに失敗しました');
+  //       return;
+  //     }
+  //   }
+  //   
+  //   setLoadingNotification(true);
+  //   try {
+  //     if (enabled) {
+  //       try {
+  //         await subscribeToPushNotifications(user);
+  //       } catch (error) {
+  //         console.error('プッシュ通知の購読に失敗しました:', error);
+  //         alert('プッシュ通知の購読に失敗しました。後でもう一度お試しください。');
+  //         setLoadingNotification(false);
+  //         return;
+  //       }
+  //     } else {
+  //       try {
+  //         await unsubscribeFromPushNotifications(user);
+  //       } catch (error) {
+  //         console.error('プッシュ通知の購読解除に失敗しました:', error);
+  //       }
+  //     }
+  //     
+  //     const { error } = await supabase
+  //       .from('notification_settings')
+  //       .upsert({
+  //         user_id: user.id,
+  //         watchlist_id: item.id,
+  //         enabled,
+  //         timing: notificationTiming,
+  //         updated_at: new Date().toISOString(),
+  //       }, {
+  //         onConflict: 'user_id,watchlist_id'
+  //       });
+  //     
+  //     if (error) {
+  //       if (error.message?.includes('406') || String(error).includes('406')) {
+  //         console.warn('通知設定の保存で406エラーが発生しました:', error);
+  //       } else {
+  //         throw error;
+  //       }
+  //     }
+  //     
+  //     setNotificationEnabled(enabled);
+  //   } catch (error) {
+  //     console.error('通知設定の更新に失敗しました:', error);
+  //     alert('通知設定の更新に失敗しました');
+  //     setNotificationEnabled(!enabled);
+  //   } finally {
+  //     setLoadingNotification(false);
+  //   }
+  // };
 
-  const handleTimingChange = async (timing: string) => {
-    if (!user || !item?.id || loadingNotification) return;
-    
-    // 即座にUIを更新（楽観的更新）
-    const newTiming = notificationTiming.includes(timing)
-      ? notificationTiming.filter(t => t !== timing)
-      : [...notificationTiming, timing];
-    
-    setNotificationTiming(newTiming);
-    
-    // バックグラウンドで保存
-    setLoadingNotification(true);
-    try {
-      const { error } = await supabase
-        .from('notification_settings')
-        .upsert({
-          user_id: user.id,
-          watchlist_id: item.id,
-          enabled: notificationEnabled,
-          timing: newTiming,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id,watchlist_id'
-        });
-      
-      if (error) {
-        // 406エラーの場合は警告のみ
-        if (error.message?.includes('406') || String(error).includes('406')) {
-          console.warn('通知タイミングの保存で406エラーが発生しました（APIの互換性問題の可能性）:', error);
-          // 状態は既に更新されているので、エラーを無視して続行
-        } else {
-          throw error;
-        }
-      }
-    } catch (error) {
-      console.error('通知タイミングの更新に失敗しました:', error);
-      // エラー時は状態を元に戻す
-      setNotificationTiming(notificationTiming);
-      alert('通知タイミングの更新に失敗しました');
-    } finally {
-      setLoadingNotification(false);
-    }
-  };
+  // 通知設定 - 将来の実装用にコメントアウト
+  // const handleTimingChange = async (timing: string) => {
+  //   if (!user || !item?.id || loadingNotification) return;
+  //   const newTiming = notificationTiming.includes(timing)
+  //     ? notificationTiming.filter(t => t !== timing)
+  //     : [...notificationTiming, timing];
+  //   setNotificationTiming(newTiming);
+  //   setLoadingNotification(true);
+  //   try {
+  //     const { error } = await supabase
+  //       .from('notification_settings')
+  //       .upsert({
+  //         user_id: user.id,
+  //         watchlist_id: item.id,
+  //         enabled: notificationEnabled,
+  //         timing: newTiming,
+  //         updated_at: new Date().toISOString(),
+  //       }, {
+  //         onConflict: 'user_id,watchlist_id'
+  //       });
+  //     if (error) {
+  //       if (error.message?.includes('406') || String(error).includes('406')) {
+  //         console.warn('通知タイミングの保存で406エラーが発生しました:', error);
+  //       } else {
+  //         throw error;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('通知タイミングの更新に失敗しました:', error);
+  //     setNotificationTiming(notificationTiming);
+  //     alert('通知タイミングの更新に失敗しました');
+  //   } finally {
+  //     setLoadingNotification(false);
+  //   }
+  // };
 
-  const handleCustomTimeChange = async (time: string) => {
-    if (!user || !item?.id || loadingNotification) return;
-    
-    setCustomTime(time);
-    
-    // カスタム時間を含むタイミング配列を作成
-    const customTiming = `custom:${time}`;
-    const newTiming = notificationTiming.filter(t => !t.startsWith('custom:'));
-    if (showCustomTime) {
-      newTiming.push(customTiming);
-    }
-    
-    setLoadingNotification(true);
-    try {
-      const { error } = await supabase
-        .from('notification_settings')
-        .upsert({
-          user_id: user.id,
-          watchlist_id: item.id,
-          enabled: notificationEnabled,
-          timing: newTiming,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id,watchlist_id'
-        });
-      
-      if (error) {
-        // 406エラーの場合は警告のみ
-        if (error.message?.includes('406') || String(error).includes('406')) {
-          console.warn('通知タイミングの保存で406エラーが発生しました（APIの互換性問題の可能性）:', error);
-          // 状態は既に更新されているので、エラーを無視して続行
-        } else {
-          throw error;
-        }
-      }
-      
-      setNotificationTiming(newTiming);
-    } catch (error) {
-      console.error('カスタム時間の更新に失敗しました:', error);
-      alert('カスタム時間の更新に失敗しました');
-    } finally {
-      setLoadingNotification(false);
-    }
-  };
+  // const handleCustomTimeChange = async (time: string) => {
+  //   if (!user || !item?.id || loadingNotification) return;
+  //   setCustomTime(time);
+  //   const customTiming = `custom:${time}`;
+  //   const newTiming = notificationTiming.filter(t => !t.startsWith('custom:'));
+  //   if (showCustomTime) {
+  //     newTiming.push(customTiming);
+  //   }
+  //   setLoadingNotification(true);
+  //   try {
+  //     const { error } = await supabase
+  //       .from('notification_settings')
+  //       .upsert({
+  //         user_id: user.id,
+  //         watchlist_id: item.id,
+  //         enabled: notificationEnabled,
+  //         timing: newTiming,
+  //         updated_at: new Date().toISOString(),
+  //       }, {
+  //         onConflict: 'user_id,watchlist_id'
+  //       });
+  //     if (error) {
+  //       if (error.message?.includes('406') || String(error).includes('406')) {
+  //         console.warn('通知タイミングの保存で406エラーが発生しました:', error);
+  //       } else {
+  //         throw error;
+  //       }
+  //     }
+  //     setNotificationTiming(newTiming);
+  //   } catch (error) {
+  //     console.error('カスタム時間の更新に失敗しました:', error);
+  //     alert('カスタム時間の更新に失敗しました');
+  //   } finally {
+  //     setLoadingNotification(false);
+  //   }
+  // };
 
-  const handleCustomTimeToggle = async (enabled: boolean) => {
-    if (!user || !item?.id || loadingNotification) return;
-    
-    setShowCustomTime(enabled);
-    
-    const newTiming = enabled
-      ? [...notificationTiming.filter(t => !t.startsWith('custom:')), `custom:${customTime}`]
-      : notificationTiming.filter(t => !t.startsWith('custom:'));
-    
-    setNotificationTiming(newTiming);
-    
-    setLoadingNotification(true);
-    try {
-      const { error } = await supabase
-        .from('notification_settings')
-        .upsert({
-          user_id: user.id,
-          watchlist_id: item.id,
-          enabled: notificationEnabled,
-          timing: newTiming,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id,watchlist_id'
-        });
-      
-      if (error) {
-        // 406エラーの場合は警告のみ
-        if (error.message?.includes('406') || String(error).includes('406')) {
-          console.warn('通知タイミングの保存で406エラーが発生しました（APIの互換性問題の可能性）:', error);
-          // 状態は既に更新されているので、エラーを無視して続行
-        } else {
-          throw error;
-        }
-      }
-    } catch (error) {
-      console.error('カスタム時間の更新に失敗しました:', error);
-      alert('カスタム時間の更新に失敗しました');
-      setShowCustomTime(!enabled);
-      setNotificationTiming(notificationTiming);
-    } finally {
-      setLoadingNotification(false);
-    }
-  };
+  // const handleCustomTimeToggle = async (enabled: boolean) => {
+  //   if (!user || !item?.id || loadingNotification) return;
+  //   setShowCustomTime(enabled);
+  //   const newTiming = enabled
+  //     ? [...notificationTiming.filter(t => !t.startsWith('custom:')), `custom:${customTime}`]
+  //     : notificationTiming.filter(t => !t.startsWith('custom:'));
+  //   setNotificationTiming(newTiming);
+  //   setLoadingNotification(true);
+  //   try {
+  //     const { error } = await supabase
+  //       .from('notification_settings')
+  //       .upsert({
+  //         user_id: user.id,
+  //         watchlist_id: item.id,
+  //         enabled: notificationEnabled,
+  //         timing: newTiming,
+  //         updated_at: new Date().toISOString(),
+  //       }, {
+  //         onConflict: 'user_id,watchlist_id'
+  //       });
+  //     if (error) {
+  //       if (error.message?.includes('406') || String(error).includes('406')) {
+  //         console.warn('通知タイミングの保存で406エラーが発生しました:', error);
+  //       } else {
+  //         throw error;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('カスタム時間の更新に失敗しました:', error);
+  //     alert('カスタム時間の更新に失敗しました');
+  //     setShowCustomTime(!enabled);
+  //     setNotificationTiming(notificationTiming);
+  //   } finally {
+  //     setLoadingNotification(false);
+  //   }
+  // };
 
   const loadAnimeDetail = async () => {
     const anilistId = item?.anilist_id || animeMedia?.id;
@@ -722,130 +604,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                 )}
               </section>
 
-              {/* 通知設定 */}
-              {user && item && (
-                <section>
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
-                    通知設定
-                  </h3>
-                  {/* デバッグ情報（常に表示） */}
-                  <div className="mb-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs">
-                    <div className="font-bold mb-1">🔍 デバッグ情報:</div>
-                    <div>loadingNotification: <strong>{String(loadingNotification)}</strong></div>
-                    <div>user: <strong>{user ? `存在 (${user.id?.substring(0, 8)}...)` : 'なし'}</strong></div>
-                    <div>item: <strong>{item ? '存在' : 'なし'}</strong></div>
-                    <div>item.id: <strong>{item?.id || 'なし'}</strong></div>
-                    <div>item?.anilist_id: <strong>{item?.anilist_id || 'なし'}</strong></div>
-                    <div>notificationEnabled: <strong>{String(notificationEnabled)}</strong></div>
-                    <div>disabled条件: <strong>{String(loadingNotification || !user || !item?.id)}</strong></div>
-                    <div>useEffect実行回数: <strong id="debug-useeffect-count">-</strong></div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        通知を有効にする
-                      </label>
-                      <button
-                        onClick={() => {
-                          console.log('通知トグルクリック', {
-                            loadingNotification,
-                            hasUser: !!user,
-                            hasItem: !!item,
-                            itemId: item?.id,
-                            notificationEnabled,
-                          });
-                          if (!loadingNotification && user && item?.id) {
-                            handleNotificationToggle(!notificationEnabled);
-                          } else {
-                            console.warn('通知設定を変更できません', {
-                              loadingNotification,
-                              hasUser: !!user,
-                              hasItem: !!item,
-                              itemId: item?.id,
-                            });
-                          }
-                        }}
-                        disabled={loadingNotification || !user || !item?.id}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          notificationEnabled ? 'bg-[#e879d4]' : 'bg-gray-300 dark:bg-gray-600'
-                        } ${loadingNotification || !user || !item?.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                        style={{
-                          pointerEvents: loadingNotification || !user || !item?.id ? 'none' : 'auto',
-                        }}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            notificationEnabled ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                    
-                    {notificationEnabled && (
-                      <div className="space-y-2 pl-2 border-l-2 border-[#e879d4]">
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                          通知タイミング（複数選択可）
-                        </p>
-                        {[
-                          { value: '30min', label: '30分前' },
-                          { value: '1hour', label: '1時間前' },
-                          { value: '3hour', label: '3時間前' },
-                          { value: 'morning', label: '当日朝（9:00）' },
-                        ].map((option) => (
-                          <label
-                            key={option.value}
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={notificationTiming.includes(option.value)}
-                              onChange={() => handleTimingChange(option.value)}
-                              disabled={loadingNotification}
-                              className="w-4 h-4 text-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            />
-                            <span className={`text-sm text-gray-700 dark:text-gray-300 ${loadingNotification ? 'opacity-50' : ''}`}>
-                              {option.label}
-                            </span>
-                          </label>
-                        ))}
-                        
-                        {/* カスタム時間 */}
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={showCustomTime}
-                            onChange={(e) => handleCustomTimeToggle(e.target.checked)}
-                            disabled={loadingNotification}
-                            className="w-4 h-4 text-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                          />
-                          <span className={`text-sm text-gray-700 dark:text-gray-300 ${loadingNotification ? 'opacity-50' : ''}`}>
-                            カスタム時間
-                          </span>
-                        </label>
-                        
-                        {showCustomTime && (
-                          <div className="ml-6 mt-1">
-                            <input
-                              type="time"
-                              value={customTime}
-                              onChange={(e) => handleCustomTimeChange(e.target.value)}
-                              disabled={loadingNotification}
-                              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-[#e879d4] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                            />
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              指定した時刻に通知します
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                      ※ iOSではホーム画面に追加すると通知が届きます
-                    </p>
-                  </div>
-                </section>
-              )}
+              {/* 通知設定 - 将来の実装用にコメントアウト */}
 
               {/* 配信サイト */}
               <section>
