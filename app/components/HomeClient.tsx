@@ -53,6 +53,7 @@ const SeasonEndModal = dynamic(() => import('./modals/SeasonEndModal').then(mod 
 import { useAnimeReviews } from '../hooks/useAnimeReviews';
 import { useAuth } from '../hooks/useAuth';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfileContext } from '../contexts/UserProfileContext';
 import { useAnimeDataContext } from '../contexts/AnimeDataContext';
 import { useModals } from '../hooks/useModals';
 import { useFormStates } from '../hooks/useFormStates';
@@ -107,7 +108,7 @@ export default function HomeClient({}: HomeClientProps) {
   // ダークモード管理をカスタムフックで管理
   const { isDarkMode, setIsDarkMode } = useDarkMode();
   
-  // ユーザープロフィール管理をカスタムフックで管理
+  // ユーザープロフィール管理をContextから取得（UserProfileProvider内の状態を共有）
   const {
     profile,
     loading: profileLoading,
@@ -123,7 +124,7 @@ export default function HomeClient({}: HomeClientProps) {
     isProfilePublic,
     userBio,
     userHandle,
-  } = useUserProfile();
+  } = useUserProfileContext();
   
   // タブ状態管理をカスタムフックで管理
   const {
