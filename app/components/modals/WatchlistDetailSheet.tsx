@@ -26,6 +26,8 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   const [notificationTiming, setNotificationTiming] = useState<string[]>(['1hour']);
   const [loadingNotification, setLoadingNotification] = useState(false);
+  const [customTime, setCustomTime] = useState<string>('09:00');
+  const [showCustomTime, setShowCustomTime] = useState(false);
   const storage = useStorage();
   const { user } = useAuth();
 
@@ -62,7 +64,17 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
   }, [item]);
 
   const loadNotificationSettings = async () => {
-    if (!user || !item?.id) return;
+    if (!user || !item?.id) {
+      // itemがない場合は通知設定をリセット
+      setNotificationEnabled(false);
+      setNotificationTiming(['1hour']);
+      setShowCustomTime(false);
+      setLoadingNotification(false);
+      return;
+    }
+    
+    // ローディング状態をリセット
+    setLoadingNotification(false);
     
     try {
       const { data, error } = await supabase
@@ -74,23 +86,62 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
       
       if (error && error.code !== 'PGRST116') { // PGRST116はレコードが見つからないエラー
         console.error('通知設定の取得に失敗しました:', error);
+        setLoadingNotification(false);
         return;
       }
       
       if (data) {
         setNotificationEnabled(data.enabled);
-        setNotificationTiming(data.timing || ['1hour']);
+        const timing = data.timing || ['1hour'];
+        setNotificationTiming(timing);
+        
+        // カスタム時間を抽出
+        const customTiming = timing.find((t: string) => t.startsWith('custom:'));
+        if (customTiming) {
+          const time = customTiming.replace('custom:', '');
+          setCustomTime(time);
+          setShowCustomTime(true);
+        } else {
+          setShowCustomTime(false);
+        }
       } else {
         setNotificationEnabled(false);
         setNotificationTiming(['1hour']);
+        setShowCustomTime(false);
       }
+      setLoadingNotification(false);
     } catch (error) {
       console.error('通知設定の取得に失敗しました:', error);
+      setLoadingNotification(false);
     }
   };
 
   const handleNotificationToggle = async (enabled: boolean) => {
-    if (!user || !item?.id) return;
+    if (!user || !item?.id) {
+      console.warn('通知設定を変更できません: userまたはitemが存在しません', { user: !!user, item: !!item, itemId: item?.id });
+      return;
+    }
+    
+    if (loadingNotification) {
+      console.warn('通知設定の変更中です。しばらくお待ちください。');
+      return;
+    }
+    
+    // 通知をONにする場合、権限をリクエスト
+    if (enabled) {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          // 権限が拒否された場合は設定を保存しない
+          alert('通知を有効にするには、ブラウザの通知権限が必要です。\n\niOSではホーム画面に追加すると通知が届きます。');
+          return;
+        }
+      } catch (error) {
+        console.error('通知権限のリクエストに失敗しました:', error);
+        alert('通知権限のリクエストに失敗しました');
+        return;
+      }
+    }
     
     setLoadingNotification(true);
     try {
@@ -100,7 +151,9 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
           await subscribeToPushNotifications(user);
         } catch (error) {
           console.error('プッシュ通知の購読に失敗しました:', error);
-          // 購読に失敗しても通知設定は保存する（後で再試行可能）
+          alert('プッシュ通知の購読に失敗しました。後でもう一度お試しください。');
+          setLoadingNotification(false);
+          return;
         }
       } else {
         // プッシュ通知の購読を解除
@@ -131,17 +184,60 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
     } catch (error) {
       console.error('通知設定の更新に失敗しました:', error);
       alert('通知設定の更新に失敗しました');
+      // エラー時は状態を元に戻す
+      setNotificationEnabled(!enabled);
     } finally {
       setLoadingNotification(false);
     }
   };
 
   const handleTimingChange = async (timing: string) => {
-    if (!user || !item?.id) return;
+    if (!user || !item?.id || loadingNotification) return;
     
+    // 即座にUIを更新（楽観的更新）
     const newTiming = notificationTiming.includes(timing)
       ? notificationTiming.filter(t => t !== timing)
       : [...notificationTiming, timing];
+    
+    setNotificationTiming(newTiming);
+    
+    // バックグラウンドで保存
+    setLoadingNotification(true);
+    try {
+      const { error } = await supabase
+        .from('notification_settings')
+        .upsert({
+          user_id: user.id,
+          watchlist_id: item.id,
+          enabled: notificationEnabled,
+          timing: newTiming,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,watchlist_id'
+        });
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('通知タイミングの更新に失敗しました:', error);
+      // エラー時は状態を元に戻す
+      setNotificationTiming(notificationTiming);
+      alert('通知タイミングの更新に失敗しました');
+    } finally {
+      setLoadingNotification(false);
+    }
+  };
+
+  const handleCustomTimeChange = async (time: string) => {
+    if (!user || !item?.id || loadingNotification) return;
+    
+    setCustomTime(time);
+    
+    // カスタム時間を含むタイミング配列を作成
+    const customTiming = `custom:${time}`;
+    const newTiming = notificationTiming.filter(t => !t.startsWith('custom:'));
+    if (showCustomTime) {
+      newTiming.push(customTiming);
+    }
     
     setLoadingNotification(true);
     try {
@@ -161,8 +257,44 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
       
       setNotificationTiming(newTiming);
     } catch (error) {
-      console.error('通知タイミングの更新に失敗しました:', error);
-      alert('通知タイミングの更新に失敗しました');
+      console.error('カスタム時間の更新に失敗しました:', error);
+      alert('カスタム時間の更新に失敗しました');
+    } finally {
+      setLoadingNotification(false);
+    }
+  };
+
+  const handleCustomTimeToggle = async (enabled: boolean) => {
+    if (!user || !item?.id || loadingNotification) return;
+    
+    setShowCustomTime(enabled);
+    
+    const newTiming = enabled
+      ? [...notificationTiming.filter(t => !t.startsWith('custom:')), `custom:${customTime}`]
+      : notificationTiming.filter(t => !t.startsWith('custom:'));
+    
+    setNotificationTiming(newTiming);
+    
+    setLoadingNotification(true);
+    try {
+      const { error } = await supabase
+        .from('notification_settings')
+        .upsert({
+          user_id: user.id,
+          watchlist_id: item.id,
+          enabled: notificationEnabled,
+          timing: newTiming,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,watchlist_id'
+        });
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('カスタム時間の更新に失敗しました:', error);
+      alert('カスタム時間の更新に失敗しました');
+      setShowCustomTime(!enabled);
+      setNotificationTiming(notificationTiming);
     } finally {
       setLoadingNotification(false);
     }
@@ -400,11 +532,17 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                         通知を有効にする
                       </label>
                       <button
-                        onClick={() => handleNotificationToggle(!notificationEnabled)}
-                        disabled={loadingNotification}
+                        onClick={() => {
+                          if (!loadingNotification && user && item?.id) {
+                            handleNotificationToggle(!notificationEnabled);
+                          } else {
+                            console.warn('通知設定を変更できません', { loadingNotification, hasUser: !!user, hasItem: !!item, itemId: item?.id });
+                          }
+                        }}
+                        disabled={loadingNotification || !user || !item?.id}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           notificationEnabled ? 'bg-[#e879d4]' : 'bg-gray-300 dark:bg-gray-600'
-                        } ${loadingNotification ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        } ${loadingNotification || !user || !item?.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -434,13 +572,42 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
                               checked={notificationTiming.includes(option.value)}
                               onChange={() => handleTimingChange(option.value)}
                               disabled={loadingNotification}
-                              className="w-4 h-4 text-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2"
+                              className="w-4 h-4 text-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                            <span className={`text-sm text-gray-700 dark:text-gray-300 ${loadingNotification ? 'opacity-50' : ''}`}>
                               {option.label}
                             </span>
                           </label>
                         ))}
+                        
+                        {/* カスタム時間 */}
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={showCustomTime}
+                            onChange={(e) => handleCustomTimeToggle(e.target.checked)}
+                            disabled={loadingNotification}
+                            className="w-4 h-4 text-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          />
+                          <span className={`text-sm text-gray-700 dark:text-gray-300 ${loadingNotification ? 'opacity-50' : ''}`}>
+                            カスタム時間
+                          </span>
+                        </label>
+                        
+                        {showCustomTime && (
+                          <div className="ml-6 mt-1">
+                            <input
+                              type="time"
+                              value={customTime}
+                              onChange={(e) => handleCustomTimeChange(e.target.value)}
+                              disabled={loadingNotification}
+                              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-[#e879d4] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              指定した時刻に通知します
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                     

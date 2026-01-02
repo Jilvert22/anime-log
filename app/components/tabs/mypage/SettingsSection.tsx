@@ -254,7 +254,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         <h2 className="text-xl font-bold px-4 text-[#6b5b6e] dark:text-white font-mixed">⚙️ 設定</h2>
         
         {/* PWAインストール（未インストール時のみ表示） */}
-        {!isInstalled && (
+        {!isInstalled && (isInstallable || isIOS) && (
           <div className="px-4">
             <div className="bg-gradient-to-r from-[#e879d4] to-[#f09fe3] rounded-lg border border-gray-200 dark:border-gray-700 shadow-md">
               <button

@@ -158,25 +158,30 @@ function SearchResultCard({
   onCardClick?: () => void;
 }) {
   return (
-    <div className="relative group cursor-pointer" onClick={onCardClick}>
-      {anime.coverImage?.large ? (
-        <Image
-          src={anime.coverImage.large}
-          alt={anime.title?.native || anime.title?.romaji || ''}
-          width={200}
-          height={300}
-          className="w-full aspect-[2/3] object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
-          loading="lazy"
-          unoptimized
-        />
-      ) : (
-        <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center text-4xl">
-          🎬
+    <div className="relative group">
+      <div 
+        className="relative cursor-pointer" 
+        onClick={onCardClick}
+      >
+        {anime.coverImage?.large ? (
+          <Image
+            src={anime.coverImage.large}
+            alt={anime.title?.native || anime.title?.romaji || ''}
+            width={200}
+            height={300}
+            className="w-full aspect-[2/3] object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
+            loading="lazy"
+            unoptimized
+          />
+        ) : (
+          <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center text-4xl">
+            🎬
+          </div>
+        )}
+        {/* ホバー時のオーバーレイ */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center pointer-events-none">
+          <span className="text-white text-sm font-medium">詳細を見る</span>
         </div>
-      )}
-      {/* ホバー時のオーバーレイ */}
-      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-        <span className="text-white text-sm font-medium">詳細を見る</span>
       </div>
       <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
         {anime.title?.native || anime.title?.romaji || 'タイトル不明'}
@@ -188,7 +193,7 @@ function SearchResultCard({
           onAdd();
         }}
         disabled={isAdded}
-        className={`mt-1 w-full px-2 py-1 text-xs font-medium rounded transition-colors ${
+        className={`mt-1 w-full px-2 py-1 text-xs font-medium rounded transition-colors relative z-10 ${
           isAdded
             ? 'bg-gray-400 text-white cursor-not-allowed'
             : 'bg-purple-500 text-white hover:bg-purple-600'
@@ -204,7 +209,7 @@ type SeasonType = 'current' | 'next';
 
 export default function SeasonWatchlistTab() {
   const storage = useStorage();
-  const [selectedSeason, setSelectedSeason] = useState<SeasonType>('next'); // デフォルトは来期
+  const [selectedSeason, setSelectedSeason] = useState<SeasonType>('current'); // デフォルトは今期
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [filterStatus, setFilterStatus] = useState<'planned' | 'watching' | 'completed' | 'all'>('all');
   const [isLoading, setIsLoading] = useState(false);
