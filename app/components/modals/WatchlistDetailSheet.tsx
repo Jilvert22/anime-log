@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getAnimeDetail, getBroadcastInfo, type AniListMedia } from '../../lib/anilist';
 import type { WatchlistItem } from '../../lib/storage/types';
@@ -59,9 +59,21 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
     if (item) {
       setBroadcastDay(item.broadcast_day ?? null);
       setBroadcastTime(item.broadcast_time || '');
-      loadNotificationSettings();
     }
   }, [item]);
+
+  useEffect(() => {
+    // userとitemの両方が揃ったら通知設定を読み込む
+    if (user && item?.id) {
+      loadNotificationSettings();
+    } else {
+      // userまたはitemがない場合は通知設定をリセット
+      setNotificationEnabled(false);
+      setNotificationTiming(['1hour']);
+      setShowCustomTime(false);
+      setLoadingNotification(false);
+    }
+  }, [user, item?.id]);
 
   const loadNotificationSettings = async () => {
     if (!user || !item?.id) {
@@ -73,8 +85,8 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
       return;
     }
     
-    // ローディング状態をリセット
-    setLoadingNotification(false);
+    // ローディング状態を設定（読み込み開始）
+    setLoadingNotification(true);
     
     try {
       const { data, error } = await supabase
@@ -89,16 +101,18 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
         // 406エラーはAPIの互換性問題の可能性があるため、警告のみ
         if (error.message?.includes('406') || String(error).includes('406')) {
           console.warn('通知設定の取得で406エラーが発生しました（APIの互換性問題の可能性）:', error);
-          // デフォルト値を設定して続行
+          // デフォルト値を設定して続行（finallyでloadingNotificationをfalseにする）
           setNotificationEnabled(false);
           setNotificationTiming(['1hour']);
           setShowCustomTime(false);
-          setLoadingNotification(false);
           return;
         }
         
         console.error('通知設定の取得に失敗しました:', error);
-        setLoadingNotification(false);
+        // エラー時もデフォルト値を設定（finallyでloadingNotificationをfalseにする）
+        setNotificationEnabled(false);
+        setNotificationTiming(['1hour']);
+        setShowCustomTime(false);
         return;
       }
       
@@ -121,9 +135,14 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
         setNotificationTiming(['1hour']);
         setShowCustomTime(false);
       }
-      setLoadingNotification(false);
     } catch (error) {
       console.error('通知設定の取得に失敗しました:', error);
+      // エラー時もデフォルト値を設定
+      setNotificationEnabled(false);
+      setNotificationTiming(['1hour']);
+      setShowCustomTime(false);
+    } finally {
+      // 必ずローディング状態を解除
       setLoadingNotification(false);
     }
   };
