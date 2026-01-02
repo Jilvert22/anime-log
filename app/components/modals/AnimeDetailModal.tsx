@@ -9,6 +9,7 @@ import { availableTags, ratingLabels } from '../../constants';
 import { AnimeReviewSection } from './AnimeReviewSection';
 import { updateAnimeInSeasons } from '../../utils/animeUpdates';
 import { addToWatchlist } from '../../lib/api';
+import { StreamingBadges } from '../common/StreamingBadges';
 
 interface AnimeDetailModalProps {
   selectedAnime: Anime;
@@ -246,6 +247,23 @@ export function AnimeDetailModal({
                 </button>
               </div>
             </div>
+
+            {/* 配信サービス */}
+            {selectedAnime.streamingSites && selectedAnime.streamingSites.length > 0 ? (
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">配信サービス</p>
+                <div className="flex justify-center">
+                  <StreamingBadges services={selectedAnime.streamingSites} maxDisplay={5} />
+                </div>
+              </div>
+            ) : (
+              // デバッグ用（開発環境のみ）
+              process.env.NODE_ENV === 'development' && (
+                <div className="mb-4 text-xs text-gray-400 text-center">
+                  {/* デバッグ: streamingSites = {JSON.stringify(selectedAnime.streamingSites)} */}
+                </div>
+              )
+            )}
 
             {/* タグ選択 */}
             <div className="mb-4">

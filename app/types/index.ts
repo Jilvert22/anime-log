@@ -53,6 +53,7 @@ export type Anime = {
   };
   quotes?: Quote[];
   reviews?: Review[];
+  streamingSites?: string[];
 };
 
 // シーズンの型定義
@@ -90,6 +91,7 @@ export type SupabaseAnimeRow = {
   quotes: Quote[] | null;
   series_name: string | null;
   studios: string[] | null;
+  streaming_sites: string[] | null;
   created_at?: string;
   updated_at?: string;
 };

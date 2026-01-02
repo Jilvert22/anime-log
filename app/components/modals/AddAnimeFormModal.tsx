@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
 import type { Anime, Season } from '../../types';
-import { searchAnime, searchAnimeBySeason, type AniListMedia } from '../../lib/anilist';
+import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
+import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { supabase } from '../../lib/supabase';
 import { translateGenre, sortSeasonsByTime, getSeasonNameWithMonths } from '../../utils/helpers';
 import { availableTags } from '../../constants';
@@ -47,14 +48,14 @@ export function AddAnimeFormModal({
 }) {
   const [addModalMode, setAddModalMode] = useState<'search' | 'season'>('search');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<AniListMedia[]>([]);
+  const [searchResults, setSearchResults] = useState<AniListMediaWithStreaming[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedSearchAnimeIds, setSelectedSearchAnimeIds] = useState<Set<number>>(new Set());
   const [selectedSeason, setSelectedSeason] = useState<'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [seasonSearchResults, setSeasonSearchResults] = useState<AniListMedia[]>([]);
+  const [seasonSearchResults, setSeasonSearchResults] = useState<AniListMediaWithStreaming[]>([]);
   const [selectedSeasonAnimeIds, setSelectedSeasonAnimeIds] = useState<Set<number>>(new Set());
-  const [isSeasonSearching, setIsSeasonSearching] = useState(false);
+  const { searchBySeason, searchByTitle, isLoading: isStreamingSearchLoading } = useAnimeSearchWithStreaming();
 
   if (!show) return null;
 
@@ -65,7 +66,7 @@ export function AddAnimeFormModal({
     setSearchResults([]);
     
     try {
-      const results = await searchAnime(searchQuery.trim());
+      const results = await searchByTitle(searchQuery.trim());
       setSearchResults(results || []);
     } catch (error) {
       console.error('Failed to search anime:', error);
@@ -163,26 +164,24 @@ export function AddAnimeFormModal({
             <button
               onClick={async () => {
                 if (selectedSeason) {
-                  setIsSeasonSearching(true);
                   setSelectedSeasonAnimeIds(new Set());
                   try {
-                    const result = await searchAnimeBySeason(selectedSeason, selectedYear, 1, 50);
-                    setSeasonSearchResults(result.media);
+                    const results = await searchBySeason(selectedSeason, selectedYear, 1, 50);
+                    setSeasonSearchResults(results);
                   } catch (error) {
                     console.error('Failed to search anime by season:', error);
-                  } finally {
-                    setIsSeasonSearching(false);
+                    setSeasonSearchResults([]);
                   }
                 }
               }}
-              disabled={!selectedSeason || isSeasonSearching}
+              disabled={!selectedSeason || isStreamingSearchLoading}
               className="w-full px-4 py-3 bg-[#e879d4] text-white rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {isSeasonSearching ? '検索中...' : 'クールを検索'}
+              {isStreamingSearchLoading ? '検索中...' : 'クールを検索'}
             </button>
             
             {/* 検索結果 */}
-            {seasonSearchResults.length > 0 && !isSeasonSearching && (
+            {seasonSearchResults.length > 0 && !isStreamingSearchLoading && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -252,6 +251,24 @@ export function AddAnimeFormModal({
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {result.format || ''} {result.episodes ? `全${result.episodes}話` : ''}
                           </p>
+                          {/* 配信バッジ */}
+                          {result.streamingServices && result.streamingServices.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {result.streamingServices.slice(0, 3).map((service) => (
+                                <span
+                                  key={service}
+                                  className="text-xs bg-[#e879d4]/20 text-[#e879d4] dark:bg-[#e879d4]/30 dark:text-[#e879d4] px-2 py-0.5 rounded-full font-medium"
+                                >
+                                  {service}
+                                </span>
+                              ))}
+                              {result.streamingServices.length > 3 && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400 px-2 py-0.5">
+                                  +{result.streamingServices.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </label>
                     );
@@ -318,6 +335,7 @@ export function AddAnimeFormModal({
                           tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
                           seriesName,
                           studios: result.studios?.nodes?.map((s: { name: string }) => s.name) || [],
+                          streamingSites: result.streamingServices || [],
                         };
                       });
                       
@@ -508,6 +526,24 @@ export function AddAnimeFormModal({
                               ))}
                             </div>
                           )}
+                          {/* 配信バッジ */}
+                          {result.streamingServices && result.streamingServices.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {result.streamingServices.slice(0, 3).map((service) => (
+                                <span
+                                  key={service}
+                                  className="text-xs bg-[#e879d4]/20 text-[#e879d4] dark:bg-[#e879d4]/30 dark:text-[#e879d4] px-2 py-0.5 rounded-full font-medium"
+                                >
+                                  {service}
+                                </span>
+                              ))}
+                              {result.streamingServices.length > 3 && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400 px-2 py-0.5">
+                                  +{result.streamingServices.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </label>
                     );
@@ -619,6 +655,7 @@ export function AddAnimeFormModal({
                         tags: tags.length > 0 ? tags : undefined,
                         seriesName: seriesName,
                         studios: studios.length > 0 ? studios : undefined,
+                        streamingSites: result.streamingServices || [],
                       };
                     });
                     

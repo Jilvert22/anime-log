@@ -21,6 +21,7 @@ export function animeToSupabase(anime: Anime, seasonName: string, userId: string
     quotes: anime.quotes || null,
     series_name: anime.seriesName || null,
     studios: (anime.studios && anime.studios.length > 0) ? anime.studios : null,
+    streaming_sites: (anime.streamingSites && anime.streamingSites.length > 0) ? anime.streamingSites : null,
   };
 }
 
@@ -38,6 +39,7 @@ export function supabaseToAnime(row: SupabaseAnimeRow): Anime {
     quotes: row.quotes || undefined,
     seriesName: row.series_name || undefined,
     studios: row.studios || undefined,
+    streamingSites: row.streaming_sites || undefined,
   };
 }
 
