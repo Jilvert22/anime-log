@@ -82,22 +82,11 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate }: Wa
         .select('enabled, timing')
         .eq('user_id', user.id)
         .eq('watchlist_id', item.id)
-        .single();
+        .maybeSingle();
       
       if (error) {
-        // PGRST116はレコードが見つからないエラー（正常）
+        // maybeSingle()を使用しているため、PGRST116エラーは発生しない
         // 406エラーはAPIの互換性問題の可能性があるため、警告のみ
-        if (error.code === 'PGRST116') {
-          // レコードが見つからない場合はデフォルト値を設定
-          setNotificationEnabled(false);
-          setNotificationTiming(['1hour']);
-          setShowCustomTime(false);
-          setLoadingNotification(false);
-          return;
-        }
-        
-        // 406エラーの場合は警告のみ（APIの互換性問題の可能性）
-        // PostgrestErrorにはstatusプロパティがないため、messageで判定
         if (error.message?.includes('406') || String(error).includes('406')) {
           console.warn('通知設定の取得で406エラーが発生しました（APIの互換性問題の可能性）:', error);
           // デフォルト値を設定して続行
