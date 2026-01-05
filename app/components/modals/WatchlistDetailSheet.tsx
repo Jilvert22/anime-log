@@ -668,11 +668,13 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                           } else {
                             // ローカルストレージの場合、直接状態を更新
                             const updatedAt = new Date().toISOString();
-                            setCurrentItem({
-                              ...currentItem,
-                              streaming_sites: result.streamingSites,
-                              streaming_updated_at: updatedAt,
-                            });
+                            if (currentItem) {
+                              setCurrentItem({
+                                ...currentItem,
+                                streaming_sites: result.streamingSites,
+                                streaming_updated_at: updatedAt,
+                              });
+                            }
                             // ローカルストレージも更新
                             if (currentItem.id && storage instanceof (await import('../../lib/storage/localStorageService')).LocalStorageService) {
                               // TypeScriptの型チェックを回避するため、anyでキャスト
