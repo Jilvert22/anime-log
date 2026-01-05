@@ -152,7 +152,9 @@ export async function searchAnimeBySeason(
             externalLinks {
               site
               url
+              type
             }
+            siteUrl
             airingSchedule(notYetAired: true, perPage: 1) {
               nodes {
                 airingAt

@@ -11,6 +11,7 @@ import { supabase } from '../../lib/supabase';
 import { animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName } from '../../utils/helpers';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
+import { StreamingBadges } from '../common/StreamingBadges';
 
 // 積みアニメカード
 const WatchlistCard = memo(function WatchlistCard({ 
@@ -100,24 +101,6 @@ const WatchlistCard = memo(function WatchlistCard({
         ) : null}
         {item.memo && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">{item.memo}</p>
-        )}
-        {/* 配信バッジ */}
-        {item.streaming_sites && item.streaming_sites.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {item.streaming_sites.slice(0, 3).map((service, idx) => (
-              <span
-                key={idx}
-                className="px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
-              >
-                {service}
-              </span>
-            ))}
-            {item.streaming_sites.length > 3 && (
-              <span className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                +{item.streaming_sites.length - 3}
-              </span>
-            )}
-          </div>
         )}
       </div>
     </div>
@@ -753,28 +736,6 @@ export function WatchlistTab({
                           </span>
                         )}
                       </div>
-                      {/* 配信バッジ */}
-                      {anime.streamingServices && anime.streamingServices.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {anime.streamingServices.slice(0, 3).map((service) => (
-                            <span
-                              key={service}
-                              className={`px-1.5 py-0.5 text-xs rounded ${
-                                isDisabled
-                                  ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                                  : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                              }`}
-                            >
-                              {service}
-                            </span>
-                          ))}
-                          {anime.streamingServices.length > 3 && (
-                            <span className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                              +{anime.streamingServices.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </button>
                 );

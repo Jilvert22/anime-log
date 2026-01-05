@@ -24,6 +24,7 @@ export type AniListMedia = {
     url: string;
     type?: string;
   }[];
+  siteUrl?: string;
   format?: string;
   episodes?: number | null;
   airingSchedule?: {
@@ -49,6 +50,7 @@ export type AniListMedia = {
     site: string | null;
   } | null;
   averageScore?: number | null;
+  synonyms?: string[];
 };
 
 export async function searchAnime(query: string) {
@@ -77,7 +79,9 @@ export async function searchAnime(query: string) {
             externalLinks {
               site
               url
+              type
             }
+            siteUrl
             airingSchedule(notYetAired: true, perPage: 1) {
               nodes {
                 airingAt
@@ -161,7 +165,9 @@ export async function searchAnimeBySeason(
             externalLinks {
               site
               url
+              type
             }
+            siteUrl
             airingSchedule(notYetAired: true, perPage: 1) {
               nodes {
                 airingAt
@@ -306,6 +312,18 @@ export function getBroadcastInfo(anime: AniListMedia): { day: number | null; tim
   return { day: jstDay, time };
 }
 
+/**
+ * 公式サイトURLを取得
+ * externalLinksから公式サイトを探す
+ */
+export function getOfficialSiteUrl(media: AniListMedia): string | null {
+  // externalLinksから公式サイトを探す
+  const officialLink = media.externalLinks?.find(
+    (link) => link.type === 'INFO' || link.site === 'Official Site'
+  );
+  return officialLink?.url || media.siteUrl || null;
+}
+
 // アニメの詳細情報を取得（AniList IDから）
 export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | null> {
   const graphqlQuery = {
@@ -350,6 +368,7 @@ export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | 
             site
             type
           }
+          siteUrl
           seasonYear
           season
         }

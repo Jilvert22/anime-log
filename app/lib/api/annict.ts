@@ -38,6 +38,8 @@ export type AnnictWork = {
   media: AnnictMedia;
   officialSiteUrl: string | null;
   twitterHashtag: string | null;
+  synopsis?: string | null;
+  synopsisSource?: string | null;
   programs: {
     nodes: AnnictProgram[];
   };
@@ -158,7 +160,17 @@ async function queryAnnict<T>(query: string, variables: Record<string, unknown> 
     });
 
     if (!response.ok) {
-      throw new NetworkError(`Annict API エラー: ${response.status}`);
+      // 500エラーの場合は詳細なエラーメッセージを取得
+      let errorMessage = `Annict API エラー: ${response.status}`;
+      try {
+        const errorData = await response.json().catch(() => null);
+        if (errorData?.message) {
+          errorMessage = `Annict API エラー: ${response.status} - ${errorData.message}`;
+        }
+      } catch {
+        // JSON解析に失敗した場合はデフォルトメッセージを使用
+      }
+      throw new NetworkError(errorMessage);
     }
 
     const data = await response.json();
@@ -294,37 +306,74 @@ export function formatAnnictSeason(year: number, season: string): string {
 
 /**
  * タイトルを正規化（マッチング用）
- * - 全角→半角
+ * - 全角→半角変換
+ * - 記号の統一・除去
+ * - シーズン表記の統一
+ * - ローマ数字→アラビア数字
  * - 大文字→小文字
- * - 記号・空白を除去
+ * - スペースの統一
  */
 export function normalizeTitle(title: string): string {
   return title
+    // 全角→半角変換
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+    // 記号の統一
+    .replace(/[！!]/g, '')
+    .replace(/[？?]/g, '')
+    .replace(/[〜～~]/g, '')
+    .replace(/[：:]/g, '')
+    .replace(/[・·]/g, '')
+    .replace(/[「」『』【】\[\]()（）]/g, '')
+    .replace(/["'""'']/g, '')
+    // スペースの統一
+    .replace(/[\s　]+/g, ' ')
+    // シーズン表記の統一
+    .replace(/第?(\d+)期/g, ' $1 ')
+    .replace(/(\d+)(nd|rd|th)?\s*season/gi, ' $1 ')
+    .replace(/season\s*(\d+)/gi, ' $1 ')
+    .replace(/part\s*(\d+)/gi, ' $1 ')
+    .replace(/パート\s*(\d+)/gi, ' $1 ')
+    // ローマ数字→アラビア数字
+    .replace(/\bII\b/gi, '2')
+    .replace(/\bIII\b/gi, '3')
+    .replace(/\bIV\b/gi, '4')
+    .replace(/\bV\b/gi, '5')
+    // 小文字化
     .toLowerCase()
-    // 全角英数字→半角
-    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => 
-      String.fromCharCode(s.charCodeAt(0) - 0xFEE0)
-    )
-    // 記号・空白を除去
-    .replace(/[\s\-\_\・\:\!\?\.\,\、\。\「\」\『\』\【\】\(\)\[\]]/g, '')
-    // 全角スペース
-    .replace(/　/g, '');
+    // 前後の空白削除
+    .trim();
 }
 
 /**
  * 2つのタイトルがマッチするか判定
+ * - 完全一致
+ * - 部分一致（片方がもう片方を含む）
+ * - 単語ベースの一致度判定（60%以上の単語が一致）
  */
-export function titlesMatch(title1: string, title2: string): boolean {
-  const norm1 = normalizeTitle(title1);
-  const norm2 = normalizeTitle(title2);
-  
+export function titlesMatch(anilistTitle: string, annictTitle: string): boolean {
+  const normalizedAnilist = normalizeTitle(anilistTitle);
+  const normalizedAnnict = normalizeTitle(annictTitle);
+
   // 完全一致
-  if (norm1 === norm2) return true;
-  
-  // 片方が片方を含む（部分一致）
-  if (norm1.includes(norm2) || norm2.includes(norm1)) return true;
-  
-  return false;
+  if (normalizedAnilist === normalizedAnnict) return true;
+
+  // 片方がもう片方を含む（部分一致）
+  if (normalizedAnilist.includes(normalizedAnnict) || normalizedAnnict.includes(normalizedAnilist)) {
+    return true;
+  }
+
+  // 単語分割して一致度を計算
+  const anilistWords = normalizedAnilist.split(/\s+/).filter(w => w.length > 1);
+  const annictWords = normalizedAnnict.split(/\s+/).filter(w => w.length > 1);
+
+  if (anilistWords.length === 0 || annictWords.length === 0) return false;
+
+  // 共通単語数をカウント
+  const commonWords = anilistWords.filter(word => annictWords.includes(word));
+  const matchRatio = commonWords.length / Math.min(anilistWords.length, annictWords.length);
+
+  // 60%以上の単語が一致すればマッチとみなす
+  return matchRatio >= 0.6;
 }
 
 /**
@@ -343,33 +392,47 @@ export function mergeWithAnnictData(
   anilistResults: AniListMedia[],
   annictResults: AnnictWork[]
 ): AniListMediaWithStreaming[] {
-  return anilistResults.map(anilistItem => {
-    // タイトルでマッチするAnnictアイテムを探す
-    const matchedAnnict = annictResults.find(annictItem => {
-      // 日本語タイトル同士で比較
-      const anilistTitle = anilistItem.title.native || anilistItem.title.romaji || '';
-      return titlesMatch(anilistTitle, annictItem.title);
-    });
+  return anilistResults.map((anilist) => {
+    // 複数のタイトルでマッチングを試みる
+    const titlesToMatch = [
+      anilist.title?.native,
+      anilist.title?.romaji,
+      anilist.title?.english,
+      ...(anilist.synonyms || []),
+    ].filter(Boolean) as string[];
+
+    const matchedAnnict = annictResults.find((annict) =>
+      titlesToMatch.some((title) => titlesMatch(title, annict.title))
+    );
 
     if (matchedAnnict) {
       // キャスト情報を整形
-      const casts = matchedAnnict.casts?.nodes?.map(cast => ({
-        character: cast.character.name,
-        actor: cast.person.name,
+      const casts = matchedAnnict.casts?.nodes?.map((cast) => ({
+        character: cast.character?.name || '',
+        actor: cast.person?.name || '',
       })) || [];
 
+      // デバッグ用ログ（開発時のみ）
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Annict Match]', {
+          anilistTitle: anilist.title?.native,
+          matched: matchedAnnict?.title || 'NO MATCH',
+          titlesChecked: titlesToMatch,
+        });
+      }
+
       return {
-        ...anilistItem,
+        ...anilist,
         streamingServices: extractStreamingServices(matchedAnnict.programs.nodes),
         broadcastChannels: extractBroadcastChannels(matchedAnnict.programs.nodes),
-        synopsisJa: null, // Annict APIにはsynopsisフィールドが存在しないため、AniListのdescriptionを使用
-        synopsisSource: null,
+        synopsisJa: matchedAnnict.synopsis,
+        synopsisSource: matchedAnnict.synopsisSource,
         broadcastTime: extractBroadcastTime(matchedAnnict.programs.nodes),
         casts: casts.length > 0 ? casts : undefined,
       };
     }
 
-    return anilistItem;
+    return { ...anilist };
   });
 }
 

@@ -9,6 +9,7 @@ import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { supabase } from '../../lib/supabase';
 import { translateGenre, sortSeasonsByTime, getSeasonNameWithMonths } from '../../utils/helpers';
 import { availableTags } from '../../constants';
+import { StreamingBadges } from '../common/StreamingBadges';
 
 export function AddAnimeFormModal({
   show,
@@ -251,24 +252,6 @@ export function AddAnimeFormModal({
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {result.format || ''} {result.episodes ? `全${result.episodes}話` : ''}
                           </p>
-                          {/* 配信バッジ */}
-                          {result.streamingServices && result.streamingServices.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {result.streamingServices.slice(0, 3).map((service) => (
-                                <span
-                                  key={service}
-                                  className="text-xs bg-[#e879d4]/20 text-[#e879d4] dark:bg-[#e879d4]/30 dark:text-[#e879d4] px-2 py-0.5 rounded-full font-medium"
-                                >
-                                  {service}
-                                </span>
-                              ))}
-                              {result.streamingServices.length > 3 && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400 px-2 py-0.5">
-                                  +{result.streamingServices.length - 3}
-                                </span>
-                              )}
-                            </div>
-                          )}
                         </div>
                       </label>
                     );
@@ -524,24 +507,6 @@ export function AddAnimeFormModal({
                                   {translateGenre(genre)}
                                 </span>
                               ))}
-                            </div>
-                          )}
-                          {/* 配信バッジ */}
-                          {result.streamingServices && result.streamingServices.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {result.streamingServices.slice(0, 3).map((service) => (
-                                <span
-                                  key={service}
-                                  className="text-xs bg-[#e879d4]/20 text-[#e879d4] dark:bg-[#e879d4]/30 dark:text-[#e879d4] px-2 py-0.5 rounded-full font-medium"
-                                >
-                                  {service}
-                                </span>
-                              ))}
-                              {result.streamingServices.length > 3 && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400 px-2 py-0.5">
-                                  +{result.streamingServices.length - 3}
-                                </span>
-                              )}
                             </div>
                           )}
                         </div>

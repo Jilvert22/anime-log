@@ -2,12 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { getAnimeDetail, getBroadcastInfo, type AniListMedia } from '../../lib/anilist';
+import { getAnimeDetail, getBroadcastInfo, getOfficialSiteUrl, type AniListMedia } from '../../lib/anilist';
+import { ExternalLink } from 'lucide-react';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { useStorage } from '../../hooks/useStorage';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { StreamingBadges } from '../common/StreamingBadges';
+import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
+import { updateWatchlistStreamingInfo } from '../../lib/api/streamingUpdate';
 // 通知設定 - 将来の実装用にコメントアウト
 // import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../lib/push-notifications';
 
@@ -27,6 +31,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
   const [editingBroadcast, setEditingBroadcast] = useState(false);
   const [broadcastDay, setBroadcastDay] = useState<number | null>(null);
   const [broadcastTime, setBroadcastTime] = useState<string>('');
+  const [currentItem, setCurrentItem] = useState<WatchlistItem | null | undefined>(item);
   // 通知設定 - 将来の実装用にコメントアウト
   // const [notificationEnabled, setNotificationEnabled] = useState(false);
   // const [notificationTiming, setNotificationTiming] = useState<string[]>(['1hour']);
@@ -64,6 +69,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
     if (item) {
       setBroadcastDay(item.broadcast_day ?? null);
       setBroadcastTime(item.broadcast_time || '');
+      setCurrentItem(item);
     }
   }, [item]);
 
@@ -645,13 +651,51 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
 
               {/* 配信サイト - Annict優先 */}
               <section>
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
-                  配信サイト
-                </h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white">
+                    配信サイト
+                  </h3>
+                  {currentItem && (
+                    <StreamingUpdateButton
+                      onUpdate={async () => {
+                        if (!currentItem?.id || !currentItem?.title) return;
+                        const result = await updateWatchlistStreamingInfo(currentItem.id, currentItem.title);
+                        if (result.success && result.streamingSites) {
+                          // ローカルストレージまたはSupabaseから更新されたデータを取得
+                          if (user) {
+                            // Supabaseの場合、onUpdateを呼び出してデータを再取得
+                            onUpdate?.();
+                          } else {
+                            // ローカルストレージの場合、直接状態を更新
+                            const updatedAt = new Date().toISOString();
+                            setCurrentItem({
+                              ...currentItem,
+                              streaming_sites: result.streamingSites,
+                              streaming_updated_at: updatedAt,
+                            });
+                            // ローカルストレージも更新
+                            if (currentItem.id && storage instanceof (await import('../../lib/storage/localStorageService')).LocalStorageService) {
+                              // TypeScriptの型チェックを回避するため、anyでキャスト
+                              (storage as any).updateStreamingInfo(currentItem.id, result.streamingSites);
+                            } else if (currentItem.anilist_id) {
+                              await storage.updateWatchlistItem(currentItem.anilist_id, {
+                                streaming_sites: result.streamingSites,
+                              });
+                            }
+                          }
+                        } else if (result.error) {
+                          throw new Error(result.error);
+                        }
+                      }}
+                      lastUpdated={currentItem?.streaming_updated_at}
+                      size="sm"
+                    />
+                  )}
+                </div>
                 {(() => {
                   // Annictから取得した配信情報を優先
                   const annictStreamingServices = (animeMedia as AniListMediaWithStreaming)?.streamingServices || [];
-                  const itemStreamingSites = item?.streaming_sites || [];
+                  const itemStreamingSites = currentItem?.streaming_sites || [];
                   
                   // 優先順位: Annict > item > AniList
                   const displayStreamingServices = annictStreamingServices.length > 0 
@@ -661,23 +705,14 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                       : streamingSites.map(link => link.site));
                   
                   return displayStreamingServices.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {displayStreamingServices.map((service, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-1 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
-                        >
-                          {service}
-                        </span>
-                      ))}
-                    </div>
+                    <StreamingBadges services={displayStreamingServices} size="md" maxDisplay={999} />
                   ) : (
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       配信情報がありません
                     </p>
                   );
                 })()}
-                {streamingSites.length > 0 && (animeMedia as AniListMediaWithStreaming)?.streamingServices?.length === 0 && !item?.streaming_sites && (
+                {streamingSites.length > 0 && (animeMedia as AniListMediaWithStreaming)?.streamingServices?.length === 0 && !currentItem?.streaming_sites && (
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                     ※ AniListの情報は海外データベースのため、日本の配信情報が不完全な場合があります
                   </p>
@@ -726,6 +761,29 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                   </p>
                 </section>
               )}
+
+              {/* 公式サイトリンク */}
+              {(() => {
+                const officialSiteUrl = animeDetail 
+                  ? getOfficialSiteUrl(animeDetail)
+                  : (animeMedia ? getOfficialSiteUrl(animeMedia as AniListMedia) : null);
+                return officialSiteUrl ? (
+                  <section>
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
+                      公式サイト
+                    </h3>
+                    <a
+                      href={officialSiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      公式サイト
+                    </a>
+                  </section>
+                ) : null;
+              })()}
 
               {/* 予告編 */}
               {animeDetail?.trailer?.id && animeDetail.trailer.site === 'youtube' && (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import type { Anime, Season, Review } from '../../types';
 import type { User } from '@supabase/supabase-js';
@@ -10,6 +10,10 @@ import { AnimeReviewSection } from './AnimeReviewSection';
 import { updateAnimeInSeasons } from '../../utils/animeUpdates';
 import { addToWatchlist } from '../../lib/api';
 import { StreamingBadges } from '../common/StreamingBadges';
+import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
+import { updateAnimeStreamingInfo } from '../../lib/api/streamingUpdate';
+import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
+import { ExternalLink } from 'lucide-react';
 
 interface AnimeDetailModalProps {
   selectedAnime: Anime;
@@ -55,6 +59,24 @@ export function AnimeDetailModal({
   setShowSongModal,
 }: AnimeDetailModalProps) {
   const [animeDetailTab, setAnimeDetailTab] = useState<'info' | 'reviews'>('info');
+  const [anilistDetail, setAnilistDetail] = useState<AniListMedia | null>(null);
+  
+  // AniList IDから詳細情報を取得（公式HPリンク用）
+  useEffect(() => {
+    // Anime型のidがAniList IDかどうかを判定（1000000未満の場合はAniList IDの可能性が高い）
+    const isAnilistId = selectedAnime.id < 1000000;
+    if (isAnilistId) {
+      getAnimeDetail(selectedAnime.id)
+        .then(detail => {
+          if (detail) {
+            setAnilistDetail(detail);
+          }
+        })
+        .catch(error => {
+          console.error('AniList詳細情報の取得に失敗しました:', error);
+        });
+    }
+  }, [selectedAnime.id]);
 
   const handleUpdateAnime = async (
     updater: (anime: Anime) => Anime,
@@ -249,21 +271,56 @@ export function AnimeDetailModal({
             </div>
 
             {/* 配信サービス */}
-            {selectedAnime.streamingSites && selectedAnime.streamingSites.length > 0 ? (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">配信サービス</p>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center font-medium flex-1">配信サービス</p>
+                {user && (
+                  <StreamingUpdateButton
+                    onUpdate={async () => {
+                      if (!user) return;
+                      const result = await updateAnimeStreamingInfo(selectedAnime.id, selectedAnime.title);
+                      if (result.success && result.streamingSites) {
+                        // アニメ情報を更新
+                        await handleUpdateAnime(
+                          (anime) => ({
+                            ...anime,
+                            streamingSites: result.streamingSites,
+                            streamingUpdatedAt: new Date().toISOString(),
+                          }),
+                          async (anime) => {
+                            const { error } = await supabase
+                              .from('animes')
+                              .update({
+                                streaming_sites: result.streamingSites,
+                                streaming_updated_at: new Date().toISOString(),
+                              })
+                              .eq('id', anime.id)
+                              .eq('user_id', user.id);
+                            if (error) throw error;
+                          }
+                        );
+                      } else if (result.error) {
+                        throw new Error(result.error);
+                      }
+                    }}
+                    lastUpdated={selectedAnime.streamingUpdatedAt}
+                    size="sm"
+                  />
+                )}
+              </div>
+              {selectedAnime.streamingSites && selectedAnime.streamingSites.length > 0 ? (
                 <div className="flex justify-center">
                   <StreamingBadges services={selectedAnime.streamingSites} maxDisplay={5} />
                 </div>
-              </div>
-            ) : (
-              // デバッグ用（開発環境のみ）
-              process.env.NODE_ENV === 'development' && (
-                <div className="mb-4 text-xs text-gray-400 text-center">
-                  {/* デバッグ: streamingSites = {JSON.stringify(selectedAnime.streamingSites)} */}
-                </div>
-              )
-            )}
+              ) : (
+                // デバッグ用（開発環境のみ）
+                process.env.NODE_ENV === 'development' && (
+                  <div className="text-xs text-gray-400 text-center">
+                    {/* デバッグ: streamingSites = {JSON.stringify(selectedAnime.streamingSites)} */}
+                  </div>
+                )
+              )}
+            </div>
 
             {/* タグ選択 */}
             <div className="mb-4">
@@ -617,6 +674,27 @@ export function AnimeDetailModal({
                 )}
               </div>
             </div>
+
+            {/* 公式サイトリンク */}
+            {anilistDetail && (() => {
+              const officialSiteUrl = getOfficialSiteUrl(anilistDetail);
+              return officialSiteUrl ? (
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">公式サイト</p>
+                  <div className="flex justify-center">
+                    <a
+                      href={officialSiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      公式サイト
+                    </a>
+                  </div>
+                </div>
+              ) : null;
+            })()}
 
             {/* 名言 */}
             <div className="mb-4">

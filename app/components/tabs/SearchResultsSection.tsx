@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { AniListSearchResult } from '../../types';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { isNextSeason } from '../../utils/helpers';
+import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
+import { getAnimeDetail, type AniListMedia } from '../../lib/anilist';
 
 interface SearchResultsSectionProps {
   searchResults: AniListMediaWithStreaming[];
@@ -35,6 +36,7 @@ export function SearchResultsSection({
   season,
 }: SearchResultsSectionProps) {
   const [loadingIds, setLoadingIds] = useState<Set<number>>(new Set());
+  const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<AniListMedia | AniListMediaWithStreaming | null>(null);
   
   const handleClose = useCallback(() => {
     const newExpandedSeasons = new Set(expandedSeasons);
@@ -81,11 +83,28 @@ export function SearchResultsSection({
               className="relative group"
             >
               {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt={title}
-                  className="w-full aspect-[2/3] object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
-                />
+                <button
+                  onClick={async () => {
+                    try {
+                      const detail = await getAnimeDetail(anilistId);
+                      if (detail) {
+                        setSelectedAnimeMedia({ ...result, ...detail } as AniListMediaWithStreaming);
+                      } else {
+                        setSelectedAnimeMedia(result);
+                      }
+                    } catch (error) {
+                      console.error('アニメ詳細の取得に失敗しました:', error);
+                      setSelectedAnimeMedia(result);
+                    }
+                  }}
+                  className="w-full aspect-[2/3] overflow-hidden rounded-lg"
+                >
+                  <img
+                    src={imageUrl}
+                    alt={title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform"
+                  />
+                </button>
               ) : (
                 <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center text-4xl">
                   🎬
@@ -94,24 +113,6 @@ export function SearchResultsSection({
               <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
                 {title}
               </p>
-              {/* 配信バッジ */}
-              {result.streamingServices && result.streamingServices.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {result.streamingServices.slice(0, 3).map((service, idx) => (
-                    <span
-                      key={idx}
-                      className="px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
-                    >
-                      {service}
-                    </span>
-                  ))}
-                  {result.streamingServices.length > 3 && (
-                    <span className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                      +{result.streamingServices.length - 3}
-                    </span>
-                  )}
-                </div>
-              )}
               <button
                 onClick={async (e) => {
                   e.stopPropagation();
@@ -221,6 +222,18 @@ export function SearchResultsSection({
           閉じる
         </button>
       </div>
+
+      {/* 詳細情報ボトムシート */}
+      <WatchlistDetailSheet
+        item={null}
+        animeMedia={selectedAnimeMedia}
+        onClose={() => {
+          setSelectedAnimeMedia(null);
+        }}
+        onUpdate={async () => {
+          // 検索結果の場合は更新不要
+        }}
+      />
     </div>
   );
 }
