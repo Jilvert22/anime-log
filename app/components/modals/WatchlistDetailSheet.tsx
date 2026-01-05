@@ -707,7 +707,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                       : streamingSites.map(link => link.site));
                   
                   return displayStreamingServices.length > 0 ? (
-                    <StreamingBadges services={displayStreamingServices} size="md" maxDisplay={999} />
+                    <StreamingBadges services={displayStreamingServices} size={"md"} maxDisplay={999} />
                   ) : (
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       配信情報がありません

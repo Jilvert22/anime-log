@@ -1,29 +1,29 @@
-'use client';
+import { StreamingBadge } from './StreamingBadge';
 
-type Props = {
-  services: string[];
+export type StreamingBadgesProps = {
+  services: string[] | null | undefined;
   maxDisplay?: number;
+  size?: 'sm' | 'md';
 };
 
-export function StreamingBadges({ services, maxDisplay = 3 }: Props) {
+export function StreamingBadges({ services, maxDisplay = 3, size = 'sm' }: StreamingBadgesProps) {
   if (!services || services.length === 0) return null;
+
+  const displayServices = services.slice(0, maxDisplay);
+  const remaining = services.length - maxDisplay;
 
   return (
     <div className="flex flex-wrap gap-1">
-      {services.slice(0, maxDisplay).map((service, idx) => (
-        <span
-          key={idx}
-          className="px-1.5 py-0.5 text-xs bg-[#e879d4]/20 text-[#e879d4] dark:bg-[#e879d4]/30 dark:text-[#e879d4] rounded-full font-medium"
-        >
-          {service}
-        </span>
+      {displayServices.map((service, idx) => (
+        <StreamingBadge key={idx} service={service} size={size} />
       ))}
-      {services.length > maxDisplay && (
-        <span className="px-1.5 py-0.5 text-xs text-gray-500 dark:text-gray-400">
-          +{services.length - maxDisplay}
+      {remaining > 0 && (
+        <span
+          className={`${size === 'sm' ? 'px-1.5 py-0.5 text-xs' : 'px-2 py-1 text-sm'} bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded`}
+        >
+          +{remaining}
         </span>
       )}
     </div>
   );
 }
-
