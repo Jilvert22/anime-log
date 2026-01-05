@@ -10,6 +10,7 @@
     "build": "next build --webpack && node scripts/inject-push-notifications.js",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
