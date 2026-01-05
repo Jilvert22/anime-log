@@ -102,6 +102,8 @@ export class SupabaseStorageService implements IStorageService {
       season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
       broadcast_day?: number | null;
       broadcast_time?: string | null;
+      streaming_sites?: string[] | null;
+      streaming_updated_at?: string | null;
     }
   ): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();

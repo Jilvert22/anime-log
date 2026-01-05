@@ -103,6 +103,8 @@ export class LocalStorageService implements IStorageService {
       season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
       broadcast_day?: number | null;
       broadcast_time?: string | null;
+      streaming_sites?: string[] | null;
+      streaming_updated_at?: string | null;
     }
   ): Promise<boolean> {
     try {
@@ -121,6 +123,17 @@ export class LocalStorageService implements IStorageService {
     } catch (error) {
       console.error('Failed to update watchlist item:', error);
       return false;
+    }
+  }
+
+  // 配信情報更新用メソッド
+  updateStreamingInfo(id: string, streamingSites: string[]): void {
+    const items = this.getWatchlistFromStorage();
+    const index = items.findIndex(item => item.id === id);
+    if (index !== -1) {
+      items[index].streaming_sites = streamingSites;
+      items[index].streaming_updated_at = new Date().toISOString();
+      this.saveWatchlistToStorage(items);
     }
   }
 

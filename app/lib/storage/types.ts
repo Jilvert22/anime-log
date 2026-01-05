@@ -17,6 +17,7 @@ export type WatchlistItem = {
   broadcast_time?: string | null; // HH:mm形式
   // 配信情報
   streaming_sites?: string[] | null;
+  streaming_updated_at?: string | null;
 };
 
 export interface IStorageService {
@@ -44,6 +45,8 @@ export interface IStorageService {
       season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
       broadcast_day?: number | null;
       broadcast_time?: string | null;
+      streaming_sites?: string[] | null;
+      streaming_updated_at?: string | null;
     }
   ): Promise<boolean>;
   updateWatchlistItemsStatus(
