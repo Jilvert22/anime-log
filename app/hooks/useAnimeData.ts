@@ -103,6 +103,8 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
     if (user) {
       loadFromSupabase(user.id);
     } else {
+      // ログアウト時は即座にデータをクリア
+      setSeasons([]);
       loadFromLocalStorage();
     }
   }, [user, isLoading, loadFromSupabase, loadFromLocalStorage]);

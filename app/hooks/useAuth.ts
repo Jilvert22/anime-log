@@ -33,8 +33,13 @@ export function useAuth() {
     // 認証状態の変化を監視
     const unsubscribe = onAuthStateChange((event, session) => {
       if (mounted) {
-        setUser(session?.user ?? null);
+        const newUser = session?.user ?? null;
+        setUser(newUser);
         setIsLoading(false);
+        // ログアウト時（ユーザーがnullになった時）にlocalStorageをクリア
+        if (!newUser && event === 'SIGNED_OUT') {
+          localStorage.removeItem('animeSeasons');
+        }
       }
     });
 
@@ -47,6 +52,8 @@ export function useAuth() {
   const handleLogout = useCallback(async (): Promise<boolean> => {
     try {
       await signOut();
+      // ログアウト時にlocalStorageのアニメデータをクリア
+      localStorage.removeItem('animeSeasons');
       return true;
     } catch (error) {
       console.error('Logout error:', error);
