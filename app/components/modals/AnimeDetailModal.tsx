@@ -303,7 +303,7 @@ export function AnimeDetailModal({
                         throw new Error(result.error);
                       }
                     }}
-                    lastUpdated={selectedAnime.streamingUpdatedAt}
+                    lastUpdated={selectedAnime.streamingUpdatedAt || selectedAnime.streaming_updated_at || undefined}
                     size="sm"
                   />
                 )}
