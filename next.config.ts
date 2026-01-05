@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
   },
+  // ビルドキャッシュを無効化（一時的）
+  // 問題が解決したら削除してください
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
+  },
 };
 
 const pwaConfig = withPWA({
