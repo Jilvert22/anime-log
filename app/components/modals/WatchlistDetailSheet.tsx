@@ -673,7 +673,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                                 ...currentItem,
                                 streaming_sites: result.streamingSites,
                                 streaming_updated_at: updatedAt,
-                              });
+                              } as WatchlistItem);
                             }
                             // ローカルストレージも更新
                             if (currentItem.id && storage instanceof (await import('../../lib/storage/localStorageService')).LocalStorageService) {
