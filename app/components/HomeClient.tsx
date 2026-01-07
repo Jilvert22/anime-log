@@ -87,6 +87,8 @@ import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName, sho
 import type { WatchlistItem } from '../lib/storage/types';
 import { useStorage } from '../hooks/useStorage';
 import { ModalProvider, useModalContext } from '../contexts/ModalContext';
+import { OnboardingOverlay } from './onboarding/OnboardingOverlay';
+import { useOnboardingContext } from '../contexts/OnboardingContext';
 
 // FavoriteAnimeModalを表示する内部コンポーネント（ModalContextを使用）
 function FavoriteAnimeModalWrapper({
@@ -121,6 +123,16 @@ export default function HomeClient({}: HomeClientProps) {
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
   const [showSeasonEndModal, setShowSeasonEndModal] = useState(false);
   const [previousSeasonItems, setPreviousSeasonItems] = useState<WatchlistItem[]>([]);
+  
+  // オンボーディング管理
+  const {
+    currentStep,
+    isActive,
+    isCompleted,
+    startOnboarding,
+    nextStep,
+    skipOnboarding,
+  } = useOnboardingContext();
   
   // 認証管理をカスタムフックで管理
   const { user, isLoading, handleLogout: logout } = useAuth();
@@ -447,6 +459,61 @@ export default function HomeClient({}: HomeClientProps) {
     }
   }, [selectedAnime?.id, loadReviews]);
 
+  // 初回訪問時にオンボーディングを自動開始
+  useEffect(() => {
+    if (!isLoading && !isCompleted && !isActive) {
+      // 少し遅延して開始（ページ読み込み完了後）
+      const timer = setTimeout(() => {
+        startOnboarding();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, isCompleted, isActive, startOnboarding]);
+
+  // オンボーディングステップに応じてタブを切り替え
+  useEffect(() => {
+    if (!isActive || !currentStep) return;
+
+    // Step 2: 積みアニメタブに切り替え
+    if (currentStep === 2) {
+      // まずホームタブに切り替え（まだの場合）
+      if (activeTab !== 'home') {
+        setActiveTab('home');
+        // タブ切り替えを待ってからサブタブを切り替え
+        setTimeout(() => {
+          setHomeSubTab('watchlist');
+        }, 300);
+      } else {
+        // 既にホームタブの場合はすぐにサブタブを切り替え
+        setHomeSubTab('watchlist');
+      }
+    }
+
+    // Step 3: 来期視聴予定タブに切り替え
+    if (currentStep === 3) {
+      // まずホームタブに切り替え（まだの場合）
+      if (activeTab !== 'home') {
+        setActiveTab('home');
+        // タブ切り替えを待ってからサブタブを切り替え
+        setTimeout(() => {
+          setHomeSubTab('current-season');
+        }, 300);
+      } else {
+        // 既にホームタブの場合はすぐにサブタブを切り替え
+        setHomeSubTab('current-season');
+      }
+    }
+
+    // Step 4: マイページタブに切り替え
+    if (currentStep === 4) {
+      if (activeTab !== 'mypage') {
+        setActiveTab('mypage');
+      }
+    }
+  }, [currentStep, isActive, activeTab, setActiveTab, setHomeSubTab, showDNAModal]);
+
+  // Step 4はマイページのDNAカードを直接表示するため、モーダルは不要
+
   return (
     <ModalProvider setSelectedAnime={setSelectedAnime}>
       <div className="min-h-screen bg-[#fef6f0] dark:bg-gray-900">
@@ -629,7 +696,13 @@ export default function HomeClient({}: HomeClientProps) {
 
       <DNAModal
         show={showDNAModal}
-        onClose={closeDNAModal}
+        onClose={() => {
+          closeDNAModal();
+          // Step 4のオンボーディング中にモーダルを閉じた場合は完了扱い
+          if (currentStep === 4 && isActive) {
+            skipOnboarding();
+          }
+        }}
         allAnimes={allAnimes}
         favoriteAnimeIds={favoriteAnimeIds}
         count={count}
@@ -652,6 +725,9 @@ export default function HomeClient({}: HomeClientProps) {
 
       {/* PWAインストールバナー */}
       <PWAInstallBanner />
+
+      {/* オンボーディングオーバーレイ */}
+      <OnboardingOverlay />
 
       </div>
     </ModalProvider>

@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { track } from '@vercel/analytics/react';
 
+const BANNER_DISMISSED_DATE_KEY = 'pwa-banner-dismissed-date';
+
 export function PWAInstallBanner() {
-  const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
+  const { isInstallable, isInstalled, isIOS, shouldShowBanner, install } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
 
@@ -16,8 +18,8 @@ export function PWAInstallBanner() {
       setIsDismissed(true);
     }
 
-    // インストール可能で、非表示にされていない場合のみ表示
-    if (isInstallable && !isInstalled && !dismissed) {
+    // shouldShowBannerがtrueで、インストール可能で、非表示にされていない場合のみ表示
+    if (shouldShowBanner && isInstallable && !isInstalled && !dismissed) {
       // 少し遅延させて表示（UX向上）
       const timer = setTimeout(() => {
         setShowBanner(true);
@@ -26,7 +28,7 @@ export function PWAInstallBanner() {
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isInstallable, isInstalled]);
+  }, [shouldShowBanner, isInstallable, isInstalled]);
 
   const handleInstall = async () => {
     // インストールクリックイベントを送信
@@ -43,6 +45,8 @@ export function PWAInstallBanner() {
     setIsDismissed(true);
     setShowBanner(false);
     localStorage.setItem('pwa-banner-dismissed', 'true');
+    // 非表示日時を記録（30日後に再表示するため）
+    localStorage.setItem(BANNER_DISMISSED_DATE_KEY, new Date().toISOString());
   };
 
   // iOS用の手動インストール案内

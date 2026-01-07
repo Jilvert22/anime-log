@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { onAuthStateChange } from '../lib/api';
 import type { User } from '@supabase/supabase-js';
+import { useOnboardingContext } from '../contexts/OnboardingContext';
 
 interface NavigationProps {
   activeTab: 'home' | 'mypage';
@@ -82,8 +83,11 @@ export function Navigation({
           />
         </div>
 
-        {/* 右側：ダークモード + プロフィール */}
+        {/* 右側：使い方ガイド + ダークモード + プロフィール */}
         <div className="flex items-center gap-0 ml-auto">
+          {/* 使い方ガイドボタン */}
+          <GuideButton />
+          
           {/* ダークモードトグル */}
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
@@ -138,6 +142,27 @@ export function Navigation({
         </div>
       </div>
     </header>
+  );
+}
+
+// ========== 使い方ガイドボタン ==========
+function GuideButton() {
+  const { startOnboarding, isActive } = useOnboardingContext();
+
+  const handleClick = () => {
+    if (!isActive) {
+      startOnboarding();
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="px-2 py-1 sm:px-5 sm:py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center shrink-0"
+      title="使い方ガイド"
+    >
+      <span className="text-base">❓</span>
+    </button>
   );
 }
 

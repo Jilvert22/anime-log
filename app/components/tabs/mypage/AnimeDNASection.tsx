@@ -281,6 +281,7 @@ export default function AnimeDNASection({
         <div>
             {/* 最推し作品（クリックで編集） */}
             <div 
+              data-onboarding="step-4"
               className="content-card p-5 md:p-6 lg:p-8 backdrop-blur-md border border-white/30 rounded-xl cursor-pointer hover:border-white/50 transition-all"
               style={{
                 background: 'rgba(255, 255, 255, 0.2)'

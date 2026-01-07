@@ -42,7 +42,7 @@ export function DNAModal({
       onClick={onClose}
     >
       <div 
-        className="bg-white dark:bg-gray-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl"
+        className="bg-white dark:bg-gray-800 rounded-3xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* DNAカード */}
@@ -174,10 +174,10 @@ export function DNAModal({
           </div>
           
           {/* 最推し作品 & アニメログ */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex flex-row gap-4 mb-6">
             {/* 最推し作品 */}
             <div 
-              className="flex-1 p-4 min-h-[200px] backdrop-blur-md border border-white/30 rounded-xl"
+              className="flex-1 p-4 min-h-[180px] backdrop-blur-md border border-white/30 rounded-xl"
               style={{
                 background: 'rgba(255, 255, 255, 0.2)'
               }}
@@ -253,7 +253,7 @@ export function DNAModal({
             
             {/* アニメログ */}
             <div 
-              className="flex-1 p-4 min-h-[200px] backdrop-blur-md border border-white/30 rounded-xl"
+              className="flex-1 p-4 min-h-[180px] backdrop-blur-md border border-white/30 rounded-xl"
               style={{
                 background: 'rgba(255, 255, 255, 0.2)'
               }}

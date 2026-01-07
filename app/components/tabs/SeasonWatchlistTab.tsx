@@ -522,7 +522,7 @@ export default function SeasonWatchlistTab() {
       </div>
 
       {/* シーズン切り替えタブ */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4" data-onboarding="step-3">
         <button
           onClick={() => setSelectedSeason('current')}
           className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex flex-col items-center justify-center gap-1 ${

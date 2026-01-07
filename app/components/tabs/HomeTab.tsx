@@ -159,6 +159,7 @@ export function HomeTab({
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id as typeof homeSubTab)}
+            data-tab={tab.id}
             className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
               homeSubTab === tab.id
                 ? 'bg-[#e879d4] text-white'
@@ -202,6 +203,7 @@ export function HomeTab({
           <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
             <button 
               onClick={onOpenAddForm}
+              data-onboarding="step-1"
               className="py-3 px-6 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
             >
               + アニメを追加

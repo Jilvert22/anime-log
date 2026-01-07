@@ -591,6 +591,7 @@ export function WatchlistTab({
       {!showAddForm ? (
         <button 
           onClick={() => setShowAddForm(true)}
+          data-onboarding="step-2"
           className="w-full mb-4 py-4 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
         >
           + 積みアニメを追加
