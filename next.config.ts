@@ -31,6 +31,18 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30日
     dangerouslyAllowSVG: false,
   },
+  // コンパイラ最適化
+  compiler: {
+    // 本番環境でのconsole.logを削除
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
+  // 実験的な機能（パフォーマンス改善）
+  experimental: {
+    // 最適化されたパッケージインポート
+    optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
+  },
   // クライアント側に環境変数を公開
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
