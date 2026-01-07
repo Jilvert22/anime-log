@@ -85,6 +85,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={`${mPlusRounded.variable} ${poppins.variable}`}>
+      <head>
+        {/* AniList CDNへのpreconnect（画像読み込みの高速化） */}
+        <link rel="preconnect" href="https://s4.anilist.co" />
+        <link rel="preconnect" href="https://s3.anilist.co" />
+        <link rel="dns-prefetch" href="https://cdn.anilist.co" />
+      </head>
       <body className="font-mixed antialiased">
         <Providers>
           {children}

@@ -13,7 +13,7 @@ const ThumbnailCard = memo(function ThumbnailCard({
   selectionMode 
 }: { 
   anime: Anime; 
-  onClick?: () => void;
+  onClick?: (anime: Anime) => void;
   selected: boolean;
   onSelect: (id: number) => void;
   selectionMode: boolean;
@@ -24,7 +24,7 @@ const ThumbnailCard = memo(function ThumbnailCard({
   return (
     <div 
       className={`cursor-pointer group relative ${selected ? 'ring-2 ring-[#e879d4] ring-offset-2 rounded-lg' : ''}`}
-      onClick={() => selectionMode ? onSelect(anime.id) : onClick?.()}
+      onClick={() => selectionMode ? onSelect(anime.id) : onClick?.(anime)}
     >
       <div className="aspect-[3/4] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg overflow-hidden shadow-sm group-hover:shadow-lg group-hover:scale-105 transition-all duration-200 relative">
         {/* 周回数バッジ */}
@@ -255,7 +255,7 @@ export function GalleryTab({
             <ThumbnailCard
               key={anime.id}
               anime={anime}
-              onClick={() => handleAnimeClick(anime)}
+              onClick={handleAnimeClick}
               selected={selectedAnimeIds.has(anime.id)}
               onSelect={toggleSelection}
               selectionMode={selectionMode}

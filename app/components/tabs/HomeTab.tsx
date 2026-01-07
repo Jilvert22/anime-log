@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useCallback } from 'react';
 import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 
@@ -126,6 +127,16 @@ export function HomeTab({
     setExpandedSeasonSearches,
   });
 
+  // タブ切り替えハンドラーをメモ化
+  const handleTabChange = useCallback((tabId: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => {
+    setHomeSubTab(tabId);
+  }, [setHomeSubTab]);
+
+  // アニメ選択ハンドラーをメモ化
+  const handleAnimeClick = useCallback((anime: Anime) => {
+    setSelectedAnime(anime);
+  }, [setSelectedAnime]);
+
   return (
     <>
       {/* サブタブ */}
@@ -139,7 +150,7 @@ export function HomeTab({
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setHomeSubTab(tab.id as typeof homeSubTab)}
+            onClick={() => handleTabChange(tab.id as typeof homeSubTab)}
             className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
               homeSubTab === tab.id
                 ? 'bg-[#e879d4] text-white'
@@ -292,7 +303,7 @@ export function HomeTab({
                                       <AnimeCard 
                                         key={anime.id && typeof anime.id === 'number' && !isNaN(anime.id) ? anime.id : `anime-${year}-${season}-${index}`} 
                                         anime={anime}
-                                        onClick={() => setSelectedAnime(anime)}
+                                        onClick={() => handleAnimeClick(anime)}
                                       />
                                     ))}
                                   </div>

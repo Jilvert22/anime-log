@@ -24,12 +24,12 @@ const WatchlistCard = memo(function WatchlistCard({
   onCardClick,
 }: { 
   item: WatchlistItem; 
-  onRemove: () => void;
-  onMarkAsWatched: () => void;
+  onRemove: (anilistId: number) => void;
+  onMarkAsWatched: (item: WatchlistItem) => void;
   isSelectionMode?: boolean;
   isSelected?: boolean;
-  onToggleSelect?: () => void;
-  onCardClick?: () => void;
+  onToggleSelect?: (id: string) => void;
+  onCardClick?: (item: WatchlistItem) => void;
 }) {
   const [imageError, setImageError] = useState(false);
   const isImageUrl = item.image && (item.image.startsWith('http://') || item.image.startsWith('https://'));
@@ -41,7 +41,14 @@ const WatchlistCard = memo(function WatchlistCard({
     
     // カードをタップしたら詳細画面を開く
     if (onCardClick) {
-      onCardClick();
+      onCardClick(item);
+    }
+  };
+
+  const handleToggleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    if (onToggleSelect) {
+      onToggleSelect(item.id);
     }
   };
 
@@ -56,7 +63,7 @@ const WatchlistCard = memo(function WatchlistCard({
           <input
             type="checkbox"
             checked={isSelected || false}
-            onChange={onToggleSelect}
+            onChange={handleToggleSelect}
             className="w-5 h-5 rounded border-gray-300 text-[#e879d4] focus:ring-[#e879d4] cursor-pointer"
           />
         </div>
@@ -826,12 +833,12 @@ export function WatchlistTab({
             <WatchlistCard
               key={item.id}
               item={item}
-              onRemove={() => handleRemove(item.anilist_id)}
-              onMarkAsWatched={() => handleMarkAsWatchedClick(item)}
+              onRemove={handleRemove}
+              onMarkAsWatched={handleMarkAsWatchedClick}
               isSelectionMode={isSelectionMode}
               isSelected={selectedIds.has(item.id)}
-              onToggleSelect={() => toggleSelectItem(item.id)}
-              onCardClick={() => handleCardClick(item)}
+              onToggleSelect={toggleSelectItem}
+              onCardClick={handleCardClick}
             />
           ))}
         </div>

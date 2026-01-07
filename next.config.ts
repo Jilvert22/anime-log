@@ -24,6 +24,12 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.anilist.co',
       },
     ],
+    // 画像最適化の強化
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30日
+    dangerouslyAllowSVG: false,
   },
   // クライアント側に環境変数を公開
   env: {
