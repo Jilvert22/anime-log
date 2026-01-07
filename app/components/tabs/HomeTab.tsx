@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 
@@ -136,6 +136,14 @@ export function HomeTab({
   const handleAnimeClick = useCallback((anime: Anime) => {
     setSelectedAnime(anime);
   }, [setSelectedAnime]);
+
+  // LCP要素の優先読み込み用カウンター（最初の6枚にpriorityを設定）
+  // コンポーネントの再レンダリング時にリセットされるため、各レンダリングで最初の6枚にpriorityを設定
+  const priorityImageCountRef = useRef(0);
+  const PRIORITY_IMAGE_LIMIT = 6;
+  
+  // レンダリング開始時にカウンターをリセット
+  priorityImageCountRef.current = 0;
 
   return (
     <>
@@ -299,13 +307,20 @@ export function HomeTab({
                               {animes.length > 0 && (
                                 <>
                                   <div className="ml-8 mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 px-2">
-                                    {animes.map((anime, index) => (
-                                      <AnimeCard 
-                                        key={anime.id && typeof anime.id === 'number' && !isNaN(anime.id) ? anime.id : `anime-${year}-${season}-${index}`} 
-                                        anime={anime}
-                                        onClick={() => handleAnimeClick(anime)}
-                                      />
-                                    ))}
+                                    {animes.map((anime, index) => {
+                                      const shouldPriority = priorityImageCountRef.current < PRIORITY_IMAGE_LIMIT;
+                                      if (shouldPriority) {
+                                        priorityImageCountRef.current += 1;
+                                      }
+                                      return (
+                                        <AnimeCard 
+                                          key={anime.id && typeof anime.id === 'number' && !isNaN(anime.id) ? anime.id : `anime-${year}-${season}-${index}`} 
+                                          anime={anime}
+                                          onClick={() => handleAnimeClick(anime)}
+                                          priority={shouldPriority}
+                                        />
+                                      );
+                                    })}
                                   </div>
                                   
                                   {/* 登録済みクールの検索結果表示 */}

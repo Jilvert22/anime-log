@@ -7,7 +7,15 @@ import { StarRating } from './StarRating';
 import { ratingLabels, availableTags } from '../constants';
 import { translateGenre } from '../utils/helpers';
 
-function AnimeCardComponent({ anime, onClick }: { anime: Anime; onClick: () => void }) {
+function AnimeCardComponent({ 
+  anime, 
+  onClick,
+  priority = false 
+}: { 
+  anime: Anime; 
+  onClick: () => void;
+  priority?: boolean;
+}) {
   const rating = ratingLabels[anime.rating];
   const rewatchCount = anime.rewatchCount ?? 0;
   const [imageError, setImageError] = useState(false);
@@ -50,7 +58,8 @@ function AnimeCardComponent({ anime, onClick }: { anime: Anime; onClick: () => v
             fill
             className="object-cover"
             sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-            loading="lazy"
+            priority={priority}
+            loading={priority ? "eager" : "lazy"}
             unoptimized
             onError={handleImageError}
           />

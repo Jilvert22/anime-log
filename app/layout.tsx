@@ -10,6 +10,8 @@ const mPlusRounded = M_PLUS_Rounded_1c({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-rounded',
+  preload: true, // フォントのプリロードを有効化
+  fallback: ['system-ui', 'arial'], // フォールバックフォント
 });
 
 // Poppins（英数字用）
@@ -18,6 +20,8 @@ const poppins = Poppins({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-poppins',
+  preload: true, // フォントのプリロードを有効化
+  fallback: ['system-ui', 'arial'], // フォールバックフォント
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://animelog.jp'
