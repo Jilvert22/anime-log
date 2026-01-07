@@ -14,7 +14,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "inject-push": "node scripts/inject-push-notifications.js"
+    "inject-push": "node scripts/inject-push-notifications.js",
+    "screenshots": "tsx scripts/take-screenshots.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
@@ -44,6 +45,7 @@
     "eslint-config-next": "^16.1.1",
     "jsdom": "^27.4.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5",
     "vitest": "^4.0.16"
   }

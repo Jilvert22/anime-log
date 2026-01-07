@@ -7,6 +7,13 @@ export function Footer() {
     <footer className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
       <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-1">
         <Link 
+          href="/about" 
+          className="hover:text-[#e879d4] dark:hover:text-[#e879d4] transition-colors font-mixed"
+        >
+          アニメログとは
+        </Link>
+        <span>|</span>
+        <Link 
           href="/terms" 
           className="hover:text-[#e879d4] dark:hover:text-[#e879d4] transition-colors font-mixed"
         >
