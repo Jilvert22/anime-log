@@ -265,7 +265,7 @@ export function useSeasonSearch({
             const newMap = new Map(prev);
             const results = newMap.get(key) || [];
             const titleNative = (title || '').toLowerCase().trim();
-            newMap.set(key, results.filter((r: any) => {
+            newMap.set(key, results.filter((r: AniListMediaWithStreaming) => {
               const rTitleNative = (r.title?.native || r.title?.romaji || r.title?.english || '').toLowerCase().trim();
               return r.id !== anilistId && rTitleNative !== titleNative;
             }));

@@ -1,13 +1,14 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { Anime, Season } from '../types';
+import type { Anime, Season, FavoriteCharacter, SupabaseAnimeRow } from '../types';
 import type { User } from '@supabase/supabase-js';
-import type { UserProfile } from '../lib/api';
+import type { UserProfile, WatchlistItem } from '../lib/api';
 import { useModalContext } from '../contexts/ModalContext';
 import { useUserProfileContext } from '../contexts/UserProfileContext';
 import { useAnimeDataContext } from '../contexts/AnimeDataContext';
 import { useAnimeReviews } from '../hooks/useAnimeReviews';
+import { useCollection } from '../hooks/useCollection';
 import { supabase } from '../lib/supabase';
 
 // モーダルを動的インポート（初期バンドルサイズの削減）
@@ -66,31 +67,16 @@ const SeasonEndModal = dynamic(() => import('./modals/SeasonEndModal').then(mod 
 interface HomeModalsProps {
   selectedAnime: Anime | null;
   setSelectedAnime: (anime: Anime | null) => void;
-  seasons: Season[];
-  setSeasons: (seasons: Season[] | ((prev: Season[]) => Season[])) => void;
-  expandedSeasons: Set<string>;
-  setExpandedSeasons: (set: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   user: User | null;
-  profile: any;
-  avatarPublicUrl: string | null;
-  saveProfile: (updates: {
-    username?: string;
-    handle?: string | null;
-    bio?: string | null;
-    is_public?: boolean;
-    avatarFile?: File | null;
-    otaku_type?: string;
-    otaku_type_custom?: string | null;
-  }) => Promise<{ success: boolean; error?: string; data?: UserProfile } | { success: boolean; data: UserProfile; error?: undefined }>;
   handleLogout: () => void;
   extractSeriesName: (title: string) => string;
   getSeasonName: {
     (season: string): string;
     (year: number, quarter: number): string;
   };
-  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => any;
+  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => SupabaseAnimeRow;
   showSeasonEndModal: boolean;
-  previousSeasonItems: any[];
+  previousSeasonItems: WatchlistItem[];
   handleMoveToBacklog: () => Promise<void>;
   handleDeletePreviousSeason: () => Promise<void>;
   handleKeepPreviousSeason: () => Promise<void>;
@@ -99,25 +85,14 @@ interface HomeModalsProps {
   isActive?: boolean;
   skipOnboarding?: () => void;
   count: number;
-  averageRating: number;
-  totalRewatchCount: number;
-  favoriteCharacters: any[];
-  setFavoriteCharacters: (characters: any[]) => void;
-  handleCharacterSave: (character: any) => void;
+  handleCharacterSave: (character: FavoriteCharacter) => void;
   handleCharacterClose: () => void;
 }
 
 export function HomeModals({
   selectedAnime,
   setSelectedAnime,
-  seasons,
-  setSeasons,
-  expandedSeasons,
-  setExpandedSeasons,
   user,
-  profile,
-  avatarPublicUrl,
-  saveProfile,
   handleLogout,
   extractSeriesName,
   getSeasonName,
@@ -132,10 +107,6 @@ export function HomeModals({
   isActive,
   skipOnboarding,
   count,
-  averageRating,
-  totalRewatchCount,
-  favoriteCharacters,
-  setFavoriteCharacters,
   handleCharacterSave,
   handleCharacterClose,
 }: HomeModalsProps) {
@@ -147,8 +118,23 @@ export function HomeModals({
     userOtakuType,
     favoriteAnimeIds,
     setFavoriteAnimeIds,
+    profile,
+    avatarPublicUrl,
+    saveProfile,
   } = useUserProfileContext();
-  const { allAnimes } = useAnimeDataContext();
+  const {
+    allAnimes,
+    seasons,
+    setSeasons,
+    expandedSeasons,
+    setExpandedSeasons,
+    averageRating,
+    totalRewatchCount,
+  } = useAnimeDataContext();
+  const {
+    favoriteCharacters,
+    setFavoriteCharacters,
+  } = useCollection();
   
   // レビュー関連の状態をカスタムフックで管理
   const {

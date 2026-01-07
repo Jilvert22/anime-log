@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import type { Anime } from '../types';
 
 interface UseModalActionsProps {
   // useModalsから取得したセッター
@@ -15,9 +16,9 @@ interface UseModalActionsProps {
   // useFormStatesから取得したセッター
   setEditingQuote: (quote: { animeId: number; quoteIndex: number } | null) => void;
   // HomeClientで直接管理されている状態のセッター
-  setSelectedAnime: (anime: any | null) => void;
+  setSelectedAnime: (anime: Anime | null) => void;
   // その他の依存関係
-  allAnimes?: any[];
+  allAnimes?: Anime[];
 }
 
 export function useModalActions({

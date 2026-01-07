@@ -12,6 +12,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { StreamingBadges } from '../common/StreamingBadges';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateWatchlistStreamingInfo } from '../../lib/api/streamingUpdate';
+import { logger } from '../../lib/logger';
+import { normalizeError } from '../../lib/api/errors';
 // 通知設定 - 将来の実装用にコメントアウト
 // import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../lib/push-notifications';
 
@@ -352,7 +354,8 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
         }
       }
     } catch (error) {
-      console.error('アニメ詳細情報の取得に失敗しました:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('アニメ詳細情報の取得に失敗しました', normalizedError, 'WatchlistDetailSheet');
     } finally {
       setLoading(false);
     }
@@ -372,7 +375,8 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
         alert('ステータスの更新に失敗しました');
       }
     } catch (error) {
-      console.error('ステータスの更新に失敗しました:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('ステータスの更新に失敗しました', normalizedError, 'WatchlistDetailSheet');
       alert('ステータスの更新に失敗しました');
     }
   };
@@ -676,9 +680,8 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                               } as WatchlistItem);
                             }
                             // ローカルストレージも更新
-                            if (currentItem.id && storage instanceof (await import('../../lib/storage/localStorageService')).LocalStorageService) {
-                              // TypeScriptの型チェックを回避するため、anyでキャスト
-                              (storage as any).updateStreamingInfo(currentItem.id, result.streamingSites);
+                            if (currentItem.id && storage.updateStreamingInfo) {
+                              storage.updateStreamingInfo(currentItem.id, result.streamingSites);
                             } else if (currentItem.anilist_id) {
                               await storage.updateWatchlistItem(currentItem.anilist_id, {
                                 streaming_sites: result.streamingSites,

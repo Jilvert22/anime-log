@@ -1,6 +1,8 @@
 'use client';
 
 import type { IStorageService, WatchlistItem } from './types';
+import { logger } from '../logger';
+import { normalizeError } from '../api/errors';
 
 const WATCHLIST_KEY = 'anime_watchlist';
 
@@ -16,7 +18,8 @@ export class LocalStorageService implements IStorageService {
       const data = localStorage.getItem(WATCHLIST_KEY);
       return data ? JSON.parse(data) : [];
     } catch (error) {
-      console.error('Failed to read from localStorage:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Failed to read from localStorage', normalizedError, 'LocalStorageService');
       return [];
     }
   }
@@ -27,7 +30,8 @@ export class LocalStorageService implements IStorageService {
     try {
       localStorage.setItem(WATCHLIST_KEY, JSON.stringify(items));
     } catch (error) {
-      console.error('Failed to save to localStorage:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Failed to save to localStorage', normalizedError, 'LocalStorageService');
     }
   }
 
@@ -77,7 +81,8 @@ export class LocalStorageService implements IStorageService {
       this.saveWatchlistToStorage(items);
       return true;
     } catch (error) {
-      console.error('Failed to add to watchlist:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Failed to add to watchlist', normalizedError, 'LocalStorageService');
       return false;
     }
   }
@@ -89,7 +94,8 @@ export class LocalStorageService implements IStorageService {
       this.saveWatchlistToStorage(filtered);
       return true;
     } catch (error) {
-      console.error('Failed to remove from watchlist:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Failed to remove from watchlist', normalizedError, 'LocalStorageService');
       return false;
     }
   }
@@ -121,7 +127,8 @@ export class LocalStorageService implements IStorageService {
       this.saveWatchlistToStorage(items);
       return true;
     } catch (error) {
-      console.error('Failed to update watchlist item:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Failed to update watchlist item', normalizedError, 'LocalStorageService');
       return false;
     }
   }
@@ -153,7 +160,8 @@ export class LocalStorageService implements IStorageService {
       this.saveWatchlistToStorage(items);
       return true;
     } catch (error) {
-      console.error('Failed to update watchlist items status:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Failed to update watchlist items status', normalizedError, 'LocalStorageService');
       return false;
     }
   }
@@ -165,7 +173,8 @@ export class LocalStorageService implements IStorageService {
       this.saveWatchlistToStorage(filtered);
       return true;
     } catch (error) {
-      console.error('Failed to delete watchlist items:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Failed to delete watchlist items', normalizedError, 'LocalStorageService');
       return false;
     }
   }

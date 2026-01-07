@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getSession, signOut, onAuthStateChange } from '../lib/api';
 import type { User } from '@supabase/supabase-js';
+import { logger } from '../lib/logger';
+import { normalizeError } from '../lib/api/errors';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -21,7 +23,8 @@ export function useAuth() {
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('Failed to get session:', error);
+        const normalizedError = normalizeError(error);
+        logger.error('Failed to get session', normalizedError, 'useAuth');
         if (mounted) {
           setIsLoading(false);
         }
@@ -56,7 +59,8 @@ export function useAuth() {
       localStorage.removeItem('animeSeasons');
       return true;
     } catch (error) {
-      console.error('Logout error:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Logout error', normalizedError, 'useAuth');
       return false;
     }
   }, []);

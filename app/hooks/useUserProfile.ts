@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useProfile } from './useProfile';
 import { useAvatar } from './useAvatar';
 import { useFavoriteAnime } from './useFavoriteAnime';
@@ -38,37 +38,8 @@ export function useUserProfile() {
   const userBio = profile.profile?.bio || '';
   const myProfile = profile.profile;
 
-  // 既存のsetterも維持（必要に応じて）- useCallbackでメモ化
-  const setUserName = useCallback((name: string) => {
-    profile.saveProfile({ username: name });
-  }, [profile.saveProfile]);
-  
-  const setUserIcon = useCallback((file: File) => {
-    profile.saveProfile({ avatarFile: file });
-  }, [profile.saveProfile]);
-  
-  const setUserHandle = useCallback((handle: string | null) => {
-    profile.saveProfile({ handle });
-  }, [profile.saveProfile]);
-  
-  const setUserOtakuType = useCallback((type: string) => {
-    // localStorageに保存（後でSupabaseに保存される）
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userOtakuType', type);
-    }
-  }, []);
-  
-  const setIsProfilePublic = useCallback((isPublic: boolean) => {
-    profile.saveProfile({ is_public: isPublic });
-  }, [profile.saveProfile]);
-  
-  const setUserBio = useCallback((bio: string) => {
-    profile.saveProfile({ bio });
-  }, [profile.saveProfile]);
-  
-  const setMyProfile = useCallback((newProfile: UserProfile | null) => {
-    profile.setProfile(newProfile);
-  }, [profile.setProfile]);
+  // 既存のsetterは使用されていないため削除
+  // 必要に応じて、profile.saveProfileを直接使用してください
 
   return {
     // 新しいAPI
@@ -91,14 +62,5 @@ export function useUserProfile() {
     myProfile,
     favoriteAnimeIds,
     setFavoriteAnimeIds,
-    
-    // 既存のsetterも維持（必要に応じて）
-    setUserName,
-    setUserIcon,
-    setUserHandle,
-    setUserOtakuType,
-    setIsProfilePublic,
-    setUserBio,
-    setMyProfile,
   };
 }

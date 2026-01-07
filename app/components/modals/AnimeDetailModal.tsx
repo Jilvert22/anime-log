@@ -14,6 +14,8 @@ import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateAnimeStreamingInfo } from '../../lib/api/streamingUpdate';
 import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
 import { ExternalLink } from 'lucide-react';
+import { logger } from '../../lib/logger';
+import { normalizeError } from '../../lib/api/errors';
 
 interface AnimeDetailModalProps {
   selectedAnime: Anime;
@@ -73,7 +75,8 @@ export function AnimeDetailModal({
           }
         })
         .catch(error => {
-          console.error('AniList詳細情報の取得に失敗しました:', error);
+          const normalizedError = normalizeError(error);
+          logger.error('AniList詳細情報の取得に失敗しました', normalizedError, 'AnimeDetailModal');
         });
     }
   }, [selectedAnime.id]);
@@ -782,7 +785,8 @@ export function AnimeDetailModal({
                       });
                       alert('積みアニメに追加しました');
                     } catch (error) {
-                      console.error('積みアニメの追加に失敗しました:', error);
+                      const normalizedError = normalizeError(error);
+                      logger.error('積みアニメの追加に失敗しました', normalizedError, 'AnimeDetailModal');
                       alert('積みアニメの追加に失敗しました');
                     }
                   }}
@@ -807,7 +811,8 @@ export function AnimeDetailModal({
                           if (error) throw error;
                         }
                       } catch (error) {
-                        console.error('Supabaseからのアニメ削除に失敗しました:', error);
+                        const normalizedError = normalizeError(error);
+                        logger.error('Supabaseからのアニメ削除に失敗しました', normalizedError, 'AnimeDetailModal');
                       }
                     }
 

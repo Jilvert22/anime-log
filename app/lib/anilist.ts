@@ -1,3 +1,6 @@
+import { logger } from './logger';
+import { NetworkError, normalizeError } from './api/errors';
+
 const ANILIST_API = 'https://graphql.anilist.co';
 
 export type AniListMedia = {
@@ -115,13 +118,14 @@ export async function searchAnime(query: string) {
     const data = await response.json();
     
     if (data.errors) {
-      console.error('AniList API エラー:', data.errors);
+      logger.error('AniList API エラー', data.errors, 'searchAnime');
       return [];
     }
     
     return data.data?.Page?.media as AniListMedia[] || [];
   } catch (error) {
-    console.error('アニメ検索に失敗しました:', error);
+    const normalizedError = normalizeError(error);
+    logger.error('アニメ検索に失敗しました', normalizedError, 'searchAnime');
     return [];
   }
 }
@@ -206,7 +210,7 @@ export async function searchAnimeBySeason(
     const data = await response.json();
     
     if (data.errors) {
-      console.error('AniList API エラー:', data.errors);
+      logger.error('AniList API エラー', data.errors, 'searchAnimeBySeason');
       return {
         media: [],
         pageInfo: {
@@ -230,7 +234,8 @@ export async function searchAnimeBySeason(
       }
     };
   } catch (error) {
-    console.error('シーズン検索に失敗しました:', error);
+    const normalizedError = normalizeError(error);
+    logger.error('シーズン検索に失敗しました', normalizedError, 'searchAnimeBySeason');
     return {
       media: [],
       pageInfo: {
@@ -263,7 +268,8 @@ export async function searchAnimeBySeasonAll(
       if (currentPage > 100) break;
     }
   } catch (error) {
-    console.error('シーズン検索（全件取得）に失敗しました:', error);
+    const normalizedError = normalizeError(error);
+    logger.error('シーズン検索（全件取得）に失敗しました', normalizedError, 'searchAnimeBySeasonAll');
     // エラーが発生しても、取得できた分は返す
   }
 
@@ -391,13 +397,14 @@ export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | 
     const data = await response.json();
     
     if (data.errors) {
-      console.error('AniList API エラー:', data.errors);
+      logger.error('AniList API エラー', data.errors, 'getAnimeDetail');
       return null;
     }
     
     return data.data?.Media as AniListMedia | null;
   } catch (error) {
-    console.error('アニメ詳細情報の取得に失敗しました:', error);
+    const normalizedError = normalizeError(error);
+    logger.error('アニメ詳細情報の取得に失敗しました', normalizedError, 'getAnimeDetail');
     return null;
   }
 }

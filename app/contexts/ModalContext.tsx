@@ -40,11 +40,17 @@ export function ModalProvider({ children, setSelectedAnime }: ModalProviderProps
   });
   
   // valueをメモ化（setState関数はReactが保証する安定した参照のため依存配列から除外）
+  // オブジェクト全体をメモ化することで、不要な再レンダリングを防止
   const value = useMemo(() => ({
     modals,
     actions,
     formStates,
-  }), [modals, actions, formStates]);
+  }), [
+    modals,
+    actions,
+    formStates,
+    // setState関数は安定した参照のため依存配列に含めない
+  ]);
   
   return (
     <ModalContext.Provider value={value}>

@@ -17,11 +17,11 @@ import { useAnimeReviews } from '../hooks/useAnimeReviews';
 import { useAuth } from '../hooks/useAuth';
 import { useUserProfileContext } from '../contexts/UserProfileContext';
 import { useAnimeDataContext } from '../contexts/AnimeDataContext';
-import { useCollection } from '../hooks/useCollection';
 import { useTabs } from '../hooks/useTabs';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useCountAnimation } from '../hooks/useCountAnimation';
 import { useModalHandlers } from '../hooks/useModalHandlers';
+import { useCollection } from '../hooks/useCollection';
 import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName } from '../utils/helpers';
 import { useSeasonManagement } from '../hooks/useSeasonManagement';
 import { useOnboardingNavigation } from '../hooks/useOnboardingNavigation';
@@ -68,7 +68,6 @@ function HomeClientInner() {
   // ユーザープロフィール管理をContextから取得（UserProfileProvider内の状態を共有）
   const {
     profile,
-    loading: profileLoading,
     avatarPublicUrl,
     saveProfile,
     saveOtakuType,
@@ -204,14 +203,7 @@ function HomeClientInner() {
       <HomeModals
         selectedAnime={selectedAnime}
         setSelectedAnime={setSelectedAnime}
-        seasons={seasons}
-        setSeasons={setSeasons}
-        expandedSeasons={expandedSeasons}
-        setExpandedSeasons={setExpandedSeasons}
         user={user}
-        profile={profile}
-        avatarPublicUrl={avatarPublicUrl}
-        saveProfile={saveProfile}
         handleLogout={handleLogout}
         extractSeriesName={extractSeriesName}
         getSeasonName={getSeasonName}
@@ -226,10 +218,6 @@ function HomeClientInner() {
         isActive={isActive}
         skipOnboarding={skipOnboarding}
         count={count}
-        averageRating={averageRating}
-        totalRewatchCount={totalRewatchCount}
-        favoriteCharacters={favoriteCharacters}
-        setFavoriteCharacters={setFavoriteCharacters}
         handleCharacterSave={handleCharacterSave}
         handleCharacterClose={handleCharacterClose}
       />

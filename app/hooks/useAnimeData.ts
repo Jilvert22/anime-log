@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Season, Anime } from '../types';
 import { supabaseToAnime, sortSeasonsByTime } from '../utils/helpers';
+import { logger } from '../lib/logger';
+import { normalizeError } from '../lib/api/errors';
 
 export function useAnimeData(user: User | null, isLoading: boolean) {
   const [seasons, setSeasons] = useState<Season[]>([]);
@@ -12,11 +14,12 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
   const prevSeasonsRef = useRef<string>('');
 
   // 最初のシーズンを展開状態にする
-  const expandFirstSeason = useCallback((seasonList: Season[]) => {
+  // useCallbackは不要（この関数はuseEffect内でのみ使用され、依存配列に含めない）
+  const expandFirstSeason = (seasonList: Season[]) => {
     if (seasonList.length > 0) {
       setExpandedSeasons(new Set([seasonList[0].name]));
     }
-  }, []);
+  };
 
   // アニメデータをlocalStorageに保存（未ログイン時のみ）
   useEffect(() => {
@@ -30,7 +33,8 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
   }, [seasons, user]);
 
   // Supabaseからアニメデータを読み込む
-  const loadFromSupabase = useCallback(async (userId: string) => {
+  // useCallbackは不要（この関数はuseEffect内でのみ使用される）
+  const loadFromSupabase = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('animes')
@@ -63,13 +67,15 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
         setSeasons([]);
       }
     } catch (error) {
-      console.error('Failed to load animes from Supabase:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('Failed to load animes from Supabase', normalizedError, 'useAnimeData');
       setSeasons([]);
     }
-  }, [expandFirstSeason]);
+  };
 
   // localStorageからアニメデータを読み込む
-  const loadFromLocalStorage = useCallback(() => {
+  // useCallbackは不要（この関数はuseEffect内でのみ使用される）
+  const loadFromLocalStorage = () => {
     const savedSeasons = localStorage.getItem('animeSeasons');
     if (!savedSeasons) {
       setSeasons([]);
@@ -94,7 +100,7 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
     } catch {
       setSeasons([]);
     }
-  }, [expandFirstSeason]);
+  };
 
   // データ読み込み
   useEffect(() => {
@@ -107,7 +113,9 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
       setSeasons([]);
       loadFromLocalStorage();
     }
-  }, [user, isLoading, loadFromSupabase, loadFromLocalStorage]);
+    // loadFromSupabaseとloadFromLocalStorageは関数内で定義されているため依存配列に含めない
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isLoading]);
 
   // すべてのアニメを取得
   const allAnimes = useMemo(

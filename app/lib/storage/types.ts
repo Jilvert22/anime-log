@@ -70,5 +70,8 @@ export interface IStorageService {
   
   // マイグレーション用
   migrateToSupabase?(items: WatchlistItem[]): Promise<boolean>;
+  
+  // 配信情報の更新（LocalStorageService専用メソッド）
+  updateStreamingInfo?(id: string, streamingSites: string[]): void;
 }
 

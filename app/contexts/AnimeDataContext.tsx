@@ -13,12 +13,14 @@ export function AnimeDataProvider({ children }: { children: ReactNode }) {
   const animeData = useAnimeData(user, isLoading);
   
   // valueをメモ化（setState関数はReactが保証する安定した参照のため依存配列から除外）
+  // オブジェクト全体をメモ化することで、不要な再レンダリングを防止
   const value = useMemo(() => animeData, [
     animeData.seasons,
     animeData.expandedSeasons,
     animeData.allAnimes,
     animeData.averageRating,
     animeData.totalRewatchCount,
+    // setState関数は安定した参照のため依存配列に含めない
   ]);
   
   return (

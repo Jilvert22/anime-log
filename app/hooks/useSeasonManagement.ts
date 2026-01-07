@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useStorage } from './useStorage';
 import { shouldShowSeasonStartModal, markSeasonChecked } from '../utils/helpers';
 import type { WatchlistItem } from '../lib/storage/types';
+import { logger } from '../lib/logger';
+import { normalizeError } from '../lib/api/errors';
 
 export function useSeasonManagement(isLoading: boolean) {
   const storage = useStorage();
@@ -26,7 +28,8 @@ export function useSeasonManagement(isLoading: boolean) {
       setShowSeasonEndModal(false);
       setPreviousSeasonItems([]);
     } catch (error) {
-      console.error('積みアニメへの移動に失敗しました:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('積みアニメへの移動に失敗しました', normalizedError, 'useSeasonManagement');
       alert('積みアニメへの移動に失敗しました');
     }
   }, [storage, previousSeasonItems]);
@@ -43,7 +46,8 @@ export function useSeasonManagement(isLoading: boolean) {
       setShowSeasonEndModal(false);
       setPreviousSeasonItems([]);
     } catch (error) {
-      console.error('削除に失敗しました:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('削除に失敗しました', normalizedError, 'useSeasonManagement');
       alert('削除に失敗しました');
     }
   }, [storage, previousSeasonItems]);
@@ -66,7 +70,8 @@ export function useSeasonManagement(isLoading: boolean) {
         setPreviousSeasonItems([]);
       }, 0);
     } catch (error) {
-      console.error('視聴中への移行に失敗しました:', error);
+      const normalizedError = normalizeError(error);
+      logger.error('視聴中への移行に失敗しました', normalizedError, 'useSeasonManagement');
       alert('視聴中への移行に失敗しました');
       // エラー時もモーダルを閉じる
       setTimeout(() => {
@@ -99,7 +104,8 @@ export function useSeasonManagement(isLoading: boolean) {
             markSeasonChecked();
           }
         } catch (error) {
-          console.error('シーズン開始チェックに失敗しました:', error);
+          const normalizedError = normalizeError(error);
+          logger.error('シーズン開始チェックに失敗しました', normalizedError, 'useSeasonManagement');
         }
       };
 
