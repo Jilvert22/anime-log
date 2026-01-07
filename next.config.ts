@@ -132,7 +132,7 @@ const pwaConfig = withPWA({
     },
     // 7. 同一オリジンのページ - NetworkFirst
     {
-      urlPattern: ({ url, sameOrigin }) => sameOrigin && !url.pathname.startsWith('/api/'),
+      urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) => sameOrigin && !url.pathname.startsWith('/api/'),
       handler: 'NetworkFirst',
       options: {
         cacheName: 'pages',
