@@ -9,14 +9,33 @@ import type {
 } from '../types';
 import type { UserProfile } from '../lib/api';
 import { HomeTab } from './tabs/HomeTab';
-import { ReviewModal } from './modals/ReviewModal';
-import { SettingsModal } from './modals/SettingsModal';
-import { AuthModal } from './modals/AuthModal';
-import { FavoriteAnimeModal } from './modals/FavoriteAnimeModal';
-import { AddAnimeFormModal } from './modals/AddAnimeFormModal';
-import { AnimeDetailModal } from './modals/AnimeDetailModal';
 import { Navigation } from './Navigation';
 import { PWAInstallBanner } from './PWAInstallBanner';
+
+// モーダルを動的インポート（初期バンドルサイズの削減）
+const ReviewModal = dynamic(() => import('./modals/ReviewModal').then(mod => ({ default: mod.ReviewModal })), {
+  ssr: false,
+});
+
+const SettingsModal = dynamic(() => import('./modals/SettingsModal').then(mod => ({ default: mod.SettingsModal })), {
+  ssr: false,
+});
+
+const AuthModal = dynamic(() => import('./modals/AuthModal').then(mod => ({ default: mod.AuthModal })), {
+  ssr: false,
+});
+
+const FavoriteAnimeModal = dynamic(() => import('./modals/FavoriteAnimeModal').then(mod => ({ default: mod.FavoriteAnimeModal })), {
+  ssr: false,
+});
+
+const AddAnimeFormModal = dynamic(() => import('./modals/AddAnimeFormModal').then(mod => ({ default: mod.AddAnimeFormModal })), {
+  ssr: false,
+});
+
+const AnimeDetailModal = dynamic(() => import('./modals/AnimeDetailModal').then(mod => ({ default: mod.AnimeDetailModal })), {
+  ssr: false,
+});
 
 // 頻繁に使わないモーダルを動的インポート
 const MyPageTab = dynamic(() => import('./tabs/MyPageTab'), {
