@@ -37,18 +37,25 @@ export function Navigation({
   }, [userProp]);
 
   useEffect(() => {
-    // 認証状態の変化を監視
-    if (!supabase) {
-      console.warn('[Navigation] Supabaseクライアントが利用できません');
-      return;
-    }
+    // 認証状態の変化を監視（初期レンダリング後に実行してメインスレッドをブロックしない）
+    let unsubscribe: (() => void) | undefined;
     
-    const unsubscribe = onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const timeoutId = setTimeout(() => {
+      if (!supabase) {
+        console.warn('[Navigation] Supabaseクライアントが利用できません');
+        return;
+      }
+      
+      unsubscribe = onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+    }, 0); // 次のイベントループで実行
 
     return () => {
-      unsubscribe();
+      clearTimeout(timeoutId);
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, []);
   return (
@@ -98,6 +105,8 @@ export function Navigation({
                     src={userIcon}
                     alt="プロフィール"
                     className="w-full h-full rounded-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
