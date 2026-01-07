@@ -38,8 +38,15 @@ export function useUserProfile() {
   const userBio = profile.profile?.bio || '';
   const myProfile = profile.profile;
 
-  // 既存のsetterは使用されていないため削除
-  // 必要に応じて、profile.saveProfileを直接使用してください
+  // setUserOtakuType: AnimeDNASectionで使用されているため保持
+  const setUserOtakuType = (type: string) => {
+    // localStorageに保存（後でSupabaseに保存される）
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userOtakuType', type);
+    }
+    // 実際の保存はsaveOtakuTypeを使用
+    profile.saveOtakuType(type);
+  };
 
   return {
     // 新しいAPI
@@ -62,5 +69,8 @@ export function useUserProfile() {
     myProfile,
     favoriteAnimeIds,
     setFavoriteAnimeIds,
+    
+    // setUserOtakuType: AnimeDNASectionで使用
+    setUserOtakuType,
   };
 }

@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic';
 import type { Anime, Season, FavoriteCharacter, SupabaseAnimeRow } from '../types';
 import type { User } from '@supabase/supabase-js';
-import type { UserProfile, WatchlistItem } from '../lib/api';
+import type { UserProfile } from '../lib/api';
+import type { WatchlistItem } from '../lib/storage/types';
 import { useModalContext } from '../contexts/ModalContext';
 import { useUserProfileContext } from '../contexts/UserProfileContext';
 import { useAnimeDataContext } from '../contexts/AnimeDataContext';
