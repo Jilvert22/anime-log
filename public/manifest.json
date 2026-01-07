@@ -2,6 +2,7 @@
   "name": "アニメログ",
   "short_name": "アニメログ",
   "description": "アニメの視聴記録・管理、レビュー投稿、視聴傾向分析ができるアプリ",
+  "id": "/",
   "categories": ["entertainment", "games", "lifestyle"],
   "start_url": "/",
   "scope": "/",
@@ -39,6 +40,15 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "視聴中アニメ",
+      "short_name": "視聴中",
+      "description": "視聴中のアニメを表示",
+      "url": "/?tab=watchlist",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

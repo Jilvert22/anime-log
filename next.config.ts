@@ -57,14 +57,104 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development', // 開発環境では無効化
+  fallbacks: {
+    document: '/offline', // ページ取得失敗時のフォールバック
+  },
   runtimeCaching: [
+    // 1. AniList画像 - CacheFirst（30日キャッシュ）
+    {
+      urlPattern: /^https:\/\/s[34]\.anilist\.co\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'anilist-images',
+        expiration: {
+          maxEntries: 500,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30日
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+      },
+    },
+    // 2. AniList CDN画像 - CacheFirst
+    {
+      urlPattern: /^https:\/\/cdn\.anilist\.co\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'anilist-images',
+        expiration: {
+          maxEntries: 500,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30日
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+      },
+    },
+    // 3. AniList API - NetworkFirst（短いタイムアウト）
+    {
+      urlPattern: /^https:\/\/graphql\.anilist\.co\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'anilist-api',
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 24 * 60 * 60, // 1日
+        },
+        networkTimeoutSeconds: 5,
+      },
+    },
+    // 4. Supabase API - NetworkOnly（認証・データ同期）
+    {
+      urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+      handler: 'NetworkOnly',
+    },
+    // 5. Google Fonts - CacheFirst
+    {
+      urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts',
+        expiration: {
+          maxEntries: 30,
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 1年
+        },
+      },
+    },
+    // 6. 静的アセット（JS/CSS/フォント）- StaleWhileRevalidate
+    {
+      urlPattern: /\.(?:js|css|woff2?)$/i,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'static-assets',
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7日
+        },
+      },
+    },
+    // 7. 同一オリジンのページ - NetworkFirst
+    {
+      urlPattern: ({ url, sameOrigin }) => sameOrigin && !url.pathname.startsWith('/api/'),
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'pages',
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 24 * 60 * 60, // 1日
+        },
+        networkTimeoutSeconds: 5,
+      },
+    },
+    // 8. フォールバック（その他）- NetworkFirst
     {
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',
       options: {
-        cacheName: 'offlineCache',
+        cacheName: 'fallback-cache',
         expiration: {
-          maxEntries: 200,
+          maxEntries: 50,
+          maxAgeSeconds: 24 * 60 * 60, // 1日
         },
         networkTimeoutSeconds: 10,
         fetchOptions: {
