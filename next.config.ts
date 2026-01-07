@@ -57,9 +57,6 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development', // 開発環境では無効化
-  fallbacks: {
-    document: '/offline', // ページ取得失敗時のフォールバック
-  },
   runtimeCaching: [
     // 1. AniList画像 - CacheFirst（30日キャッシュ）
     {
