@@ -46,7 +46,9 @@ export function OnboardingOverlay() {
 
   // タブ切り替えはHomeClientで処理されるため、ここでは何もしない
 
-  if (!isActive || !currentStep) {
+  // テストモードの場合はオーバーレイを表示しない
+  const isTestMode = typeof window !== 'undefined' && (window as any).__TEST_MODE__;
+  if (isTestMode || !isActive || !currentStep) {
     return null;
   }
 

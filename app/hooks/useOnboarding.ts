@@ -22,6 +22,17 @@ export function useOnboarding() {
 
   // 初期化時にlocalStorageから状態を読み込む
   useEffect(() => {
+    // テストモードの場合はオンボーディングを無効化
+    const isTestMode = typeof window !== 'undefined' && (window as any).__TEST_MODE__;
+    if (isTestMode) {
+      setState({
+        currentStep: null,
+        isActive: false,
+        isCompleted: true,
+      });
+      return;
+    }
+
     const completed = localStorage.getItem(ONBOARDING_STORAGE_KEY) === 'true';
     const savedStep = localStorage.getItem(ONBOARDING_STEP_KEY);
     const currentStep = savedStep ? (Number.parseInt(savedStep, 10) as OnboardingStep) : null;
@@ -106,10 +117,13 @@ export function useOnboarding() {
     });
   }, []);
 
+  // テストモードの場合は常にオンボーディングを無効化
+  const isTestMode = typeof window !== 'undefined' && (window as any).__TEST_MODE__;
+  
   return {
-    currentStep: state.currentStep,
-    isActive: state.isActive,
-    isCompleted: state.isCompleted,
+    currentStep: isTestMode ? null : state.currentStep,
+    isActive: isTestMode ? false : state.isActive,
+    isCompleted: isTestMode ? true : state.isCompleted,
     startOnboarding,
     nextStep,
     previousStep,
