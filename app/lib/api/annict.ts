@@ -39,8 +39,6 @@ export type AnnictWork = {
   media: AnnictMedia;
   officialSiteUrl: string | null;
   twitterHashtag: string | null;
-  synopsis?: string | null;
-  synopsisSource?: string | null;
   programs: {
     nodes: AnnictProgram[];
   };
@@ -211,8 +209,6 @@ export async function searchAnnictBySeason(
           media
           officialSiteUrl
           twitterHashtag
-          synopsis
-          synopsisSource
           programs {
             nodes {
               startedAt
@@ -248,53 +244,14 @@ export async function searchAnnictBySeason(
  * IDでアニメを検索
  * @param annictId Annict ID
  * @returns AnnictWork（見つからない場合はnull）
+ * @deprecated Annict APIではIDで直接検索する方法が提供されていないため、常にnullを返します
  */
 export async function searchAnnictById(annictId: number): Promise<AnnictWork | null> {
-  const query = `
-    query SearchWorks($ids: [Int!]!) {
-      searchWorks(ids: $ids) {
-        nodes {
-          annictId
-          title
-          titleKana
-          media
-          officialSiteUrl
-          twitterHashtag
-          synopsis
-          synopsisSource
-          programs {
-            nodes {
-              startedAt
-              channel {
-                name
-              }
-            }
-          }
-          casts {
-            nodes {
-              character {
-                name
-              }
-              person {
-                name
-              }
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  try {
-    const data = await queryAnnict<AnnictSearchResult>(query, { 
-      ids: [annictId]
-    });
-    
-    return data.searchWorks.nodes[0] || null;
-  } catch (error) {
-    console.error('Annict ID検索エラー:', error);
-    return null;
-  }
+  // Annict APIではIDで直接検索する方法が提供されていないため、
+  // この関数は常にnullを返します。
+  // IDマッピングは使用されず、タイトルマッチングにフォールバックします。
+  console.warn('Annict ID検索はサポートされていません。タイトルマッチングを使用してください。', { annictId });
+  return null;
 }
 
 /**
@@ -316,8 +273,6 @@ export async function searchAnnictByTitle(
           media
           officialSiteUrl
           twitterHashtag
-          synopsis
-          synopsisSource
           programs {
             nodes {
               startedAt
@@ -447,6 +402,17 @@ export type AniListMediaWithStreaming = AniListMedia & {
 };
 
 /**
+ * 配列を指定サイズのバッチに分割
+ */
+function chunk<T>(array: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
+
+/**
  * AniListの検索結果にAnnictの配信情報を付与（IDマッピング優先）
  * @param anilistResults AniListの検索結果
  * @param annictResults Annictの検索結果（フォールバック用）
@@ -456,16 +422,29 @@ export async function mergeWithAnnictData(
   anilistResults: AniListMedia[],
   annictResults: AnnictWork[]
 ): Promise<AniListMediaWithStreaming[]> {
-  const results: AniListMediaWithStreaming[] = [];
-
-  for (const anilist of anilistResults) {
-    let matchedAnnict: AnnictWork | null = null;
-
-    // 1. IDマッピングを試行（優先）
+  // IDマッピングが必要な項目を先に抽出してバッチ並列処理
+  const idMappedItems: Array<{ anilist: AniListMedia; annictId: number }> = [];
+  
+  // IDマッピング情報を収集
+  anilistResults.forEach((anilist) => {
     const annictId = getAnnictIdFromAniList(anilist.id);
     if (annictId !== null) {
+      idMappedItems.push({ anilist, annictId });
+    }
+  });
+
+  // IDマッピング結果を保存するMap（anilistId -> AnnictWork）
+  const idMappedResults = new Map<number, AnnictWork | null>();
+
+  // バッチ処理（5件ずつ並列実行してレート制限を回避）
+  const BATCH_SIZE = 5;
+  const batches = chunk(idMappedItems, BATCH_SIZE);
+
+  for (const batch of batches) {
+    // バッチ内で並列実行
+    const batchPromises = batch.map(async ({ anilist, annictId }) => {
       try {
-        matchedAnnict = await searchAnnictById(annictId);
+        const matchedAnnict = await searchAnnictById(annictId);
         if (matchedAnnict && process.env.NODE_ENV === 'development') {
           console.log('[Annict ID Match]', {
             anilistId: anilist.id,
@@ -474,9 +453,31 @@ export async function mergeWithAnnictData(
             matched: matchedAnnict.title,
           });
         }
+        return { anilistId: anilist.id, matchedAnnict };
       } catch (error) {
         console.warn('Annict ID検索に失敗、タイトルマッチングにフォールバック:', error);
+        return { anilistId: anilist.id, matchedAnnict: null };
       }
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+    
+    // 結果をMapに保存
+    batchResults.forEach(({ anilistId, matchedAnnict }) => {
+      idMappedResults.set(anilistId, matchedAnnict);
+    });
+  }
+
+  // 最終結果を構築
+  const results: AniListMediaWithStreaming[] = [];
+
+  for (const anilist of anilistResults) {
+    let matchedAnnict: AnnictWork | null = null;
+
+    // 1. IDマッピング結果を使用（優先）
+    const cachedResult = idMappedResults.get(anilist.id);
+    if (cachedResult !== undefined) {
+      matchedAnnict = cachedResult;
     }
 
     // 2. IDマッピングで見つからない場合、タイトルマッチングを試行（フォールバック）
@@ -513,8 +514,8 @@ export async function mergeWithAnnictData(
         ...anilist,
         streamingServices: extractStreamingServices(matchedAnnict.programs.nodes),
         broadcastChannels: extractBroadcastChannels(matchedAnnict.programs.nodes),
-        synopsisJa: matchedAnnict.synopsis,
-        synopsisSource: matchedAnnict.synopsisSource,
+        synopsisJa: undefined,
+        synopsisSource: undefined,
         broadcastTime: extractBroadcastTime(matchedAnnict.programs.nodes),
         casts: casts.length > 0 ? casts : undefined,
       });
