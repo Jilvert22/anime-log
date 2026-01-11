@@ -45,3 +45,4 @@ WHERE status IS NOT NULL AND season_year IS NOT NULL AND season IS NOT NULL;
 
 -- 既存データのデフォルト値設定（既存の積みアニメはstatus=NULLのまま）
 
+

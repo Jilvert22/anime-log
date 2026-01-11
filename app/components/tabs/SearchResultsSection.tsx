@@ -19,6 +19,7 @@ interface SearchResultsSectionProps {
   addToNextSeasonWatchlist: (result: AniListMediaWithStreaming) => Promise<void>;
   year: string;
   season: string;
+  dominantAnimeIds?: Set<number>;
 }
 
 export function SearchResultsSection({
@@ -34,6 +35,7 @@ export function SearchResultsSection({
   addToNextSeasonWatchlist,
   year,
   season,
+  dominantAnimeIds = new Set(),
 }: SearchResultsSectionProps) {
   const [loadingIds, setLoadingIds] = useState<Set<number>>(new Set());
   const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<AniListMedia | AniListMediaWithStreaming | null>(null);
@@ -77,6 +79,8 @@ export function SearchResultsSection({
             return null;
           }
 
+          const isDominantAnime = dominantAnimeIds.has(anilistId);
+          
           return (
             <div
               key={anilistId}
@@ -97,17 +101,27 @@ export function SearchResultsSection({
                       setSelectedAnimeMedia(result);
                     }
                   }}
-                  className="w-full aspect-[2/3] overflow-hidden rounded-lg"
+                  className="w-full aspect-[2/3] overflow-hidden rounded-lg relative"
                 >
                   <img
                     src={imageUrl}
                     alt={title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform"
                   />
+                  {isDominantAnime && (
+                    <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-2xl border-2 border-white/50 animate-pulse">
+                      <span className="drop-shadow-lg">覇権</span>
+                    </div>
+                  )}
                 </button>
               ) : (
-                <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center text-4xl">
+                <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center text-4xl relative">
                   🎬
+                  {isDominantAnime && (
+                    <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-2xl border-2 border-white/50 animate-pulse">
+                      <span className="drop-shadow-lg">覇権</span>
+                    </div>
+                  )}
                 </div>
               )}
               <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">

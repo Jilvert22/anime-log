@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 
@@ -30,6 +30,7 @@ import { useSeasonSearch } from '../../hooks/useSeasonSearch';
 import { useYearSeasonData } from '../../hooks/useYearSeasonData';
 import type { FilterType } from '../../hooks/useYearSeasonData';
 import { useExpansionControl } from '../../hooks/useExpansionControl';
+import { useRepresentativeAnimes } from '../../hooks/useRepresentativeAnimes';
 
 export function HomeTab({
   homeSubTab,
@@ -126,6 +127,26 @@ export function HomeTab({
     searchSeasonAnimes,
     setExpandedSeasonSearches,
   });
+
+  // 覇権アニメを取得・管理するフック
+  const {
+    fetchRepresentativeAnimes,
+    getRepresentativeAnimesForSeason,
+    isLoading: isLoadingRepresentativeAnimes,
+  } = useRepresentativeAnimes();
+
+  // 展開されたシーズンの覇権アニメを取得
+  useEffect(() => {
+    yearSeasonData.forEach(({ year, seasons: yearSeasons }) => {
+      yearSeasons.forEach(({ season }) => {
+        const seasonKey = `${year}-${season}`;
+        const seasonName = `${year}年${season}`;
+        if (expandedSeasons.has(seasonKey)) {
+          fetchRepresentativeAnimes(seasonName, 3);
+        }
+      });
+    });
+  }, [expandedSeasons, yearSeasonData, fetchRepresentativeAnimes]);
 
   // タブ切り替えハンドラーをメモ化
   const handleTabChange = useCallback((tabId: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => {
@@ -292,6 +313,10 @@ export function HomeTab({
                       const isLoading = loadingSeasons.has(seasonKey);
                       const isSearchExpanded = expandedSeasonSearches.has(seasonKey);
                       
+                      const seasonName = `${year}年${season}`;
+                      const representativeAnimes = getRepresentativeAnimesForSeason(seasonName);
+                      const dominantAnimeIds = new Set(representativeAnimes.map(anime => anime.id));
+                      
                       return (
                         <div key={seasonKey}>
                           <SeasonHeader
@@ -342,6 +367,7 @@ export function HomeTab({
                                           addToNextSeasonWatchlist={addToNextSeasonWatchlist}
                                           year={year}
                                           season={season}
+                                          dominantAnimeIds={dominantAnimeIds}
                                         />
                                       ) : (
                                         <div className="py-4 text-center text-gray-500 dark:text-gray-400 text-sm font-medium">
@@ -361,20 +387,21 @@ export function HomeTab({
                                       作品を検索中...
                                     </div>
                                   ) : searchResults.length > 0 ? (
-                                    <SearchResultsSection
-                                      searchResults={searchResults}
-                                      seasonKey={seasonKey}
-                                      expandedSeasons={expandedSeasons}
-                                      setExpandedSeasons={setExpandedSeasons}
-                                      expandedSeasonSearches={expandedSeasonSearches}
-                                      setExpandedSeasonSearches={setExpandedSeasonSearches}
-                                      addedToWatchlistIds={addedToWatchlistIds}
-                                      addAnimeFromSearch={addAnimeFromSearch}
-                                      addToWatchlistFromSearch={addToWatchlistFromSearch}
-                                      addToNextSeasonWatchlist={addToNextSeasonWatchlist}
-                                      year={year}
-                                      season={season}
-                                    />
+                                        <SearchResultsSection
+                                          searchResults={searchResults}
+                                          seasonKey={seasonKey}
+                                          expandedSeasons={expandedSeasons}
+                                          setExpandedSeasons={setExpandedSeasons}
+                                          expandedSeasonSearches={expandedSeasonSearches}
+                                          setExpandedSeasonSearches={setExpandedSeasonSearches}
+                                          addedToWatchlistIds={addedToWatchlistIds}
+                                          addAnimeFromSearch={addAnimeFromSearch}
+                                          addToWatchlistFromSearch={addToWatchlistFromSearch}
+                                          addToNextSeasonWatchlist={addToNextSeasonWatchlist}
+                                          year={year}
+                                          season={season}
+                                          dominantAnimeIds={dominantAnimeIds}
+                                        />
                                   ) : (
                                     <div className="py-4 text-center text-gray-500 dark:text-gray-400 text-sm font-medium">
                                       作品が見つかりませんでした

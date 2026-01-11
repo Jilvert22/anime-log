@@ -47,13 +47,32 @@ test.describe('アニメ追加・削除', () => {
       // モーダルが閉じない場合でも続行（ログインが成功している可能性がある）
     });
     
-    // ログイン後の画面が表示されるまで少し待つ
+    // ログイン後の画面が表示されるまで待つ
+    // 「+ アニメを追加」ボタンが表示されるまで待つ（クール別タブがデフォルト）
+    try {
+      const addButton = page.getByRole('button', { name: '+ アニメを追加' });
+      await addButton.waitFor({ state: 'visible', timeout: 10000 });
+    } catch (error) {
+      // ボタンが見つからない場合、少し待ってから再試行
+      await page.waitForTimeout(2000);
+      const addButton = page.getByRole('button', { name: '+ アニメを追加' });
+      await addButton.waitFor({ state: 'visible', timeout: 10000 });
+    }
+    
+    // ボタンがクリック可能になるまで待つ
     await page.waitForTimeout(1000);
   });
 
   test('アニメを検索して追加できる', async ({ page }) => {
-    // 1. 「+ アニメを追加」ボタンをクリック
-    await page.getByRole('button', { name: '+ アニメを追加' }).click();
+    // 1. 「+ アニメを追加」ボタンが表示されるまで待つ
+    const addButton = page.getByRole('button', { name: '+ アニメを追加' });
+    await expect(addButton).toBeVisible({ timeout: 10000 });
+    
+    // ボタンがクリック可能になるまで少し待つ
+    await page.waitForTimeout(500);
+    
+    // 2. 「+ アニメを追加」ボタンをクリック
+    await addButton.click();
     
     // 2. モーダルが開くことを確認
     await expect(page.getByText('新しいアニメを追加')).toBeVisible();
@@ -175,25 +194,32 @@ test.describe('アニメ追加・削除', () => {
     // 前提条件: アニメが追加されている必要がある
     // まず、アニメを追加する（追加テストと同じフロー）
     
-    // 1. 「+ アニメを追加」ボタンをクリック
-    await page.getByRole('button', { name: '+ アニメを追加' }).click();
+    // 1. 「+ アニメを追加」ボタンが表示されるまで待つ
+    const addButton = page.getByRole('button', { name: '+ アニメを追加' });
+    await expect(addButton).toBeVisible({ timeout: 10000 });
     
-    // 2. モーダルが開くことを確認
-    await expect(page.getByText('新しいアニメを追加')).toBeVisible();
+    // ボタンがクリック可能になるまで少し待つ
+    await page.waitForTimeout(500);
     
-    // 3. 検索欄にアニメ名を入力
+    // 2. 「+ アニメを追加」ボタンをクリック
+    await addButton.click();
+    
+    // 3. モーダルが開くことを確認
+    await expect(page.getByText('新しいアニメを追加')).toBeVisible({ timeout: 5000 });
+    
+    // 4. 検索欄にアニメ名を入力
     const searchInput = page.getByPlaceholder('アニメタイトルで検索');
     await searchInput.fill('進撃の巨人');
     
-    // 4. 「検索」ボタンをクリック
+    // 5. 「検索」ボタンをクリック
     const modal = page.locator('div[class*="bg-white dark:bg-gray-800"]').filter({ hasText: '新しいアニメを追加' });
     const searchButton = modal.getByRole('button', { name: '検索', exact: true });
     await searchButton.click();
     
-    // 5. 検索結果が表示されるまで待つ
+    // 6. 検索結果が表示されるまで待つ
     await page.waitForSelector('text=検索中...', { state: 'hidden', timeout: 30000 }).catch(() => {});
     
-    // 6. 検索結果があることを確認
+    // 7. 検索結果があることを確認
     const resultsText = page.locator('text=検索結果:');
     const noResultsText = page.getByText('検索結果が見つかりませんでした');
     await Promise.race([
@@ -207,16 +233,16 @@ test.describe('アニメ追加・削除', () => {
       return;
     }
     
-    // 7. 最初の検索結果を選択
+    // 8. 最初の検索結果を選択
     const firstCheckbox = modal.locator('input[type="checkbox"]').first();
     await firstCheckbox.click({ timeout: 10000 });
     
-    // 8. 登録ボタンをクリック
+    // 9. 登録ボタンをクリック
     const registerButton = page.getByRole('button', { name: /件のアニメを登録/ });
     await expect(registerButton).toBeVisible({ timeout: 5000 });
     await registerButton.click();
     
-    // 9. モーダルが閉じることを確認
+    // 10. モーダルが閉じることを確認
     await expect(page.getByText('新しいアニメを追加')).not.toBeVisible({ timeout: 10000 });
     
     // 10. 追加されたアニメが表示されるまで待つ

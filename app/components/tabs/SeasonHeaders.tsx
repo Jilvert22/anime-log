@@ -91,54 +91,57 @@ export const SeasonHeader = memo(function SeasonHeader({
   };
 
   return (
-    <div className={`w-full flex items-center justify-between py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors ml-4 ${
-      isEmpty ? 'border border-dashed border-gray-300 dark:border-gray-600' : ''
-    }`}>
-      <button
-        onClick={onToggle}
-        className="flex-1 flex items-center justify-between"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-gray-400 text-sm">
-            {isExpanded ? '▼' : '▶'}
-          </span>
-          <span className={`font-medium ${isEmpty ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
-            {getSeasonWithMonths(season)}
-            {isEmpty && <span className="ml-2 text-xs">(未登録)</span>}
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-3 text-sm">
-          {isEmpty ? (
-            <span className="text-gray-400 dark:text-gray-500 text-xs">作品を検索</span>
-          ) : (
-            <>
-              <span className="text-gray-500 dark:text-gray-400">
-                <span className="font-medium" style={{ color: '#764ba2' }}>{stats.total}</span> 作品
-              </span>
-              <span className="text-gray-500 dark:text-gray-400">
-                平均 <span className="font-medium text-orange-500">{stats.avgRating}</span>
-              </span>
-              {stats.godTier > 0 && (
-                <span className="text-gray-500 dark:text-gray-400">
-                  神作 <span className="font-medium" style={{ color: '#e879d4' }}>{stats.godTier}</span>
-                </span>
-              )}
-            </>
-          )}
-        </div>
-      </button>
-      {!isEmpty && onSearch && (
+    <div className={`w-full ml-4 ${isEmpty ? 'border border-dashed border-gray-300 dark:border-gray-600 rounded-lg' : ''}`}>
+      <div className={`flex items-center justify-between py-2 px-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors ${
+        isEmpty ? '' : ''
+      }`}>
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onSearch();
-          }}
-          className="ml-2 px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          onClick={onToggle}
+          className="flex-1 flex items-center justify-between"
         >
-          検索
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm">
+              {isExpanded ? '▼' : '▶'}
+            </span>
+            <span className={`font-medium ${isEmpty ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
+              {getSeasonWithMonths(season)}
+              {isEmpty && <span className="ml-2 text-xs">(未登録)</span>}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-3 text-sm">
+            {isEmpty ? (
+              <span className="text-gray-400 dark:text-gray-500 text-xs">作品を検索</span>
+            ) : (
+              <>
+                <span className="text-gray-500 dark:text-gray-400">
+                  <span className="font-medium" style={{ color: '#764ba2' }}>{stats.total}</span> 作品
+                </span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  平均 <span className="font-medium text-orange-500">{stats.avgRating}</span>
+                </span>
+                {stats.godTier > 0 && (
+                  <span className="text-gray-500 dark:text-gray-400">
+                    神作 <span className="font-medium" style={{ color: '#e879d4' }}>{stats.godTier}</span>
+                  </span>
+                )}
+              </>
+            )}
+          </div>
         </button>
-      )}
+        {!isEmpty && onSearch && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSearch();
+            }}
+            className="ml-2 px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            検索
+          </button>
+        )}
+      </div>
+      
     </div>
   );
 });

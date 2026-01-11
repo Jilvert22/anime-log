@@ -28,3 +28,4 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_watchlist_broadcast ON watchlist(user_id, broadcast_day, broadcast_time) 
 WHERE broadcast_day IS NOT NULL AND broadcast_time IS NOT NULL;
 
+

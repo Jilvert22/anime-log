@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, Dispatch, SetStateAction } from 'react';
+import { useState, useMemo, useCallback, useEffect, Dispatch, SetStateAction } from 'react';
 import type { Anime, Season } from '../types';
 
 export type FilterType = 'all' | 'unrated' | 'unwatched';
@@ -12,6 +12,7 @@ export function useYearSeasonData({ seasons, allAnimes }: UseYearSeasonDataParam
   const [filter, setFilter] = useState<FilterType>('all');
   const [showAllSeasons, setShowAllSeasons] = useState(false); // すべての年・季節を表示するか
   const [showUnregisteredOnly, setShowUnregisteredOnly] = useState(false); // 未登録シーズンのみ表示
+  const [unregisteredSeasonSnapshot, setUnregisteredSeasonSnapshot] = useState<Set<string> | null>(null); // 未登録シーズンのスナップショット
   const seasonOrder = ['冬', '春', '夏', '秋'];
 
   // フィルター適用
@@ -25,6 +26,61 @@ export function useYearSeasonData({ seasons, allAnimes }: UseYearSeasonDataParam
         return true;
     }
   }, [filter]);
+
+  // 未登録シーズンのスナップショットを記録
+  useEffect(() => {
+    if (showAllSeasons && showUnregisteredOnly) {
+      // showUnregisteredOnlyがtrueになった時点で、現在の未登録シーズンリストを記録
+      setUnregisteredSeasonSnapshot(prev => {
+        if (prev !== null) {
+          // 既に記録されている場合は更新しない
+          return prev;
+        }
+        
+        // 現在の未登録シーズンを収集
+        const snapshot = new Set<string>();
+        
+        // 1970年から現在年+1年までのすべての年・季節をチェック
+        const currentYear = new Date().getFullYear();
+        const startYear = 1970;
+        const endYear = currentYear + 1;
+        
+        // 登録済みシーズンをMapに整理（フィルター適用済みのアニメのみ）
+        const registeredSeasons = new Map<string, Set<string>>();
+        for (let i = 0; i < seasons.length; i++) {
+          const season = seasons[i];
+          const match = season.name.match(/(\d{4})年(冬|春|夏|秋)/);
+          if (match) {
+            const year = match[1];
+            const seasonName = match[2];
+            const filteredAnimes = season.animes.filter(filterAnime);
+            if (filteredAnimes.length > 0) {
+              if (!registeredSeasons.has(year)) {
+                registeredSeasons.set(year, new Set());
+              }
+              registeredSeasons.get(year)!.add(seasonName);
+            }
+          }
+        }
+        
+        // 未登録シーズンを記録
+        for (let year = endYear; year >= startYear; year--) {
+          const yearStr = year.toString();
+          for (const seasonName of seasonOrder) {
+            const registeredSeasonsForYear = registeredSeasons.get(yearStr);
+            if (!registeredSeasonsForYear || !registeredSeasonsForYear.has(seasonName)) {
+              snapshot.add(`${yearStr}年${seasonName}`);
+            }
+          }
+        }
+        
+        return snapshot;
+      });
+    } else {
+      // showAllSeasonsまたはshowUnregisteredOnlyがfalseになった時に記録をクリア
+      setUnregisteredSeasonSnapshot(prev => prev !== null ? null : prev);
+    }
+  }, [showAllSeasons, showUnregisteredOnly, seasons, filterAnime, seasonOrder]);
 
   // 年→季節→アニメの階層データを生成（フィルター適用済み）
   // メインスレッドのブロッキングを避けるため、処理を最適化
@@ -103,6 +159,12 @@ export function useYearSeasonData({ seasons, allAnimes }: UseYearSeasonDataParam
           // すべて表示モード: すべての季節を表示
           if (showUnregisteredOnly) {
             // 未登録シーズンのみ表示
+            // スナップショットが記録されている場合は、記録されたシーズンリストを基準にする
+            if (unregisteredSeasonSnapshot !== null) {
+              const seasonKey = `${year}年${s}`;
+              return unregisteredSeasonSnapshot.has(seasonKey);
+            }
+            // スナップショットがない場合は従来の動作（未登録シーズンのみ表示）
             return !yearData.has(s) || yearData.get(s)!.length === 0;
           }
           return true;
@@ -144,7 +206,7 @@ export function useYearSeasonData({ seasons, allAnimes }: UseYearSeasonDataParam
         return y.allAnimes.length > 0;
       }
     });
-  }, [seasons, filterAnime, seasonOrder, showAllSeasons, showUnregisteredOnly]);
+  }, [seasons, filterAnime, seasonOrder, showAllSeasons, showUnregisteredOnly, unregisteredSeasonSnapshot]);
 
   // フィルター後の統計
   const filteredStats = useMemo(() => {

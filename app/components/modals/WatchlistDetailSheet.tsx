@@ -663,7 +663,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                     <StreamingUpdateButton
                       onUpdate={async () => {
                         if (!currentItem?.id || !currentItem?.title) return;
-                        const result = await updateWatchlistStreamingInfo(currentItem.id, currentItem.title);
+                        const result = await updateWatchlistStreamingInfo(currentItem.id, currentItem.title, currentItem.anilist_id);
                         if (result.success && result.streamingSites) {
                           // ローカルストレージまたはSupabaseから更新されたデータを取得
                           if (user) {

@@ -14,3 +14,4 @@ SELECT
 FROM auth.users
 WHERE email = 'bsk0529bumptatsu@gmail.com';
 
+

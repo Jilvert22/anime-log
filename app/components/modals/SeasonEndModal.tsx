@@ -70,9 +70,12 @@ export function SeasonEndModal({
               } catch (error) {
                 console.error('Failed to update to watching:', error);
                 alert('視聴中への移行に失敗しました');
-              } finally {
-                setIsProcessing(false);
+                // エラー時も処理状態をリセット
+                setTimeout(() => {
+                  setIsProcessing(false);
+                }, 0);
               }
+              // 成功時は親コンポーネントでモーダルが閉じられるため、ここでは処理状態をリセットしない
             }}
             disabled={isProcessing}
             className="w-full py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition-colors disabled:opacity-50"

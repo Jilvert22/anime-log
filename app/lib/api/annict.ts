@@ -6,6 +6,7 @@
 
 import { NetworkError, logError, normalizeError } from './errors';
 import type { AniListMedia } from '../anilist';
+import { getAnnictIdFromAniList } from './anime-mapping';
 
 // ============================================
 // 型定義
@@ -210,6 +211,8 @@ export async function searchAnnictBySeason(
           media
           officialSiteUrl
           twitterHashtag
+          synopsis
+          synopsisSource
           programs {
             nodes {
               startedAt
@@ -242,6 +245,59 @@ export async function searchAnnictBySeason(
 }
 
 /**
+ * IDでアニメを検索
+ * @param annictId Annict ID
+ * @returns AnnictWork（見つからない場合はnull）
+ */
+export async function searchAnnictById(annictId: number): Promise<AnnictWork | null> {
+  const query = `
+    query SearchWorks($ids: [Int!]!) {
+      searchWorks(ids: $ids) {
+        nodes {
+          annictId
+          title
+          titleKana
+          media
+          officialSiteUrl
+          twitterHashtag
+          synopsis
+          synopsisSource
+          programs {
+            nodes {
+              startedAt
+              channel {
+                name
+              }
+            }
+          }
+          casts {
+            nodes {
+              character {
+                name
+              }
+              person {
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const data = await queryAnnict<AnnictSearchResult>(query, { 
+      ids: [annictId]
+    });
+    
+    return data.searchWorks.nodes[0] || null;
+  } catch (error) {
+    console.error('Annict ID検索エラー:', error);
+    return null;
+  }
+}
+
+/**
  * タイトルでアニメを検索
  * @param title 検索するタイトル
  * @param first 取得件数（デフォルト: 10）
@@ -260,6 +316,8 @@ export async function searchAnnictByTitle(
           media
           officialSiteUrl
           twitterHashtag
+          synopsis
+          synopsisSource
           programs {
             nodes {
               startedAt
@@ -388,40 +446,70 @@ export type AniListMediaWithStreaming = AniListMedia & {
   casts?: { character: string; actor: string }[];  // キャスト情報
 };
 
-export function mergeWithAnnictData(
+/**
+ * AniListの検索結果にAnnictの配信情報を付与（IDマッピング優先）
+ * @param anilistResults AniListの検索結果
+ * @param annictResults Annictの検索結果（フォールバック用）
+ * @returns 配信情報が付与されたAniListMedia配列
+ */
+export async function mergeWithAnnictData(
   anilistResults: AniListMedia[],
   annictResults: AnnictWork[]
-): AniListMediaWithStreaming[] {
-  return anilistResults.map((anilist) => {
-    // 複数のタイトルでマッチングを試みる
-    const titlesToMatch = [
-      anilist.title?.native,
-      anilist.title?.romaji,
-      anilist.title?.english,
-      ...(anilist.synonyms || []),
-    ].filter(Boolean) as string[];
+): Promise<AniListMediaWithStreaming[]> {
+  const results: AniListMediaWithStreaming[] = [];
 
-    const matchedAnnict = annictResults.find((annict) =>
-      titlesToMatch.some((title) => titlesMatch(title, annict.title))
-    );
+  for (const anilist of anilistResults) {
+    let matchedAnnict: AnnictWork | null = null;
 
+    // 1. IDマッピングを試行（優先）
+    const annictId = getAnnictIdFromAniList(anilist.id);
+    if (annictId !== null) {
+      try {
+        matchedAnnict = await searchAnnictById(annictId);
+        if (matchedAnnict && process.env.NODE_ENV === 'development') {
+          console.log('[Annict ID Match]', {
+            anilistId: anilist.id,
+            annictId: annictId,
+            anilistTitle: anilist.title?.native,
+            matched: matchedAnnict.title,
+          });
+        }
+      } catch (error) {
+        console.warn('Annict ID検索に失敗、タイトルマッチングにフォールバック:', error);
+      }
+    }
+
+    // 2. IDマッピングで見つからない場合、タイトルマッチングを試行（フォールバック）
+    if (!matchedAnnict) {
+      const titlesToMatch = [
+        anilist.title?.native,
+        anilist.title?.romaji,
+        anilist.title?.english,
+        ...(anilist.synonyms || []),
+      ].filter(Boolean) as string[];
+
+      matchedAnnict = annictResults.find((annict) =>
+        titlesToMatch.some((title) => titlesMatch(title, annict.title))
+      ) || null;
+
+      if (matchedAnnict && process.env.NODE_ENV === 'development') {
+        console.log('[Annict Title Match]', {
+          anilistId: anilist.id,
+          anilistTitle: anilist.title?.native,
+          matched: matchedAnnict.title,
+          titlesChecked: titlesToMatch,
+        });
+      }
+    }
+
+    // 3. マッチしたAnnictデータを統合
     if (matchedAnnict) {
-      // キャスト情報を整形
       const casts = matchedAnnict.casts?.nodes?.map((cast) => ({
         character: cast.character?.name || '',
         actor: cast.person?.name || '',
       })) || [];
 
-      // デバッグ用ログ（開発時のみ）
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Annict Match]', {
-          anilistTitle: anilist.title?.native,
-          matched: matchedAnnict?.title || 'NO MATCH',
-          titlesChecked: titlesToMatch,
-        });
-      }
-
-      return {
+      results.push({
         ...anilist,
         streamingServices: extractStreamingServices(matchedAnnict.programs.nodes),
         broadcastChannels: extractBroadcastChannels(matchedAnnict.programs.nodes),
@@ -429,10 +517,12 @@ export function mergeWithAnnictData(
         synopsisSource: matchedAnnict.synopsisSource,
         broadcastTime: extractBroadcastTime(matchedAnnict.programs.nodes),
         casts: casts.length > 0 ? casts : undefined,
-      };
+      });
+    } else {
+      results.push({ ...anilist });
     }
+  }
 
-    return { ...anilist };
-  });
+  return results;
 }
 

@@ -18,6 +18,7 @@
     "screenshots": "tsx scripts/take-screenshots.ts"
   },
   "dependencies": {
+    "@kawaiioverflow/arm": "^0.221.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "@vercel/analytics": "^1.6.1",

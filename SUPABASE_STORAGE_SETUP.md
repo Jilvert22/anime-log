@@ -101,3 +101,4 @@ ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 - ブラウザのコンソールでエラーを確認
 
 
+

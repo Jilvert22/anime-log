@@ -139,3 +139,4 @@ npm run dev
 - `dna-icon.png`が`public/`フォルダに存在するか確認
 - Next.jsの開発サーバーを再起動
 
+

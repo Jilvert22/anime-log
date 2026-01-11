@@ -23,3 +23,4 @@
 - 使用SMTP: Resend
 - ドメイン: animelog.jp
 
+

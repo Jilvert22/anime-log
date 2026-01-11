@@ -426,3 +426,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
 - [Next.js App Router Documentation](https://nextjs.org/docs/app)
 - [React Server Components](https://react.dev/reference/rsc/server-components)
 
+

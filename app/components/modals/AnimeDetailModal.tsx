@@ -281,7 +281,10 @@ export function AnimeDetailModal({
                   <StreamingUpdateButton
                     onUpdate={async () => {
                       if (!user) return;
-                      const result = await updateAnimeStreamingInfo(selectedAnime.id, selectedAnime.title);
+                      // selectedAnime.idがAniList IDかどうかを判定（1000000未満の場合はAniList ID）
+                      const isAnilistId = selectedAnime.id < 1000000;
+                      const anilistId = isAnilistId ? selectedAnime.id : undefined;
+                      const result = await updateAnimeStreamingInfo(selectedAnime.id, selectedAnime.title, anilistId);
                       if (result.success && result.streamingSites) {
                         // アニメ情報を更新
                         await handleUpdateAnime(

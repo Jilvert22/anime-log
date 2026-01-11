@@ -155,6 +155,7 @@ export async function searchAnimeBySeason(
               type
             }
             siteUrl
+            averageScore
             airingSchedule(notYetAired: true, perPage: 1) {
               nodes {
                 airingAt

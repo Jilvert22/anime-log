@@ -99,6 +99,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        {/* Analyticsは既に最適化されているが、必要に応じて遅延読み込み可能 */}
         <Analytics />
       </body>
     </html>

@@ -53,7 +53,7 @@ export function useAnimeSearchWithStreaming() {
         }),
       ]);
 
-      const mergedResults = mergeWithAnnictData(anilistResults.media, annictResults);
+      const mergedResults = await mergeWithAnnictData(anilistResults.media, annictResults);
       
       return mergedResults;
     } catch (err) {
@@ -83,7 +83,7 @@ export function useAnimeSearchWithStreaming() {
         }),
       ]);
 
-      const mergedResults = mergeWithAnnictData(anilistResults, annictResults);
+      const mergedResults = await mergeWithAnnictData(anilistResults, annictResults);
       
       return mergedResults;
     } catch (err) {

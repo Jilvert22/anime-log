@@ -40,6 +40,7 @@ export function supabaseToAnime(row: SupabaseAnimeRow): Anime {
     seriesName: row.series_name || undefined,
     studios: row.studios || undefined,
     streamingSites: row.streaming_sites || undefined,
+    streamingUpdatedAt: row.streaming_updated_at || undefined,
   };
 }
 
@@ -183,6 +184,32 @@ export function markSeasonChecked(): void {
   if (typeof window === 'undefined') return;
   
   localStorage.setItem(SEASON_CHECK_KEY, currentKey);
+}
+
+// シーズン名を解析して年と季節を取得する関数
+// シーズン名の形式: "YYYY年[春|夏|秋|冬]" または "YYYY年[春|夏|秋|冬] (X~Y月)"
+export function parseSeasonName(seasonName: string): { year: number; season: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' } | null {
+  // "未分類"の場合はnullを返す
+  if (seasonName === '未分類') return null;
+
+  // シーズン名を解析（例: "2024年秋" または "2024年秋 (10~12月)"）
+  const match = seasonName.match(/^(\d+)年(春|夏|秋|冬)/);
+  if (!match) return null;
+
+  const year = parseInt(match[1], 10);
+  const seasonJa = match[2];
+
+  const seasonMap: { [key: string]: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' } = {
+    '春': 'SPRING',
+    '夏': 'SUMMER',
+    '秋': 'FALL',
+    '冬': 'WINTER',
+  };
+
+  const season = seasonMap[seasonJa];
+  if (!season) return null;
+
+  return { year, season };
 }
 
 // シーズン名を時系列順にソートする関数
