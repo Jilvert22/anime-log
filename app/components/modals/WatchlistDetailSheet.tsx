@@ -23,10 +23,11 @@ interface WatchlistDetailSheetProps {
   onClose: () => void;
   onUpdate?: () => void;
   isWatchlistMode?: boolean; // 積みアニメモードかどうか
-  onMarkAsWatched?: (item: WatchlistItem) => void; // 視聴済みにするコールバック（積みアニメ用）
+  onMarkAsWatched?: (item: WatchlistItem) => void; // 視聴済みにするコールバック（積みアニメ・今期来期用）
+  onRemove?: (anilistId: number) => void; // リストから削除（今期・来期視聴予定用）
 }
 
-export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWatchlistMode = false, onMarkAsWatched }: WatchlistDetailSheetProps) {
+export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWatchlistMode = false, onMarkAsWatched, onRemove }: WatchlistDetailSheetProps) {
   const [animeDetail, setAnimeDetail] = useState<AniListMedia | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedDescription, setExpandedDescription] = useState(false);
@@ -497,8 +498,8 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
             </div>
           ) : (
             <>
-              {/* 積みアニメモード: 視聴済みにするボタン */}
-              {item && isWatchlistMode && onMarkAsWatched && (
+              {/* 視聴済みにするボタン（積みアニメ・今期来期どちらでも onMarkAsWatched が渡されていれば表示） */}
+              {item && onMarkAsWatched && (
                 <section>
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     アクション
@@ -511,6 +512,21 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                     className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
                   >
                     視聴済みにする
+                  </button>
+                </section>
+              )}
+
+              {/* リストから削除（今期・来期視聴予定で onRemove が渡されている場合） */}
+              {item && onRemove && (
+                <section>
+                  <button
+                    onClick={() => {
+                      onRemove(item.anilist_id);
+                      onClose();
+                    }}
+                    className="w-full px-4 py-3 border border-red-500 text-red-500 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                  >
+                    リストから削除
                   </button>
                 </section>
               )}

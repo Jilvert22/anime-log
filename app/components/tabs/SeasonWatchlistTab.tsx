@@ -4,12 +4,15 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { useStorage } from '../../hooks/useStorage';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
+import { useAnimeDataContext } from '../../contexts/AnimeDataContext';
+import { useAuth } from '../../hooks/useAuth';
 import type { WatchlistItem } from '../../lib/storage/types';
-import { getCurrentSeason, getNextSeason } from '../../utils/helpers';
-import { getBroadcastInfo, type AniListMedia } from '../../lib/anilist';
+import { getCurrentSeason, getNextSeason, animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName } from '../../utils/helpers';
+import { getBroadcastInfo, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
-import { StreamingBadges } from '../common/StreamingBadges';
+import { supabase } from '../../lib/supabase';
+import type { Anime } from '../../types';
 
 // 視聴予定アニメカード
 function SeasonWatchlistCard({ 
@@ -149,11 +152,13 @@ function SearchResultCard({
   anime,
   isAdded,
   onAdd,
+  onRemove,
   onCardClick,
 }: {
   anime: AniListMediaWithStreaming;
   isAdded: boolean;
   onAdd: () => void;
+  onRemove?: () => void;
   onCardClick?: () => void;
 }) {
   return (
@@ -185,21 +190,36 @@ function SearchResultCard({
       <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
         {anime.title?.native || anime.title?.romaji || 'タイトル不明'}
       </p>
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onAdd();
-        }}
-        disabled={isAdded}
-        className={`mt-1 w-full px-2 py-1 text-xs font-medium rounded transition-colors relative z-10 ${
-          isAdded
-            ? 'bg-gray-400 text-white cursor-not-allowed'
-            : 'bg-purple-500 text-white hover:bg-purple-600'
-        }`}
-      >
-        {isAdded ? '追加済み' : '視聴予定に追加'}
-      </button>
+      <div className="mt-1 flex gap-1">
+        {isAdded && onRemove ? (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRemove();
+            }}
+            className="flex-1 px-2 py-1 text-xs font-medium rounded transition-colors relative z-10 bg-gray-500 text-white hover:bg-gray-600"
+          >
+            視聴予定から外す
+          </button>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onAdd();
+            }}
+            disabled={isAdded}
+            className={`w-full px-2 py-1 text-xs font-medium rounded transition-colors relative z-10 ${
+              isAdded
+                ? 'bg-gray-400 text-white cursor-not-allowed'
+                : 'bg-purple-500 text-white hover:bg-purple-600'
+            }`}
+          >
+            {isAdded ? '追加済み' : '視聴予定に追加'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -208,6 +228,8 @@ type SeasonType = 'current' | 'next';
 
 export default function SeasonWatchlistTab() {
   const storage = useStorage();
+  const { user } = useAuth();
+  const { seasons, setSeasons, expandedSeasons, setExpandedSeasons } = useAnimeDataContext();
   const [selectedSeason, setSelectedSeason] = useState<SeasonType>('current'); // デフォルトは今期
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [filterStatus, setFilterStatus] = useState<'planned' | 'watching' | 'completed' | 'all'>('all');
@@ -223,6 +245,13 @@ export default function SeasonWatchlistTab() {
   // 詳細表示関連の状態
   const [selectedItem, setSelectedItem] = useState<WatchlistItem | null>(null);
   const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<AniListMediaWithStreaming | null>(null);
+  
+  // 視聴済みモーダル（評価・クール選択）
+  const [showWatchedModal, setShowWatchedModal] = useState(false);
+  const [selectedWatchlistItem, setSelectedWatchlistItem] = useState<WatchlistItem | null>(null);
+  const [watchedRating, setWatchedRating] = useState(0);
+  const [watchedSeasonYear, setWatchedSeasonYear] = useState(new Date().getFullYear());
+  const [watchedSeason, setWatchedSeason] = useState<'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'>('SPRING');
   
   const currentSeason = getCurrentSeason();
   const nextSeason = getNextSeason();
@@ -376,6 +405,90 @@ export default function SeasonWatchlistTab() {
   const isAnimeAdded = useCallback((anilistId: number) => {
     return watchlist.some(item => item.anilist_id === anilistId);
   }, [watchlist]);
+
+  // 視聴予定から外す（検索結果の「追加済み」から取り消し）
+  const handleRemoveFromWatchlist = useCallback(async (anilistId: number) => {
+    try {
+      const success = await storage.removeFromWatchlist(anilistId);
+      if (success) {
+        await loadWatchlist();
+      } else {
+        alert('視聴予定から外す操作に失敗しました');
+      }
+    } catch (error) {
+      console.error('Failed to remove from watchlist:', error);
+      alert('視聴予定から外す操作に失敗しました');
+    }
+  }, [storage, loadWatchlist]);
+
+  // 視聴済みモーダルを開く
+  const openWatchedModal = useCallback((item: WatchlistItem) => {
+    setSelectedWatchlistItem(item);
+    setWatchedRating(0);
+    setWatchedSeasonYear(new Date().getFullYear());
+    setWatchedSeason('SPRING');
+    setShowWatchedModal(true);
+  }, []);
+
+  // 視聴済みにする（評価・クールを設定して animes に追加し、watchlist から削除）
+  const handleMarkAsWatched = useCallback(async () => {
+    if (!selectedWatchlistItem || !user) return;
+
+    try {
+      const animeData = await getAnimeDetail(selectedWatchlistItem.anilist_id);
+      if (!animeData) {
+        alert('アニメ情報の取得に失敗しました');
+        return;
+      }
+
+      const seasonQuarter = watchedSeason === 'WINTER' ? 1 : watchedSeason === 'SPRING' ? 2 : watchedSeason === 'SUMMER' ? 3 : 4;
+      const seasonName = getSeasonName(watchedSeasonYear, seasonQuarter);
+      const titleStr = animeData.title?.native || animeData.title?.romaji || selectedWatchlistItem.title;
+
+      const newAnime: Anime = {
+        id: animeData.id,
+        title: titleStr,
+        image: animeData.coverImage?.large || selectedWatchlistItem.image || '',
+        rating: watchedRating > 0 ? watchedRating : 0,
+        watched: true,
+        rewatchCount: 0,
+        tags: [],
+        seriesName: extractSeriesName(titleStr),
+        studios: animeData.studios?.nodes?.map((s) => s.name) || [],
+      };
+
+      const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
+      let updatedSeasons;
+
+      if (existingSeasonIndex === -1) {
+        updatedSeasons = [...seasons, { name: seasonName, animes: [newAnime] }];
+      } else {
+        updatedSeasons = seasons.map((season, index) =>
+          index === existingSeasonIndex ? { ...season, animes: [...season.animes, newAnime] } : season
+        );
+      }
+      const sortedSeasons = sortSeasonsByTime(updatedSeasons);
+      setSeasons(sortedSeasons);
+
+      const newExpandedSeasons = new Set(expandedSeasons);
+      newExpandedSeasons.add(seasonName);
+      setExpandedSeasons(newExpandedSeasons);
+
+      const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
+      const { error } = await supabase.from('animes').insert(supabaseData).select();
+      if (error) throw error;
+
+      await storage.removeFromWatchlist(selectedWatchlistItem.anilist_id);
+      await loadWatchlist();
+
+      setShowWatchedModal(false);
+      setSelectedWatchlistItem(null);
+    } catch (error) {
+      console.error('視聴済みマークに失敗しました:', error);
+      const errorMessage = error instanceof Error ? error.message : 'エラーが発生しました';
+      alert(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`);
+    }
+  }, [selectedWatchlistItem, user, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, storage, loadWatchlist]);
 
   // フィルタリング
   const filteredWatchlist = useMemo(() => {
@@ -588,6 +701,7 @@ export default function SeasonWatchlistTab() {
                   anime={anime}
                   isAdded={isAnimeAdded(anime.id)}
                   onAdd={() => handleAddToWatchlist(anime)}
+                  onRemove={isAnimeAdded(anime.id) ? () => handleRemoveFromWatchlist(anime.id) : undefined}
                   onCardClick={() => setSelectedAnimeMedia(anime)}
                 />
               ))}
@@ -754,6 +868,104 @@ export default function SeasonWatchlistTab() {
         </div>
       ) : null}
 
+      {/* 視聴済み確認モーダル（評価・クール選択） */}
+      {showWatchedModal && selectedWatchlistItem && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4"
+          onClick={() => setShowWatchedModal(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4 dark:text-white">視聴済みにする</h2>
+            <div className="mb-4">
+              <div className="flex items-center gap-3 mb-3">
+                {selectedWatchlistItem.image && (
+                  <div className="w-16 h-24 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden relative shrink-0">
+                    <Image
+                      src={selectedWatchlistItem.image}
+                      alt={selectedWatchlistItem.title}
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                      unoptimized
+                    />
+                  </div>
+                )}
+                <div>
+                  <p className="font-medium text-gray-800 dark:text-white">{selectedWatchlistItem.title}</p>
+                </div>
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">評価</label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    onClick={() => setWatchedRating(rating)}
+                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                      watchedRating === rating ? 'bg-[#e879d4] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {rating}⭐
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">評価なしにする場合は「評価なし」を選択してください</p>
+              <button
+                onClick={() => setWatchedRating(0)}
+                className={`mt-2 w-full py-2 rounded-lg font-medium transition-colors ${
+                  watchedRating === 0 ? 'bg-gray-400 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
+              >
+                評価なし
+              </button>
+            </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">視聴したクール</label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={watchedSeasonYear}
+                  onChange={(e) => setWatchedSeasonYear(Number(e.target.value))}
+                  className="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                  placeholder="年"
+                />
+                <select
+                  value={watchedSeason}
+                  onChange={(e) => setWatchedSeason(e.target.value as typeof watchedSeason)}
+                  className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                >
+                  <option value="WINTER">冬</option>
+                  <option value="SPRING">春</option>
+                  <option value="SUMMER">夏</option>
+                  <option value="FALL">秋</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowWatchedModal(false);
+                  setSelectedWatchlistItem(null);
+                }}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleMarkAsWatched}
+                className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
+              >
+                視聴済みにする
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 詳細情報ボトムシート */}
       <WatchlistDetailSheet
         item={selectedItem}
@@ -763,19 +975,17 @@ export default function SeasonWatchlistTab() {
           setSelectedAnimeMedia(null);
         }}
         onUpdate={async () => {
-          // リストを更新
           await loadWatchlist();
-          // 詳細画面は閉じずに、更新されたアイテムを再取得して設定
           if (selectedItem?.anilist_id) {
             const updatedItems = selectedSeason === 'current'
               ? await storage.getCurrentSeasonWatchlist(filterStatus === 'all' ? undefined : filterStatus)
               : await storage.getNextSeasonWatchlist(filterStatus === 'all' ? undefined : filterStatus);
             const updatedItem = updatedItems.find(item => item.anilist_id === selectedItem.anilist_id);
-            if (updatedItem) {
-              setSelectedItem(updatedItem);
-            }
+            if (updatedItem) setSelectedItem(updatedItem);
           }
         }}
+        onMarkAsWatched={openWatchedModal}
+        onRemove={handleRemoveFromWatchlist}
       />
     </>
   );
