@@ -14,6 +14,164 @@ interface DNACardForExportProps {
   }[];
 }
 
+interface SafeDNAExportHighlightInput {
+  animeCount: number;
+  averageRating: number;
+  rewatchCount: number;
+}
+
+interface SafeDNACardForExportProps {
+  userName: string;
+  otakuTypeDisplay: string;
+  highlights: string[];
+}
+
+export function buildSafeDNAExportHighlights({
+  animeCount,
+  averageRating,
+  rewatchCount,
+}: SafeDNAExportHighlightInput): string[] {
+  const ratingLabel = averageRating > 0 ? averageRating.toFixed(1) : '未評価';
+
+  return [
+    `記録数 ${animeCount}作品`,
+    `平均評価 ${ratingLabel}`,
+    `周回 ${rewatchCount}回`,
+  ];
+}
+
+export function SafeDNACardForExport({
+  userName,
+  otakuTypeDisplay,
+  highlights,
+}: SafeDNACardForExportProps) {
+  const styles = {
+    container: {
+      width: 1200,
+      height: 630,
+      background: 'linear-gradient(135deg, #111827 0%, #0f766e 42%, #be185d 100%)',
+      padding: 56,
+      fontFamily: '"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      position: 'relative' as const,
+      overflow: 'hidden',
+      boxSizing: 'border-box' as const,
+      color: '#ffffff',
+    },
+    header: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 64,
+    },
+    brand: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 14,
+      fontSize: 30,
+      fontWeight: 800,
+      letterSpacing: 2,
+    },
+    mark: {
+      width: 46,
+      height: 46,
+      borderRadius: 12,
+      background: 'rgba(255, 255, 255, 0.18)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: 900,
+    },
+    badge: {
+      padding: '9px 18px',
+      borderRadius: 999,
+      background: 'rgba(255, 255, 255, 0.16)',
+      border: '1px solid rgba(255, 255, 255, 0.24)',
+      fontSize: 18,
+      fontWeight: 700,
+    },
+    main: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column' as const,
+      justifyContent: 'center',
+      gap: 28,
+    },
+    name: {
+      fontSize: 58,
+      lineHeight: 1.12,
+      fontWeight: 900,
+      maxWidth: 760,
+    },
+    type: {
+      width: 'fit-content',
+      padding: '14px 24px',
+      borderRadius: 8,
+      background: 'rgba(255, 255, 255, 0.18)',
+      border: '1px solid rgba(255, 255, 255, 0.24)',
+      fontSize: 24,
+      fontWeight: 800,
+    },
+    highlights: {
+      display: 'flex',
+      gap: 16,
+      marginTop: 16,
+    },
+    highlight: {
+      minWidth: 210,
+      padding: '18px 20px',
+      borderRadius: 8,
+      background: 'rgba(255, 255, 255, 0.14)',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+      fontSize: 22,
+      fontWeight: 800,
+      textAlign: 'center' as const,
+    },
+    note: {
+      position: 'absolute' as const,
+      left: 56,
+      bottom: 36,
+      fontSize: 17,
+      color: 'rgba(255, 255, 255, 0.7)',
+    },
+    watermark: {
+      position: 'absolute' as const,
+      right: 56,
+      bottom: 36,
+      fontSize: 18,
+      color: 'rgba(255, 255, 255, 0.72)',
+      letterSpacing: 1,
+      fontWeight: 700,
+    },
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <div style={styles.brand}>
+          <div style={styles.mark}>V</div>
+          <span>ANIME DNA</span>
+        </div>
+        <div style={styles.badge}>SAFE EXPORT</div>
+      </div>
+
+      <div style={styles.main}>
+        <div style={styles.name}>{userName}の視聴傾向</div>
+        <div style={styles.type}>{otakuTypeDisplay}</div>
+        <div style={styles.highlights}>
+          {highlights.map((highlight) => (
+            <div key={highlight} style={styles.highlight}>{highlight}</div>
+          ))}
+        </div>
+      </div>
+
+      <div style={styles.note}>作品画像・作品名・ハンドル・ユーザーアイコンは含めていません。</div>
+      <div style={styles.watermark}>アニメログ</div>
+    </div>
+  );
+}
+
 // 画像URLをプロキシ経由に変換
 const getProxiedUrl = (url: string | undefined): string | null => {
   if (!url) return null;

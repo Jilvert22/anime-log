@@ -64,7 +64,7 @@ export function Navigation({
       <div className="h-full max-w-7xl mx-auto px-4 relative flex items-center">
         {/* 左：ロゴ */}
         <h1 
-          className="text-xl font-bold tracking-tight"
+          className="hidden sm:block text-xl font-bold tracking-tight"
           style={{
             background: 'linear-gradient(135deg, #667eea 0%, #e879d4 50%, #f093fb 100%)',
             WebkitBackgroundClip: 'text',
@@ -76,7 +76,7 @@ export function Navigation({
         </h1>
 
         {/* 中央：セグメントコントロール（PC/モバイル共通） */}
-        <div className="absolute left-1/2 -translate-x-1/2">
+        <div className="static sm:absolute sm:left-1/2 sm:-translate-x-1/2">
           <SegmentControl 
             activeTab={activeTab} 
             setActiveTab={setActiveTab} 
@@ -84,7 +84,7 @@ export function Navigation({
         </div>
 
         {/* 右側：使い方ガイド + ダークモード + プロフィール */}
-        <div className="flex items-center gap-0 ml-auto">
+        <div className="flex items-center gap-1 sm:gap-0 ml-auto">
           {/* 使い方ガイドボタン */}
           <GuideButton />
           
@@ -198,4 +198,3 @@ function SegmentControl({ activeTab, setActiveTab }: SegmentControlProps) {
     </div>
   );
 }
-

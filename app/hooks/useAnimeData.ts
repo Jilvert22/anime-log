@@ -11,7 +11,9 @@ import { normalizeError } from '../lib/api/errors';
 export function useAnimeData(user: User | null, isLoading: boolean) {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
+  const [isAnimeDataReady, setIsAnimeDataReady] = useState(false);
   const prevSeasonsRef = useRef<string>('');
+  const loadCycleRef = useRef(0);
 
   // 最初のシーズンを展開状態にする
   // useCallbackは不要（この関数はuseEffect内でのみ使用され、依存配列に含めない）
@@ -34,7 +36,7 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
 
   // Supabaseからアニメデータを読み込む
   // useCallbackは不要（この関数はuseEffect内でのみ使用される）
-  const loadFromSupabase = async (userId: string) => {
+  const loadFromSupabase = async (userId: string, loadCycle: number) => {
     try {
       const { data, error } = await supabase
         .from('animes')
@@ -43,6 +45,8 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
         .order('id', { ascending: true });
 
       if (error) throw error;
+
+      if (loadCycleRef.current !== loadCycle) return;
 
       if (data && data.length > 0) {
         const seasonMap = new Map<string, Anime[]>();
@@ -67,22 +71,29 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
         setSeasons([]);
       }
     } catch (error) {
+      if (loadCycleRef.current !== loadCycle) return;
       const normalizedError = normalizeError(error);
       logger.error('Failed to load animes from Supabase', normalizedError, 'useAnimeData');
       setSeasons([]);
+    } finally {
+      if (loadCycleRef.current === loadCycle) {
+        setIsAnimeDataReady(true);
+      }
     }
   };
 
   // localStorageからアニメデータを読み込む
   // useCallbackは不要（この関数はuseEffect内でのみ使用される）
-  const loadFromLocalStorage = () => {
-    const savedSeasons = localStorage.getItem('animeSeasons');
-    if (!savedSeasons) {
-      setSeasons([]);
-      return;
-    }
-
+  const loadFromLocalStorage = (loadCycle: number) => {
     try {
+      const savedSeasons = localStorage.getItem('animeSeasons');
+      if (!savedSeasons) {
+        if (loadCycleRef.current === loadCycle) {
+          setSeasons([]);
+        }
+        return;
+      }
+
       const parsedSeasons: Season[] = JSON.parse(savedSeasons);
       
       // サンプルデータを検出（IDが1-4のアニメが含まれている場合）
@@ -92,26 +103,40 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
 
       if (hasSampleData) {
         localStorage.removeItem('animeSeasons');
-        setSeasons([]);
+        if (loadCycleRef.current === loadCycle) {
+          setSeasons([]);
+        }
       } else {
-        setSeasons(parsedSeasons);
-        expandFirstSeason(parsedSeasons);
+        if (loadCycleRef.current === loadCycle) {
+          setSeasons(parsedSeasons);
+          expandFirstSeason(parsedSeasons);
+        }
       }
     } catch {
-      setSeasons([]);
+      if (loadCycleRef.current === loadCycle) {
+        setSeasons([]);
+      }
+    } finally {
+      if (loadCycleRef.current === loadCycle) {
+        setIsAnimeDataReady(true);
+      }
     }
   };
 
   // データ読み込み
   useEffect(() => {
+    const loadCycle = loadCycleRef.current + 1;
+    loadCycleRef.current = loadCycle;
+    setIsAnimeDataReady(false);
+
     if (isLoading) return;
 
     if (user) {
-      loadFromSupabase(user.id);
+      void loadFromSupabase(user.id, loadCycle);
     } else {
       // ログアウト時は即座にデータをクリア
       setSeasons([]);
-      loadFromLocalStorage();
+      loadFromLocalStorage(loadCycle);
     }
     // loadFromSupabaseとloadFromLocalStorageは関数内で定義されているため依存配列に含めない
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,5 +169,6 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
     allAnimes,
     averageRating,
     totalRewatchCount,
+    isAnimeDataReady,
   };
 }
