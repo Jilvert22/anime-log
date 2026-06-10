@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
     timeout-minutes: 20
     
     steps:
@@ -33,9 +35,6 @@ jobs:
       
       - name: Run unit tests
         run: npm run test:run
-      
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
       
       - name: Run E2E tests
         run: npx playwright test
