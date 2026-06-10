@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     
     steps:
       - name: Checkout code
@@ -35,7 +35,7 @@ jobs:
         run: npm run test:run
       
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
       
       - name: Run E2E tests
         run: npx playwright test
