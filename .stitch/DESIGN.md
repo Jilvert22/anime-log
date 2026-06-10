@@ -6,15 +6,15 @@ anime-log is a personal anime viewing log for recording watched titles, ratings,
 The design direction is: calm hobby log plus shareable enthusiasm. Keep the current app information architecture and workflows. Do not turn the first screen into a landing page.
 
 ## Stitch Connection State
-- Stitch marketplace has been added to Codex from `google-labs-code/stitch-skills`.
-- Stitch tool execution still requires the user to configure `STITCH_API_KEY` or OAuth/GCloud credentials in their environment.
+- Stitch tools are not currently callable in this Codex session.
+- Stitch tool execution requires the user to configure `STITCH_API_KEY` or OAuth/GCloud credentials and expose the Stitch MCP/SDK tools to Codex.
 - Generate 2 to 3 design directions in Stitch, then select exactly one direction as the implementation source of truth.
 
 ## Screens To Preserve
 - Navigation with home and my page destinations.
 - Home tabs and anime list workflows.
 - My Page overview with Anime DNA, stats, collections, and settings.
-- Anime DNA card, sample DNA state, share modal, and safe image export.
+- Anime DNA card, share modal, and user-initiated image export.
 - Login modal, add anime form, detail modal, settings modal, and related edit flows.
 - Dark mode.
 
@@ -56,13 +56,9 @@ Dark mode uses a near-black neutral base, softer pink accent, teal highlight, an
 - Text must not overflow buttons or compact panels at 390px, 768px, or 1440px widths.
 
 ## Anime DNA Rules
-- Sample state copy:
-  - `サンプル表示中`
-  - `自分のDNAを作りはじめる`
-  - `ログインして記録を残す`
-  - `このサンプルは保存も公開もされません。`
-- `?entry=sample-dna` opens sample DNA only when auth is ready, anime data is ready, the user is logged out, and the record count is 0.
-- Safe image export must not include anime images, anime titles, user handle, or user icon in Phase 0.
+- Do not add a sample DNA entry point in the main app.
+- Keep the saved image experience user-initiated and expressive; do not force a strict privacy-safe export by default.
+- A privacy-safe export can be introduced later only as an explicit optional mode.
 
 ## Accessibility And QA
 - Maintain color contrast for light and dark modes.
