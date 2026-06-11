@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { Trophy, UserRound } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
 import type { Anime, Season } from '../../../types';
 import { otakuTypes } from '../../../constants';
@@ -252,7 +253,7 @@ export default function AnimeDNASection({
               </div>
             ) : (
               <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-xl bg-white/10 border-2 border-white/30 flex items-center justify-center shadow-lg">
-                <span className="text-3xl sm:text-4xl">👤</span>
+                <UserRound className="w-10 h-10 sm:w-12 sm:h-12 text-white/70" aria-hidden />
               </div>
             )}
           </div>
@@ -280,7 +281,7 @@ export default function AnimeDNASection({
         {/* 最推し作品セクション */}
         <div>
             {/* 最推し作品（クリックで編集） */}
-            <div 
+            <div
               data-onboarding="step-4"
               className="content-card p-5 md:p-6 lg:p-8 backdrop-blur-md border border-white/30 rounded-xl cursor-pointer hover:border-white/50 transition-all"
               style={{
@@ -293,7 +294,7 @@ export default function AnimeDNASection({
             >
               <div className="card-header flex items-center justify-between mb-4 md:mb-5">
                 <div className="card-title text-base md:text-lg lg:text-xl font-bold text-white flex items-center gap-2 md:gap-3">
-                  <span>🏆</span>
+                  <Trophy className="w-5 h-5 text-[#ffd700]" aria-hidden />
                   <span>最推し作品</span>
                 </div>
               </div>
@@ -439,13 +440,13 @@ export default function AnimeDNASection({
             }
           }}
           disabled={isSaving}
-          className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-300 dark:border-gray-600 py-3 rounded-xl font-bold shadow-md hover:border-[#e879d4] hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] font-mixed disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-300 dark:border-gray-600 py-3 rounded-xl font-bold shadow-md hover:border-[#e879d4] active:border-[#e879d4] hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] font-mixed disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? '保存中...' : '画像を保存'}
         </button>
         <button
           onClick={() => setShowShareModal(true)}
-          className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-300 dark:border-gray-600 py-3 rounded-xl font-bold shadow-md hover:border-[#e879d4] hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] font-mixed"
+          className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-300 dark:border-gray-600 py-3 rounded-xl font-bold shadow-md hover:border-[#e879d4] active:border-[#e879d4] hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] font-mixed"
         >
           シェア
         </button>

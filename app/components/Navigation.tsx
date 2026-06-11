@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Moon, Sun, HelpCircle, UserRound } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { onAuthStateChange } from '../lib/api';
 import type { User } from '@supabase/supabase-js';
@@ -94,7 +95,11 @@ export function Navigation({
             className="px-2 py-1 sm:px-5 sm:py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center shrink-0"
             title={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
           >
-            <span className="text-base">{isDarkMode ? '☀️' : '🌙'}</span>
+            {isDarkMode ? (
+              <Sun className="w-[18px] h-[18px] text-gray-500 dark:text-gray-300" />
+            ) : (
+              <Moon className="w-[18px] h-[18px] text-gray-500 dark:text-gray-300" />
+            )}
           </button>
 
           {/* プロフィール → クリックでSettingsModal */}
@@ -126,7 +131,7 @@ export function Navigation({
                 </div>
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
-                  <span className="text-base">👤</span>
+                  <UserRound className="w-4 h-4 text-gray-500 dark:text-gray-300" />
                 </div>
               )}
               <span className="text-base hidden sm:inline font-bold dark:text-white">{userName}</span>
@@ -161,7 +166,7 @@ function GuideButton() {
       className="px-2 py-1 sm:px-5 sm:py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center shrink-0"
       title="使い方ガイド"
     >
-      <span className="text-base">❓</span>
+      <HelpCircle className="w-[18px] h-[18px] text-gray-500 dark:text-gray-300" />
     </button>
   );
 }
