@@ -476,15 +476,43 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
           <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
         </div>
 
-        {/* ヘッダー */}
+        {/* ヘッダー(カバー画像付き) */}
         <div className="px-6 pb-4 border-b dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-              {displayTitle}
-            </h2>
+          <div className="flex items-start gap-4">
+            {(() => {
+              const sheetItem = currentItem ?? item;
+              const coverUrl =
+                (sheetItem?.image && sheetItem.image.startsWith('http') ? sheetItem.image : null) ||
+                animeDetail?.coverImage?.large ||
+                (animeMedia as AniListMedia | null | undefined)?.coverImage?.large ||
+                null;
+              return coverUrl ? (
+                <img
+                  src={coverUrl}
+                  alt={displayTitle}
+                  className="w-20 aspect-[3/4] object-cover rounded-lg shadow-sm shrink-0"
+                  loading="lazy"
+                />
+              ) : (
+                <div
+                  className="w-20 aspect-[3/4] rounded-lg shrink-0 bg-gradient-to-br from-[#e879d4] to-[#764ba2]"
+                  aria-hidden
+                />
+              );
+            })()}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white break-words">
+                {displayTitle}
+              </h2>
+              {item?.season_year && item?.season && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {item.season_year}年{({ WINTER: '冬', SPRING: '春', SUMMER: '夏', FALL: '秋' })[item.season]}クール
+                </p>
+              )}
+            </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+              className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors shrink-0"
               aria-label="閉じる"
             >
               <X className="w-5 h-5" aria-hidden />
@@ -503,98 +531,6 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
             </div>
           ) : (
             <>
-              {/* 視聴済みにするボタン（積みアニメ・今期来期どちらでも onMarkAsWatched が渡されていれば表示） */}
-              {item && onMarkAsWatched && (
-                <section>
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    アクション
-                  </h3>
-                  <button
-                    onClick={() => {
-                      onMarkAsWatched(item);
-                      onClose();
-                    }}
-                    className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
-                  >
-                    視聴済みにする
-                  </button>
-                </section>
-              )}
-
-              {/* リストから削除（今期・来期視聴予定で onRemove が渡されている場合） */}
-              {item && onRemove && (
-                <section>
-                  <button
-                    onClick={() => {
-                      onRemove(item.anilist_id);
-                      onClose();
-                    }}
-                    className="w-full px-4 py-3 border border-red-500 text-red-500 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                  >
-                    リストから削除
-                  </button>
-                </section>
-              )}
-
-              {/* 来期視聴アニメモード: ステータス変更 */}
-              {item && !isWatchlistMode && (
-                <section>
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    視聴ステータス
-                  </h3>
-                  <div className="flex gap-2">
-                    {[
-                      { status: 'planned' as const, label: '視聴予定', color: 'bg-blue-500' },
-                      { status: 'watching' as const, label: '視聴中', color: 'bg-yellow-500' },
-                      { status: 'completed' as const, label: '視聴完了', color: 'bg-green-500' },
-                    ].map((statusOption) => (
-                      <button
-                        key={statusOption.status}
-                        onClick={() => handleStatusChange(statusOption.status)}
-                        disabled={item.status === statusOption.status}
-                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                          item.status === statusOption.status
-                            ? `${statusOption.color} text-white ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-800 ring-gray-400`
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                        } disabled:opacity-100 disabled:cursor-default`}
-                      >
-                        {statusOption.label}
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* あらすじ - 日本語優先 */}
-              {description && (
-                <section>
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
-                    あらすじ
-                  </h3>
-                  {annictSynopsis && (animeMedia as AniListMediaWithStreaming)?.synopsisSource && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      出典: {(animeMedia as AniListMediaWithStreaming).synopsisSource}
-                    </p>
-                  )}
-                  {!isJapaneseDescription && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      ※日本語版がないため英語で表示しています
-                    </p>
-                  )}
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {displayDescription}
-                  </p>
-                  {shouldTruncateDescription && (
-                    <button
-                      onClick={() => setExpandedDescription(!expandedDescription)}
-                      className="mt-2 text-sm text-[#e879d4] hover:text-[#f09fe3] transition-colors"
-                    >
-                      {expandedDescription ? '折りたたむ' : 'もっと見る'}
-                    </button>
-                  )}
-                </section>
-              )}
-
               {/* 放送曜日・時間 - Annict優先 */}
               <section>
                 <div className="flex items-center justify-between mb-2">
@@ -731,7 +667,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                       : streamingSites.map(link => link.site));
                   
                   return displayStreamingServices.length > 0 ? (
-                    <StreamingBadges services={displayStreamingServices} size={"md"} maxDisplay={999} />
+                    <StreamingBadges services={displayStreamingServices} size={"md"} maxDisplay={6} />
                   ) : (
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       配信情報がありません
@@ -754,6 +690,36 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                   <p className="text-sm text-gray-700 dark:text-gray-300">
                     {animeDetail.episodes}話
                   </p>
+                </section>
+              )}
+
+              {/* あらすじ - 日本語優先 */}
+              {description && (
+                <section>
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
+                    あらすじ
+                  </h3>
+                  {annictSynopsis && (animeMedia as AniListMediaWithStreaming)?.synopsisSource && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      出典: {(animeMedia as AniListMediaWithStreaming).synopsisSource}
+                    </p>
+                  )}
+                  {!isJapaneseDescription && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      ※日本語版がないため英語で表示しています
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+                    {displayDescription}
+                  </p>
+                  {shouldTruncateDescription && (
+                    <button
+                      onClick={() => setExpandedDescription(!expandedDescription)}
+                      className="mt-2 text-sm text-[#e879d4] hover:text-[#f09fe3] transition-colors"
+                    >
+                      {expandedDescription ? '折りたたむ' : 'もっと見る'}
+                    </button>
+                  )}
                 </section>
               )}
 
@@ -825,6 +791,68 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                   >
                     YouTubeで見る
                   </a>
+                </section>
+              )}
+
+              {/* 来期視聴アニメモード: ステータス変更 */}
+              {item && !isWatchlistMode && (
+                <section>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    視聴ステータス
+                  </h3>
+                  <div className="flex gap-2">
+                    {[
+                      { status: 'planned' as const, label: '視聴予定', color: 'bg-blue-500' },
+                      { status: 'watching' as const, label: '視聴中', color: 'bg-yellow-500' },
+                      { status: 'completed' as const, label: '視聴完了', color: 'bg-green-500' },
+                    ].map((statusOption) => (
+                      <button
+                        key={statusOption.status}
+                        onClick={() => handleStatusChange(statusOption.status)}
+                        disabled={item.status === statusOption.status}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                          item.status === statusOption.status
+                            ? `${statusOption.color} text-white ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-800 ring-gray-400`
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        } disabled:opacity-100 disabled:cursor-default`}
+                      >
+                        {statusOption.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* 視聴済みにするボタン（積みアニメ・今期来期どちらでも onMarkAsWatched が渡されていれば表示） */}
+              {item && onMarkAsWatched && (
+                <section>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    アクション
+                  </h3>
+                  <button
+                    onClick={() => {
+                      onMarkAsWatched(item);
+                      onClose();
+                    }}
+                    className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
+                  >
+                    視聴済みにする
+                  </button>
+                </section>
+              )}
+
+              {/* リストから削除（今期・来期視聴予定で onRemove が渡されている場合） */}
+              {item && onRemove && (
+                <section>
+                  <button
+                    onClick={() => {
+                      onRemove(item.anilist_id);
+                      onClose();
+                    }}
+                    className="w-full px-4 py-3 border border-red-500 text-red-500 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                  >
+                    リストから削除
+                  </button>
                 </section>
               )}
 
