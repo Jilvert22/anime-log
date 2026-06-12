@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getAnimeDetail, getBroadcastInfo, getOfficialSiteUrl, type AniListMedia } from '../../lib/anilist';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, X } from 'lucide-react';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { useStorage } from '../../hooks/useStorage';
@@ -482,7 +482,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
               className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
               aria-label="閉じる"
             >
-              <span className="text-2xl leading-none">×</span>
+              <X className="w-5 h-5" aria-hidden />
             </button>
           </div>
         </div>
