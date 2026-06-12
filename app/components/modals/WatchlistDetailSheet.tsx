@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getAnimeDetail, getBroadcastInfo, getOfficialSiteUrl, type AniListMedia } from '../../lib/anilist';
 import { ExternalLink, X } from 'lucide-react';
+import { useFeedback } from '../../contexts/FeedbackContext';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { useStorage } from '../../hooks/useStorage';
@@ -28,6 +29,7 @@ interface WatchlistDetailSheetProps {
 }
 
 export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWatchlistMode = false, onMarkAsWatched, onRemove }: WatchlistDetailSheetProps) {
+  const { showToast } = useFeedback();
   const [animeDetail, setAnimeDetail] = useState<AniListMedia | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedDescription, setExpandedDescription] = useState(false);
@@ -161,7 +163,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
   //     try {
   //       const permission = await Notification.requestPermission();
   //       if (permission !== 'granted') {
-  //         alert('通知を有効にするには、ブラウザの通知権限が必要です。\n\niOSではホーム画面に追加すると通知が届きます。');
+  //         alert('通知を有効にするには、ブラウザの通知権限が必要です。\n\niOSではホーム画面に追加すると通知が届きます。', 'error');
   //         return;
   //       }
   //     } catch (error) {
@@ -376,14 +378,16 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
         if (newStatus === 'completed' && onMarkAsWatched) {
           onClose();
           onMarkAsWatched({ ...item, status: 'completed' });
+        } else {
+          showToast('ステータスを更新しました');
         }
       } else {
-        alert('ステータスの更新に失敗しました');
+        showToast('ステータスの更新に失敗しました', 'error');
       }
     } catch (error) {
       const normalizedError = normalizeError(error);
       logger.error('ステータスの更新に失敗しました', normalizedError, 'WatchlistDetailSheet');
-      alert('ステータスの更新に失敗しました');
+      showToast('ステータスの更新に失敗しました', 'error');
     }
   };
 
@@ -399,12 +403,13 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
       if (success) {
         setEditingBroadcast(false);
         onUpdate?.();
+        showToast('放送情報を更新しました');
       } else {
-        alert('放送情報の更新に失敗しました');
+        showToast('放送情報の更新に失敗しました', 'error');
       }
     } catch (error) {
       console.error('放送情報の更新に失敗しました:', error);
-      alert('放送情報の更新に失敗しました');
+      showToast('放送情報の更新に失敗しました', 'error');
     }
   };
 

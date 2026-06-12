@@ -3,6 +3,7 @@
 import { Check } from 'lucide-react';
 import type { Anime } from '../../types';
 import { StarRating } from '../StarRating';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 export function FavoriteAnimeModal({
   show,
@@ -19,6 +20,8 @@ export function FavoriteAnimeModal({
   setFavoriteAnimeIds: (ids: number[]) => void;
   onSave?: () => void;
 }) {
+  const { showToast } = useFeedback();
+
   if (!show) return null;
 
   const handleSave = () => {
@@ -61,7 +64,7 @@ export function FavoriteAnimeModal({
                     if (favoriteAnimeIds.length < 5) {
                       setFavoriteAnimeIds([...favoriteAnimeIds, anime.id]);
                     } else {
-                      alert('最大5作品まで選択できます');
+                      showToast('最大5作品まで選択できます', 'error');
                     }
                   }
                 }}

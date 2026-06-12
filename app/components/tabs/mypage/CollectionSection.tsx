@@ -6,6 +6,7 @@ import type { User } from '@supabase/supabase-js';
 import type { Anime, Season, FavoriteCharacter, SupabaseClientType } from '../../../types';
 import { characterCategories } from '../../../constants';
 import { MusicTab } from '../MusicTab';
+import { useFeedback } from '../../../contexts/FeedbackContext';
 
 interface CollectionSectionProps {
   allAnimes: Anime[];
@@ -86,6 +87,7 @@ function CollectionDetail({ title, count, onAdd, children }: CollectionDetailPro
 
 export default function CollectionSection(props: CollectionSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(null);
+  const { confirmDialog } = useFeedback();
 
   // カウント計算
   const counts = useMemo(() => {
@@ -226,8 +228,8 @@ export default function CollectionSection(props: CollectionSectionProps) {
                             <Pencil className="w-4 h-4" aria-hidden />
                           </button>
                           <button
-                            onClick={() => {
-                              if (confirm(`${character.name}を削除しますか？`)) {
+                            onClick={async () => {
+                              if (await confirmDialog({ message: `${character.name}を削除しますか？`, danger: true, confirmLabel: '削除' })) {
                                 props.setFavoriteCharacters(props.favoriteCharacters.filter(c => c.id !== character.id));
                               }
                             }}

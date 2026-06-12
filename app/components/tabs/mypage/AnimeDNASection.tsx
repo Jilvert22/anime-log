@@ -15,6 +15,7 @@ const QRCodeSVG = dynamic(
 );
 
 import { getSiteUrl } from '../../../lib/env';
+import { useFeedback } from '../../../contexts/FeedbackContext';
 
 const siteUrl = getSiteUrl();
 
@@ -65,6 +66,7 @@ export default function AnimeDNASection({
   const [showShareModal, setShowShareModal] = useState(false);
   const [editingFavoriteAnime, setEditingFavoriteAnime] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const { showToast, confirmDialog } = useFeedback();
 
   // オタクタイプの判定用のタグカウント
   const tagCounts = useMemo(() => {
@@ -370,7 +372,7 @@ export default function AnimeDNASection({
         <button
           onClick={async () => {
             // 確認ダイアログ
-            if (!confirm('ANIME DNAカードを画像として保存しますか？')) {
+            if (!(await confirmDialog({ message: 'ANIME DNAカードを画像として保存しますか？', confirmLabel: '保存' }))) {
               return;
             }
             
@@ -434,7 +436,7 @@ export default function AnimeDNASection({
             } catch (error) {
               console.error('画像保存エラー:', error);
               const errorMessage = error instanceof Error ? error.message : String(error);
-              alert(`画像の保存に失敗しました。\n\nエラー: ${errorMessage}\n\n詳細はブラウザのコンソール（F12）を確認してください。`);
+              showToast(`画像の保存に失敗しました。\n\nエラー: ${errorMessage}\n\n詳細はブラウザのコンソール（F12）を確認してください。`, 'error');
             } finally {
               setIsSaving(false);
             }
@@ -517,10 +519,10 @@ export default function AnimeDNASection({
                   try {
                     const shareUrl = `${siteUrl}/share/${encodeURIComponent(userName)}`;
                     await navigator.clipboard.writeText(shareUrl);
-                    alert('リンクをクリップボードにコピーしました');
+                    showToast('リンクをクリップボードにコピーしました');
                   } catch (error) {
                     console.error('リンクのコピーに失敗しました:', error);
-                    alert('リンクのコピーに失敗しました');
+                    showToast('リンクのコピーに失敗しました', 'error');
                   }
                 }}
                 className="w-full text-white py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 font-mixed" style={{

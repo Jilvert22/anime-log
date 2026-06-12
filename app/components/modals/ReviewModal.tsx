@@ -6,6 +6,7 @@ import type { Anime } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { INPUT_LIMITS, validateLength, throwIfInvalid } from '../../lib/validation';
 import { ValidationError } from '../../lib/api/errors';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 export function ReviewModal({
   show,
@@ -28,6 +29,7 @@ export function ReviewModal({
   const [newReviewContent, setNewReviewContent] = useState('');
   const [newReviewContainsSpoiler, setNewReviewContainsSpoiler] = useState(false);
   const [newReviewEpisodeNumber, setNewReviewEpisodeNumber] = useState<number | undefined>(undefined);
+  const { showToast } = useFeedback();
 
   if (!show || !selectedAnime) return null;
 
@@ -35,7 +37,7 @@ export function ReviewModal({
     if (!newReviewContent.trim() || !user || !selectedAnime) return;
     
     if (reviewMode === 'episode' && !newReviewEpisodeNumber) {
-      alert('話数を入力してください');
+      showToast('話数を入力してください', 'error');
       return;
     }
 
@@ -44,11 +46,11 @@ export function ReviewModal({
       throwIfInvalid(validateLength(newReviewContent, '感想', INPUT_LIMITS.reviewContent));
     } catch (error) {
       if (error instanceof ValidationError) {
-        alert(error.message);
+        showToast(error.message, 'error');
       } else if (error instanceof Error) {
-        alert(error.message);
+        showToast(error.message, 'error');
       } else {
-        alert('感想の長さが制限を超えています');
+        showToast('感想の長さが制限を超えています', 'error');
       }
       return;
     }
@@ -98,7 +100,7 @@ export function ReviewModal({
       setReviewMode('overall');
     } catch (error) {
       console.error('Failed to post review:', error);
-      alert('感想の投稿に失敗しました');
+      showToast('感想の投稿に失敗しました', 'error');
     }
   };
 

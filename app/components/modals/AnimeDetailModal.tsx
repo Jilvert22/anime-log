@@ -16,6 +16,7 @@ import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib
 import { ExternalLink, X, Heart, Star } from 'lucide-react';
 import { logger } from '../../lib/logger';
 import { normalizeError } from '../../lib/api/errors';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 interface AnimeDetailModalProps {
   selectedAnime: Anime;
@@ -61,6 +62,7 @@ export function AnimeDetailModal({
   setShowSongModal,
 }: AnimeDetailModalProps) {
   const [animeDetailTab, setAnimeDetailTab] = useState<'info' | 'reviews'>('info');
+  const { showToast } = useFeedback();
   const [anilistDetail, setAnilistDetail] = useState<AniListMedia | null>(null);
   
   // AniList IDから詳細情報を取得（公式HPリンク用）
@@ -774,7 +776,7 @@ export function AnimeDetailModal({
                 <button
                   onClick={async () => {
                     if (!user) {
-                      alert('ログインが必要です');
+                      showToast('ログインが必要です', 'error');
                       return;
                     }
                     
@@ -786,11 +788,11 @@ export function AnimeDetailModal({
                         title: selectedAnime.title,
                         image: selectedAnime.image || null,
                       });
-                      alert('積みアニメに追加しました');
+                      showToast('積みアニメに追加しました');
                     } catch (error) {
                       const normalizedError = normalizeError(error);
                       logger.error('積みアニメの追加に失敗しました', normalizedError, 'AnimeDetailModal');
-                      alert('積みアニメの追加に失敗しました');
+                      showToast('積みアニメの追加に失敗しました', 'error');
                     }
                   }}
                   className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors"

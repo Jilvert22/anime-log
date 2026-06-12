@@ -4,6 +4,7 @@ import { Pencil, Trash2, Heart } from 'lucide-react';
 import { useState } from 'react';
 import type { Anime, Season, User, SupabaseClientType } from '../../types';
 import { StarRating } from '../StarRating';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 export function MusicTab({
   allAnimes,
@@ -25,6 +26,7 @@ export function MusicTab({
   const [musicSearchQuery, setMusicSearchQuery] = useState('');
   const [musicFilterType, setMusicFilterType] = useState<'all' | 'op' | 'ed' | 'artist'>('all');
   const [selectedArtistForFilter, setSelectedArtistForFilter] = useState<string | null>(null);
+  const { confirmDialog } = useFeedback();
   
   // すべての曲を取得
   const allSongs: Array<{
@@ -230,7 +232,7 @@ export function MusicTab({
                     </button>
                     <button
                       onClick={async () => {
-                        if (confirm(`${song.title}を削除しますか？`)) {
+                        if (await confirmDialog({ message: `${song.title}を削除しますか？`, danger: true, confirmLabel: '削除' })) {
                           const updatedSongs = {
                             ...anime?.songs,
                             [song.type]: undefined,

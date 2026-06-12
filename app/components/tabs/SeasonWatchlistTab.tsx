@@ -1,5 +1,6 @@
 'use client';
 import { Tv, Star } from 'lucide-react';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
@@ -354,6 +355,8 @@ export default function SeasonWatchlistTab() {
     };
   }, [filterQuery, allSeasonAnime]);
 
+  const { showToast, confirmDialog } = useFeedback();
+
   // 視聴済みモーダルを開く
   // クールの初期値はwatchlist側のシーズン情報を優先(ユーザーの入力ミス防止)
   const openWatchedModal = useCallback((item: WatchlistItem) => {
@@ -373,6 +376,7 @@ export default function SeasonWatchlistTab() {
       const success = await storage.updateWatchlistItem(anilistId, { status: newStatus });
       if (success) {
         await loadWatchlist();
+        showToast('ステータスを更新しました');
         // 視聴完了にしたタイミングで視聴記録化(評価入力)を促す
         if (newStatus === 'completed') {
           const completedItem = watchlist.find(item => item.anilist_id === anilistId);
@@ -381,11 +385,11 @@ export default function SeasonWatchlistTab() {
           }
         }
       } else {
-        alert('ステータスの更新に失敗しました');
+        showToast('ステータスの更新に失敗しました', 'error');
       }
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('ステータスの更新に失敗しました');
+      showToast('ステータスの更新に失敗しました', 'error');
     }
   }, [storage, loadWatchlist, watchlist, openWatchedModal]);
 
@@ -409,13 +413,14 @@ export default function SeasonWatchlistTab() {
 
       if (success) {
         await loadWatchlist();
+        showToast('視聴予定に追加しました');
         // 追加後も一覧には表示し続ける（追加済み表示のまま）
       } else {
-        alert('視聴予定の追加に失敗しました');
+        showToast('視聴予定の追加に失敗しました', 'error');
       }
     } catch (error) {
       console.error('Failed to add to watchlist:', error);
-      alert('視聴予定の追加に失敗しました');
+      showToast('視聴予定の追加に失敗しました', 'error');
     }
   }, [storage, activeSeason.year, activeSeason.season, loadWatchlist]);
 
@@ -430,12 +435,13 @@ export default function SeasonWatchlistTab() {
       const success = await storage.removeFromWatchlist(anilistId);
       if (success) {
         await loadWatchlist();
+        showToast('視聴予定から外しました');
       } else {
-        alert('視聴予定から外す操作に失敗しました');
+        showToast('視聴予定から外す操作に失敗しました', 'error');
       }
     } catch (error) {
       console.error('Failed to remove from watchlist:', error);
-      alert('視聴予定から外す操作に失敗しました');
+      showToast('視聴予定から外す操作に失敗しました', 'error');
     }
   }, [storage, loadWatchlist]);
 
@@ -446,7 +452,7 @@ export default function SeasonWatchlistTab() {
     try {
       const animeData = await getAnimeDetail(selectedWatchlistItem.anilist_id);
       if (!animeData) {
-        alert('アニメ情報の取得に失敗しました');
+        showToast('アニメ情報の取得に失敗しました', 'error');
         return;
       }
 
@@ -495,7 +501,7 @@ export default function SeasonWatchlistTab() {
     } catch (error) {
       console.error('視聴済みマークに失敗しました:', error);
       const errorMessage = error instanceof Error ? error.message : 'エラーが発生しました';
-      alert(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`);
+      showToast(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`, 'error');
     }
   }, [selectedWatchlistItem, user, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, storage, loadWatchlist]);
 
@@ -607,7 +613,7 @@ export default function SeasonWatchlistTab() {
       setSelectedIds(new Set());
       setIsSelectionMode(false);
     } else {
-      alert('ステータスの更新に失敗しました');
+      showToast('ステータスの更新に失敗しました', 'error');
     }
   }, [storage, selectedIds, loadWatchlist]);
 
@@ -615,7 +621,7 @@ export default function SeasonWatchlistTab() {
   const handleBulkDelete = useCallback(async () => {
     if (selectedIds.size === 0) return;
 
-    if (!confirm(`${selectedIds.size}件のアニメを削除しますか？`)) {
+    if (!(await confirmDialog({ message: `${selectedIds.size}件のアニメを削除しますか？`, danger: true, confirmLabel: '削除' }))) {
       return;
     }
 
@@ -626,8 +632,9 @@ export default function SeasonWatchlistTab() {
       await loadWatchlist();
       setSelectedIds(new Set());
       setIsSelectionMode(false);
+      showToast(`${ids.length}件を削除しました`);
     } else {
-      alert('削除に失敗しました');
+      showToast('削除に失敗しました', 'error');
     }
   }, [storage, selectedIds, loadWatchlist]);
 

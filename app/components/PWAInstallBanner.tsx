@@ -3,6 +3,7 @@ import { Smartphone } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { useFeedback } from '../contexts/FeedbackContext';
 import { track } from '@vercel/analytics/react';
 
 const BANNER_DISMISSED_DATE_KEY = 'pwa-banner-dismissed-date';
@@ -11,6 +12,7 @@ export function PWAInstallBanner() {
   const { isInstallable, isInstalled, isIOS, shouldShowBanner, install } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const { showToast } = useFeedback();
 
   useEffect(() => {
     // ローカルストレージから非表示フラグを確認
@@ -55,7 +57,7 @@ export function PWAInstallBanner() {
     // インストールクリックイベントを送信（iOS）
     track('pwa_install_clicked', { source: 'banner', platform: 'ios' });
     // iOSの場合はSafariの共有メニューから「ホーム画面に追加」を案内
-    alert(
+    showToast(
       'iOSの場合:\n' +
       '1. Safariの下部にある共有ボタン（□↑）をタップ\n' +
       '2. 「ホーム画面に追加」を選択\n' +

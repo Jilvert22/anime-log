@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { translateGenre, sortSeasonsByTime, getSeasonNameWithMonths } from '../../utils/helpers';
 import { availableTags } from '../../constants';
 import { StreamingBadges } from '../common/StreamingBadges';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 export function AddAnimeFormModal({
   show,
@@ -57,6 +58,7 @@ export function AddAnimeFormModal({
   const [seasonSearchResults, setSeasonSearchResults] = useState<AniListMediaWithStreaming[]>([]);
   const [selectedSeasonAnimeIds, setSelectedSeasonAnimeIds] = useState<Set<number>>(new Set());
   const { searchBySeason, searchByTitle, isLoading: isStreamingSearchLoading } = useAnimeSearchWithStreaming();
+  const { showToast } = useFeedback();
 
   if (!show) return null;
 
@@ -288,11 +290,11 @@ export function AddAnimeFormModal({
                       // 重複がある場合は警告を表示
                       if (!isTestEnv && filteredAnimes.length < selectedAnimes.length) {
                         const duplicateCount = selectedAnimes.length - filteredAnimes.length;
-                        alert(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`);
+                        showToast(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`, 'error');
                       }
                       
                       if (filteredAnimes.length === 0) {
-                        alert('登録できるアニメがありません（すべて既に登録済みです）。');
+                        showToast('登録できるアニメがありません（すべて既に登録済みです）。', 'error');
                         return;
                       }
                       
@@ -370,7 +372,7 @@ export function AddAnimeFormModal({
                             (typeof error === 'object' && error !== null && 'details' in error ? String((error as { details?: string }).details) :
                             (typeof error === 'object' && error !== null && 'hint' in error ? String((error as { hint?: string }).hint) :
                             String(error)))) || '不明なエラー';
-                          alert(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`);
+                          showToast(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`, 'error');
                         }
                       }
                       
@@ -544,7 +546,7 @@ export function AddAnimeFormModal({
                 <button 
                   onClick={async () => {
                     if (selectedSearchAnimeIds.size === 0) {
-                      alert('アニメを選択してください');
+                      showToast('アニメを選択してください', 'error');
                       return;
                     }
                     
@@ -574,11 +576,11 @@ export function AddAnimeFormModal({
                     // 重複がある場合は警告を表示
                     if (!isTestEnv && filteredAnimes.length < selectedAnimes.length) {
                       const duplicateCount = selectedAnimes.length - filteredAnimes.length;
-                      alert(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`);
+                      showToast(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`, 'error');
                     }
                     
                     if (filteredAnimes.length === 0) {
-                      alert('登録できるアニメがありません（すべて既に登録済みです）。');
+                      showToast('登録できるアニメがありません（すべて既に登録済みです）。', 'error');
                       return;
                     }
                     
@@ -712,7 +714,7 @@ export function AddAnimeFormModal({
                           (typeof error === 'object' && error !== null && 'details' in error ? String((error as { details?: string }).details) :
                           (typeof error === 'object' && error !== null && 'hint' in error ? String((error as { hint?: string }).hint) :
                           String(error)))) || '不明なエラー';
-                        alert(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`);
+                        showToast(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`, 'error');
                       }
                     }
                     

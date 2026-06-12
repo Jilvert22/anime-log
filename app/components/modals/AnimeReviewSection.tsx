@@ -4,6 +4,7 @@ import { Heart, UserRound, AlertTriangle, ChevronRight } from 'lucide-react';
 import type { Review, Anime } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 interface AnimeReviewSectionProps {
   animeReviews: Review[];
@@ -40,6 +41,8 @@ export function AnimeReviewSection({
   loadReviews,
   setShowReviewModal,
 }: AnimeReviewSectionProps) {
+  const { confirmDialog } = useFeedback();
+
   // フィルタリング
   const filteredReviews = animeReviews.filter(review => {
     if (reviewFilter === 'overall' && review.type !== 'overall') return false;
@@ -257,7 +260,7 @@ export function AnimeReviewSection({
               </button>
               <button
                 onClick={async () => {
-                  if (!confirm('この感想を削除しますか？')) return;
+                  if (!(await confirmDialog({ message: 'この感想を削除しますか？', danger: true, confirmLabel: '削除' }))) return;
 
                   try {
                     await supabase

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, UserRound } from 'lucide-react';
 import type { UserProfile } from '../../lib/api';
 import type { User } from '../../types';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 // オタクタイプのプリセット定義
 const OTAKU_TYPES = [
@@ -59,6 +60,7 @@ export function SettingsModal({
   const [customType, setCustomType] = useState('');
   
   const [saving, setSaving] = useState(false);
+  const { showToast, confirmDialog } = useFeedback();
 
   // プロフィール情報を初期化
   useEffect(() => {
@@ -97,7 +99,7 @@ export function SettingsModal({
     if (file) {
       // ファイルサイズチェック（5MBまで）
       if (file.size > 5 * 1024 * 1024) {
-        alert('画像サイズは5MB以下にしてください。');
+        showToast('画像サイズは5MB以下にしてください。', 'error');
         return;
       }
       
@@ -140,7 +142,7 @@ export function SettingsModal({
     if (result.success) {
       onClose();
     } else {
-      alert(result.error || 'プロフィールの保存に失敗しました');
+      showToast(result.error || 'プロフィールの保存に失敗しました', 'error');
     }
   };
 
@@ -381,8 +383,8 @@ export function SettingsModal({
           {user && handleLogout && (
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <button
-                onClick={() => {
-                  if (confirm('ログアウトしますか？')) {
+                onClick={async () => {
+                  if (await confirmDialog({ message: 'ログアウトしますか？', danger: true, confirmLabel: 'ログアウト' })) {
                     handleLogout();
                     onClose();
                   }
