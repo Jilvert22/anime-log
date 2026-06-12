@@ -13,7 +13,7 @@ import { StreamingBadges } from '../common/StreamingBadges';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateAnimeStreamingInfo } from '../../lib/api/streamingUpdate';
 import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, X, Heart, Star } from 'lucide-react';
 import { logger } from '../../lib/logger';
 import { normalizeError } from '../../lib/api/errors';
 
@@ -116,7 +116,7 @@ export function AnimeDetailModal({
             className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             aria-label="閉じる"
           >
-            <span className="text-2xl leading-none">×</span>
+            <X className="w-5 h-5" aria-hidden />
           </button>
         </div>
         {/* タブ切り替え */}
@@ -476,7 +476,7 @@ export function AnimeDetailModal({
                         }}
                         className="text-xl"
                       >
-                        {selectedAnime.songs.op.isFavorite ? '❤️' : '🤍'}
+                        <Heart className={`w-5 h-5 ${selectedAnime.songs.op.isFavorite ? 'fill-[#e879d4] text-[#e879d4]' : 'text-gray-400'}`} aria-hidden />
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -516,7 +516,7 @@ export function AnimeDetailModal({
                               : 'text-gray-300'
                           }`}
                         >
-                          ⭐
+                          <Star className="w-4 h-4 fill-current" aria-hidden />
                         </button>
                       ))}
                     </div>
@@ -604,7 +604,7 @@ export function AnimeDetailModal({
                         }}
                         className="text-xl"
                       >
-                        {selectedAnime.songs.ed.isFavorite ? '❤️' : '🤍'}
+                        <Heart className={`w-5 h-5 ${selectedAnime.songs.ed.isFavorite ? 'fill-[#e879d4] text-[#e879d4]' : 'text-gray-400'}`} aria-hidden />
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -644,7 +644,7 @@ export function AnimeDetailModal({
                               : 'text-gray-300'
                           }`}
                         >
-                          ⭐
+                          <Star className="w-4 h-4 fill-current" aria-hidden />
                         </button>
                       ))}
                     </div>
@@ -759,7 +759,7 @@ export function AnimeDetailModal({
                         }}
                         className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs"
                       >
-                        ✕
+                        <X className="w-3.5 h-3.5" aria-hidden />
                       </button>
                     </div>
                   ))}

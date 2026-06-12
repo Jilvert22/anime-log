@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Mail, KeyRound } from 'lucide-react';
 import { getSupabaseEnv } from '../../lib/env';
 import { supabase } from '../../lib/supabase';
 import { signInWithPassword, signUp, resetPasswordForEmail } from '../../lib/api';
@@ -279,7 +280,7 @@ export function AuthModal({
         {/* リセットメール送信後の画面 */}
         {resetEmailSent ? (
           <div className="text-center py-4">
-            <div className="text-4xl mb-4">✉️</div>
+            <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
             <h3 className="text-lg font-bold mb-2 dark:text-white">
               リセットメールを送信しました
             </h3>
@@ -301,7 +302,7 @@ export function AuthModal({
           </div>
         ) : emailSent ? (
           <div className="text-center py-4">
-            <div className="text-4xl mb-4">✉️</div>
+            <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
             <h3 className="text-lg font-bold mb-2 dark:text-white">
               確認メールを送信しました
             </h3>
@@ -328,7 +329,7 @@ export function AuthModal({
           <>
             {/* パスワードリセット画面 */}
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">🔑</div>
+              <KeyRound className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 登録したメールアドレスを入力してください。
               </p>

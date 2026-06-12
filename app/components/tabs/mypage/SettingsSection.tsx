@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Mail, KeyRound, AlertTriangle, Search, Smartphone } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { getSession, signOut, updateEmail, updatePassword } from '../../../lib/api';
 import { useAuth } from '../../../hooks/useAuth';
@@ -262,7 +263,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 className="w-full px-4 py-4 flex items-center justify-between hover:opacity-90 transition-opacity"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">📱</span>
+                  <Smartphone className="w-6 h-6 text-white" aria-hidden />
                   <div className="text-left">
                     <div className="text-white font-bold text-base">アプリをインストール</div>
                     <div className="text-white/90 text-sm">ホーム画面に追加でより快適に</div>
@@ -393,7 +394,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">✉️</div>
+              <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 メールアドレスを変更
               </h2>
@@ -478,7 +479,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">🔑</div>
+              <KeyRound className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 パスワードを変更
               </h2>
@@ -595,7 +596,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">⚠️</div>
+              <AlertTriangle className="w-10 h-10 mx-auto mb-4 text-amber-500" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 アカウントを削除しますか？
               </h2>
@@ -661,7 +662,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">🔍</div>
+              <Search className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 重複アニメを削除
               </h2>
@@ -723,7 +724,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">📱</div>
+              <Smartphone className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 ホーム画面に追加
               </h2>

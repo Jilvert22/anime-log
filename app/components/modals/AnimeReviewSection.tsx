@@ -1,5 +1,6 @@
 'use client';
 
+import { Heart, UserRound, AlertTriangle } from 'lucide-react';
 import type { Review, Anime } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -87,7 +88,7 @@ export function AnimeReviewSection({
         {/* ネタバレ警告 */}
         {review.containsSpoiler && (
           <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-xs px-3 py-2 rounded mb-2 flex items-center gap-2">
-            <span>⚠️</span>
+            <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden />
             <span>ネタバレを含む感想です</span>
           </div>
         )}
@@ -106,13 +107,17 @@ export function AnimeReviewSection({
                 if (parent) {
                   const span = document.createElement('span');
                   span.className = 'text-xl';
-                  span.textContent = '👤';
+                  span.textContent = '👤'; // DOM直接操作のonErrorフォールバック(React外のためアイコン化対象外)
                   parent.insertBefore(span, target);
                 }
               }}
             />
           ) : (
-            <span className="text-xl">{review.userIcon || '👤'}</span>
+            review.userIcon ? (
+            <span className="text-xl">{review.userIcon}</span>
+          ) : (
+            <UserRound className="w-6 h-6 text-gray-400" aria-hidden />
+          )
           )}
           <span className="font-bold text-sm dark:text-white">{review.userName}</span>
           <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
@@ -192,7 +197,7 @@ export function AnimeReviewSection({
                 : 'text-gray-500 dark:text-gray-400'
             }`}
           >
-            <span>{review.userLiked ? '❤️' : '🤍'}</span>
+            <Heart className={`w-4 h-4 ${review.userLiked ? 'fill-current' : ''}`} aria-hidden />
             <span>{review.likes}</span>
           </button>
           <button

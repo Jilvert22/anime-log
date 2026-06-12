@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { X } from 'lucide-react';
 
 type ModalType = 'terms' | 'privacy';
 
@@ -35,7 +36,7 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
               className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
               aria-label="閉じる"
             >
-              <span className="text-2xl leading-none">×</span>
+              <X className="w-5 h-5" aria-hidden />
             </button>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">

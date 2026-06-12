@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { X, UserRound } from 'lucide-react';
 import type { UserProfile } from '../../lib/api';
 import type { User } from '../../types';
 
@@ -170,7 +171,7 @@ export function SettingsModal({
               onClick={onClose}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
-              <span className="text-2xl">✕</span>
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </button>
           </div>
 
@@ -189,7 +190,7 @@ export function SettingsModal({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-2xl text-gray-400">👤</span>
+                    <UserRound className="w-8 h-8 text-gray-400" aria-hidden />
                   )}
                 </div>
                 <label className="cursor-pointer px-4 py-2 bg-[#e879d4] text-white rounded-lg hover:bg-[#f09fe3] transition-colors text-sm font-medium">
