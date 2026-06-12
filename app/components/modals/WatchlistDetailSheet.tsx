@@ -372,6 +372,11 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
       
       if (success) {
         onUpdate?.();
+        // 視聴完了にしたタイミングで視聴記録化(評価入力)を促す
+        if (newStatus === 'completed' && onMarkAsWatched) {
+          onClose();
+          onMarkAsWatched({ ...item, status: 'completed' });
+        }
       } else {
         alert('ステータスの更新に失敗しました');
       }

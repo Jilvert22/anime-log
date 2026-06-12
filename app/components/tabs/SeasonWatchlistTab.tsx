@@ -354,6 +354,16 @@ export default function SeasonWatchlistTab() {
     };
   }, [filterQuery, allSeasonAnime]);
 
+  // 視聴済みモーダルを開く
+  // クールの初期値はwatchlist側のシーズン情報を優先(ユーザーの入力ミス防止)
+  const openWatchedModal = useCallback((item: WatchlistItem) => {
+    setSelectedWatchlistItem(item);
+    setWatchedRating(0);
+    setWatchedSeasonYear(item.season_year ?? new Date().getFullYear());
+    setWatchedSeason(item.season ?? 'SPRING');
+    setShowWatchedModal(true);
+  }, []);
+
   // ステータス変更
   const handleStatusChange = useCallback(async (
     anilistId: number,
@@ -363,6 +373,13 @@ export default function SeasonWatchlistTab() {
       const success = await storage.updateWatchlistItem(anilistId, { status: newStatus });
       if (success) {
         await loadWatchlist();
+        // 視聴完了にしたタイミングで視聴記録化(評価入力)を促す
+        if (newStatus === 'completed') {
+          const completedItem = watchlist.find(item => item.anilist_id === anilistId);
+          if (completedItem) {
+            openWatchedModal({ ...completedItem, status: 'completed' });
+          }
+        }
       } else {
         alert('ステータスの更新に失敗しました');
       }
@@ -370,7 +387,7 @@ export default function SeasonWatchlistTab() {
       console.error('Failed to update status:', error);
       alert('ステータスの更新に失敗しました');
     }
-  }, [storage, loadWatchlist]);
+  }, [storage, loadWatchlist, watchlist, openWatchedModal]);
 
   // 視聴予定に追加
   const handleAddToWatchlist = useCallback(async (anime: AniListMediaWithStreaming) => {
@@ -421,15 +438,6 @@ export default function SeasonWatchlistTab() {
       alert('視聴予定から外す操作に失敗しました');
     }
   }, [storage, loadWatchlist]);
-
-  // 視聴済みモーダルを開く
-  const openWatchedModal = useCallback((item: WatchlistItem) => {
-    setSelectedWatchlistItem(item);
-    setWatchedRating(0);
-    setWatchedSeasonYear(new Date().getFullYear());
-    setWatchedSeason('SPRING');
-    setShowWatchedModal(true);
-  }, []);
 
   // 視聴済みにする（評価・クールを設定して animes に追加し、watchlist から削除）
   const handleMarkAsWatched = useCallback(async () => {

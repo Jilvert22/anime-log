@@ -162,10 +162,13 @@ export function WatchlistTab({
   const [watchedSeason, setWatchedSeason] = useState<'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'>('SPRING');
 
   // 積みアニメを読み込む
+  // 積みアニメ = シーズン未設定のアイテムのみ。シーズン付き(今期/来期視聴予定)は
+  // SeasonWatchlistTabの管轄で、シーズン終了時の「積みアニメへ移動」で
+  // シーズン情報がクリアされて初めてここに現れる
   const loadWatchlist = useCallback(async () => {
     try {
       const items = await storage.getWatchlist();
-      setWatchlist(items);
+      setWatchlist(items.filter(item => item.season_year == null && item.season == null));
     } catch (error) {
       console.error('積みアニメの読み込みに失敗しました:', error);
     }
