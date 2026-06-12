@@ -1,6 +1,7 @@
 'use client';
 
 import { forwardRef } from 'react';
+import { Trophy, UserRound } from 'lucide-react';
 
 interface DNACardForExportProps {
   userName: string;
@@ -335,7 +336,7 @@ const DNACardForExport = forwardRef<HTMLDivElement, DNACardForExportProps>(
               crossOrigin="anonymous" 
             />
           ) : (
-            <div style={styles.avatarPlaceholder}>👤</div>
+            <div style={styles.avatarPlaceholder}><UserRound size={32} color="rgba(255,255,255,0.85)" aria-hidden /></div>
           )}
           <div style={styles.profileInfo}>
             <div style={styles.userName}>{userName}</div>
@@ -348,7 +349,7 @@ const DNACardForExport = forwardRef<HTMLDivElement, DNACardForExportProps>(
         {favoriteAnimes.length > 0 && (
           <div style={styles.favoritesSection}>
             <div style={styles.favoritesTitle}>
-              <span>🏆</span>
+              <Trophy size={16} color="#ffd700" aria-hidden />
               <span>最推し作品</span>
             </div>
             <div style={styles.favoritesGrid}>
