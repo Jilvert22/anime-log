@@ -29,6 +29,9 @@ export function CoachMark({
 }: CoachMarkProps) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [coachMarkStyle, setCoachMarkStyle] = useState<React.CSSProperties>({});
+  // ターゲット未発見時の中央表示フォールバック。
+  // これがないと暗幕だけが残り、ユーザーが操作不能になる
+  const [fallbackCentered, setFallbackCentered] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // ターゲット要素の位置を取得して更新
@@ -55,6 +58,7 @@ export function CoachMark({
           zIndex: 10000,
         });
         setTargetRect(null);
+        setFallbackCentered(true);
         return;
       }
 
@@ -179,6 +183,9 @@ export function CoachMark({
       });
     };
 
+    // ステップ(ターゲット)が変わったらフォールバック状態をリセット
+    setFallbackCentered(false);
+
     // 初回実行
     updatePosition();
 
@@ -201,7 +208,9 @@ export function CoachMark({
     };
   }, [targetSelector, position]);
 
-  if (!targetRect && position !== 'center') {
+  // ターゲット探索中は何も出さないが、フォールバック確定後は
+  // 中央に吹き出しを出す(スキップ/次へを常に操作可能に保つ)
+  if (!targetRect && !fallbackCentered && position !== 'center') {
     return null;
   }
 

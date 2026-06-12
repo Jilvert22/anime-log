@@ -47,9 +47,6 @@ function HomeClientInner() {
     skipOnboarding,
   } = useOnboardingContext();
   
-  // オンボーディングナビゲーション（タブ自動切り替え）
-  useOnboardingNavigation();
-  
   // 認証管理をカスタムフックで管理
   const { user, isLoading, handleLogout: logout } = useAuth();
   
@@ -89,6 +86,10 @@ function HomeClientInner() {
     homeSubTab,
     setHomeSubTab,
   } = useTabs();
+
+  // オンボーディングナビゲーション（タブ自動切り替え）
+  // 画面の描画に使っている実タブ状態を渡す(独立コピーを切り替えると固まる)
+  useOnboardingNavigation({ activeTab, setActiveTab, setHomeSubTab });
   
   // コレクション関連をカスタムフックで管理
   const {
