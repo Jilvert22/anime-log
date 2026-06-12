@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { UserRound } from 'lucide-react';
 import type { UserProfile } from '../lib/api';
 
 function UserCardComponent({ 
@@ -19,7 +20,7 @@ function UserCardComponent({
         className="flex items-center gap-3 flex-1 text-left"
       >
         <div className="w-12 h-12 rounded-full bg-linear-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-2xl shrink-0">
-          👤
+          <UserRound className="w-6 h-6 text-white/90" aria-hidden />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-bold text-sm dark:text-white truncate">{user.username}</p>

@@ -1,4 +1,5 @@
 'use client';
+import { Tv, Star } from 'lucide-react';
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
@@ -855,7 +856,7 @@ export default function SeasonWatchlistTab() {
         </div>
       ) : !isLoading ? (
         <div className="text-center py-12">
-          <p className="text-4xl mb-3">📺</p>
+          <Tv className="w-10 h-10 mx-auto mb-3 text-gray-400" aria-hidden />
           <p className="text-gray-500 dark:text-gray-400">
             {filterStatus === 'all' 
               ? `${selectedSeason === 'current' ? '今期' : '来期'}の視聴予定アニメがありません`
@@ -909,7 +910,7 @@ export default function SeasonWatchlistTab() {
                       watchedRating === rating ? 'bg-[#e879d4] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {rating}⭐
+                    <span className="inline-flex items-center gap-0.5">{rating}<Star className="w-3.5 h-3.5 fill-current" aria-hidden /></span>
                   </button>
                 ))}
               </div>

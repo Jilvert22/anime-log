@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, KeyRound, AlertTriangle, Search, Smartphone } from 'lucide-react';
+import { Mail, KeyRound, AlertTriangle, Search, Smartphone, Settings } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { getSession, signOut, updateEmail, updatePassword } from '../../../lib/api';
 import { useAuth } from '../../../hooks/useAuth';
@@ -252,7 +252,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
   return (
     <>
       <section className="space-y-2">
-        <h2 className="text-xl font-bold px-4 text-[#6b5b6e] dark:text-white font-mixed">⚙️ 設定</h2>
+        <h2 className="text-xl font-bold px-4 text-[#6b5b6e] dark:text-white font-mixed flex items-center gap-2"><Settings className="w-5 h-5" aria-hidden />設定</h2>
         
         {/* PWAインストール（未インストール時のみ表示） */}
         {!isInstalled && (isInstallable || isIOS) && (

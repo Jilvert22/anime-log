@@ -1,4 +1,5 @@
 'use client';
+import { RotateCcw } from 'lucide-react';
 
 import { memo, useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
@@ -39,7 +40,7 @@ function AnimeCardComponent({
       <div className="aspect-[3/4] bg-gradient-to-br from-[#e879d4] to-[#764ba2] relative overflow-hidden rounded-t-2xl">
         {/* 周回数バッジ */}
         <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 z-10">
-          <span className="text-xs">🔄</span>
+          <RotateCcw className="w-3 h-3 text-white" aria-hidden />
           <span className="text-white text-xs font-bold">{rewatchCount}周</span>
         </div>
         

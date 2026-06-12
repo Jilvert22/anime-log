@@ -1,4 +1,5 @@
 'use client';
+import { Pencil, Trash2 } from 'lucide-react';
 
 import { useState, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
@@ -222,7 +223,7 @@ export default function CollectionSection(props: CollectionSectionProps) {
                             className="bg-blue-500 text-white p-1.5 rounded-lg hover:bg-blue-600 transition-colors"
                             title="編集"
                           >
-                            ✏️
+                            <Pencil className="w-4 h-4" aria-hidden />
                           </button>
                           <button
                             onClick={() => {
@@ -233,7 +234,7 @@ export default function CollectionSection(props: CollectionSectionProps) {
                             className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition-colors"
                             title="削除"
                           >
-                            🗑️
+                            <Trash2 className="w-4 h-4" aria-hidden />
                           </button>
                         </div>
                         

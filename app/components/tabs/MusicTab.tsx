@@ -1,4 +1,5 @@
 'use client';
+import { Pencil, Trash2, Heart } from 'lucide-react';
 
 import { useState } from 'react';
 import type { Anime, Season, User, SupabaseClientType } from '../../types';
@@ -225,7 +226,7 @@ export function MusicTab({
                       className="bg-blue-500 text-white p-1 rounded-lg hover:bg-blue-600 transition-colors"
                       title="編集"
                     >
-                      ✏️
+                      <Pencil className="w-4 h-4" aria-hidden />
                     </button>
                     <button
                       onClick={async () => {
@@ -268,7 +269,7 @@ export function MusicTab({
                       className="bg-red-500 text-white p-1 rounded-lg hover:bg-red-600 transition-colors"
                       title="削除"
                     >
-                      🗑️
+                      <Trash2 className="w-4 h-4" aria-hidden />
                     </button>
                   </div>
                   
@@ -276,7 +277,7 @@ export function MusicTab({
                     <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">
                       {song.type.toUpperCase()}
                     </span>
-                    <span className="text-lg">❤️</span>
+                    <Heart className="w-5 h-5 fill-white text-white" aria-hidden />
                   </div>
                   <p className="font-bold text-sm mb-1">{song.title}</p>
                   <p className="text-xs text-white/80 mb-2">{song.artist}</p>
@@ -316,7 +317,7 @@ export function MusicTab({
                       {song.type.toUpperCase()}
                     </span>
                     <StarRating rating={song.rating} size="text-sm" />
-                    {song.isFavorite && <span className="text-red-500">❤️</span>}
+                    {song.isFavorite && <Heart className="w-4 h-4 fill-[#e879d4] text-[#e879d4]" aria-hidden />}
                   </div>
                 </div>
               ))

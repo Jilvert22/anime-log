@@ -1,4 +1,5 @@
 'use client';
+import { Star } from 'lucide-react';
 
 import { useState, useCallback, useEffect, memo, useMemo } from 'react';
 import Image from 'next/image';
@@ -904,7 +905,7 @@ export function WatchlistTab({
                         : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {rating}⭐
+                    <span className="inline-flex items-center gap-0.5">{rating}<Star className="w-3.5 h-3.5 fill-current" aria-hidden /></span>
                   </button>
                 ))}
               </div>

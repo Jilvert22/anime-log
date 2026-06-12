@@ -1,4 +1,5 @@
 'use client';
+import { Smartphone } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -71,7 +72,7 @@ export function PWAInstallBanner() {
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg animate-slide-up">
       <div className="max-w-md mx-auto">
         <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[#e879d4] to-[#f09fe3] rounded-xl text-white">
-          <div className="flex-shrink-0 text-3xl">📱</div>
+          <div className="flex-shrink-0"><Smartphone className="w-8 h-8" aria-hidden /></div>
           <div className="flex-1">
             <h3 className="font-bold text-lg mb-1">アプリとして使う</h3>
             <p className="text-sm opacity-90 mb-3">

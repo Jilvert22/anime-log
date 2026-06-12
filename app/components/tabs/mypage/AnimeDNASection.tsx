@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { Trophy, UserRound } from 'lucide-react';
+import { Trophy, UserRound, Copy } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
 import type { Anime, Season } from '../../../types';
 import { otakuTypes } from '../../../constants';
@@ -527,7 +527,7 @@ export default function AnimeDNASection({
                   background: '#e879d4',
                 }} onMouseEnter={(e) => { e.currentTarget.style.background = '#f09fe3'; }} onMouseLeave={(e) => { e.currentTarget.style.background = '#e879d4'; }}
               >
-                <span>📋</span>
+                <Copy className="w-4 h-4" aria-hidden />
                 <span>リンクをコピー</span>
               </button>
             </div>
