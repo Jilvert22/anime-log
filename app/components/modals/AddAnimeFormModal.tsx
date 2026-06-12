@@ -10,7 +10,9 @@ import { supabase } from '../../lib/supabase';
 import { translateGenre, sortSeasonsByTime, getSeasonNameWithMonths } from '../../utils/helpers';
 import { availableTags } from '../../constants';
 import { StreamingBadges } from '../common/StreamingBadges';
+import { Film } from 'lucide-react';
 import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function AddAnimeFormModal({
   show,
@@ -60,6 +62,21 @@ export function AddAnimeFormModal({
   const { searchBySeason, searchByTitle, isLoading: isStreamingSearchLoading } = useAnimeSearchWithStreaming();
   const { showToast } = useFeedback();
 
+  const handleClose = () => {
+    onClose();
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelectedSearchAnimeIds(new Set());
+    setAddModalMode('search');
+    setSelectedSeason(null);
+    setSelectedYear(new Date().getFullYear());
+    setSeasonSearchResults([]);
+    setSelectedSeasonAnimeIds(new Set());
+  };
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(handleClose, show);
+
   if (!show) return null;
 
   const handleSearch = async () => {
@@ -77,18 +94,6 @@ export function AddAnimeFormModal({
     } finally {
       setIsSearching(false);
     }
-  };
-
-  const handleClose = () => {
-    onClose();
-    setSearchQuery('');
-    setSearchResults([]);
-    setSelectedSearchAnimeIds(new Set());
-    setAddModalMode('search');
-    setSelectedSeason(null);
-    setSelectedYear(new Date().getFullYear());
-    setSeasonSearchResults([]);
-    setSelectedSeasonAnimeIds(new Set());
   };
 
   return (
@@ -245,7 +250,9 @@ export function AddAnimeFormModal({
                             />
                           </div>
                         ) : (
-                          <div className="w-16 h-24 flex items-center justify-center text-2xl shrink-0">🎬</div>
+                          <div className="w-16 h-24 flex items-center justify-center shrink-0">
+                            <Film className="w-6 h-6 text-gray-400 dark:text-gray-500" aria-hidden />
+                          </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm dark:text-white truncate">
@@ -486,7 +493,9 @@ export function AddAnimeFormModal({
                             />
                           </div>
                         ) : (
-                          <div className="w-16 h-24 flex items-center justify-center text-2xl shrink-0">🎬</div>
+                          <div className="w-16 h-24 flex items-center justify-center shrink-0">
+                            <Film className="w-6 h-6 text-gray-400 dark:text-gray-500" aria-hidden />
+                          </div>
                         )}
                         <div className="flex-1 text-left">
                           <p className="font-bold text-sm dark:text-white">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 
 interface CollectionAccordionProps {
   title: string;
@@ -34,9 +34,9 @@ export default function CollectionAccordion({
             e.stopPropagation();
             onAdd();
           }}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-[#6b5b6e] dark:text-white text-lg"
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-[#6b5b6e] dark:text-white"
         >
-          +
+          <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
         </button>
       </button>
       

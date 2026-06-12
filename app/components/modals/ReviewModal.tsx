@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { INPUT_LIMITS, validateLength, throwIfInvalid } from '../../lib/validation';
 import { ValidationError } from '../../lib/api/errors';
 import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function ReviewModal({
   show,
@@ -30,6 +31,17 @@ export function ReviewModal({
   const [newReviewContainsSpoiler, setNewReviewContainsSpoiler] = useState(false);
   const [newReviewEpisodeNumber, setNewReviewEpisodeNumber] = useState<number | undefined>(undefined);
   const { showToast } = useFeedback();
+
+  const handleClose = () => {
+    onClose();
+    setNewReviewContent('');
+    setNewReviewContainsSpoiler(false);
+    setNewReviewEpisodeNumber(undefined);
+    setReviewMode('overall');
+  };
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(handleClose, show);
 
   if (!show || !selectedAnime) return null;
 
@@ -102,14 +114,6 @@ export function ReviewModal({
       console.error('Failed to post review:', error);
       showToast('感想の投稿に失敗しました', 'error');
     }
-  };
-
-  const handleClose = () => {
-    onClose();
-    setNewReviewContent('');
-    setNewReviewContainsSpoiler(false);
-    setNewReviewEpisodeNumber(undefined);
-    setReviewMode('overall');
   };
 
   return (

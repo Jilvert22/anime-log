@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, memo } from 'react';
 import Image from 'next/image';
+import { Film } from 'lucide-react';
 import type { Anime } from '../../types';
 
 // サムネイルのみのカード
@@ -48,7 +49,11 @@ const ThumbnailCard = memo(function ThumbnailCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-2xl">
-            {imageError ? '🎬' : anime.image || '🎬'}
+            {!imageError && anime.image ? (
+              <span>{anime.image}</span>
+            ) : (
+              <Film className="w-6 h-6 text-white/60" aria-hidden />
+            )}
           </div>
         )}
         

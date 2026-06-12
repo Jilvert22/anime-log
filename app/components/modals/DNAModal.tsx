@@ -1,6 +1,7 @@
 'use client';
 
 import type { Anime } from '../../types';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function DNAModal({
   show,
@@ -27,6 +28,9 @@ export function DNAModal({
   userHandle: string | null;
   userOtakuType: string;
 }) {
+  // Escキーでモーダルを閉じる
+  useEscapeKey(onClose, show);
+
   if (!show) return null;
 
   // オタクタイプから絵文字を除去する関数
@@ -59,7 +63,19 @@ export function DNAModal({
           {/* ヘッダー */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="dna-logo-icon"></div>
+              <img
+                src="/dna-icon.png"
+                alt="Anime DNA"
+                width={56}
+                height={56}
+                className="rounded-lg"
+                style={{
+                  backgroundColor: 'transparent',
+                  background: 'transparent',
+                  imageRendering: 'crisp-edges',
+                  display: 'block',
+                }}
+              />
               <h2 className="text-white text-xl font-black">ANIME DNA</h2>
             </div>
             <div 

@@ -1,5 +1,5 @@
 'use client';
-import { Tv, Star } from 'lucide-react';
+import { Tv, Star, Film } from 'lucide-react';
 import { useFeedback } from '../../contexts/FeedbackContext';
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
@@ -110,8 +110,8 @@ function SeasonWatchlistCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">
-            🎬
+          <div className="w-full h-full flex items-center justify-center">
+            <Film className="w-8 h-8 text-white/60" aria-hidden />
           </div>
         )}
         
@@ -180,8 +180,8 @@ function SearchResultCard({
             unoptimized
           />
         ) : (
-          <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center text-4xl">
-            🎬
+          <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center">
+            <Film className="w-8 h-8 text-white/60" aria-hidden />
           </div>
         )}
         {/* ホバー時のオーバーレイ */}

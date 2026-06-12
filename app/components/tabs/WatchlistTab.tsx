@@ -1,5 +1,5 @@
 'use client';
-import { Star } from 'lucide-react';
+import { Star, Film, Plus } from 'lucide-react';
 import { useFeedback } from '../../contexts/FeedbackContext';
 
 import { useState, useCallback, useEffect, memo, useMemo } from 'react';
@@ -84,8 +84,8 @@ const WatchlistCard = memo(function WatchlistCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">
-            🎬
+          <div className="w-full h-full flex items-center justify-center">
+            <Film className="w-8 h-8 text-white/60" aria-hidden />
           </div>
         )}
         
@@ -602,9 +602,10 @@ export function WatchlistTab({
         <button 
           onClick={() => setShowAddForm(true)}
           data-onboarding="step-2"
-          className="w-full mb-4 py-4 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
+          className="w-full mb-4 py-4 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors inline-flex items-center justify-center gap-1.5"
         >
-          + 積みアニメを追加
+          <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
+          積みアニメを追加
         </button>
       ) : (
         /* 検索フォーム */

@@ -10,6 +10,7 @@ import type { WatchlistItem } from '../../lib/storage/types';
 import { useStorage } from '../../hooks/useStorage';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 import { StreamingBadges } from '../common/StreamingBadges';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateWatchlistStreamingInfo } from '../../lib/api/streamingUpdate';
@@ -45,6 +46,9 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
   // const [showCustomTime, setShowCustomTime] = useState(false);
   const storage = useStorage();
   const { user } = useAuth();
+
+  // Escキーでシートを閉じる
+  useEscapeKey(onClose);
 
   // 表示するタイトルを決定（item優先、次にanimeMedia、最後にanimeDetail）
   const displayTitle = item?.title || 

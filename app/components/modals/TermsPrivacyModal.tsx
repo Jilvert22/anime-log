@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 type ModalType = 'terms' | 'privacy';
 
@@ -12,6 +13,9 @@ interface TermsPrivacyModalProps {
 }
 
 export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProps) {
+  // Escキーでモーダルを閉じる
+  useEscapeKey(onClose, show);
+
   if (!show) return null;
 
   const isTerms = type === 'terms';

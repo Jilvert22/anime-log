@@ -5,6 +5,7 @@ import { X, UserRound } from 'lucide-react';
 import type { UserProfile } from '../../lib/api';
 import type { User } from '../../types';
 import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 // オタクタイプのプリセット定義
 const OTAKU_TYPES = [
@@ -145,6 +146,9 @@ export function SettingsModal({
       showToast(result.error || 'プロフィールの保存に失敗しました', 'error');
     }
   };
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(onClose, show);
 
   if (!show) return null;
 

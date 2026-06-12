@@ -5,6 +5,7 @@ import type { User } from '@supabase/supabase-js';
 import type { UserProfile } from '../../lib/api';
 import type { Anime } from '../../types';
 import { AnimeCard } from '../AnimeCard';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function UserProfileModal({
   show,
@@ -25,6 +26,9 @@ export function UserProfileModal({
   onToggleFollow: (userId: string) => void;
   onAnimeClick: (anime: Anime) => void;
 }) {
+  // Escキーでモーダルを閉じる
+  useEscapeKey(onClose, show);
+
   if (!show || !selectedUserProfile) return null;
 
   return (

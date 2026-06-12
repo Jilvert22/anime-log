@@ -1,9 +1,10 @@
 'use client';
 
-import { Check } from 'lucide-react';
+import { Check, Film } from 'lucide-react';
 import type { Anime } from '../../types';
 import { StarRating } from '../StarRating';
 import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function FavoriteAnimeModal({
   show,
@@ -21,6 +22,9 @@ export function FavoriteAnimeModal({
   onSave?: () => void;
 }) {
   const { showToast } = useFeedback();
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(onClose, show);
 
   if (!show) return null;
 
@@ -86,7 +90,11 @@ export function FavoriteAnimeModal({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-                      <span className="text-2xl">{anime.image || '🎬'}</span>
+                      {anime.image ? (
+                        <span className="text-2xl">{anime.image}</span>
+                      ) : (
+                        <Film className="w-6 h-6 text-gray-400 dark:text-gray-500" aria-hidden />
+                      )}
                     </div>
                   )}
                 </div>

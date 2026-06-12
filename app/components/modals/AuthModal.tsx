@@ -6,6 +6,7 @@ import { getSupabaseEnv } from '../../lib/env';
 import { supabase } from '../../lib/supabase';
 import { signInWithPassword, signUp, resetPasswordForEmail } from '../../lib/api';
 import { TermsPrivacyModal } from './TermsPrivacyModal';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 type PasswordStrength = {
   level: 'weak' | 'fair' | 'good' | 'strong';
@@ -217,6 +218,9 @@ export function AuthModal({
     setResetEmailSent(false);
     setAgreedToTerms(false);
   };
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(handleClose, show);
 
   if (!show) return null;
 

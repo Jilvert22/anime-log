@@ -1,5 +1,5 @@
 'use client';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Film } from 'lucide-react';
 
 import { memo, useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
@@ -66,7 +66,11 @@ function AnimeCardComponent({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-5xl">
-            <span>{imageError ? '🎬' : anime.image || '🎬'}</span>
+            {!imageError && anime.image ? (
+              <span>{anime.image}</span>
+            ) : (
+              <Film className="w-10 h-10 text-white/60" aria-hidden />
+            )}
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 'use client';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 
 import { useState, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
@@ -75,9 +75,10 @@ function CollectionDetail({ title, count, onAdd, children }: CollectionDetailPro
         </span>
         <button
           onClick={onAdd}
-          className="text-[#e879d4] hover:text-[#f09fe3] transition-colors font-mixed"
+          className="inline-flex items-center gap-1 text-[#e879d4] hover:text-[#f09fe3] transition-colors font-mixed"
         >
-          + 追加
+          <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
+          追加
         </button>
       </div>
       {children}
@@ -179,6 +180,20 @@ export default function CollectionSection(props: CollectionSectionProps) {
             count={counts.characters}
             onAdd={props.onOpenAddCharacterModal}
           >
+            {props.favoriteCharacters.length === 0 && (
+              <div className="text-center py-4">
+                <p className="text-gray-500 dark:text-gray-400 font-mixed mb-4">
+                  推しキャラが登録されていません
+                </p>
+                <button
+                  onClick={props.onOpenAddCharacterModal}
+                  className="inline-flex items-center gap-1.5 py-3 px-6 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors font-mixed"
+                >
+                  <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
+                  推しキャラを追加
+                </button>
+              </div>
+            )}
             {props.favoriteCharacters.length > 0 && (
               <div className="space-y-3">
                 {/* カテゴリフィルタ */}

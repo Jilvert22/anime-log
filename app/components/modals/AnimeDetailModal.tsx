@@ -13,10 +13,11 @@ import { StreamingBadges } from '../common/StreamingBadges';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateAnimeStreamingInfo } from '../../lib/api/streamingUpdate';
 import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
-import { ExternalLink, X, Heart, Star } from 'lucide-react';
+import { ExternalLink, X, Heart, Star, Film, Plus } from 'lucide-react';
 import { logger } from '../../lib/logger';
 import { normalizeError } from '../../lib/api/errors';
 import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 interface AnimeDetailModalProps {
   selectedAnime: Anime;
@@ -64,7 +65,10 @@ export function AnimeDetailModal({
   const [animeDetailTab, setAnimeDetailTab] = useState<'info' | 'reviews'>('info');
   const { showToast } = useFeedback();
   const [anilistDetail, setAnilistDetail] = useState<AniListMedia | null>(null);
-  
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(() => setSelectedAnime(null));
+
   // AniList IDから詳細情報を取得（公式HPリンク用）
   useEffect(() => {
     // Anime型のidがAniList IDかどうかを判定（1000000未満の場合はAniList IDの可能性が高い）
@@ -171,8 +175,10 @@ export function AnimeDetailModal({
                       />
                     </div>
                   </div>
+                ) : selectedAnime.image ? (
+                  <span className="text-6xl block mb-3">{selectedAnime.image}</span>
                 ) : (
-                  <span className="text-6xl block mb-3">{selectedAnime.image || '🎬'}</span>
+                  <Film className="w-10 h-10 mx-auto mb-3 text-gray-400 dark:text-gray-500" aria-hidden />
                 );
               })()}
               <h3 className="text-xl font-bold mt-2 dark:text-white">{selectedAnime.title}</h3>
@@ -727,9 +733,10 @@ export function AnimeDetailModal({
                       );
                     }
                   }}
-                  className="text-xs bg-[#e879d4] text-white px-3 py-1 rounded-lg hover:bg-[#f09fe3] transition-colors"
+                  className="text-xs bg-[#e879d4] text-white px-3 py-1 rounded-lg hover:bg-[#f09fe3] transition-colors inline-flex items-center gap-1"
                 >
-                  + 名言を追加
+                  <Plus className="w-3.5 h-3.5" strokeWidth={3} aria-hidden />
+                  名言を追加
                 </button>
               </div>
 

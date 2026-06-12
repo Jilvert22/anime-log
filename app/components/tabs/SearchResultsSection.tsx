@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { Film } from 'lucide-react';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { isNextSeason } from '../../utils/helpers';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
@@ -115,8 +116,8 @@ export function SearchResultsSection({
                   )}
                 </button>
               ) : (
-                <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center text-4xl relative">
-                  🎬
+                <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center relative">
+                  <Film className="w-8 h-8 text-white/60" aria-hidden />
                   {isDominantAnime && (
                     <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-2xl border-2 border-white/50 animate-pulse">
                       <span className="drop-shadow-lg">覇権</span>

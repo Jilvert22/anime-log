@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { Plus } from 'lucide-react';
 import type { Anime, Season, AniListSearchResult } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 
@@ -365,9 +366,18 @@ export function SeriesView({
       )}
       
       {seriesArray.length === 0 && standaloneAnimes.length === 0 && (
-        <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-          アニメが登録されていません
-        </p>
+        <div className="text-center py-8">
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
+            アニメが登録されていません
+          </p>
+          <button
+            onClick={onOpenAddForm}
+            className="inline-flex items-center gap-1.5 py-3 px-6 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
+          >
+            <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
+            アニメを追加
+          </button>
+        </div>
       )}
     </div>
   );
