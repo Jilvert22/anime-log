@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, UserRound, AlertTriangle } from 'lucide-react';
+import { Heart, UserRound, AlertTriangle, ChevronRight } from 'lucide-react';
 import type { Review, Anime } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -135,7 +135,7 @@ export function AnimeReviewSection({
             }}
             className="w-full text-left text-sm text-[#e879d4] dark:text-[#e879d4] hover:underline py-2"
           >
-            ▶ クリックして展開
+            <span className="inline-flex items-center gap-1"><ChevronRight className="w-4 h-4" aria-hidden />クリックして展開</span>
           </button>
         ) : (
           <>
@@ -288,7 +288,7 @@ export function AnimeReviewSection({
         <select
           value={reviewFilter}
           onChange={(e) => setReviewFilter(e.target.value as 'all' | 'overall' | 'episode')}
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
         >
           <option value="all">すべて</option>
           <option value="overall">全体感想のみ</option>
@@ -297,7 +297,7 @@ export function AnimeReviewSection({
         <select
           value={reviewSort}
           onChange={(e) => setReviewSort(e.target.value as 'newest' | 'likes' | 'helpful')}
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
         >
           <option value="newest">新着順</option>
           <option value="likes">いいね順</option>
@@ -312,7 +312,7 @@ export function AnimeReviewSection({
           id="spoilerHidden"
           checked={userSpoilerHidden}
           onChange={(e) => setUserSpoilerHidden(e.target.checked)}
-          className="w-4 h-4 text-[#e879d4] rounded focus:ring-[#e879d4]"
+          className="w-4 h-4 accent-[#e879d4] rounded focus:ring-[#e879d4]"
         />
         <label htmlFor="spoilerHidden" className="text-sm text-gray-700 dark:text-gray-300">
           ネタバレを含む感想を非表示

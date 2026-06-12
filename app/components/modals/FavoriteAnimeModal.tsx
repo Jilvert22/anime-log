@@ -1,5 +1,6 @@
 'use client';
 
+import { Check } from 'lucide-react';
 import type { Anime } from '../../types';
 import { StarRating } from '../StarRating';
 
@@ -95,7 +96,7 @@ export function FavoriteAnimeModal({
                   )}
                 </div>
                 {isSelected && (
-                  <span className="text-[#e879d4] text-xl">✓</span>
+                  <Check className="w-5 h-5 text-[#e879d4]" strokeWidth={3} aria-hidden />
                 )}
               </button>
             );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import type { Anime, FavoriteCharacter } from '../../types';
 import { characterCategories, characterPresetTags } from '../../constants';
 
@@ -110,7 +111,7 @@ export function AddCharacterModal({
             type="text"
             value={newCharacterName}
             onChange={(e) => setNewCharacterName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             placeholder="キャラクター名"
           />
         </div>
@@ -123,7 +124,7 @@ export function AddCharacterModal({
           <select
             value={newCharacterAnimeId || ''}
             onChange={(e) => setNewCharacterAnimeId(Number(e.target.value))}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
           >
             <option value="">選択してください</option>
             {allAnimes.map((anime) => (
@@ -235,7 +236,7 @@ export function AddCharacterModal({
                     onClick={() => setNewCharacterTags(newCharacterTags.filter((_, i) => i !== index))}
                     className="hover:text-red-500"
                   >
-                    ✕
+                    <X className="w-3.5 h-3.5" aria-hidden />
                   </button>
                 </span>
               ))}

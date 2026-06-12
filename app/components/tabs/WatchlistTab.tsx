@@ -65,7 +65,7 @@ const WatchlistCard = memo(function WatchlistCard({
             type="checkbox"
             checked={isSelected || false}
             onChange={handleToggleSelect}
-            className="w-5 h-5 rounded border-gray-300 text-[#e879d4] focus:ring-[#e879d4] cursor-pointer"
+            className="w-5 h-5 rounded border-gray-300 accent-[#e879d4] focus:ring-[#e879d4] cursor-pointer"
           />
         </div>
       )}

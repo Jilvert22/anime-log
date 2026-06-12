@@ -393,7 +393,7 @@ export function AnimeDetailModal({
                     );
                   }}
                   placeholder="シリーズ名を入力（任意）"
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
                 />
                 {selectedAnime.seriesName && (
                   <button

@@ -159,7 +159,7 @@ export function ReviewModal({
               min="1"
               value={newReviewEpisodeNumber || ''}
               onChange={(e) => setNewReviewEpisodeNumber(e.target.value ? Number(e.target.value) : undefined)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
               placeholder="例: 1"
             />
           </div>
@@ -174,7 +174,7 @@ export function ReviewModal({
             value={newReviewContent}
             onChange={(e) => setNewReviewContent(e.target.value)}
             maxLength={INPUT_LIMITS.reviewContent.max}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white min-h-[120px]"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white min-h-[120px]"
             placeholder="感想を入力してください..."
           />
           <div className="mt-1 text-right">
@@ -197,7 +197,7 @@ export function ReviewModal({
               type="checkbox"
               checked={newReviewContainsSpoiler}
               onChange={(e) => setNewReviewContainsSpoiler(e.target.checked)}
-              className="w-4 h-4 text-[#e879d4] rounded focus:ring-[#e879d4]"
+              className="w-4 h-4 accent-[#e879d4] rounded focus:ring-[#e879d4]"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">
               ネタバレを含む

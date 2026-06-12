@@ -136,7 +136,7 @@ export function AddAnimeFormModal({
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 >
                   {Array.from({ length: new Date().getFullYear() - 1970 + 1 }, (_, i) => new Date().getFullYear() - i).map(year => (
                     <option key={year} value={year}>{year}年</option>
@@ -150,7 +150,7 @@ export function AddAnimeFormModal({
                 <select
                   value={selectedSeason || ''}
                   onChange={(e) => setSelectedSeason(e.target.value as 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">選択してください</option>
                   <option value="SPRING">春</option>
@@ -226,7 +226,7 @@ export function AddAnimeFormModal({
                             }
                             setSelectedSeasonAnimeIds(newSet);
                           }}
-                          className="w-5 h-5 text-[#e879d4] rounded focus:ring-[#e879d4]"
+                          className="w-5 h-5 accent-[#e879d4] rounded focus:ring-[#e879d4]"
                         />
                         {result.coverImage?.large || result.coverImage?.medium ? (
                           <div className="relative w-16 h-24 shrink-0">
@@ -405,7 +405,7 @@ export function AddAnimeFormModal({
                       handleSearch();
                     }
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                   placeholder="アニメタイトルで検索"
                 />
                 <button
@@ -467,7 +467,7 @@ export function AddAnimeFormModal({
                             }
                             setSelectedSearchAnimeIds(newSet);
                           }}
-                          className="w-5 h-5 text-[#e879d4] rounded focus:ring-[#e879d4]"
+                          className="w-5 h-5 accent-[#e879d4] rounded focus:ring-[#e879d4]"
                         />
                         {result.coverImage?.large || result.coverImage?.medium ? (
                           <div className="relative w-16 h-24 shrink-0">

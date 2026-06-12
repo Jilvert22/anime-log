@@ -122,7 +122,7 @@ export function MusicTab({
             type="text"
             value={musicSearchQuery}
             onChange={(e) => setMusicSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             placeholder="曲名、アーティスト、アニメで検索..."
           />
           
@@ -187,7 +187,7 @@ export function MusicTab({
             <select
               value={selectedArtistForFilter || ''}
               onChange={(e) => setSelectedArtistForFilter(e.target.value || null)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             >
               <option value="">アーティストを選択...</option>
               {uniqueArtists.map((artist) => (
