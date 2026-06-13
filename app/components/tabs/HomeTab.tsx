@@ -302,7 +302,7 @@ export function HomeTab({
           {/* 年別リスト */}
           <div className="space-y-3 relative">
             {yearSeasonData.map(({ year, seasons: yearSeasons, allAnimes }) => (
-              <div key={year} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+              <div key={year} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
                 <YearHeader
                   year={year}
                   animes={allAnimes}
