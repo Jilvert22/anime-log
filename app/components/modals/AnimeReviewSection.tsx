@@ -5,6 +5,7 @@ import type { Review, Anime } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useFeedback } from '../../contexts/FeedbackContext';
+import { Spinner } from '../common/Spinner';
 
 interface AnimeReviewSectionProps {
   animeReviews: Review[];
@@ -336,9 +337,8 @@ export function AnimeReviewSection({
 
       {/* 感想一覧 */}
       {loadingReviews ? (
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#e879d4]"></div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">読み込み中...</p>
+        <div className="flex items-center justify-center py-8">
+          <Spinner label="読み込み中..." />
         </div>
       ) : filteredReviews.length > 0 ? (
         <div className="space-y-4">
