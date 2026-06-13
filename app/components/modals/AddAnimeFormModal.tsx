@@ -306,13 +306,7 @@ export function AddAnimeFormModal({
                       }
                       
                       // シーズン名を生成（例: "2024年秋"）
-                      const seasonNameMap: { [key: string]: string } = {
-                        'SPRING': '春',
-                        'SUMMER': '夏',
-                        'FALL': '秋',
-                        'WINTER': '冬',
-                      };
-                      const seasonName = `${selectedYear}年${seasonNameMap[selectedSeason!]}`;
+                      const seasonName = `${selectedYear}年${getSeasonName(selectedSeason!)}`;
                       
                       // アニメを追加（評価は0、watchedはfalse）
                       const newAnimes: Anime[] = filteredAnimes.map((result, index) => {
@@ -645,13 +639,7 @@ export function AddAnimeFormModal({
                       );
                       let seasonName = '未分類';
                       if (result?.seasonYear && result?.season) {
-                        const seasonNameMap: { [key: string]: string } = {
-                          'SPRING': '春',
-                          'SUMMER': '夏',
-                          'FALL': '秋',
-                          'WINTER': '冬',
-                        };
-                        seasonName = `${result.seasonYear}年${seasonNameMap[result.season]}`;
+                        seasonName = `${result.seasonYear}年${getSeasonName(result.season)}`;
                       }
                       
                       const existingSeasonIndex = updatedSeasons.findIndex(s => s.name === seasonName);
@@ -674,13 +662,7 @@ export function AddAnimeFormModal({
                       );
                       let seasonName = '未分類';
                       if (result?.seasonYear && result?.season) {
-                        const seasonNameMap: { [key: string]: string } = {
-                          'SPRING': '春',
-                          'SUMMER': '夏',
-                          'FALL': '秋',
-                          'WINTER': '冬',
-                        };
-                        seasonName = `${result.seasonYear}年${seasonNameMap[result.season]}`;
+                        seasonName = `${result.seasonYear}年${getSeasonName(result.season)}`;
                       }
                       if (!seasons.find(s => s.name === seasonName)) {
                         newExpandedSeasons.add(seasonName);
@@ -700,13 +682,7 @@ export function AddAnimeFormModal({
                           );
                           let seasonName = '未分類';
                           if (result?.seasonYear && result?.season) {
-                            const seasonNameMap: { [key: string]: string } = {
-                              'SPRING': '春',
-                              'SUMMER': '夏',
-                              'FALL': '秋',
-                              'WINTER': '冬',
-                            };
-                            seasonName = `${result.seasonYear}年${seasonNameMap[result.season]}`;
+                            seasonName = `${result.seasonYear}年${getSeasonName(result.season)}`;
                           }
                           supabaseData.push(animeToSupabase(anime, seasonName, user.id));
                         });

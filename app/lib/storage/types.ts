@@ -1,5 +1,7 @@
 // ストレージサービスの共通型定義
 
+import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
+
 export type WatchlistItem = {
   id: string;
   user_id?: string; // localStorageの場合は不要
@@ -9,7 +11,7 @@ export type WatchlistItem = {
   memo: string | null;
   created_at: string;
   // 今シーズン視聴予定機能用
-  status?: 'planned' | 'watching' | 'completed' | null;
+  status?: WatchlistStatusValue;
   season_year?: number | null;
   season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
   // 放送情報
@@ -28,7 +30,7 @@ export interface IStorageService {
     title: string;
     image?: string | null;
     memo?: string | null;
-    status?: 'planned' | 'watching' | 'completed' | null;
+    status?: WatchlistStatusValue;
     season_year?: number | null;
     season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
     broadcast_day?: number | null;
@@ -40,7 +42,7 @@ export interface IStorageService {
     anilistId: number,
     updates: {
       memo?: string | null;
-      status?: 'planned' | 'watching' | 'completed' | null;
+      status?: WatchlistStatusValue;
       season_year?: number | null;
       season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
       broadcast_day?: number | null;
@@ -51,7 +53,7 @@ export interface IStorageService {
   ): Promise<boolean>;
   updateWatchlistItemsStatus(
     ids: string[],
-    status: 'planned' | 'watching' | 'completed' | null
+    status: WatchlistStatusValue
   ): Promise<boolean>;
   deleteWatchlistItems(ids: string[]): Promise<boolean>;
   
@@ -59,13 +61,13 @@ export interface IStorageService {
   getSeasonWatchlist(
     year: number,
     season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL',
-    status?: 'planned' | 'watching' | 'completed'
+    status?: WatchlistStatus
   ): Promise<WatchlistItem[]>;
   getCurrentSeasonWatchlist(
-    status?: 'planned' | 'watching' | 'completed'
+    status?: WatchlistStatus
   ): Promise<WatchlistItem[]>;
   getNextSeasonWatchlist(
-    status?: 'planned' | 'watching' | 'completed'
+    status?: WatchlistStatus
   ): Promise<WatchlistItem[]>;
   
   // マイグレーション用

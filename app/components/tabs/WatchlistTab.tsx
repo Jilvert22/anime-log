@@ -10,7 +10,7 @@ import { useStorage } from '../../hooks/useStorage';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { supabase } from '../../lib/supabase';
-import { animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName } from '../../utils/helpers';
+import { animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName, SEASON_QUARTER } from '../../utils/helpers';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
 import { StreamingBadges } from '../common/StreamingBadges';
@@ -291,10 +291,7 @@ export function WatchlistTab({
       }
 
       // シーズン名を生成
-      const seasonQuarter = watchedSeason === 'WINTER' ? 1 : 
-        watchedSeason === 'SPRING' ? 2 : 
-        watchedSeason === 'SUMMER' ? 3 : 4;
-      const seasonName = getSeasonName(watchedSeasonYear, seasonQuarter);
+      const seasonName = getSeasonName(watchedSeasonYear, SEASON_QUARTER[watchedSeason]);
 
       // アニメオブジェクトを作成
       const newAnime: Anime = {

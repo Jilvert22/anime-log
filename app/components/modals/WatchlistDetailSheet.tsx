@@ -7,6 +7,8 @@ import { ExternalLink, X } from 'lucide-react';
 import { useFeedback } from '../../contexts/FeedbackContext';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import type { WatchlistItem } from '../../lib/storage/types';
+import { WATCHLIST_STATUS_OPTIONS, type WatchlistStatus } from '../../lib/watchlist/status';
+import { getSeasonName } from '../../utils/helpers';
 import { useStorage } from '../../hooks/useStorage';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
@@ -368,7 +370,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
     }
   };
 
-  const handleStatusChange = async (newStatus: 'planned' | 'watching' | 'completed') => {
+  const handleStatusChange = async (newStatus: WatchlistStatus) => {
     if (!item?.anilist_id) return;
     
     try {
@@ -414,24 +416,6 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
     } catch (error) {
       console.error('放送情報の更新に失敗しました:', error);
       showToast('放送情報の更新に失敗しました', 'error');
-    }
-  };
-
-  const getStatusLabel = (status: string | null | undefined) => {
-    switch (status) {
-      case 'planned': return '視聴予定';
-      case 'watching': return '視聴中';
-      case 'completed': return '視聴完了';
-      default: return '未設定';
-    }
-  };
-
-  const getStatusColor = (status: string | null | undefined) => {
-    switch (status) {
-      case 'planned': return 'bg-blue-500';
-      case 'watching': return 'bg-yellow-500';
-      case 'completed': return 'bg-green-500';
-      default: return 'bg-gray-500';
     }
   };
 
@@ -515,7 +499,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
               </h2>
               {item?.season_year && item?.season && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {item.season_year}年{({ WINTER: '冬', SPRING: '春', SUMMER: '夏', FALL: '秋' })[item.season]}クール
+                  {item.season_year}年{getSeasonName(item.season)}クール
                 </p>
               )}
             </div>
@@ -810,11 +794,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
                     視聴ステータス
                   </h3>
                   <div className="flex gap-2">
-                    {[
-                      { status: 'planned' as const, label: '視聴予定', color: 'bg-blue-500' },
-                      { status: 'watching' as const, label: '視聴中', color: 'bg-yellow-500' },
-                      { status: 'completed' as const, label: '視聴完了', color: 'bg-green-500' },
-                    ].map((statusOption) => (
+                    {WATCHLIST_STATUS_OPTIONS.map((statusOption) => (
                       <button
                         key={statusOption.status}
                         onClick={() => handleStatusChange(statusOption.status)}

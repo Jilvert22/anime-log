@@ -2,6 +2,7 @@
 
 import { supabase } from '../supabase';
 import type { IStorageService, WatchlistItem } from './types';
+import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
 
 export class SupabaseStorageService implements IStorageService {
   async getWatchlist(): Promise<WatchlistItem[]> {
@@ -27,7 +28,7 @@ export class SupabaseStorageService implements IStorageService {
     title: string;
     image?: string | null;
     memo?: string | null;
-    status?: 'planned' | 'watching' | 'completed' | null;
+    status?: WatchlistStatusValue;
     season_year?: number | null;
     season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
     broadcast_day?: number | null;
@@ -97,7 +98,7 @@ export class SupabaseStorageService implements IStorageService {
     anilistId: number,
     updates: {
       memo?: string | null;
-      status?: 'planned' | 'watching' | 'completed' | null;
+      status?: WatchlistStatusValue;
       season_year?: number | null;
       season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
       broadcast_day?: number | null;
@@ -125,7 +126,7 @@ export class SupabaseStorageService implements IStorageService {
 
   async updateWatchlistItemsStatus(
     ids: string[],
-    status: 'planned' | 'watching' | 'completed' | null
+    status: WatchlistStatusValue
   ): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || ids.length === 0) return false;
@@ -165,7 +166,7 @@ export class SupabaseStorageService implements IStorageService {
   async getSeasonWatchlist(
     year: number,
     season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL',
-    status?: 'planned' | 'watching' | 'completed'
+    status?: WatchlistStatus
   ): Promise<WatchlistItem[]> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
@@ -193,7 +194,7 @@ export class SupabaseStorageService implements IStorageService {
   }
 
   async getCurrentSeasonWatchlist(
-    status?: 'planned' | 'watching' | 'completed'
+    status?: WatchlistStatus
   ): Promise<WatchlistItem[]> {
     const { getCurrentSeason } = await import('../../utils/helpers');
     const { year, season } = getCurrentSeason();
@@ -201,7 +202,7 @@ export class SupabaseStorageService implements IStorageService {
   }
 
   async getNextSeasonWatchlist(
-    status?: 'planned' | 'watching' | 'completed'
+    status?: WatchlistStatus
   ): Promise<WatchlistItem[]> {
     const { getNextSeason } = await import('../../utils/helpers');
     const { year, season } = getNextSeason();

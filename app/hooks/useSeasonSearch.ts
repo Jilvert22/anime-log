@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../types';
 import { searchAnimeBySeason } from '../lib/anilist';
-import { translateGenre, sortSeasonsByTime, getNextSeason } from '../utils/helpers';
+import { translateGenre, sortSeasonsByTime, getNextSeason, JA_TO_SEASON } from '../utils/helpers';
 import { getBroadcastInfo } from '../lib/anilist';
 import { supabase } from '../lib/supabase';
 import { useStorage } from './useStorage';
@@ -64,13 +64,7 @@ export function useSeasonSearch({
 
     try {
       // 季節名をAniListの形式に変換
-      const seasonMap: Record<string, 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER'> = {
-        '春': 'SPRING',
-        '夏': 'SUMMER',
-        '秋': 'FALL',
-        '冬': 'WINTER',
-      };
-      const anilistSeason = seasonMap[season];
+      const anilistSeason = JA_TO_SEASON[season];
       if (!anilistSeason) return Promise.resolve();
 
       const yearNum = parseInt(year, 10);
