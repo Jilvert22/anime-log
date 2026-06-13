@@ -20,6 +20,7 @@ import { getCurrentSeason, getNextSeason, animeToSupabase, sortSeasonsByTime, ex
 import { getBroadcastInfo, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
+import { Spinner } from '../common/Spinner';
 import { supabase } from '../../lib/supabase';
 import type { Anime } from '../../types';
 
@@ -683,10 +684,7 @@ export default function SeasonWatchlistTab() {
           {/* アニメグリッド */}
           {isLoadingAnime ? (
             <div className="flex items-center justify-center py-12">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-4 border-[#e879d4] border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">読み込み中...</p>
-              </div>
+              <Spinner label="読み込み中..." />
             </div>
           ) : displayedAnime.length > 0 ? (
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">

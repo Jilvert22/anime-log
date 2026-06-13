@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { translateGenre, sortSeasonsByTime, getSeasonNameWithMonths } from '../../utils/helpers';
 import { availableTags } from '../../constants';
 import { StreamingBadges } from '../common/StreamingBadges';
+import { Spinner } from '../common/Spinner';
 import { Film } from 'lucide-react';
 import { useFeedback } from '../../contexts/FeedbackContext';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
@@ -423,9 +424,8 @@ export function AddAnimeFormModal({
 
             {/* 検索結果 */}
             {isSearching && (
-              <div className="mb-4 text-center py-4">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#e879d4]"></div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">検索中...</p>
+              <div className="mb-4 flex items-center justify-center py-4">
+                <Spinner label="検索中..." />
               </div>
             )}
 

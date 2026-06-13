@@ -14,6 +14,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
 import { StreamingBadges } from '../common/StreamingBadges';
+import { Spinner } from '../common/Spinner';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateWatchlistStreamingInfo } from '../../lib/api/streamingUpdate';
 import { logger } from '../../lib/logger';
@@ -517,10 +518,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
         <div className="px-6 py-4 space-y-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-4 border-[#e879d4] border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">読み込み中...</p>
-              </div>
+              <Spinner label="読み込み中..." />
             </div>
           ) : (
             <>
