@@ -18,6 +18,7 @@ import {
   throwIfInvalid,
 } from '../validation';
 import type { WatchlistItem, WatchlistItemInput, WatchlistItemUpdate, Season } from './types';
+import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
 
 /**
  * 積みアニメ一覧を取得
@@ -219,7 +220,7 @@ export async function updateWatchlistItem(
  */
 export async function updateWatchlistItemsStatus(
   ids: string[],
-  status: 'planned' | 'watching' | 'completed' | null
+  status: WatchlistStatusValue
 ): Promise<void> {
   try {
     const user = await requireAuth();
@@ -284,7 +285,7 @@ export async function getSeasonWatchlist(
   userId: string,
   year: number,
   season: Season,
-  status?: 'planned' | 'watching' | 'completed'
+  status?: WatchlistStatus
 ): Promise<WatchlistItem[]> {
   try {
     if (!userId) {
@@ -325,7 +326,7 @@ export async function getSeasonWatchlist(
  */
 export async function getCurrentSeasonWatchlist(
   userId?: string,
-  status?: 'planned' | 'watching' | 'completed'
+  status?: WatchlistStatus
 ): Promise<WatchlistItem[]> {
   try {
     const user = await getCurrentUser();
@@ -351,7 +352,7 @@ export async function getCurrentSeasonWatchlist(
  */
 export async function getNextSeasonWatchlist(
   userId?: string,
-  status?: 'planned' | 'watching' | 'completed'
+  status?: WatchlistStatus
 ): Promise<WatchlistItem[]> {
   try {
     const user = await getCurrentUser();

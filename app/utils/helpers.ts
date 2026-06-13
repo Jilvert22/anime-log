@@ -67,6 +67,33 @@ export function extractSeriesName(title: string): string {
   return title;
 }
 
+// 季節コード（AniList enum）⇔ 日本語表記の単一変換テーブル。
+// アプリ内に散在していた '春'⇔'SPRING' の対応をここに集約する。
+type SeasonCode = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
+
+export const SEASON_TO_JA: Record<SeasonCode, string> = {
+  WINTER: '冬',
+  SPRING: '春',
+  SUMMER: '夏',
+  FALL: '秋',
+};
+
+// 任意の文字列キーを受けるため、未対応キーは undefined（呼び出し側でガードする）
+export const JA_TO_SEASON: Record<string, SeasonCode | undefined> = {
+  '冬': 'WINTER',
+  '春': 'SPRING',
+  '夏': 'SUMMER',
+  '秋': 'FALL',
+};
+
+// 季節コード → クォーター番号（1=冬, 2=春, 3=夏, 4=秋）。getSeasonName(year, quarter) と対になる。
+export const SEASON_QUARTER: Record<SeasonCode, number> = {
+  WINTER: 1,
+  SPRING: 2,
+  SUMMER: 3,
+  FALL: 4,
+};
+
 // 季節名に月の範囲を追加する関数
 export function getSeasonNameWithMonths(seasonName: string): string {
   const monthRanges: { [key: string]: string } = {
@@ -96,13 +123,7 @@ export function getSeasonName(seasonOrYear: string | number, quarter?: number): 
   }
   
   // 1つの引数が渡された場合（文字列のシーズン名）
-  const seasonMap: { [key: string]: string } = {
-    'WINTER': '冬',
-    'SPRING': '春',
-    'SUMMER': '夏',
-    'FALL': '秋',
-  };
-  return seasonMap[seasonOrYear as string] || (seasonOrYear as string);
+  return SEASON_TO_JA[seasonOrYear as SeasonCode] || (seasonOrYear as string);
 }
 
 // 現在のシーズンを取得する関数
@@ -199,14 +220,7 @@ export function parseSeasonName(seasonName: string): { year: number; season: 'SP
   const year = parseInt(match[1], 10);
   const seasonJa = match[2];
 
-  const seasonMap: { [key: string]: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' } = {
-    '春': 'SPRING',
-    '夏': 'SUMMER',
-    '秋': 'FALL',
-    '冬': 'WINTER',
-  };
-
-  const season = seasonMap[seasonJa];
+  const season = JA_TO_SEASON[seasonJa];
   if (!season) return null;
 
   return { year, season };

@@ -3,6 +3,7 @@
  */
 
 import type { User } from '@supabase/supabase-js';
+import type { WatchlistStatusValue } from '../watchlist/status';
 
 /**
  * ユーザープロフィール型
@@ -42,7 +43,7 @@ export type WatchlistItem = {
   memo: string | null;
   created_at: string;
   // 今シーズン視聴予定機能用
-  status?: 'planned' | 'watching' | 'completed' | null;
+  status?: WatchlistStatusValue;
   season_year?: number | null;
   season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
   // 放送情報
@@ -60,7 +61,7 @@ export type WatchlistItemInput = {
   title: string;
   image?: string | null;
   memo?: string | null;
-  status?: 'planned' | 'watching' | 'completed' | null;
+  status?: WatchlistStatusValue;
   season_year?: number | null;
   season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
   broadcast_day?: number | null;
@@ -73,7 +74,7 @@ export type WatchlistItemInput = {
  */
 export type WatchlistItemUpdate = {
   memo?: string | null;
-  status?: 'planned' | 'watching' | 'completed' | null;
+  status?: WatchlistStatusValue;
   season_year?: number | null;
   season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' | null;
 };

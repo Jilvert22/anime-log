@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import type { Anime, Season, AniListSearchResult } from '../../types';
+import { getSeasonName, getSeasonNameWithMonths } from '../../utils/helpers';
 import { AnimeCard } from '../AnimeCard';
 
 // タイトルから期数を取得する関数
@@ -278,17 +279,7 @@ export function SeriesView({
                             </p>
                             {suggestion.seasonYear && suggestion.season && (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {suggestion.seasonYear}年{(() => {
-                                  const seasonName = suggestion.season === 'SPRING' ? '春' : suggestion.season === 'SUMMER' ? '夏' : suggestion.season === 'FALL' ? '秋' : '冬';
-                                  const monthRanges: { [key: string]: string } = {
-                                    '冬': '1~3月',
-                                    '春': '4~6月',
-                                    '夏': '7~9月',
-                                    '秋': '10~12月',
-                                  };
-                                  const months = monthRanges[seasonName] || '';
-                                  return months ? `${seasonName} (${months})` : seasonName;
-                                })()}
+                                {suggestion.seasonYear}年{getSeasonNameWithMonths(getSeasonName(suggestion.season))}
                               </p>
                             )}
                           </div>

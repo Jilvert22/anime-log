@@ -9,7 +9,14 @@ import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStrea
 import { useAnimeDataContext } from '../../contexts/AnimeDataContext';
 import { useAuth } from '../../hooks/useAuth';
 import type { WatchlistItem } from '../../lib/storage/types';
-import { getCurrentSeason, getNextSeason, animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName } from '../../utils/helpers';
+import {
+  getNextWatchlistStatus,
+  getWatchlistStatusLabel,
+  getWatchlistStatusColor,
+  type WatchlistStatus,
+  type WatchlistStatusFilter,
+} from '../../lib/watchlist/status';
+import { getCurrentSeason, getNextSeason, animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName, SEASON_QUARTER } from '../../utils/helpers';
 import { getBroadcastInfo, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
@@ -26,7 +33,7 @@ function SeasonWatchlistCard({
   onCardClick,
 }: { 
   item: WatchlistItem; 
-  onStatusChange: (anilistId: number, newStatus: 'planned' | 'watching' | 'completed') => void;
+  onStatusChange: (anilistId: number, newStatus: WatchlistStatus) => void;
   isSelectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: () => void;
@@ -35,35 +42,8 @@ function SeasonWatchlistCard({
   const [imageError, setImageError] = useState(false);
   const isImageUrl = item.image && (item.image.startsWith('http://') || item.image.startsWith('https://'));
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'planned': return '視聴予定';
-      case 'watching': return '視聴中';
-      case 'completed': return '視聴完了';
-      default: return '';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'planned': return 'bg-blue-500';
-      case 'watching': return 'bg-yellow-500';
-      case 'completed': return 'bg-green-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getNextStatus = (currentStatus: string | null | undefined): 'planned' | 'watching' | 'completed' | null => {
-    switch (currentStatus) {
-      case 'planned': return 'watching';
-      case 'watching': return 'completed';
-      case 'completed': return null; // 完了後は削除またはそのまま
-      default: return 'watching'; // statusがnullの場合はwatchingに
-    }
-  };
-
   const handleStatusChange = () => {
-    const nextStatus = getNextStatus(item.status);
+    const nextStatus = getNextWatchlistStatus(item.status);
     if (nextStatus && item.anilist_id) {
       onStatusChange(item.anilist_id, nextStatus);
     }
@@ -117,8 +97,8 @@ function SeasonWatchlistCard({
         
         {/* ステータスバッジ */}
         {item.status && (
-          <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium text-white ${getStatusColor(item.status)}`}>
-            {getStatusLabel(item.status)}
+          <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium text-white ${getWatchlistStatusColor(item.status)}`}>
+            {getWatchlistStatusLabel(item.status)}
           </div>
         )}
         
@@ -234,7 +214,7 @@ export default function SeasonWatchlistTab() {
   const { seasons, setSeasons, expandedSeasons, setExpandedSeasons } = useAnimeDataContext();
   const [selectedSeason, setSelectedSeason] = useState<SeasonType>('current'); // デフォルトは今期
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
-  const [filterStatus, setFilterStatus] = useState<'planned' | 'watching' | 'completed' | 'all'>('all');
+  const [filterStatus, setFilterStatus] = useState<WatchlistStatusFilter>('all');
   const [isLoading, setIsLoading] = useState(false);
   
   // 並び替え設定
@@ -370,7 +350,7 @@ export default function SeasonWatchlistTab() {
   // ステータス変更
   const handleStatusChange = useCallback(async (
     anilistId: number,
-    newStatus: 'planned' | 'watching' | 'completed'
+    newStatus: WatchlistStatus
   ) => {
     try {
       const success = await storage.updateWatchlistItem(anilistId, { status: newStatus });
@@ -456,8 +436,7 @@ export default function SeasonWatchlistTab() {
         return;
       }
 
-      const seasonQuarter = watchedSeason === 'WINTER' ? 1 : watchedSeason === 'SPRING' ? 2 : watchedSeason === 'SUMMER' ? 3 : 4;
-      const seasonName = getSeasonName(watchedSeasonYear, seasonQuarter);
+      const seasonName = getSeasonName(watchedSeasonYear, SEASON_QUARTER[watchedSeason]);
       const titleStr = animeData.title?.native || animeData.title?.romaji || selectedWatchlistItem.title;
 
       const newAnime: Anime = {
@@ -602,7 +581,7 @@ export default function SeasonWatchlistTab() {
   }, []);
 
   // 一括ステータス変更
-  const handleBulkStatusChange = useCallback(async (newStatus: 'planned' | 'watching' | 'completed') => {
+  const handleBulkStatusChange = useCallback(async (newStatus: WatchlistStatus) => {
     if (selectedIds.size === 0) return;
 
     const ids = Array.from(selectedIds);
