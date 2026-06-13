@@ -28,7 +28,7 @@ interface WatchlistDetailSheetProps {
   onClose: () => void;
   onUpdate?: () => void;
   isWatchlistMode?: boolean; // 積みアニメモードかどうか
-  onMarkAsWatched?: (item: WatchlistItem) => void; // 視聴済みにするコールバック（積みアニメ・今期来期用）
+  onMarkAsWatched?: (item: WatchlistItem, fromCompletion?: boolean) => void; // 視聴済みにするコールバック（積みアニメ・今期来期用）。fromCompletion=true は「視聴完了」起因
   onRemove?: (anilistId: number) => void; // リストから削除（今期・来期視聴予定用）
 }
 
@@ -384,7 +384,7 @@ export function WatchlistDetailSheet({ item, animeMedia, onClose, onUpdate, isWa
         // 視聴完了にしたタイミングで視聴記録化(評価入力)を促す
         if (newStatus === 'completed' && onMarkAsWatched) {
           onClose();
-          onMarkAsWatched({ ...item, status: 'completed' });
+          onMarkAsWatched({ ...item, status: 'completed' }, true);
         } else {
           showToast('ステータスを更新しました');
         }
