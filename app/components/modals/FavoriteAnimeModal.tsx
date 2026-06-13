@@ -1,7 +1,10 @@
 'use client';
 
+import { Check, Film } from 'lucide-react';
 import type { Anime } from '../../types';
 import { StarRating } from '../StarRating';
+import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function FavoriteAnimeModal({
   show,
@@ -18,6 +21,11 @@ export function FavoriteAnimeModal({
   setFavoriteAnimeIds: (ids: number[]) => void;
   onSave?: () => void;
 }) {
+  const { showToast } = useFeedback();
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(onClose, show);
+
   if (!show) return null;
 
   const handleSave = () => {
@@ -60,7 +68,7 @@ export function FavoriteAnimeModal({
                     if (favoriteAnimeIds.length < 5) {
                       setFavoriteAnimeIds([...favoriteAnimeIds, anime.id]);
                     } else {
-                      alert('最大5作品まで選択できます');
+                      showToast('最大5作品まで選択できます', 'error');
                     }
                   }
                 }}
@@ -82,7 +90,11 @@ export function FavoriteAnimeModal({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-                      <span className="text-2xl">{anime.image || '🎬'}</span>
+                      {anime.image ? (
+                        <span className="text-2xl">{anime.image}</span>
+                      ) : (
+                        <Film className="w-6 h-6 text-gray-400 dark:text-gray-500" aria-hidden />
+                      )}
                     </div>
                   )}
                 </div>
@@ -95,7 +107,7 @@ export function FavoriteAnimeModal({
                   )}
                 </div>
                 {isSelected && (
-                  <span className="text-[#e879d4] text-xl">✓</span>
+                  <Check className="w-5 h-5 text-[#e879d4]" strokeWidth={3} aria-hidden />
                 )}
               </button>
             );

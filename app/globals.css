@@ -27,6 +27,11 @@
   /* グラデーション */
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-purple));
   --gradient-primary-reverse: linear-gradient(135deg, var(--color-purple), var(--color-primary));
+
+  /* ===== 形状トークン (.stitch/DESIGN.md 準拠) ===== */
+  --al-radius: 8px;          /* 標準カード・繰り返し要素の基準 */
+  --al-radius-brand: 24px;   /* ブランド面 (Anime DNAカード等) のみ大きい角丸を許可 */
+  --al-shadow-soft: 0 18px 48px rgba(77, 46, 69, 0.13);
 }
 
 .dark {

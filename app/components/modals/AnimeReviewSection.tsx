@@ -1,8 +1,10 @@
 'use client';
 
+import { Heart, UserRound, AlertTriangle, ChevronRight } from 'lucide-react';
 import type { Review, Anime } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 interface AnimeReviewSectionProps {
   animeReviews: Review[];
@@ -39,6 +41,8 @@ export function AnimeReviewSection({
   loadReviews,
   setShowReviewModal,
 }: AnimeReviewSectionProps) {
+  const { confirmDialog } = useFeedback();
+
   // フィルタリング
   const filteredReviews = animeReviews.filter(review => {
     if (reviewFilter === 'overall' && review.type !== 'overall') return false;
@@ -87,7 +91,7 @@ export function AnimeReviewSection({
         {/* ネタバレ警告 */}
         {review.containsSpoiler && (
           <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-xs px-3 py-2 rounded mb-2 flex items-center gap-2">
-            <span>⚠️</span>
+            <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden />
             <span>ネタバレを含む感想です</span>
           </div>
         )}
@@ -106,13 +110,17 @@ export function AnimeReviewSection({
                 if (parent) {
                   const span = document.createElement('span');
                   span.className = 'text-xl';
-                  span.textContent = '👤';
+                  span.textContent = '👤'; // DOM直接操作のonErrorフォールバック(React外のためアイコン化対象外)
                   parent.insertBefore(span, target);
                 }
               }}
             />
           ) : (
-            <span className="text-xl">{review.userIcon || '👤'}</span>
+            review.userIcon ? (
+            <span className="text-xl">{review.userIcon}</span>
+          ) : (
+            <UserRound className="w-6 h-6 text-gray-400" aria-hidden />
+          )
           )}
           <span className="font-bold text-sm dark:text-white">{review.userName}</span>
           <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
@@ -130,7 +138,7 @@ export function AnimeReviewSection({
             }}
             className="w-full text-left text-sm text-[#e879d4] dark:text-[#e879d4] hover:underline py-2"
           >
-            ▶ クリックして展開
+            <span className="inline-flex items-center gap-1"><ChevronRight className="w-4 h-4" aria-hidden />クリックして展開</span>
           </button>
         ) : (
           <>
@@ -192,7 +200,7 @@ export function AnimeReviewSection({
                 : 'text-gray-500 dark:text-gray-400'
             }`}
           >
-            <span>{review.userLiked ? '❤️' : '🤍'}</span>
+            <Heart className={`w-4 h-4 ${review.userLiked ? 'fill-current' : ''}`} aria-hidden />
             <span>{review.likes}</span>
           </button>
           <button
@@ -252,7 +260,7 @@ export function AnimeReviewSection({
               </button>
               <button
                 onClick={async () => {
-                  if (!confirm('この感想を削除しますか？')) return;
+                  if (!(await confirmDialog({ message: 'この感想を削除しますか？', danger: true, confirmLabel: '削除' }))) return;
 
                   try {
                     await supabase
@@ -283,7 +291,7 @@ export function AnimeReviewSection({
         <select
           value={reviewFilter}
           onChange={(e) => setReviewFilter(e.target.value as 'all' | 'overall' | 'episode')}
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
         >
           <option value="all">すべて</option>
           <option value="overall">全体感想のみ</option>
@@ -292,7 +300,7 @@ export function AnimeReviewSection({
         <select
           value={reviewSort}
           onChange={(e) => setReviewSort(e.target.value as 'newest' | 'likes' | 'helpful')}
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
         >
           <option value="newest">新着順</option>
           <option value="likes">いいね順</option>
@@ -307,7 +315,7 @@ export function AnimeReviewSection({
           id="spoilerHidden"
           checked={userSpoilerHidden}
           onChange={(e) => setUserSpoilerHidden(e.target.checked)}
-          className="w-4 h-4 text-[#e879d4] rounded focus:ring-[#e879d4]"
+          className="w-4 h-4 accent-[#e879d4] rounded focus:ring-[#e879d4]"
         />
         <label htmlFor="spoilerHidden" className="text-sm text-gray-700 dark:text-gray-300">
           ネタバレを含む感想を非表示

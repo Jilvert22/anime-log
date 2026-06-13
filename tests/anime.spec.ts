@@ -50,12 +50,12 @@ test.describe('アニメ追加・削除', () => {
     // ログイン後の画面が表示されるまで待つ
     // 「+ アニメを追加」ボタンが表示されるまで待つ（クール別タブがデフォルト）
     try {
-      const addButton = page.getByRole('button', { name: '+ アニメを追加' });
+      const addButton = page.locator('[data-onboarding="step-1"]');
       await addButton.waitFor({ state: 'visible', timeout: 10000 });
     } catch (error) {
       // ボタンが見つからない場合、少し待ってから再試行
       await page.waitForTimeout(2000);
-      const addButton = page.getByRole('button', { name: '+ アニメを追加' });
+      const addButton = page.locator('[data-onboarding="step-1"]');
       await addButton.waitFor({ state: 'visible', timeout: 10000 });
     }
     
@@ -65,7 +65,7 @@ test.describe('アニメ追加・削除', () => {
 
   test('アニメを検索して追加できる', async ({ page }) => {
     // 1. 「+ アニメを追加」ボタンが表示されるまで待つ
-    const addButton = page.getByRole('button', { name: '+ アニメを追加' });
+    const addButton = page.locator('[data-onboarding="step-1"]');
     await expect(addButton).toBeVisible({ timeout: 10000 });
     
     // ボタンがクリック可能になるまで少し待つ
@@ -195,7 +195,7 @@ test.describe('アニメ追加・削除', () => {
     // まず、アニメを追加する（追加テストと同じフロー）
     
     // 1. 「+ アニメを追加」ボタンが表示されるまで待つ
-    const addButton = page.getByRole('button', { name: '+ アニメを追加' });
+    const addButton = page.locator('[data-onboarding="step-1"]');
     await expect(addButton).toBeVisible({ timeout: 10000 });
     
     // ボタンがクリック可能になるまで少し待つ

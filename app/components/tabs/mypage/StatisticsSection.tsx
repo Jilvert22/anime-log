@@ -1,4 +1,5 @@
 'use client';
+import { Sparkles, Star } from 'lucide-react';
 
 import { useState, useMemo } from 'react';
 import type { Anime, Season } from '../../../types';
@@ -181,7 +182,7 @@ export default function StatisticsSection({ allAnimes, seasons }: StatisticsSect
             }}
           >
             <h3 className="text-lg font-bold mb-3 flex items-center gap-2 font-mixed">
-              <span>✨</span>
+              <Sparkles className="w-5 h-5" aria-hidden />
               あなたの傾向まとめ
             </h3>
             <p className="text-sm leading-relaxed font-mixed">{tendencyText}</p>
@@ -231,7 +232,7 @@ export default function StatisticsSection({ allAnimes, seasons }: StatisticsSect
           {/* 評価分布 */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
             <h3 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white flex items-center gap-2 font-mixed">
-              <span>⭐</span>
+              <Star className="w-5 h-5 fill-[#d99a16] text-[#d99a16]" aria-hidden />
               評価分布
             </h3>
             <div className="space-y-3">
@@ -244,7 +245,7 @@ export default function StatisticsSection({ allAnimes, seasons }: StatisticsSect
                   <div key={rating} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-[#6b5b6e] dark:text-white font-mixed">
-                        ⭐{rating} {ratingLabel?.label || ''}
+                        <span className="inline-flex items-center gap-1"><Star className="w-3.5 h-3.5 fill-[#d99a16] text-[#d99a16]" aria-hidden />{rating} {ratingLabel?.label || ''}</span>
                       </span>
                       <span className="text-sm font-bold text-[#e879d4] dark:text-[#e879d4] font-mixed">
                         {count}本

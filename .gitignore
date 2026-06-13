@@ -62,3 +62,7 @@ node_modules/
 /playwright/.auth/
 .env*.local
 .claude/
+
+# Stitch生成物・デザイン比較画像(ローカル参照用)
+.stitch/generated/
+.stitch/refine/

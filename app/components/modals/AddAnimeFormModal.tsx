@@ -10,6 +10,9 @@ import { supabase } from '../../lib/supabase';
 import { translateGenre, sortSeasonsByTime, getSeasonNameWithMonths } from '../../utils/helpers';
 import { availableTags } from '../../constants';
 import { StreamingBadges } from '../common/StreamingBadges';
+import { Film } from 'lucide-react';
+import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function AddAnimeFormModal({
   show,
@@ -57,6 +60,22 @@ export function AddAnimeFormModal({
   const [seasonSearchResults, setSeasonSearchResults] = useState<AniListMediaWithStreaming[]>([]);
   const [selectedSeasonAnimeIds, setSelectedSeasonAnimeIds] = useState<Set<number>>(new Set());
   const { searchBySeason, searchByTitle, isLoading: isStreamingSearchLoading } = useAnimeSearchWithStreaming();
+  const { showToast } = useFeedback();
+
+  const handleClose = () => {
+    onClose();
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelectedSearchAnimeIds(new Set());
+    setAddModalMode('search');
+    setSelectedSeason(null);
+    setSelectedYear(new Date().getFullYear());
+    setSeasonSearchResults([]);
+    setSelectedSeasonAnimeIds(new Set());
+  };
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(handleClose, show);
 
   if (!show) return null;
 
@@ -75,18 +94,6 @@ export function AddAnimeFormModal({
     } finally {
       setIsSearching(false);
     }
-  };
-
-  const handleClose = () => {
-    onClose();
-    setSearchQuery('');
-    setSearchResults([]);
-    setSelectedSearchAnimeIds(new Set());
-    setAddModalMode('search');
-    setSelectedSeason(null);
-    setSelectedYear(new Date().getFullYear());
-    setSeasonSearchResults([]);
-    setSelectedSeasonAnimeIds(new Set());
   };
 
   return (
@@ -136,7 +143,7 @@ export function AddAnimeFormModal({
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 >
                   {Array.from({ length: new Date().getFullYear() - 1970 + 1 }, (_, i) => new Date().getFullYear() - i).map(year => (
                     <option key={year} value={year}>{year}年</option>
@@ -150,7 +157,7 @@ export function AddAnimeFormModal({
                 <select
                   value={selectedSeason || ''}
                   onChange={(e) => setSelectedSeason(e.target.value as 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">選択してください</option>
                   <option value="SPRING">春</option>
@@ -226,7 +233,7 @@ export function AddAnimeFormModal({
                             }
                             setSelectedSeasonAnimeIds(newSet);
                           }}
-                          className="w-5 h-5 text-[#e879d4] rounded focus:ring-[#e879d4]"
+                          className="w-5 h-5 accent-[#e879d4] rounded focus:ring-[#e879d4]"
                         />
                         {result.coverImage?.large || result.coverImage?.medium ? (
                           <div className="relative w-16 h-24 shrink-0">
@@ -243,7 +250,9 @@ export function AddAnimeFormModal({
                             />
                           </div>
                         ) : (
-                          <div className="w-16 h-24 flex items-center justify-center text-2xl shrink-0">🎬</div>
+                          <div className="w-16 h-24 flex items-center justify-center shrink-0">
+                            <Film className="w-6 h-6 text-gray-400 dark:text-gray-500" aria-hidden />
+                          </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm dark:text-white truncate">
@@ -288,11 +297,11 @@ export function AddAnimeFormModal({
                       // 重複がある場合は警告を表示
                       if (!isTestEnv && filteredAnimes.length < selectedAnimes.length) {
                         const duplicateCount = selectedAnimes.length - filteredAnimes.length;
-                        alert(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`);
+                        showToast(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`, 'error');
                       }
                       
                       if (filteredAnimes.length === 0) {
-                        alert('登録できるアニメがありません（すべて既に登録済みです）。');
+                        showToast('登録できるアニメがありません（すべて既に登録済みです）。', 'error');
                         return;
                       }
                       
@@ -370,7 +379,7 @@ export function AddAnimeFormModal({
                             (typeof error === 'object' && error !== null && 'details' in error ? String((error as { details?: string }).details) :
                             (typeof error === 'object' && error !== null && 'hint' in error ? String((error as { hint?: string }).hint) :
                             String(error)))) || '不明なエラー';
-                          alert(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`);
+                          showToast(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`, 'error');
                         }
                       }
                       
@@ -405,7 +414,7 @@ export function AddAnimeFormModal({
                       handleSearch();
                     }
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                   placeholder="アニメタイトルで検索"
                 />
                 <button
@@ -467,7 +476,7 @@ export function AddAnimeFormModal({
                             }
                             setSelectedSearchAnimeIds(newSet);
                           }}
-                          className="w-5 h-5 text-[#e879d4] rounded focus:ring-[#e879d4]"
+                          className="w-5 h-5 accent-[#e879d4] rounded focus:ring-[#e879d4]"
                         />
                         {result.coverImage?.large || result.coverImage?.medium ? (
                           <div className="relative w-16 h-24 shrink-0">
@@ -484,7 +493,9 @@ export function AddAnimeFormModal({
                             />
                           </div>
                         ) : (
-                          <div className="w-16 h-24 flex items-center justify-center text-2xl shrink-0">🎬</div>
+                          <div className="w-16 h-24 flex items-center justify-center shrink-0">
+                            <Film className="w-6 h-6 text-gray-400 dark:text-gray-500" aria-hidden />
+                          </div>
                         )}
                         <div className="flex-1 text-left">
                           <p className="font-bold text-sm dark:text-white">
@@ -544,7 +555,7 @@ export function AddAnimeFormModal({
                 <button 
                   onClick={async () => {
                     if (selectedSearchAnimeIds.size === 0) {
-                      alert('アニメを選択してください');
+                      showToast('アニメを選択してください', 'error');
                       return;
                     }
                     
@@ -574,11 +585,11 @@ export function AddAnimeFormModal({
                     // 重複がある場合は警告を表示
                     if (!isTestEnv && filteredAnimes.length < selectedAnimes.length) {
                       const duplicateCount = selectedAnimes.length - filteredAnimes.length;
-                      alert(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`);
+                      showToast(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`, 'error');
                     }
                     
                     if (filteredAnimes.length === 0) {
-                      alert('登録できるアニメがありません（すべて既に登録済みです）。');
+                      showToast('登録できるアニメがありません（すべて既に登録済みです）。', 'error');
                       return;
                     }
                     
@@ -712,7 +723,7 @@ export function AddAnimeFormModal({
                           (typeof error === 'object' && error !== null && 'details' in error ? String((error as { details?: string }).details) :
                           (typeof error === 'object' && error !== null && 'hint' in error ? String((error as { hint?: string }).hint) :
                           String(error)))) || '不明なエラー';
-                        alert(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`);
+                        showToast(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`, 'error');
                       }
                     }
                     

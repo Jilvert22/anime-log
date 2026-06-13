@@ -1,9 +1,11 @@
 'use client';
 
+import { UserRound } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { UserProfile } from '../../lib/api';
 import type { Anime } from '../../types';
 import { AnimeCard } from '../AnimeCard';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function UserProfileModal({
   show,
@@ -24,6 +26,9 @@ export function UserProfileModal({
   onToggleFollow: (userId: string) => void;
   onAnimeClick: (anime: Anime) => void;
 }) {
+  // Escキーでモーダルを閉じる
+  useEscapeKey(onClose, show);
+
   if (!show || !selectedUserProfile) return null;
 
   return (
@@ -37,7 +42,7 @@ export function UserProfileModal({
       >
         <div className="flex items-center gap-4 mb-4">
           <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-3xl shrink-0">
-            👤
+            <UserRound className="w-8 h-8 text-white/90" aria-hidden />
           </div>
           <div className="flex-1">
             <h2 className="text-xl font-bold dark:text-white">{selectedUserProfile.username}</h2>

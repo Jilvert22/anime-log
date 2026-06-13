@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useFeedback } from '../../contexts/FeedbackContext';
 import type { WatchlistItem } from '../../lib/storage/types';
 
 export function SeasonEndModal({
@@ -14,6 +15,7 @@ export function SeasonEndModal({
   onDelete: () => void;
   onKeep: () => void;
 }) {
+  const { showToast } = useFeedback();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleMoveToBacklog = async () => {
@@ -69,7 +71,7 @@ export function SeasonEndModal({
                 await onKeep(); // 親コンポーネントで視聴中への移行処理を実行
               } catch (error) {
                 console.error('Failed to update to watching:', error);
-                alert('視聴中への移行に失敗しました');
+                showToast('視聴中への移行に失敗しました', 'error');
                 // エラー時も処理状態をリセット
                 setTimeout(() => {
                   setIsProcessing(false);

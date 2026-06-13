@@ -74,7 +74,37 @@ export async function addToWatchlist(item: WatchlistItemInput): Promise<Watchlis
         .single();
 
       if (existing) {
-        // 既に登録されている場合は既存のアイテムを返す
+        // シーズン指定付きの追加で、既存アイテム(積みアニメ等)のシーズンが異なる場合は
+        // シーズン情報を付け替えて「移動」する。黙って既存を返すと、積みアニメにある
+        // 作品を視聴予定に追加した操作が無視されたように見えてしまうため
+        if (
+          item.season_year &&
+          item.season &&
+          (existing.season_year !== item.season_year || existing.season !== item.season)
+        ) {
+          const { data: moved, error: moveError } = await supabase
+            .from('watchlist')
+            .update({
+              season_year: item.season_year,
+              season: item.season,
+              status: item.status || 'planned',
+              broadcast_day: item.broadcast_day ?? existing.broadcast_day,
+              broadcast_time: item.broadcast_time ?? existing.broadcast_time,
+              streaming_sites: item.streaming_sites ?? existing.streaming_sites,
+            })
+            .eq('id', existing.id)
+            .select()
+            .single();
+          if (moveError || !moved) {
+            throw new SupabaseError(
+              translateSupabaseError(moveError) || 'ウォッチリストの更新に失敗しました',
+              undefined,
+              moveError ?? undefined
+            );
+          }
+          return moved;
+        }
+        // 同じ目的(同シーズンまたは積みアニメ同士)なら既存のアイテムを返す
         return existing;
       }
     }

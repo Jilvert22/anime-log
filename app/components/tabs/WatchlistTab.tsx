@@ -1,4 +1,6 @@
 'use client';
+import { Star, Film, Plus } from 'lucide-react';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 import { useState, useCallback, useEffect, memo, useMemo } from 'react';
 import Image from 'next/image';
@@ -64,7 +66,7 @@ const WatchlistCard = memo(function WatchlistCard({
             type="checkbox"
             checked={isSelected || false}
             onChange={handleToggleSelect}
-            className="w-5 h-5 rounded border-gray-300 text-[#e879d4] focus:ring-[#e879d4] cursor-pointer"
+            className="w-5 h-5 rounded border-gray-300 accent-[#e879d4] focus:ring-[#e879d4] cursor-pointer"
           />
         </div>
       )}
@@ -82,8 +84,8 @@ const WatchlistCard = memo(function WatchlistCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">
-            🎬
+          <div className="w-full h-full flex items-center justify-center">
+            <Film className="w-8 h-8 text-white/60" aria-hidden />
           </div>
         )}
         
@@ -160,11 +162,16 @@ export function WatchlistTab({
   const [watchedSeasonYear, setWatchedSeasonYear] = useState<number>(new Date().getFullYear());
   const [watchedSeason, setWatchedSeason] = useState<'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'>('SPRING');
 
+  const { showToast, confirmDialog } = useFeedback();
+
   // 積みアニメを読み込む
+  // 積みアニメ = シーズン未設定のアイテムのみ。シーズン付き(今期/来期視聴予定)は
+  // SeasonWatchlistTabの管轄で、シーズン終了時の「積みアニメへ移動」で
+  // シーズン情報がクリアされて初めてここに現れる
   const loadWatchlist = useCallback(async () => {
     try {
       const items = await storage.getWatchlist();
-      setWatchlist(items);
+      setWatchlist(items.filter(item => item.season_year == null && item.season == null));
     } catch (error) {
       console.error('積みアニメの読み込みに失敗しました:', error);
     }
@@ -223,12 +230,12 @@ export function WatchlistTab({
     const isAlreadyWatched = isAnimeWatched(anime.id);
     
     if (isAlreadyWatched) {
-      alert('このアニメは既に視聴済み（クール別に追加済み）です');
+      showToast('このアニメは既に視聴済み（クール別に追加済み）です', 'error');
       return;
     }
     
     if (isAlreadyAdded) {
-      alert('このアニメは既に積みアニメに追加されています');
+      showToast('このアニメは既に積みアニメに追加されています', 'error');
       return;
     }
     
@@ -241,9 +248,10 @@ export function WatchlistTab({
     
     if (success) {
       await loadWatchlist();
+      showToast('積みアニメに追加しました');
       // 検索フォームは開いたままにする（追加後も続けて検索できるように）
     } else {
-      alert('積みアニメの追加に失敗しました');
+      showToast('積みアニメの追加に失敗しました', 'error');
     }
   }, [storage, loadWatchlist, isAnimeAdded, isAnimeWatched]);
 
@@ -252,8 +260,9 @@ export function WatchlistTab({
     const success = await storage.removeFromWatchlist(anilistId);
     if (success) {
       await loadWatchlist();
+      showToast('積みアニメから削除しました');
     } else {
-      alert('削除に失敗しました');
+      showToast('削除に失敗しました', 'error');
     }
   }, [storage, loadWatchlist]);
 
@@ -277,7 +286,7 @@ export function WatchlistTab({
       const animeData = results?.find((a: AniListSearchResult) => a.id === selectedWatchlistItem.anilist_id);
       
       if (!animeData) {
-        alert('アニメ情報の取得に失敗しました');
+        showToast('アニメ情報の取得に失敗しました', 'error');
         return;
       }
 
@@ -341,7 +350,7 @@ export function WatchlistTab({
       } catch (error: unknown) {
         console.error('アニメの保存に失敗しました:', error);
         const errorMessage = error instanceof Error ? error.message : 'アニメの保存に失敗しました';
-        alert(`アニメの保存に失敗しました${errorMessage !== 'アニメの保存に失敗しました' ? `: ${errorMessage}` : ''}`);
+        showToast(`アニメの保存に失敗しました${errorMessage !== 'アニメの保存に失敗しました' ? `: ${errorMessage}` : ''}`, 'error');
         return;
       }
 
@@ -357,7 +366,7 @@ export function WatchlistTab({
     } catch (error: unknown) {
       console.error('視聴済みマークに失敗しました:', error);
       const errorMessage = error instanceof Error ? error.message : 'エラーが発生しました';
-      alert(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`);
+      showToast(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`, 'error');
     }
   }, [selectedWatchlistItem, user, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, handleRemoveFromWatchlist]);
 
@@ -468,7 +477,7 @@ export function WatchlistTab({
   const handleBulkDelete = useCallback(async () => {
     if (selectedIds.size === 0) return;
 
-    if (!confirm(`${selectedIds.size}件のアニメを削除しますか？`)) {
+    if (!(await confirmDialog({ message: `${selectedIds.size}件のアニメを削除しますか？`, danger: true, confirmLabel: '削除' }))) {
       return;
     }
 
@@ -479,8 +488,9 @@ export function WatchlistTab({
       await loadWatchlist();
       setSelectedIds(new Set());
       setIsSelectionMode(false);
+      showToast(`${ids.length}件を削除しました`);
     } else {
-      alert('削除に失敗しました');
+      showToast('削除に失敗しました', 'error');
     }
   }, [storage, selectedIds, loadWatchlist]);
 
@@ -488,7 +498,7 @@ export function WatchlistTab({
   const handleBulkMarkAsWatched = useCallback(async () => {
     if (selectedIds.size === 0 || !user) return;
 
-    if (!confirm(`${selectedIds.size}件のアニメを視聴済みにしますか？\n\n評価とクールは後で個別に設定できます。`)) {
+    if (!(await confirmDialog({ message: `${selectedIds.size}件のアニメを視聴済みにしますか？\n評価とクールは後で個別に設定できます。`, confirmLabel: '視聴済みにする' }))) {
       return;
     }
 
@@ -560,7 +570,7 @@ export function WatchlistTab({
       setIsSelectionMode(false);
     } catch (error) {
       console.error('一括視聴済みマークに失敗しました:', error);
-      alert('一部のアニメの処理に失敗しました');
+      showToast('一部のアニメの処理に失敗しました', 'error');
     }
   }, [storage, selectedIds, watchlist, user, seasons, setSeasons, loadWatchlist]);
 
@@ -592,9 +602,10 @@ export function WatchlistTab({
         <button 
           onClick={() => setShowAddForm(true)}
           data-onboarding="step-2"
-          className="w-full mb-4 py-4 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
+          className="w-full mb-4 py-4 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors inline-flex items-center justify-center gap-1.5"
         >
-          + 積みアニメを追加
+          <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
+          積みアニメを追加
         </button>
       ) : (
         /* 検索フォーム */
@@ -904,7 +915,7 @@ export function WatchlistTab({
                         : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {rating}⭐
+                    <span className="inline-flex items-center gap-0.5">{rating}<Star className="w-3.5 h-3.5 fill-current" aria-hidden /></span>
                   </button>
                 ))}
               </div>

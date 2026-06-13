@@ -1,7 +1,9 @@
 'use client';
+import { Smartphone } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { useFeedback } from '../contexts/FeedbackContext';
 import { track } from '@vercel/analytics/react';
 
 const BANNER_DISMISSED_DATE_KEY = 'pwa-banner-dismissed-date';
@@ -10,6 +12,7 @@ export function PWAInstallBanner() {
   const { isInstallable, isInstalled, isIOS, shouldShowBanner, install } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const { showToast } = useFeedback();
 
   useEffect(() => {
     // ローカルストレージから非表示フラグを確認
@@ -54,7 +57,7 @@ export function PWAInstallBanner() {
     // インストールクリックイベントを送信（iOS）
     track('pwa_install_clicked', { source: 'banner', platform: 'ios' });
     // iOSの場合はSafariの共有メニューから「ホーム画面に追加」を案内
-    alert(
+    showToast(
       'iOSの場合:\n' +
       '1. Safariの下部にある共有ボタン（□↑）をタップ\n' +
       '2. 「ホーム画面に追加」を選択\n' +
@@ -71,7 +74,7 @@ export function PWAInstallBanner() {
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg animate-slide-up">
       <div className="max-w-md mx-auto">
         <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[#e879d4] to-[#f09fe3] rounded-xl text-white">
-          <div className="flex-shrink-0 text-3xl">📱</div>
+          <div className="flex-shrink-0"><Smartphone className="w-8 h-8" aria-hidden /></div>
           <div className="flex-1">
             <h3 className="font-bold text-lg mb-1">アプリとして使う</h3>
             <p className="text-sm opacity-90 mb-3">

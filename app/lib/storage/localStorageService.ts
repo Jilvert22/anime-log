@@ -58,6 +58,21 @@ export class LocalStorageService implements IStorageService {
       if (item.anilist_id !== -1) {
         const existing = items.find(i => i.anilist_id === item.anilist_id);
         if (existing) {
+          // シーズン指定付きの追加で既存のシーズンが異なる場合は付け替えて「移動」
+          // (積みアニメ→視聴予定への追加が黙って無視されるのを防ぐ。Supabase側と同じ挙動)
+          if (
+            item.season_year &&
+            item.season &&
+            (existing.season_year !== item.season_year || existing.season !== item.season)
+          ) {
+            existing.season_year = item.season_year;
+            existing.season = item.season;
+            existing.status = item.status || 'planned';
+            existing.broadcast_day = item.broadcast_day ?? existing.broadcast_day;
+            existing.broadcast_time = item.broadcast_time ?? existing.broadcast_time;
+            existing.streaming_sites = item.streaming_sites ?? existing.streaming_sites;
+            this.saveWatchlistToStorage(items);
+          }
           return true; // 既に存在する場合は成功とみなす
         }
       }

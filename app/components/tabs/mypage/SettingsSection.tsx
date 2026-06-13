@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Mail, KeyRound, AlertTriangle, Search, Smartphone, Settings, ArrowRight, ChevronDown } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { getSession, signOut, updateEmail, updatePassword } from '../../../lib/api';
 import { useAuth } from '../../../hooks/useAuth';
@@ -251,7 +252,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
   return (
     <>
       <section className="space-y-2">
-        <h2 className="text-xl font-bold px-4 text-[#6b5b6e] dark:text-white font-mixed">⚙️ 設定</h2>
+        <h2 className="text-xl font-bold px-4 text-[#6b5b6e] dark:text-white font-mixed flex items-center gap-2"><Settings className="w-5 h-5" aria-hidden />設定</h2>
         
         {/* PWAインストール（未インストール時のみ表示） */}
         {!isInstalled && (isInstallable || isIOS) && (
@@ -262,13 +263,13 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 className="w-full px-4 py-4 flex items-center justify-between hover:opacity-90 transition-opacity"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">📱</span>
+                  <Smartphone className="w-6 h-6 text-white" aria-hidden />
                   <div className="text-left">
                     <div className="text-white font-bold text-base">アプリをインストール</div>
                     <div className="text-white/90 text-sm">ホーム画面に追加でより快適に</div>
                   </div>
                 </div>
-                <span className="text-white text-xl">→</span>
+                <ArrowRight className="w-5 h-5 text-white" aria-hidden />
               </button>
             </div>
           </div>
@@ -283,11 +284,9 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
               className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
             >
               <span className="text-gray-700 dark:text-gray-200 font-medium">アカウント設定</span>
-              <span className={`text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
-                isAccountSettingsOpen ? '' : 'rotate-[-90deg]'
-              }`}>
-                ▼
-              </span>
+              <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
+                isAccountSettingsOpen ? '' : '-rotate-90'
+              }`} aria-hidden />
             </button>
             
             {/* 折りたたみコンテンツ */}
@@ -393,7 +392,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">✉️</div>
+              <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 メールアドレスを変更
               </h2>
@@ -410,7 +409,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder="新しいメールアドレス"
                 disabled={changeLoading}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -478,7 +477,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">🔑</div>
+              <KeyRound className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 パスワードを変更
               </h2>
@@ -493,7 +492,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="新しいパスワード"
                   disabled={changeLoading}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 {/* パスワード強度表示 */}
                 {newPassword && (
@@ -533,7 +532,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 placeholder="新しいパスワード（確認）"
                 disabled={changeLoading}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -595,7 +594,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">⚠️</div>
+              <AlertTriangle className="w-10 h-10 mx-auto mb-4 text-amber-500" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 アカウントを削除しますか？
               </h2>
@@ -661,7 +660,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">🔍</div>
+              <Search className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 重複アニメを削除
               </h2>
@@ -723,7 +722,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">📱</div>
+              <Smartphone className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <h2 className="text-xl font-bold mb-2 dark:text-white">
                 ホーム画面に追加
               </h2>

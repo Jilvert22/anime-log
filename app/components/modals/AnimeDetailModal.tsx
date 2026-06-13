@@ -13,9 +13,11 @@ import { StreamingBadges } from '../common/StreamingBadges';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateAnimeStreamingInfo } from '../../lib/api/streamingUpdate';
 import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, X, Heart, Star, Film, Plus } from 'lucide-react';
 import { logger } from '../../lib/logger';
 import { normalizeError } from '../../lib/api/errors';
+import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 interface AnimeDetailModalProps {
   selectedAnime: Anime;
@@ -61,8 +63,17 @@ export function AnimeDetailModal({
   setShowSongModal,
 }: AnimeDetailModalProps) {
   const [animeDetailTab, setAnimeDetailTab] = useState<'info' | 'reviews'>('info');
+  const { showToast } = useFeedback();
   const [anilistDetail, setAnilistDetail] = useState<AniListMedia | null>(null);
-  
+
+  // 名言追加インラインフォーム
+  const [isAddingQuote, setIsAddingQuote] = useState(false);
+  const [newQuoteText, setNewQuoteText] = useState('');
+  const [newQuoteCharacter, setNewQuoteCharacter] = useState('');
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(() => setSelectedAnime(null));
+
   // AniList IDから詳細情報を取得（公式HPリンク用）
   useEffect(() => {
     // Anime型のidがAniList IDかどうかを判定（1000000未満の場合はAniList IDの可能性が高い）
@@ -116,7 +127,7 @@ export function AnimeDetailModal({
             className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             aria-label="閉じる"
           >
-            <span className="text-2xl leading-none">×</span>
+            <X className="w-5 h-5" aria-hidden />
           </button>
         </div>
         {/* タブ切り替え */}
@@ -169,8 +180,10 @@ export function AnimeDetailModal({
                       />
                     </div>
                   </div>
+                ) : selectedAnime.image ? (
+                  <span className="text-6xl block mb-3">{selectedAnime.image}</span>
                 ) : (
-                  <span className="text-6xl block mb-3">{selectedAnime.image || '🎬'}</span>
+                  <Film className="w-10 h-10 mx-auto mb-3 text-gray-400 dark:text-gray-500" aria-hidden />
                 );
               })()}
               <h3 className="text-xl font-bold mt-2 dark:text-white">{selectedAnime.title}</h3>
@@ -393,7 +406,7 @@ export function AnimeDetailModal({
                     );
                   }}
                   placeholder="シリーズ名を入力（任意）"
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white text-sm"
                 />
                 {selectedAnime.seriesName && (
                   <button
@@ -476,7 +489,7 @@ export function AnimeDetailModal({
                         }}
                         className="text-xl"
                       >
-                        {selectedAnime.songs.op.isFavorite ? '❤️' : '🤍'}
+                        <Heart className={`w-5 h-5 ${selectedAnime.songs.op.isFavorite ? 'fill-[#e879d4] text-[#e879d4]' : 'text-gray-400'}`} aria-hidden />
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -516,7 +529,7 @@ export function AnimeDetailModal({
                               : 'text-gray-300'
                           }`}
                         >
-                          ⭐
+                          <Star className="w-4 h-4 fill-current" aria-hidden />
                         </button>
                       ))}
                     </div>
@@ -604,7 +617,7 @@ export function AnimeDetailModal({
                         }}
                         className="text-xl"
                       >
-                        {selectedAnime.songs.ed.isFavorite ? '❤️' : '🤍'}
+                        <Heart className={`w-5 h-5 ${selectedAnime.songs.ed.isFavorite ? 'fill-[#e879d4] text-[#e879d4]' : 'text-gray-400'}`} aria-hidden />
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -644,7 +657,7 @@ export function AnimeDetailModal({
                               : 'text-gray-300'
                           }`}
                         >
-                          ⭐
+                          <Star className="w-4 h-4 fill-current" aria-hidden />
                         </button>
                       ))}
                     </div>
@@ -707,29 +720,71 @@ export function AnimeDetailModal({
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">名言</p>
                 <button
-                  onClick={async () => {
-                    const newQuoteText = prompt('セリフを入力してください:');
-                    if (newQuoteText) {
-                      const newQuoteCharacter = prompt('キャラクター名（任意）:') || undefined;
-                      const newQuotes = [...(selectedAnime.quotes || []), { text: newQuoteText, character: newQuoteCharacter }];
-                      await handleUpdateAnime(
-                        (anime) => ({ ...anime, quotes: newQuotes }),
-                        async (anime) => {
-                          const { error } = await supabase
-                            .from('animes')
-                            .update({ quotes: newQuotes })
-                            .eq('id', anime.id)
-                            .eq('user_id', user!.id);
-                          if (error) throw error;
-                        }
-                      );
-                    }
-                  }}
-                  className="text-xs bg-[#e879d4] text-white px-3 py-1 rounded-lg hover:bg-[#f09fe3] transition-colors"
+                  onClick={() => setIsAddingQuote((v) => !v)}
+                  className="text-xs bg-[#e879d4] text-white px-3 py-1 rounded-lg hover:bg-[#f09fe3] transition-colors inline-flex items-center gap-1"
                 >
-                  + 名言を追加
+                  <Plus className="w-3.5 h-3.5" strokeWidth={3} aria-hidden />
+                  名言を追加
                 </button>
               </div>
+
+              {/* 名言追加インラインフォーム */}
+              {isAddingQuote && (
+                <div className="mb-3 bg-gray-50 dark:bg-gray-700 rounded-lg p-3 space-y-2">
+                  <textarea
+                    value={newQuoteText}
+                    onChange={(e) => setNewQuoteText(e.target.value)}
+                    placeholder="セリフを入力"
+                    rows={2}
+                    autoFocus
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-800 dark:text-white resize-none"
+                  />
+                  <input
+                    type="text"
+                    value={newQuoteCharacter}
+                    onChange={(e) => setNewQuoteCharacter(e.target.value)}
+                    placeholder="キャラクター名（任意）"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-800 dark:text-white"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => {
+                        setIsAddingQuote(false);
+                        setNewQuoteText('');
+                        setNewQuoteCharacter('');
+                      }}
+                      className="px-3 py-1.5 text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!newQuoteText.trim()) return;
+                        const newQuotes = [...(selectedAnime.quotes || []), { text: newQuoteText.trim(), character: newQuoteCharacter.trim() || undefined }];
+                        await handleUpdateAnime(
+                          (anime) => ({ ...anime, quotes: newQuotes }),
+                          async (anime) => {
+                            const { error } = await supabase
+                              .from('animes')
+                              .update({ quotes: newQuotes })
+                              .eq('id', anime.id)
+                              .eq('user_id', user!.id);
+                            if (error) throw error;
+                          }
+                        );
+                        setNewQuoteText('');
+                        setNewQuoteCharacter('');
+                        setIsAddingQuote(false);
+                        showToast('名言を追加しました');
+                      }}
+                      disabled={!newQuoteText.trim()}
+                      className="px-3 py-1.5 text-xs font-bold bg-[#e879d4] text-white rounded-lg hover:bg-[#d45dbf] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      追加
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {selectedAnime.quotes && selectedAnime.quotes.length > 0 ? (
                 <div className="space-y-2">
@@ -759,7 +814,7 @@ export function AnimeDetailModal({
                         }}
                         className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xs"
                       >
-                        ✕
+                        <X className="w-3.5 h-3.5" aria-hidden />
                       </button>
                     </div>
                   ))}
@@ -774,7 +829,7 @@ export function AnimeDetailModal({
                 <button
                   onClick={async () => {
                     if (!user) {
-                      alert('ログインが必要です');
+                      showToast('ログインが必要です', 'error');
                       return;
                     }
                     
@@ -786,11 +841,11 @@ export function AnimeDetailModal({
                         title: selectedAnime.title,
                         image: selectedAnime.image || null,
                       });
-                      alert('積みアニメに追加しました');
+                      showToast('積みアニメに追加しました');
                     } catch (error) {
                       const normalizedError = normalizeError(error);
                       logger.error('積みアニメの追加に失敗しました', normalizedError, 'AnimeDetailModal');
-                      alert('積みアニメの追加に失敗しました');
+                      showToast('積みアニメの追加に失敗しました', 'error');
                     }
                   }}
                   className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors"

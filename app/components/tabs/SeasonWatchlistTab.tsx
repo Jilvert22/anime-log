@@ -1,4 +1,6 @@
 'use client';
+import { Tv, Star, Film } from 'lucide-react';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
@@ -90,7 +92,7 @@ function SeasonWatchlistCard({
             type="checkbox"
             checked={isSelected || false}
             onChange={onToggleSelect}
-            className="w-5 h-5 rounded border-gray-300 text-[#e879d4] focus:ring-[#e879d4] cursor-pointer"
+            className="w-5 h-5 rounded border-gray-300 accent-[#e879d4] focus:ring-[#e879d4] cursor-pointer"
           />
         </div>
       )}
@@ -108,8 +110,8 @@ function SeasonWatchlistCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">
-            🎬
+          <div className="w-full h-full flex items-center justify-center">
+            <Film className="w-8 h-8 text-white/60" aria-hidden />
           </div>
         )}
         
@@ -178,8 +180,8 @@ function SearchResultCard({
             unoptimized
           />
         ) : (
-          <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center text-4xl">
-            🎬
+          <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center">
+            <Film className="w-8 h-8 text-white/60" aria-hidden />
           </div>
         )}
         {/* ホバー時のオーバーレイ */}
@@ -353,6 +355,18 @@ export default function SeasonWatchlistTab() {
     };
   }, [filterQuery, allSeasonAnime]);
 
+  const { showToast, confirmDialog } = useFeedback();
+
+  // 視聴済みモーダルを開く
+  // クールの初期値はwatchlist側のシーズン情報を優先(ユーザーの入力ミス防止)
+  const openWatchedModal = useCallback((item: WatchlistItem) => {
+    setSelectedWatchlistItem(item);
+    setWatchedRating(0);
+    setWatchedSeasonYear(item.season_year ?? new Date().getFullYear());
+    setWatchedSeason(item.season ?? 'SPRING');
+    setShowWatchedModal(true);
+  }, []);
+
   // ステータス変更
   const handleStatusChange = useCallback(async (
     anilistId: number,
@@ -362,14 +376,22 @@ export default function SeasonWatchlistTab() {
       const success = await storage.updateWatchlistItem(anilistId, { status: newStatus });
       if (success) {
         await loadWatchlist();
+        showToast('ステータスを更新しました');
+        // 視聴完了にしたタイミングで視聴記録化(評価入力)を促す
+        if (newStatus === 'completed') {
+          const completedItem = watchlist.find(item => item.anilist_id === anilistId);
+          if (completedItem) {
+            openWatchedModal({ ...completedItem, status: 'completed' });
+          }
+        }
       } else {
-        alert('ステータスの更新に失敗しました');
+        showToast('ステータスの更新に失敗しました', 'error');
       }
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('ステータスの更新に失敗しました');
+      showToast('ステータスの更新に失敗しました', 'error');
     }
-  }, [storage, loadWatchlist]);
+  }, [storage, loadWatchlist, watchlist, openWatchedModal]);
 
   // 視聴予定に追加
   const handleAddToWatchlist = useCallback(async (anime: AniListMediaWithStreaming) => {
@@ -391,13 +413,14 @@ export default function SeasonWatchlistTab() {
 
       if (success) {
         await loadWatchlist();
+        showToast('視聴予定に追加しました');
         // 追加後も一覧には表示し続ける（追加済み表示のまま）
       } else {
-        alert('視聴予定の追加に失敗しました');
+        showToast('視聴予定の追加に失敗しました', 'error');
       }
     } catch (error) {
       console.error('Failed to add to watchlist:', error);
-      alert('視聴予定の追加に失敗しました');
+      showToast('視聴予定の追加に失敗しました', 'error');
     }
   }, [storage, activeSeason.year, activeSeason.season, loadWatchlist]);
 
@@ -412,23 +435,15 @@ export default function SeasonWatchlistTab() {
       const success = await storage.removeFromWatchlist(anilistId);
       if (success) {
         await loadWatchlist();
+        showToast('視聴予定から外しました');
       } else {
-        alert('視聴予定から外す操作に失敗しました');
+        showToast('視聴予定から外す操作に失敗しました', 'error');
       }
     } catch (error) {
       console.error('Failed to remove from watchlist:', error);
-      alert('視聴予定から外す操作に失敗しました');
+      showToast('視聴予定から外す操作に失敗しました', 'error');
     }
   }, [storage, loadWatchlist]);
-
-  // 視聴済みモーダルを開く
-  const openWatchedModal = useCallback((item: WatchlistItem) => {
-    setSelectedWatchlistItem(item);
-    setWatchedRating(0);
-    setWatchedSeasonYear(new Date().getFullYear());
-    setWatchedSeason('SPRING');
-    setShowWatchedModal(true);
-  }, []);
 
   // 視聴済みにする（評価・クールを設定して animes に追加し、watchlist から削除）
   const handleMarkAsWatched = useCallback(async () => {
@@ -437,7 +452,7 @@ export default function SeasonWatchlistTab() {
     try {
       const animeData = await getAnimeDetail(selectedWatchlistItem.anilist_id);
       if (!animeData) {
-        alert('アニメ情報の取得に失敗しました');
+        showToast('アニメ情報の取得に失敗しました', 'error');
         return;
       }
 
@@ -486,7 +501,7 @@ export default function SeasonWatchlistTab() {
     } catch (error) {
       console.error('視聴済みマークに失敗しました:', error);
       const errorMessage = error instanceof Error ? error.message : 'エラーが発生しました';
-      alert(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`);
+      showToast(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`, 'error');
     }
   }, [selectedWatchlistItem, user, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, storage, loadWatchlist]);
 
@@ -598,7 +613,7 @@ export default function SeasonWatchlistTab() {
       setSelectedIds(new Set());
       setIsSelectionMode(false);
     } else {
-      alert('ステータスの更新に失敗しました');
+      showToast('ステータスの更新に失敗しました', 'error');
     }
   }, [storage, selectedIds, loadWatchlist]);
 
@@ -606,7 +621,7 @@ export default function SeasonWatchlistTab() {
   const handleBulkDelete = useCallback(async () => {
     if (selectedIds.size === 0) return;
 
-    if (!confirm(`${selectedIds.size}件のアニメを削除しますか？`)) {
+    if (!(await confirmDialog({ message: `${selectedIds.size}件のアニメを削除しますか？`, danger: true, confirmLabel: '削除' }))) {
       return;
     }
 
@@ -617,8 +632,9 @@ export default function SeasonWatchlistTab() {
       await loadWatchlist();
       setSelectedIds(new Set());
       setIsSelectionMode(false);
+      showToast(`${ids.length}件を削除しました`);
     } else {
-      alert('削除に失敗しました');
+      showToast('削除に失敗しました', 'error');
     }
   }, [storage, selectedIds, loadWatchlist]);
 
@@ -855,7 +871,7 @@ export default function SeasonWatchlistTab() {
         </div>
       ) : !isLoading ? (
         <div className="text-center py-12">
-          <p className="text-4xl mb-3">📺</p>
+          <Tv className="w-10 h-10 mx-auto mb-3 text-gray-400" aria-hidden />
           <p className="text-gray-500 dark:text-gray-400">
             {filterStatus === 'all' 
               ? `${selectedSeason === 'current' ? '今期' : '来期'}の視聴予定アニメがありません`
@@ -909,7 +925,7 @@ export default function SeasonWatchlistTab() {
                       watchedRating === rating ? 'bg-[#e879d4] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {rating}⭐
+                    <span className="inline-flex items-center gap-0.5">{rating}<Star className="w-3.5 h-3.5 fill-current" aria-hidden /></span>
                   </button>
                 ))}
               </div>

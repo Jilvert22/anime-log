@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useRef, useEffect } from 'react';
+import { Star, ChevronDown, Plus } from 'lucide-react';
 import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../../types';
 import { AnimeCard } from '../AnimeCard';
 
@@ -195,55 +196,61 @@ export function HomeTab({
       {homeSubTab === 'seasons' && (
         <>
           {/* 統計カード */}
-          <div 
-            className="rounded-2xl p-5 text-white mb-6 relative"
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 35%, #e879d4 65%, #f093fb 100%)'
-            }}
-          >
+          <div className="rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm p-5 mb-6 relative overflow-hidden">
+            {/* ブランドアクセント（上端のみ） */}
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-1"
+              style={{ background: 'linear-gradient(90deg, #667eea 0%, #e879d4 60%, #f093fb 100%)' }}
+            />
             {/* 統計情報 */}
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               <div className="text-center">
-                <p className="text-3xl font-black">{count}</p>
-                <p className="text-white/80 text-xs mt-1">作品</p>
+                <p className="text-3xl font-black tabular-nums text-[#d45dbf]">{count}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">作品</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-black">{totalRewatchCount}</p>
-                <p className="text-white/80 text-xs mt-1">周</p>
+                <p className="text-3xl font-black tabular-nums text-[#d45dbf]">{totalRewatchCount}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">周</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-black">
-                  {averageRating > 0 ? `⭐${averageRating.toFixed(1)}` : '⭐0.0'}
+                <p className="text-3xl font-black tabular-nums text-[#d45dbf] flex items-center justify-center gap-1">
+                  <Star className="w-5 h-5 fill-[#d99a16] text-[#d99a16]" aria-hidden />
+                  {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
                 </p>
-                <p className="text-white/80 text-xs mt-1">平均評価</p>
+                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">平均評価</p>
               </div>
             </div>
           </div>
 
           {/* コントロールバー */}
           <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
-            <button 
+            <button
               onClick={onOpenAddForm}
               data-onboarding="step-1"
-              className="py-3 px-6 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
+              className="inline-flex items-center gap-1.5 py-3 px-6 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
             >
-              + アニメを追加
+              <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
+              アニメを追加
             </button>
             
             <div className="flex flex-wrap items-center gap-2">
               {/* フィルター */}
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value as FilterType)}
-                className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
-              >
-                <option value="all">すべて</option>
-                <option value="unrated">未評価</option>
-                <option value="unwatched">周回未登録</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value as FilterType)}
+                  className="appearance-none text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg pl-3 pr-8 py-2 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                >
+                  <option value="all">すべて</option>
+                  <option value="unrated">未評価</option>
+                  <option value="unwatched">周回未登録</option>
+                </select>
+                <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" aria-hidden />
+              </div>
               
               {/* 未登録のクールも含めて表示するトグル */}
-              <label className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer">
+              <label className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-[#e879d4]/50 transition-colors">
                 <input
                   type="checkbox"
                   checked={showAllSeasons}
@@ -253,7 +260,7 @@ export function HomeTab({
                       setShowUnregisteredOnly(false);
                     }
                   }}
-                  className="w-4 h-4 text-[#e879d4] rounded focus:ring-[#e879d4]"
+                  className="w-4 h-4 accent-[#e879d4] rounded focus:ring-[#e879d4]"
                 />
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                   未登録のクールも含めて表示
@@ -262,12 +269,12 @@ export function HomeTab({
               
               {/* 未登録シーズンのみ表示トグル */}
               {showAllSeasons && (
-                <label className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer">
+                <label className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-[#e879d4]/50 transition-colors">
                   <input
                     type="checkbox"
                     checked={showUnregisteredOnly}
                     onChange={(e) => setShowUnregisteredOnly(e.target.checked)}
-                    className="w-4 h-4 text-[#e879d4] rounded focus:ring-[#e879d4]"
+                    className="w-4 h-4 accent-[#e879d4] rounded focus:ring-[#e879d4]"
                   />
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                     未登録シーズンのみ表示
@@ -278,7 +285,7 @@ export function HomeTab({
               {/* 全展開/全折りたたみ（上部ヘッダーに移動） */}
               <button
                 onClick={isAllExpanded ? collapseAll : expandAll}
-                className="px-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all text-sm font-medium text-gray-600 dark:text-gray-300"
+                className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#e879d4]/50 transition-colors text-sm font-medium text-gray-600 dark:text-gray-300"
               >
                 {isAllExpanded ? '全て折りたたむ' : '全て展開'}
               </button>
@@ -422,9 +429,24 @@ export function HomeTab({
 
           {/* 作品がない場合 */}
           {yearSeasonData.length === 0 && (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-              {filter !== 'all' ? '該当する作品がありません' : 'アニメが登録されていません'}
-            </p>
+            filter !== 'all' ? (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                該当する作品がありません
+              </p>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  アニメが登録されていません
+                </p>
+                <button
+                  onClick={onOpenAddForm}
+                  className="inline-flex items-center gap-1.5 py-3 px-6 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
+                >
+                  <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
+                  アニメを追加
+                </button>
+              </div>
+            )
           )}
         </>
       )}

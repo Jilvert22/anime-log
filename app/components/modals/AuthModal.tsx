@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { Mail, KeyRound } from 'lucide-react';
 import { getSupabaseEnv } from '../../lib/env';
 import { supabase } from '../../lib/supabase';
 import { signInWithPassword, signUp, resetPasswordForEmail } from '../../lib/api';
 import { TermsPrivacyModal } from './TermsPrivacyModal';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 type PasswordStrength = {
   level: 'weak' | 'fair' | 'good' | 'strong';
@@ -217,6 +219,9 @@ export function AuthModal({
     setAgreedToTerms(false);
   };
 
+  // Escキーでモーダルを閉じる
+  useEscapeKey(handleClose, show);
+
   if (!show) return null;
 
   return (
@@ -279,7 +284,7 @@ export function AuthModal({
         {/* リセットメール送信後の画面 */}
         {resetEmailSent ? (
           <div className="text-center py-4">
-            <div className="text-4xl mb-4">✉️</div>
+            <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
             <h3 className="text-lg font-bold mb-2 dark:text-white">
               リセットメールを送信しました
             </h3>
@@ -301,7 +306,7 @@ export function AuthModal({
           </div>
         ) : emailSent ? (
           <div className="text-center py-4">
-            <div className="text-4xl mb-4">✉️</div>
+            <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
             <h3 className="text-lg font-bold mb-2 dark:text-white">
               確認メールを送信しました
             </h3>
@@ -328,7 +333,7 @@ export function AuthModal({
           <>
             {/* パスワードリセット画面 */}
             <div className="text-center mb-4">
-              <div className="text-4xl mb-4">🔑</div>
+              <KeyRound className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 登録したメールアドレスを入力してください。
               </p>
@@ -351,7 +356,7 @@ export function AuthModal({
                     handlePasswordReset();
                   }
                 }}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 placeholder="example@email.com"
               />
             </div>
@@ -388,7 +393,7 @@ export function AuthModal({
                 type="email"
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 placeholder="example@email.com"
               />
             </div>
@@ -408,7 +413,7 @@ export function AuthModal({
                       handleAuth();
                     }
                   }}
-                  className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                   placeholder="パスワードを入力"
                 />
                 <button
@@ -496,7 +501,7 @@ export function AuthModal({
                     type="checkbox"
                     checked={agreedToTerms}
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    className="mt-1 w-4 h-4 accent-[#e879d4] border-gray-300 rounded focus:ring-[#e879d4] focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                   />
                   <span>
                     <button

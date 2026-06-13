@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { X, UserRound } from 'lucide-react';
 import type { UserProfile } from '../../lib/api';
 import type { User } from '../../types';
+import { useFeedback } from '../../contexts/FeedbackContext';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 // オタクタイプのプリセット定義
 const OTAKU_TYPES = [
@@ -58,6 +61,7 @@ export function SettingsModal({
   const [customType, setCustomType] = useState('');
   
   const [saving, setSaving] = useState(false);
+  const { showToast, confirmDialog } = useFeedback();
 
   // プロフィール情報を初期化
   useEffect(() => {
@@ -96,7 +100,7 @@ export function SettingsModal({
     if (file) {
       // ファイルサイズチェック（5MBまで）
       if (file.size > 5 * 1024 * 1024) {
-        alert('画像サイズは5MB以下にしてください。');
+        showToast('画像サイズは5MB以下にしてください。', 'error');
         return;
       }
       
@@ -139,9 +143,12 @@ export function SettingsModal({
     if (result.success) {
       onClose();
     } else {
-      alert(result.error || 'プロフィールの保存に失敗しました');
+      showToast(result.error || 'プロフィールの保存に失敗しました', 'error');
     }
   };
+
+  // Escキーでモーダルを閉じる
+  useEscapeKey(onClose, show);
 
   if (!show) return null;
 
@@ -170,7 +177,7 @@ export function SettingsModal({
               onClick={onClose}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
-              <span className="text-2xl">✕</span>
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" aria-hidden />
             </button>
           </div>
 
@@ -189,7 +196,7 @@ export function SettingsModal({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-2xl text-gray-400">👤</span>
+                    <UserRound className="w-8 h-8 text-gray-400" aria-hidden />
                   )}
                 </div>
                 <label className="cursor-pointer px-4 py-2 bg-[#e879d4] text-white rounded-lg hover:bg-[#f09fe3] transition-colors text-sm font-medium">
@@ -216,7 +223,7 @@ export function SettingsModal({
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
                 placeholder="ユーザー名"
               />
             </div>
@@ -232,7 +239,7 @@ export function SettingsModal({
                   type="text"
                   value={handle}
                   onChange={(e) => setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30))}
-                  className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
                   placeholder="handle_name"
                 />
               </div>
@@ -312,7 +319,7 @@ export function SettingsModal({
                   onChange={(e) => setCustomType(e.target.value.slice(0, 10))}
                   placeholder="例: 原作厨"
                   maxLength={10}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
                 />
               )}
 
@@ -352,7 +359,7 @@ export function SettingsModal({
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#e879d4]"
                   placeholder="自己紹介を入力..."
                 />
               </div>
@@ -380,8 +387,8 @@ export function SettingsModal({
           {user && handleLogout && (
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <button
-                onClick={() => {
-                  if (confirm('ログアウトしますか？')) {
+                onClick={async () => {
+                  if (await confirmDialog({ message: 'ログアウトしますか？', danger: true, confirmLabel: 'ログアウト' })) {
                     handleLogout();
                     onClose();
                   }
