@@ -66,6 +66,11 @@ export function AnimeDetailModal({
   const { showToast } = useFeedback();
   const [anilistDetail, setAnilistDetail] = useState<AniListMedia | null>(null);
 
+  // 名言追加インラインフォーム
+  const [isAddingQuote, setIsAddingQuote] = useState(false);
+  const [newQuoteText, setNewQuoteText] = useState('');
+  const [newQuoteCharacter, setNewQuoteCharacter] = useState('');
+
   // Escキーでモーダルを閉じる
   useEscapeKey(() => setSelectedAnime(null));
 
@@ -715,30 +720,71 @@ export function AnimeDetailModal({
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">名言</p>
                 <button
-                  onClick={async () => {
-                    const newQuoteText = prompt('セリフを入力してください:');
-                    if (newQuoteText) {
-                      const newQuoteCharacter = prompt('キャラクター名（任意）:') || undefined;
-                      const newQuotes = [...(selectedAnime.quotes || []), { text: newQuoteText, character: newQuoteCharacter }];
-                      await handleUpdateAnime(
-                        (anime) => ({ ...anime, quotes: newQuotes }),
-                        async (anime) => {
-                          const { error } = await supabase
-                            .from('animes')
-                            .update({ quotes: newQuotes })
-                            .eq('id', anime.id)
-                            .eq('user_id', user!.id);
-                          if (error) throw error;
-                        }
-                      );
-                    }
-                  }}
+                  onClick={() => setIsAddingQuote((v) => !v)}
                   className="text-xs bg-[#e879d4] text-white px-3 py-1 rounded-lg hover:bg-[#f09fe3] transition-colors inline-flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" strokeWidth={3} aria-hidden />
                   名言を追加
                 </button>
               </div>
+
+              {/* 名言追加インラインフォーム */}
+              {isAddingQuote && (
+                <div className="mb-3 bg-gray-50 dark:bg-gray-700 rounded-lg p-3 space-y-2">
+                  <textarea
+                    value={newQuoteText}
+                    onChange={(e) => setNewQuoteText(e.target.value)}
+                    placeholder="セリフを入力"
+                    rows={2}
+                    autoFocus
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-800 dark:text-white resize-none"
+                  />
+                  <input
+                    type="text"
+                    value={newQuoteCharacter}
+                    onChange={(e) => setNewQuoteCharacter(e.target.value)}
+                    placeholder="キャラクター名（任意）"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-800 dark:text-white"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => {
+                        setIsAddingQuote(false);
+                        setNewQuoteText('');
+                        setNewQuoteCharacter('');
+                      }}
+                      className="px-3 py-1.5 text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!newQuoteText.trim()) return;
+                        const newQuotes = [...(selectedAnime.quotes || []), { text: newQuoteText.trim(), character: newQuoteCharacter.trim() || undefined }];
+                        await handleUpdateAnime(
+                          (anime) => ({ ...anime, quotes: newQuotes }),
+                          async (anime) => {
+                            const { error } = await supabase
+                              .from('animes')
+                              .update({ quotes: newQuotes })
+                              .eq('id', anime.id)
+                              .eq('user_id', user!.id);
+                            if (error) throw error;
+                          }
+                        );
+                        setNewQuoteText('');
+                        setNewQuoteCharacter('');
+                        setIsAddingQuote(false);
+                        showToast('名言を追加しました');
+                      }}
+                      disabled={!newQuoteText.trim()}
+                      className="px-3 py-1.5 text-xs font-bold bg-[#e879d4] text-white rounded-lg hover:bg-[#d45dbf] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      追加
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {selectedAnime.quotes && selectedAnime.quotes.length > 0 ? (
                 <div className="space-y-2">
