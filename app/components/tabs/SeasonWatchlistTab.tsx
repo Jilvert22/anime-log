@@ -235,7 +235,11 @@ export default function SeasonWatchlistTab() {
   const [watchedRating, setWatchedRating] = useState(0);
   const [watchedSeasonYear, setWatchedSeasonYear] = useState(new Date().getFullYear());
   const [watchedSeason, setWatchedSeason] = useState<'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'>('SPRING');
-  
+  // 「視聴完了」起因でモーダルを開いたか（true のときはスキップ時も一覧から除去する）
+  const [watchedFromCompletion, setWatchedFromCompletion] = useState(false);
+  // 視聴済みモーダルの処理中フラグ（記録/スキップの二重実行・競合を防ぐ）
+  const [isSavingWatched, setIsSavingWatched] = useState(false);
+
   const currentSeason = getCurrentSeason();
   const nextSeason = getNextSeason();
   const activeSeason = selectedSeason === 'current' ? currentSeason : nextSeason;
@@ -340,13 +344,36 @@ export default function SeasonWatchlistTab() {
 
   // 視聴済みモーダルを開く
   // クールの初期値はwatchlist側のシーズン情報を優先(ユーザーの入力ミス防止)
-  const openWatchedModal = useCallback((item: WatchlistItem) => {
+  const openWatchedModal = useCallback((item: WatchlistItem, fromCompletion = false) => {
     setSelectedWatchlistItem(item);
     setWatchedRating(0);
     setWatchedSeasonYear(item.season_year ?? new Date().getFullYear());
     setWatchedSeason(item.season ?? 'SPRING');
+    setWatchedFromCompletion(fromCompletion);
     setShowWatchedModal(true);
   }, []);
+
+  // 視聴済みモーダルを閉じる。完了起因(スキップ)なら記録せず一覧から除去する。
+  const closeWatchedModal = useCallback(async () => {
+    if (isSavingWatched) return; // 記録処理中はスキップ操作を受け付けない
+    const completedItem = watchedFromCompletion ? selectedWatchlistItem : null;
+    setShowWatchedModal(false);
+    setSelectedWatchlistItem(null);
+    setWatchedFromCompletion(false);
+    if (completedItem) {
+      setIsSavingWatched(true);
+      try {
+        const removed = await storage.removeFromWatchlist(completedItem.anilist_id);
+        if (removed) {
+          await loadWatchlist();
+        } else {
+          showToast('一覧からの除去に失敗しました', 'error');
+        }
+      } finally {
+        setIsSavingWatched(false);
+      }
+    }
+  }, [isSavingWatched, watchedFromCompletion, selectedWatchlistItem, storage, loadWatchlist, showToast]);
 
   // ステータス変更
   const handleStatusChange = useCallback(async (
@@ -358,11 +385,12 @@ export default function SeasonWatchlistTab() {
       if (success) {
         await loadWatchlist();
         showToast('ステータスを更新しました');
-        // 視聴完了にしたタイミングで視聴記録化(評価入力)を促す
+        // 視聴完了にしたタイミングで視聴記録化(評価入力)を促す。
+        // 完了アイテムは記録化/スキップどちらでも一覧から外す(fromCompletion=true)。
         if (newStatus === 'completed') {
           const completedItem = watchlist.find(item => item.anilist_id === anilistId);
           if (completedItem) {
-            openWatchedModal({ ...completedItem, status: 'completed' });
+            openWatchedModal({ ...completedItem, status: 'completed' }, true);
           }
         }
       } else {
@@ -428,8 +456,9 @@ export default function SeasonWatchlistTab() {
 
   // 視聴済みにする（評価・クールを設定して animes に追加し、watchlist から削除）
   const handleMarkAsWatched = useCallback(async () => {
-    if (!selectedWatchlistItem || !user) return;
+    if (!selectedWatchlistItem || !user || isSavingWatched) return;
 
+    setIsSavingWatched(true);
     try {
       const animeData = await getAnimeDetail(selectedWatchlistItem.anilist_id);
       if (!animeData) {
@@ -478,12 +507,15 @@ export default function SeasonWatchlistTab() {
 
       setShowWatchedModal(false);
       setSelectedWatchlistItem(null);
+      setWatchedFromCompletion(false);
     } catch (error) {
       console.error('視聴済みマークに失敗しました:', error);
       const errorMessage = error instanceof Error ? error.message : 'エラーが発生しました';
       showToast(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`, 'error');
+    } finally {
+      setIsSavingWatched(false);
     }
-  }, [selectedWatchlistItem, user, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, storage, loadWatchlist]);
+  }, [selectedWatchlistItem, user, isSavingWatched, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, storage, loadWatchlist, showToast]);
 
   // フィルタリング
   const filteredWatchlist = useMemo(() => {
@@ -586,8 +618,30 @@ export default function SeasonWatchlistTab() {
     if (selectedIds.size === 0) return;
 
     const ids = Array.from(selectedIds);
+
+    // 「視聴完了」は単体と同じく一覧から外す方針。一括では個別の記録化は行わず、
+    // 視聴記録を作らずに除去する旨を確認してから削除する。
+    if (newStatus === 'completed') {
+      const confirmed = await confirmDialog({
+        message: `${ids.length}件を視聴完了にして一覧から外しますか？\n(視聴記録は作成されません)`,
+        confirmLabel: '視聴完了にする',
+      });
+      if (!confirmed) return;
+
+      const success = await storage.deleteWatchlistItems(ids);
+      if (success) {
+        await loadWatchlist();
+        setSelectedIds(new Set());
+        setIsSelectionMode(false);
+        showToast(`${ids.length}件を視聴完了にして一覧から外しました`);
+      } else {
+        showToast('一覧からの除去に失敗しました', 'error');
+      }
+      return;
+    }
+
     const success = await storage.updateWatchlistItemsStatus(ids, newStatus);
-    
+
     if (success) {
       await loadWatchlist();
       setSelectedIds(new Set());
@@ -595,7 +649,7 @@ export default function SeasonWatchlistTab() {
     } else {
       showToast('ステータスの更新に失敗しました', 'error');
     }
-  }, [storage, selectedIds, loadWatchlist]);
+  }, [storage, selectedIds, loadWatchlist, confirmDialog, showToast]);
 
   // 一括削除
   const handleBulkDelete = useCallback(async () => {
@@ -865,7 +919,7 @@ export default function SeasonWatchlistTab() {
       {showWatchedModal && selectedWatchlistItem && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4"
-          onClick={() => setShowWatchedModal(false)}
+          onClick={watchedFromCompletion ? undefined : closeWatchedModal}
         >
           <div
             className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto"
@@ -940,19 +994,18 @@ export default function SeasonWatchlistTab() {
             </div>
             <div className="flex gap-3">
               <button
-                onClick={() => {
-                  setShowWatchedModal(false);
-                  setSelectedWatchlistItem(null);
-                }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                onClick={closeWatchedModal}
+                disabled={isSavingWatched}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                キャンセル
+                {watchedFromCompletion ? '記録せずに完了' : 'キャンセル'}
               </button>
               <button
                 onClick={handleMarkAsWatched}
-                className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors"
+                disabled={isSavingWatched}
+                className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                視聴済みにする
+                {isSavingWatched ? '処理中...' : '視聴済みにする'}
               </button>
             </div>
           </div>
