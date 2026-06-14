@@ -57,11 +57,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'アニメログ - あなたのアニメ視聴記録',
     description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。',
-    url: 'https://animelog.jp',
+    url: siteUrl,
     siteName: 'アニメログ',
     images: [
       {
-        url: '/og-image.png',
+        url: '/api/og',
         width: 1200,
         height: 630,
         alt: 'アニメログ',
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'アニメログ - あなたのアニメ視聴記録',
     description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。',
-    images: ['/og-image.png'],
+    images: ['/api/og'],
   },
 };
 
