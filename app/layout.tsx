@@ -35,6 +35,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  // Google Search Console 所有権確認。NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION 未設定なら
+  // メタタグは出力されない（トークンはユーザーがVercelの環境変数に設定）。手順は SEO_NOTES.md。
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
   keywords: ["アニメ", "視聴履歴", "管理", "記録", "評価"],
   authors: [{ name: "アニメログ" }],
   icons: {
