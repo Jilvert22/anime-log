@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { M_PLUS_Rounded_1c, Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "./providers";
+import { JsonLd } from "./components/seo/JsonLd";
+import { siteStructuredData } from "./lib/seo/structuredData";
 import "./globals.css";
 
 // M PLUS Rounded 1c（日本語用）
@@ -30,6 +32,9 @@ export const metadata: Metadata = {
   title: 'アニメログ - あなたのアニメ視聴記録',
   description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。視聴傾向の分析、感想の記録、積みアニメ管理など。',
   metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: '/',
+  },
   keywords: ["アニメ", "視聴履歴", "管理", "記録", "評価"],
   authors: [{ name: "アニメログ" }],
   icons: {
@@ -96,6 +101,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://cdn.anilist.co" />
       </head>
       <body className="font-mixed antialiased">
+        <JsonLd data={siteStructuredData(siteUrl)} />
         <Providers>
           {children}
         </Providers>

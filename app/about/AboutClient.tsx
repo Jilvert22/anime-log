@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Footer } from '../components/common/Footer';
 import { SimpleHeader } from '../components/common/SimpleHeader';
+import { ABOUT_FAQ } from '../lib/seo/aboutFaq';
 
 export default function AboutClient() {
   return (
@@ -314,6 +315,30 @@ export default function AboutClient() {
           >
             今すぐ始める
           </Link>
+        </div>
+      </section>
+
+      {/* よくある質問 */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white dark:bg-[#0a0a0f]">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white">
+            よくある質問
+          </h2>
+          <dl className="space-y-6">
+            {ABOUT_FAQ.map((faq) => (
+              <div
+                key={faq.question}
+                className="border-b border-gray-200 dark:border-gray-700 pb-6"
+              >
+                <dt className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                  {faq.question}
+                </dt>
+                <dd className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {faq.answer}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 

@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 import AboutClient from './AboutClient';
+import { JsonLd } from '../components/seo/JsonLd';
+import { faqPageJsonLd } from '../lib/seo/aboutFaq';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://animelog.jp';
 
@@ -28,6 +30,11 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
-  return <AboutClient />;
+  return (
+    <>
+      <JsonLd data={faqPageJsonLd()} />
+      <AboutClient />
+    </>
+  );
 }
 
