@@ -39,6 +39,8 @@ export type Review = {
 // アニメの型定義
 export type Anime = {
   id: AnimeId;
+  /** AniListの作品ID（作品単位の集約キー）。検索から追加した作品に入る。手動/旧データはundefined */
+  anilistId?: number;
   title: string;
   image: string;
   rating: number;
@@ -78,6 +80,7 @@ export type FavoriteCharacter = {
 // Supabaseのanimesテーブルの行型（新規作成時はidが不要）
 export type SupabaseAnimeRow = {
   id?: number; // 新規作成時はオプショナル
+  anilist_id?: number | null;
   user_id: string;
   season_name: string;
   title: string;

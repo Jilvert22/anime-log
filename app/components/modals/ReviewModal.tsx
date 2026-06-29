@@ -88,6 +88,9 @@ export function ReviewModal({
         .from('reviews')
         .insert({
           anime_id: animeUuid,
+          // 将来の作品単位の感想集約用（reviewsは公開・animesは非公開のためdenormalize）
+          anilist_id: selectedAnime.anilistId ?? null,
+          anime_title: selectedAnime.title,
           user_id: user.id,
           user_name: userName,
           user_icon: userIcon,

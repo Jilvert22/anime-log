@@ -10,6 +10,7 @@ export const translateGenre = (genre: string): string => {
 export function animeToSupabase(anime: Anime, seasonName: string, userId: string) {
   return {
     user_id: userId,
+    anilist_id: anime.anilistId ?? null,
     season_name: seasonName,
     title: anime.title,
     image: anime.image || null,
@@ -29,6 +30,7 @@ export function animeToSupabase(anime: Anime, seasonName: string, userId: string
 export function supabaseToAnime(row: SupabaseAnimeRow): Anime {
   return {
     id: row.id ?? 0, // idが存在しない場合は0をデフォルト値として使用
+    anilistId: row.anilist_id ?? undefined,
     title: row.title,
     image: row.image ?? '', // nullの場合は空文字列に変換
     rating: row.rating ?? 0, // nullの場合は0に変換
