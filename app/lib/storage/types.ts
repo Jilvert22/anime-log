@@ -22,6 +22,8 @@ export type WatchlistItem = {
   streaming_updated_at?: string | null;
   // 連続2クール: 対象シーズンに継続中として表示されているか (DBには保存しない、取得時に計算)
   isContinuing?: boolean;
+  // 放送開始日 (AniListから取得時に付与、DBには保存しない)
+  start_date?: { year: number | null; month: number | null; day?: number | null } | null;
 };
 
 export interface IStorageService {

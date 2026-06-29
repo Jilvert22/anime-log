@@ -53,6 +53,8 @@ export type WatchlistItem = {
   streaming_sites?: string[] | null;
   // 連続2クール: この作品が「対象シーズンに継続中」として表示されているか (DB保存値ではなく取得時に計算)
   isContinuing?: boolean;
+  // 放送開始日 (AniListから取得時に付与、DBには保存しない)
+  start_date?: { year: number | null; month: number | null; day?: number | null } | null;
 };
 
 /**
