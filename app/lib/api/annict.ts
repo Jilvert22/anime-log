@@ -399,6 +399,8 @@ export type AniListMediaWithStreaming = AniListMedia & {
   synopsisSource?: string | null;  // あらすじ出典
   broadcastTime?: string | null;  // 放送日時（Annictから取得）
   casts?: { character: string; actor: string }[];  // キャスト情報
+  // 連続2クール: 検索対象シーズンに継続中の作品 (前シーズン開始)
+  isContinuing?: boolean;
 };
 
 /**

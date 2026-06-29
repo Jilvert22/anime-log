@@ -20,6 +20,8 @@ export type WatchlistItem = {
   // 配信情報
   streaming_sites?: string[] | null;
   streaming_updated_at?: string | null;
+  // 連続2クール: 対象シーズンに継続中として表示されているか (DBには保存しない、取得時に計算)
+  isContinuing?: boolean;
 };
 
 export interface IStorageService {

@@ -3,13 +3,14 @@
 
 import { useState, useCallback } from 'react';
 import { searchAnimeBySeason, searchAnime, type AniListMedia } from '../lib/api/anilist';
-import { 
+import {
   searchAnnictBySeason,
   searchAnnictByTitle,
   formatAnnictSeason,
   mergeWithAnnictData,
-  type AniListMediaWithStreaming 
+  type AniListMediaWithStreaming
 } from '../lib/api/annict';
+import { isContinuingAnime, getPreviousSeason } from '../utils/continuingAnime';
 
 type SeasonType = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
 
@@ -101,21 +102,43 @@ export function useAnimeSearchWithStreaming() {
 
     try {
       const annictSeason = formatAnnictSeason(year, convertToAnnictSeason(season));
-      
-      const [anilistResults, annictResults] = await Promise.all([
+      const prev = getPreviousSeason({ year, season });
+
+      const [anilistResults, prevAnilistResults, annictResults] = await Promise.all([
         searchAnimeBySeason(season, year, page, perPage),
+        // 連続2クール作品候補として前シーズン開始の作品も取得
+        // 1ページ目のみ取得 (人気順なので継続候補は上位に集中)
+        page === 1
+          ? searchAnimeBySeason(prev.season, prev.year, 1, perPage)
+          : Promise.resolve({ media: [] as AniListMedia[], pageInfo: { total: 0, currentPage: 1, hasNextPage: false } }),
         searchAnnictBySeason(annictSeason, 100).catch(err => {
           console.warn('Annict search failed, continuing without streaming info:', err);
           return [];
         }),
       ]);
 
-      const mergedResults = await mergeWithAnnictData(anilistResults.media, annictResults);
-      
+      // 前シーズン作品のうち、対象シーズンに継続中のものだけ抽出
+      const continuingFromPrev = prevAnilistResults.media.filter(m =>
+        isContinuingAnime(m, { year, season })
+      );
+
+      // 重複防止 (同IDが新規と継続両方にいた場合は新規を優先)
+      const existingIds = new Set(anilistResults.media.map(m => m.id));
+      const uniqueContinuing = continuingFromPrev.filter(m => !existingIds.has(m.id));
+
+      const combined = [...anilistResults.media, ...uniqueContinuing];
+      const mergedResults = await mergeWithAnnictData(combined, annictResults);
+
+      // 継続中フラグを付与
+      const continuingIds = new Set(uniqueContinuing.map(m => m.id));
+      const flagged = mergedResults.map(item =>
+        continuingIds.has(item.id) ? { ...item, isContinuing: true } : item
+      );
+
       // キャッシュに保存
-      setCache(cacheKey, mergedResults);
-      
-      return mergedResults;
+      setCache(cacheKey, flagged);
+
+      return flagged;
     } catch (err) {
       const message = err instanceof Error ? err.message : '検索に失敗しました';
       setError(message);
