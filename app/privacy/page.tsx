@@ -18,7 +18,7 @@ export default function PrivacyPage() {
             アニメログ プライバシーポリシー
           </h1>
           <p className="text-sm text-white/80 dark:text-gray-400 mt-2">
-            最終更新日：2026年1月
+            最終更新日：2026年6月
           </p>
         </div>
 
@@ -81,9 +81,17 @@ export default function PrivacyPage() {
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold mb-1">5. その他</h3>
+                <h3 className="font-semibold mb-1">5. 通知設定（任意）</h3>
+                <ul className="list-disc list-inside ml-4 space-y-1">
+                  <li>プッシュ通知を有効にした場合、配信に必要な購読情報（通知エンドポイント等）</li>
+                  <li>通知のタイミング設定</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1">6. その他</h3>
                 <ul className="list-disc list-inside ml-4 space-y-1">
                   <li>各データの作成日時・更新日時</li>
+                  <li>サービス改善のための匿名のアクセス解析情報（第5条参照）</li>
                 </ul>
               </div>
             </div>
@@ -122,8 +130,11 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-[#6b5b6e] dark:text-white mb-3 font-mixed">
               第5条（外部サービスの利用）
             </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
               本サービスは、アニメ情報の取得にAniList APIを利用しています。AniListへのデータ送信は、アニメの検索・情報取得に必要な範囲に限られ、ユーザーの個人情報は送信されません。
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              また、サービスの改善のためにアクセス解析ツール「Vercel Analytics」を利用しています。これはCookieを使用せず、ページの閲覧状況やアプリのインストール操作などを匿名で集計するもので、個人を特定する情報は収集しません。
             </p>
           </section>
 
@@ -172,7 +183,7 @@ export default function PrivacyPage() {
               第10条（お問い合わせ）
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              個人情報の取り扱いに関するお問い合わせは、アプリ内の「ご意見・ご感想」フォームよりご連絡ください。
+              個人情報の取り扱いに関するお問い合わせは、アプリ内の「ご意見・ご感想」リンクから開くお問い合わせフォーム（Googleフォーム）よりご連絡ください。
             </p>
           </section>
 
