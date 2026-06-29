@@ -29,61 +29,57 @@ type Anime = {
 
 interface ProfilePageClientProps {
   username: string;
+  // サーバ側で取得済みの初期データ（SSRで本文を描画＝クローラ/AIが読める）。
+  // 渡されない場合（後方互換）はクライアントで取得する。
+  initialProfile?: UserProfile | null;
+  initialAnimes?: Anime[];
 }
 
-export default function ProfilePageClient({ username }: ProfilePageClientProps) {
+export default function ProfilePageClient({ username, initialProfile, initialAnimes }: ProfilePageClientProps) {
   const router = useRouter();
-  
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [animes, setAnimes] = useState<Anime[]>([]);
+
+  const [profile, setProfile] = useState<UserProfile | null>(initialProfile ?? null);
+  const [animes, setAnimes] = useState<Anime[]>(initialAnimes ?? []);
   const [followCounts, setFollowCounts] = useState<{ following: number; followers: number }>({ following: 0, followers: 0 });
   const [isFollowingUser, setIsFollowingUser] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // サーバから初期データが渡っていれば最初からローディング不要（SSRで本文が出る）
+  const [isLoading, setIsLoading] = useState(initialProfile === undefined);
 
   useEffect(() => {
-    // 認証状態を確認
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    checkUser();
-
-    // プロフィールを読み込む
-    const loadProfile = async () => {
+    const run = async () => {
       try {
-        const profileData = await getProfileByUsername(username);
-        if (!profileData) {
-          setIsLoading(false);
-          return;
-        }
-        
-        setProfile(profileData);
-        
-        // アニメ一覧を読み込む
-        const animesData = await getPublicAnimes(profileData.id);
-        setAnimes(animesData as Anime[]);
-        
-        // フォロー数を取得
-        const counts = await getFollowCounts(profileData.id);
-        setFollowCounts(counts);
-        
-        // フォロー状態を確認
         const { data: { user } } = await supabase.auth.getUser();
-        if (user && user.id !== profileData.id) {
-          const following = await isFollowing(profileData.id);
-          setIsFollowingUser(following);
+        setUser(user);
+
+        // SSRで初期データが無い場合（後方互換）のみ、プロフィール/視聴記録を取得
+        let prof = initialProfile ?? null;
+        if (initialProfile === undefined) {
+          prof = await getProfileByUsername(username);
+          setProfile(prof);
+          if (prof) {
+            const animesData = await getPublicAnimes(prof.id);
+            setAnimes(animesData as Anime[]);
+          }
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
+
+        // インタラクティブ要素（フォロー数・フォロー状態）はクライアントで取得
+        if (prof) {
+          const counts = await getFollowCounts(prof.id);
+          setFollowCounts(counts);
+          if (user && user.id !== prof.id) {
+            setIsFollowingUser(await isFollowing(prof.id));
+          }
+        }
       } catch (error) {
         console.error('Failed to load profile:', error);
         setIsLoading(false);
       }
     };
-    
-    loadProfile();
-  }, [username]);
+
+    run();
+  }, [username, initialProfile]);
 
   const handleToggleFollow = async () => {
     if (!user || !profile) return;
