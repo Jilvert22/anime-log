@@ -78,8 +78,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - .well-known (TWA assetlinks 等。認証更新を挟まずクリーンに配信する)
+     * - google...html (Search Console所有権確認ファイル。同上の理由で素のまま配信)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|\\.well-known|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|\\.well-known|google[a-z0-9]+\\.html|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
