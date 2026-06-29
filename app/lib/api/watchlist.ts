@@ -19,6 +19,8 @@ import {
 } from '../validation';
 import type { WatchlistItem, WatchlistItemInput, WatchlistItemUpdate, Season } from './types';
 import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
+import { fetchAnimeStatusByIds } from './anilist';
+import { isContinuingAnime, getPreviousSeason } from '../../utils/continuingAnime';
 
 /**
  * 積みアニメ一覧を取得
@@ -292,7 +294,8 @@ export async function getSeasonWatchlist(
       return [];
     }
 
-    let query = supabase
+    // 1. 開始期がターゲットと一致するアイテム (通常の取得)
+    let startMatchQuery = supabase
       .from('watchlist')
       .select('*')
       .eq('user_id', userId)
@@ -301,20 +304,60 @@ export async function getSeasonWatchlist(
       .not('status', 'is', null);
 
     if (status) {
-      query = query.eq('status', status);
+      startMatchQuery = startMatchQuery.eq('status', status);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    // 2. 前期開始のアイテム (連続2クール候補)
+    const prev = getPreviousSeason({ year, season });
+    let prevQuery = supabase
+      .from('watchlist')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('season_year', prev.year)
+      .eq('season', prev.season)
+      .not('status', 'is', null);
 
-    if (error) {
+    if (status) {
+      prevQuery = prevQuery.eq('status', status);
+    }
+
+    const [startMatchRes, prevRes] = await Promise.all([
+      startMatchQuery.order('created_at', { ascending: false }),
+      prevQuery.order('created_at', { ascending: false }),
+    ]);
+
+    if (startMatchRes.error) {
       throw new SupabaseError(
-        translateSupabaseError(error) || 'シーズンウォッチリストの取得に失敗しました',
+        translateSupabaseError(startMatchRes.error) || 'シーズンウォッチリストの取得に失敗しました',
         undefined,
-        error
+        startMatchRes.error
+      );
+    }
+    if (prevRes.error) {
+      throw new SupabaseError(
+        translateSupabaseError(prevRes.error) || 'シーズンウォッチリストの取得に失敗しました',
+        undefined,
+        prevRes.error
       );
     }
 
-    return data || [];
+    const startMatch = (startMatchRes.data || []) as WatchlistItem[];
+    const prevItems = (prevRes.data || []) as WatchlistItem[];
+
+    // 3. 前期アイテムの中から「対象シーズンに継続中」のものだけ抽出
+    let continuing: WatchlistItem[] = [];
+    if (prevItems.length > 0) {
+      const ids = prevItems.map(it => it.anilist_id);
+      const mediaMap = await fetchAnimeStatusByIds(ids);
+      continuing = prevItems
+        .filter(it => {
+          const media = mediaMap.get(it.anilist_id);
+          return media ? isContinuingAnime(media, { year, season }) : false;
+        })
+        .map(it => ({ ...it, isContinuing: true }));
+    }
+
+    return [...startMatch, ...continuing];
   } catch (error) {
     logError(error, 'getSeasonWatchlist');
     throw normalizeError(error);

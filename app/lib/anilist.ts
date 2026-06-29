@@ -54,6 +54,10 @@ export type AniListMedia = {
   } | null;
   averageScore?: number | null;
   synonyms?: string[];
+  // 連続2クール判定用フィールド
+  status?: 'FINISHED' | 'RELEASING' | 'NOT_YET_RELEASED' | 'CANCELLED' | 'HIATUS' | null;
+  startDate?: { year: number | null; month: number | null; day?: number | null } | null;
+  endDate?: { year: number | null; month: number | null; day?: number | null } | null;
 };
 
 export async function searchAnime(query: string) {

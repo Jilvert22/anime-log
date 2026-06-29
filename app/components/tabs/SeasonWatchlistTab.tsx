@@ -105,6 +105,16 @@ function SeasonWatchlistCard({
             {getWatchlistStatusLabel(item.status)}
           </div>
         )}
+
+        {/* 継続中バッジ (前シーズンから継続して放送中) */}
+        {item.isContinuing && (
+          <div
+            className="absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold text-white bg-purple-600 shadow"
+            title="前シーズンから継続して放送中の作品"
+          >
+            継続中
+          </div>
+        )}
         
         {/* ホバー時の「詳細を表示」テキスト（デスクトップ用、選択モード時は非表示） */}
         {!isSelectionMode && (
@@ -167,6 +177,14 @@ function SearchResultCard({
           <div className="w-full aspect-[2/3] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg flex items-center justify-center">
             <Film className="w-8 h-8 text-white/60" aria-hidden />
           </div>
+        )}
+        {anime.isContinuing && (
+          <span
+            className="absolute top-1 left-1 px-1.5 py-0.5 text-[10px] font-bold bg-purple-600 text-white rounded shadow"
+            title="前シーズンから継続して放送中の作品"
+          >
+            継続中
+          </span>
         )}
         {/* ホバー時のオーバーレイ */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center pointer-events-none">

@@ -144,6 +144,15 @@ export async function searchAnimeBySeason(
             genres
             format
             episodes
+            status
+            startDate {
+              year
+              month
+            }
+            endDate {
+              year
+              month
+            }
             studios {
               nodes {
                 name
@@ -283,6 +292,51 @@ export function getBroadcastInfo(anime: AniListMedia): { day: number | null; tim
   const time = `${hours}:${minutes}`;
 
   return { day: jstDay, time };
+}
+
+/**
+ * 複数IDの作品を一括取得 (連続2クール判定用に最小フィールドのみ取得)
+ * AniListのid_in は1ページ最大50件のため、自動でバッチ分割する
+ */
+export async function fetchAnimeStatusByIds(
+  ids: number[]
+): Promise<Map<number, AniListMedia>> {
+  const result = new Map<number, AniListMedia>();
+  if (ids.length === 0) return result;
+
+  const BATCH = 50;
+  const graphqlQuery = `
+    query ($ids: [Int], $perPage: Int) {
+      Page(page: 1, perPage: $perPage) {
+        media(id_in: $ids, type: ANIME) {
+          id
+          seasonYear
+          season
+          episodes
+          status
+          startDate { year month }
+          endDate { year month }
+        }
+      }
+    }
+  `;
+
+  try {
+    for (let i = 0; i < ids.length; i += BATCH) {
+      const slice = ids.slice(i, i + BATCH);
+      const data = await queryAniList<{ Page: { media: AniListMedia[] } }>(graphqlQuery, {
+        ids: slice,
+        perPage: slice.length,
+      });
+      for (const m of data.Page?.media || []) {
+        result.set(m.id, m);
+      }
+    }
+  } catch (error) {
+    logError(error, 'fetchAnimeStatusByIds');
+    // エラー時は取得できた分だけ返す
+  }
+  return result;
 }
 
 // 既存のanilist.tsから型を再エクスポート

@@ -51,6 +51,8 @@ export type WatchlistItem = {
   broadcast_time?: string | null; // HH:mm形式
   // 配信情報
   streaming_sites?: string[] | null;
+  // 連続2クール: この作品が「対象シーズンに継続中」として表示されているか (DB保存値ではなく取得時に計算)
+  isContinuing?: boolean;
 };
 
 /**
