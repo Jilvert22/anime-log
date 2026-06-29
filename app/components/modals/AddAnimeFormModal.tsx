@@ -314,6 +314,7 @@ export function AddAnimeFormModal({
                         const seriesName = extractSeriesName(result.title?.native || result.title?.romaji || '');
                         return {
                           id: maxId + index + 1,
+                          anilistId: result.id,
                           title: result.title?.native || result.title?.romaji || '',
                           image: result.coverImage?.large || result.coverImage?.medium || '🎬',
                           rating: 0, // 未評価
@@ -617,6 +618,7 @@ export function AddAnimeFormModal({
                       
                       return {
                         id: maxId + index + 1,
+                        anilistId: result.id,
                         title: title,
                         image: image,
                         rating: 0,

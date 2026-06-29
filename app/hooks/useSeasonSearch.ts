@@ -145,6 +145,7 @@ export function useSeasonSearch({
       
       const newAnime: Anime = {
         id: maxId + 1,
+        anilistId,
         title: title,
         image: image,
         rating: 0,

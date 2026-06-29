@@ -296,6 +296,7 @@ export function WatchlistTab({
       // アニメオブジェクトを作成
       const newAnime: Anime = {
         id: animeData.id,
+        anilistId: animeData.id,
         title: animeData.title.native || animeData.title.romaji || selectedWatchlistItem.title,
         image: animeData.coverImage?.large || selectedWatchlistItem.image || '',
         rating: watchedRating > 0 ? watchedRating : 0,
@@ -521,6 +522,7 @@ export function WatchlistTab({
         // アニメオブジェクトを作成
         const newAnime: Anime = {
           id: animeData.id,
+          anilistId: animeData.id,
           title: animeData.title.native || animeData.title.romaji || item.title,
           image: animeData.coverImage?.large || item.image || '',
           rating: 0,

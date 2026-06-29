@@ -523,6 +523,7 @@ export default function SeasonWatchlistTab() {
 
       const newAnime: Anime = {
         id: animeData.id,
+        anilistId: animeData.id,
         title: titleStr,
         image: animeData.coverImage?.large || selectedWatchlistItem.image || '',
         rating: watchedRating > 0 ? watchedRating : 0,
