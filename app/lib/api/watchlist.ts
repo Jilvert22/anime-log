@@ -344,20 +344,34 @@ export async function getSeasonWatchlist(
     const startMatch = (startMatchRes.data || []) as WatchlistItem[];
     const prevItems = (prevRes.data || []) as WatchlistItem[];
 
-    // 3. 前期アイテムの中から「対象シーズンに継続中」のものだけ抽出
-    let continuing: WatchlistItem[] = [];
-    if (prevItems.length > 0) {
-      const ids = prevItems.map(it => it.anilist_id);
-      const mediaMap = await fetchAnimeStatusByIds(ids);
-      continuing = prevItems
-        .filter(it => {
-          const media = mediaMap.get(it.anilist_id);
-          return media ? isContinuingAnime(media, { year, season }) : false;
-        })
-        .map(it => ({ ...it, isContinuing: true }));
-    }
+    // 3. 全アイテムのAniListデータを一括取得 (継続判定 + 放送開始日表示用)
+    const allIds = [...startMatch, ...prevItems].map(it => it.anilist_id);
+    const mediaMap = allIds.length > 0
+      ? await fetchAnimeStatusByIds(allIds)
+      : new Map();
 
-    return [...startMatch, ...continuing];
+    // 4. startMatch に開始日を付与
+    const enrichedStartMatch = startMatch.map(it => {
+      const media = mediaMap.get(it.anilist_id);
+      return media?.startDate ? { ...it, start_date: media.startDate } : it;
+    });
+
+    // 5. 前期アイテムの中から「対象シーズンに継続中」のものだけ抽出 + 開始日付与
+    const continuing = prevItems
+      .filter(it => {
+        const media = mediaMap.get(it.anilist_id);
+        return media ? isContinuingAnime(media, { year, season }) : false;
+      })
+      .map(it => {
+        const media = mediaMap.get(it.anilist_id);
+        return {
+          ...it,
+          isContinuing: true,
+          ...(media?.startDate ? { start_date: media.startDate } : {}),
+        };
+      });
+
+    return [...enrichedStartMatch, ...continuing];
   } catch (error) {
     logError(error, 'getSeasonWatchlist');
     throw normalizeError(error);

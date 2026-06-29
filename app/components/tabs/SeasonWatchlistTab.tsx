@@ -26,6 +26,7 @@ import type { Anime } from '../../types';
 import SeasonCardForExport from './SeasonCardForExport';
 import { renderCardToBlob, shareOrDownloadImage } from '../../lib/share/cardExport';
 import { useUserProfileContext } from '../../contexts/UserProfileContext';
+import { formatStartDate } from '../../utils/animeDate';
 
 // 視聴予定アニメカード
 function SeasonWatchlistCard({ 
@@ -135,6 +136,11 @@ function SeasonWatchlistCard({
             })()}
           </p>
         ) : null}
+        {formatStartDate(item.start_date) && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            {formatStartDate(item.start_date)}
+          </p>
+        )}
         {item.memo && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">{item.memo}</p>
         )}
@@ -194,6 +200,11 @@ function SearchResultCard({
       <p className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2">
         {anime.title?.native || anime.title?.romaji || 'タイトル不明'}
       </p>
+      {formatStartDate(anime.startDate) && (
+        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+          {formatStartDate(anime.startDate)}
+        </p>
+      )}
       <div className="mt-1 flex gap-1">
         {isAdded && onRemove ? (
           <button

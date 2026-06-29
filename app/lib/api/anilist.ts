@@ -148,10 +148,12 @@ export async function searchAnimeBySeason(
             startDate {
               year
               month
+              day
             }
             endDate {
               year
               month
+              day
             }
             studios {
               nodes {
@@ -314,8 +316,8 @@ export async function fetchAnimeStatusByIds(
           season
           episodes
           status
-          startDate { year month }
-          endDate { year month }
+          startDate { year month day }
+          endDate { year month day }
         }
       }
     }
