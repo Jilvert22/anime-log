@@ -288,11 +288,12 @@ export async function getPublicProfile(userId: string): Promise<UserProfile | nu
  */
 export async function getPublicAnimes(userId: string): Promise<unknown[]> {
   try {
+    // public_animes ビュー経由（animesは本人のみRLS。ビューは公開プロフィールの
+    // 視聴済み作品の公開列だけを露出する）
     const { data, error } = await supabase
-      .from('animes')
+      .from('public_animes')
       .select('*')
       .eq('user_id', userId)
-      .eq('watched', true)
       .order('created_at', { ascending: false });
 
     if (error) {
