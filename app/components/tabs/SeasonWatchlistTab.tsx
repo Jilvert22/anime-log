@@ -27,6 +27,7 @@ import SeasonCardForExport from './SeasonCardForExport';
 import { renderCardToBlob, shareOrDownloadImage } from '../../lib/share/cardExport';
 import { useUserProfileContext } from '../../contexts/UserProfileContext';
 import { formatStartDate } from '../../utils/animeDate';
+import { getStartSeason } from '../../utils/continuingAnime';
 
 // 視聴予定アニメカード
 function SeasonWatchlistCard({ 
@@ -488,14 +489,19 @@ export default function SeasonWatchlistTab() {
     try {
       // 放送情報を取得
       const broadcastInfo = getBroadcastInfo(anime);
-      
+
+      // 作品の開始期で保存 (v1設計: オリジナル開始シーズン基準)。
+      // AniListに開始期情報がなければ活性シーズンにフォールバック。
+      const start = getStartSeason(anime);
+      const save = start ?? { year: activeSeason.year, season: activeSeason.season };
+
       const success = await storage.addToWatchlist({
         anilist_id: anime.id,
         title: anime.title?.native || anime.title?.romaji || '',
         image: anime.coverImage?.large || null,
         status: 'planned',
-        season_year: activeSeason.year,
-        season: activeSeason.season,
+        season_year: save.year,
+        season: save.season,
         broadcast_day: broadcastInfo.day,
         broadcast_time: broadcastInfo.time,
         streaming_sites: anime.streamingServices || null,

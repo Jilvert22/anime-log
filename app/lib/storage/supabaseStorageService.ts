@@ -42,13 +42,37 @@ export class SupabaseStorageService implements IStorageService {
     if (item.anilist_id !== -1) {
       const { data: existing } = await supabase
         .from('watchlist')
-        .select('id')
+        .select('*')
         .eq('user_id', user.id)
         .eq('anilist_id', item.anilist_id)
         .single();
-      
+
       if (existing) {
-        return true; // 既に登録されている場合は成功とみなす
+        // シーズン指定付きの追加で、既存のシーズンが異なる場合は付け替えて「移動」する。
+        // (積みアニメ→視聴予定への追加や、誤った season で保存された旧データの修復用。
+        //  localStorageService と api/watchlist.ts と挙動を揃える)
+        if (
+          item.season_year &&
+          item.season &&
+          (existing.season_year !== item.season_year || existing.season !== item.season)
+        ) {
+          const { error: moveError } = await supabase
+            .from('watchlist')
+            .update({
+              season_year: item.season_year,
+              season: item.season,
+              status: item.status || 'planned',
+              broadcast_day: item.broadcast_day ?? existing.broadcast_day,
+              broadcast_time: item.broadcast_time ?? existing.broadcast_time,
+              streaming_sites: item.streaming_sites ?? existing.streaming_sites,
+            })
+            .eq('id', existing.id);
+          if (moveError) {
+            console.error('Failed to move watchlist season:', moveError);
+            return false;
+          }
+        }
+        return true;
       }
     }
     
