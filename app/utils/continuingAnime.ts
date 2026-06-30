@@ -7,11 +7,12 @@
  *       夏クールを検索しても出てこない。
  *   このユーティリティで「ある作品がターゲットシーズンに継続中か」を推定する。
  *
- * 判定方針 (合意済み・v1):
- *   - 主シグナル : episodes が 14 以上 → 確実に2クール以上
- *   - 副シグナル : status が RELEASING で、開始シーズンの境界を超えて放送中
- *   - episodes が null の場合 : 安全側に倒して「継続中の可能性あり」と扱う
- *   - ただし作品の開始がターゲットシーズン以降なら継続ではない（純粋な新作 / 未開始）
+ * 判定方針 (v2: 2026-07-01に過剰検知を修正):
+ *   - 話数が確定している場合は episodes >= 14 のみ「2クール以上」候補。
+ *     さらに想定終了期 (=開始 + ceil(episodes/13) クール - 1) を計算して、
+ *     ターゲットが終了期以前であれば継続中。
+ *   - 話数不明 (episodes == null) の場合は status === 'RELEASING' のときだけ拾う。
+ *     NOT_YET_RELEASED や FINISHED の null 話数は誤検知の温床なので除外。
  */
 
 import type { AniListMedia } from '../lib/anilist';
@@ -103,14 +104,33 @@ export function isContinuingAnime(
   // 中止・休止は継続扱いしない
   if (media.status === 'CANCELLED' || media.status === 'HIATUS') return false;
 
-  // 主シグナル: 話数が2クール以上
-  if (typeof media.episodes === 'number' && media.episodes >= 14) return true;
+  // 話数が判明している場合: 14未満なら1クール作品で確定 (継続なし)。
+  // 14以上でも想定終了期がtargetより前なら継続扱いしない。
+  // endDate が AniList で取れていればそちらを優先 (正確)、無ければ話数から推定。
+  // 推定スパン: ceil(episodes / 13) クール (24-26話=2クール、27-39話=3クール ...)
+  if (typeof media.episodes === 'number') {
+    if (media.episodes < 14) return false;
+    const expectedEndIdx = getExpectedEndIdx(media, startIdx);
+    return targetIdx <= expectedEndIdx;
+  }
 
-  // 副シグナル: まだ放送中 (前シーズン開始かつ RELEASING)
-  if (media.status === 'RELEASING') return true;
+  // 話数不明: 実際に放送中 (RELEASING) のものだけ「2クール以上の可能性あり」として拾う。
+  // NOT_YET_RELEASED や FINISHED で話数不明は継続扱いしない (誤検知が多すぎるため)。
+  return media.status === 'RELEASING';
+}
 
-  // 安全側推定: 話数不明の作品は継続中の可能性ありとして拾う
-  if (media.episodes == null) return true;
-
-  return false;
+/**
+ * 想定終了期を season インデックスで返す。
+ *   - endDate.year/month が判明していればそちらが正解
+ *   - 無ければ話数から推定 (ceil(episodes/13) クール)
+ *   - どちらも無ければ start と同じ (継続扱いされない方向に倒す)
+ */
+function getExpectedEndIdx(media: AniListMedia, startIdx: number): number {
+  if (media.endDate?.year != null && media.endDate?.month != null) {
+    return seasonIndex(media.endDate.year, seasonFromMonth(media.endDate.month));
+  }
+  if (typeof media.episodes === 'number') {
+    return startIdx + Math.ceil(media.episodes / 13) - 1;
+  }
+  return startIdx;
 }

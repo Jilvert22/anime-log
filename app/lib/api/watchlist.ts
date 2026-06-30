@@ -474,3 +474,77 @@ export async function getCurrentSeasonPlannedWatchlist(
   }
 }
 
+/**
+ * 視聴予定リストの (season_year, season) を AniList の開始期と照合し、不一致のものを修正する。
+ * PR #19 以前に保存されたデータは「活性ビューのシーズン」で保存されている可能性があり、
+ * これによって連続2クール作品が今期/来季の片側にしか出てこない不具合が発生する。
+ * この関数を呼び出すと、watchlist 全件を AniList と照合して開始期に揃える。
+ *
+ * @returns 修復件数 (検査件数 / 更新件数)
+ */
+export async function repairWatchlistSeasons(
+  userId?: string
+): Promise<{ checked: number; repaired: number }> {
+  try {
+    const user = await getCurrentUser();
+    const targetUserId = userId || user?.id;
+    if (!targetUserId) {
+      return { checked: 0, repaired: 0 };
+    }
+
+    // 1. ユーザーの全 watchlist を取得 (season_year/season を持つもののみ対象)
+    const { data: items, error } = await supabase
+      .from('watchlist')
+      .select('id, anilist_id, season_year, season')
+      .eq('user_id', targetUserId)
+      .not('season_year', 'is', null)
+      .not('season', 'is', null);
+
+    if (error) {
+      throw new SupabaseError(
+        translateSupabaseError(error) || '修復対象の取得に失敗しました',
+        undefined,
+        error
+      );
+    }
+
+    const list = (items || []) as Array<{
+      id: string;
+      anilist_id: number;
+      season_year: number | null;
+      season: Season | null;
+    }>;
+
+    if (list.length === 0) return { checked: 0, repaired: 0 };
+
+    // 2. AniList から開始期情報を一括取得
+    const mediaMap = await fetchAnimeStatusByIds(list.map(it => it.anilist_id));
+
+    // 3. (season_year, season) が AniList の開始期と違うものを修正
+    const { getStartSeason } = await import('../../utils/continuingAnime');
+    let repaired = 0;
+    for (const it of list) {
+      const media = mediaMap.get(it.anilist_id);
+      if (!media) continue;
+      const start = getStartSeason(media);
+      if (!start) continue;
+      if (start.year === it.season_year && start.season === it.season) continue;
+
+      const { error: updateError } = await supabase
+        .from('watchlist')
+        .update({ season_year: start.year, season: start.season })
+        .eq('id', it.id);
+      if (updateError) {
+        logError(updateError, `repairWatchlistSeasons:${it.id}`);
+        continue;
+      }
+      repaired += 1;
+    }
+
+    return { checked: list.length, repaired };
+  } catch (error) {
+    logError(error, 'repairWatchlistSeasons');
+    throw normalizeError(error);
+  }
+}
+

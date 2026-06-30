@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, KeyRound, AlertTriangle, Search, Smartphone, Settings, ArrowRight, ChevronDown } from 'lucide-react';
+import { Mail, KeyRound, AlertTriangle, Search, Smartphone, Settings, ArrowRight, ChevronDown, Wrench } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { getSession, signOut, updateEmail, updatePassword } from '../../../lib/api';
+import { repairWatchlistSeasons } from '../../../lib/api/watchlist';
 import { useAuth } from '../../../hooks/useAuth';
 import { usePWAInstall } from '../../../hooks/usePWAInstall';
 import { track } from '@vercel/analytics/react';
@@ -103,6 +104,12 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
   const [removeDuplicatesLoading, setRemoveDuplicatesLoading] = useState(false);
   const [removeDuplicatesError, setRemoveDuplicatesError] = useState('');
   const [removeDuplicatesSuccess, setRemoveDuplicatesSuccess] = useState('');
+
+  // 視聴予定データ修復用のstate
+  const [showRepairConfirm, setShowRepairConfirm] = useState(false);
+  const [repairLoading, setRepairLoading] = useState(false);
+  const [repairError, setRepairError] = useState('');
+  const [repairSuccess, setRepairSuccess] = useState('');
 
   const handleDeleteAccount = async () => {
     setDeleteError('');
@@ -236,6 +243,32 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
     }
   };
 
+  const handleRepairWatchlist = async () => {
+    setRepairError('');
+    setRepairSuccess('');
+    setRepairLoading(true);
+
+    try {
+      const { checked, repaired } = await repairWatchlistSeasons();
+      if (repaired === 0) {
+        setRepairSuccess(`${checked}件チェック、修復不要のデータでした`);
+      } else {
+        setRepairSuccess(`${checked}件中、${repaired}件のシーズン情報を修復しました`);
+      }
+      // 3秒後にモーダルを閉じてリロード
+      setTimeout(() => {
+        setShowRepairConfirm(false);
+        setRepairSuccess('');
+        if (repaired > 0) window.location.reload();
+      }, 3000);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'データ修復に失敗しました';
+      setRepairError(errorMessage);
+    } finally {
+      setRepairLoading(false);
+    }
+  };
+
   const handlePWAInstall = async () => {
     // 設定画面からのインストールクリックイベントを送信
     track('pwa_install_settings_clicked', { platform: isIOS ? 'ios' : 'android' });
@@ -292,7 +325,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             {/* 折りたたみコンテンツ */}
             <div
               className={`overflow-hidden transition-all duration-200 ${
-                isAccountSettingsOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+                isAccountSettingsOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
               }`}
             >
               <div className="border-t border-gray-200 dark:border-gray-700">
@@ -326,15 +359,25 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 >
                   パスワードを変更
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     setShowRemoveDuplicatesConfirm(true);
                     setRemoveDuplicatesError('');
                     setRemoveDuplicatesSuccess('');
                   }}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-orange-600 dark:text-orange-400 font-mixed"
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-orange-600 dark:text-orange-400 font-mixed border-b border-gray-200 dark:border-gray-700"
                 >
                   重複アニメを削除
+                </button>
+                <button
+                  onClick={() => {
+                    setShowRepairConfirm(true);
+                    setRepairError('');
+                    setRepairSuccess('');
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-blue-600 dark:text-blue-400 font-mixed"
+                >
+                  視聴予定データを修復
                 </button>
               </div>
             </div>
@@ -705,6 +748,76 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors disabled:bg-orange-400 disabled:cursor-not-allowed"
               >
                 {removeDuplicatesLoading ? '削除中...' : '削除する'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 視聴予定データ修復モーダル */}
+      {showRepairConfirm && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            if (!repairLoading) {
+              setShowRepairConfirm(false);
+              setRepairError('');
+              setRepairSuccess('');
+            }
+          }}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-4">
+              <Wrench className="w-10 h-10 mx-auto mb-4 text-blue-500" aria-hidden />
+              <h2 className="text-xl font-bold mb-2 dark:text-white">
+                視聴予定データを修復
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                連続2クール作品が今期/来季のどちらかに表示されない場合、シーズン情報が古い形式で保存されている可能性があります。
+                <br />
+                AniListの最新情報と照合して、すべての視聴予定アイテムを開始シーズン基準に修正します。
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                ※ 評価・メモ・放送情報など他の情報は変更されません
+              </p>
+            </div>
+
+            {/* 成功メッセージ */}
+            {repairSuccess && (
+              <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-sm">
+                {repairSuccess}
+              </div>
+            )}
+
+            {/* エラーメッセージ */}
+            {repairError && (
+              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm">
+                {repairError}
+              </div>
+            )}
+
+            {/* ボタン */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRepairConfirm(false);
+                  setRepairError('');
+                  setRepairSuccess('');
+                }}
+                disabled={repairLoading}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleRepairWatchlist}
+                disabled={repairLoading}
+                className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
+              >
+                {repairLoading ? '修復中...' : '修復する'}
               </button>
             </div>
           </div>

@@ -116,5 +116,80 @@ describe('isContinuingAnime', () => {
       const m = media({ seasonYear: null, season: null });
       expect(isContinuingAnime(m, target)).toBe(false);
     });
+
+    // v2 (2026-07-01) 過剰検知修正の回帰防止
+    it('12話 RELEASING の前期作品は1クール扱い (false)', () => {
+      const m = media({ seasonYear: 2025, season: 'SPRING', episodes: 12, status: 'RELEASING' });
+      expect(isContinuingAnime(m, target)).toBe(false);
+    });
+
+    it('13話 RELEASING の前期作品も1クール扱い (false)', () => {
+      const m = media({ seasonYear: 2025, season: 'SPRING', episodes: 13, status: 'RELEASING' });
+      expect(isContinuingAnime(m, target)).toBe(false);
+    });
+
+    it('episodes:null + NOT_YET_RELEASED は継続扱いしない (前期開始でも未開始)', () => {
+      const m = media({
+        seasonYear: 2025,
+        season: 'SPRING',
+        episodes: null,
+        status: 'NOT_YET_RELEASED',
+      });
+      expect(isContinuingAnime(m, target)).toBe(false);
+    });
+
+    it('episodes:null + FINISHED は継続扱いしない (過去作品)', () => {
+      const m = media({
+        seasonYear: 2025,
+        season: 'SPRING',
+        episodes: null,
+        status: 'FINISHED',
+      });
+      expect(isContinuingAnime(m, target)).toBe(false);
+    });
+
+    it('SPRING開始24話 (2クール) は SUMMER で継続するが FALL では終了済み', () => {
+      // 24話 ≒ 2クール → SPRING+SUMMER で完結。FALLには継続しない
+      const m = media({ seasonYear: 2025, season: 'SPRING', episodes: 24, status: 'FINISHED' });
+      expect(isContinuingAnime(m, { year: 2025, season: 'SUMMER' })).toBe(true);
+      expect(isContinuingAnime(m, { year: 2025, season: 'FALL' })).toBe(false);
+    });
+
+    it('SPRING開始39話 (3クール) は FALLまで継続、WINTERでは終了', () => {
+      // 39話 ≒ 3クール → SPRING+SUMMER+FALL で完結
+      const m = media({ seasonYear: 2025, season: 'SPRING', episodes: 39, status: 'RELEASING' });
+      expect(isContinuingAnime(m, { year: 2025, season: 'SUMMER' })).toBe(true);
+      expect(isContinuingAnime(m, { year: 2025, season: 'FALL' })).toBe(true);
+      expect(isContinuingAnime(m, { year: 2026, season: 'WINTER' })).toBe(false);
+    });
+
+    it('フリーレン (28話, FALL開始, 翌春3月終了) は WINTER まで継続、SPRINGでは終了', () => {
+      // endDate=2024/3 (WINTER) があるので、話数推定よりこちらが優先される
+      const frieren = media({
+        seasonYear: 2023,
+        season: 'FALL',
+        episodes: 28,
+        status: 'FINISHED',
+        startDate: { year: 2023, month: 9 },
+        endDate: { year: 2024, month: 3 },
+      });
+      expect(isContinuingAnime(frieren, { year: 2024, season: 'WINTER' })).toBe(true);
+      expect(isContinuingAnime(frieren, { year: 2024, season: 'SPRING' })).toBe(false);
+      expect(isContinuingAnime(frieren, { year: 2024, season: 'SUMMER' })).toBe(false);
+    });
+
+    it('endDate 不明の長期作品は話数推定にフォールバック', () => {
+      // 39話, endDate不明 → ceil(39/13)=3クール推定 → start+2 までtrue
+      const m = media({
+        seasonYear: 2025,
+        season: 'SPRING',
+        episodes: 39,
+        status: 'RELEASING',
+        endDate: null,
+      });
+      expect(isContinuingAnime(m, { year: 2025, season: 'SUMMER' })).toBe(true);
+      expect(isContinuingAnime(m, { year: 2025, season: 'FALL' })).toBe(true);
+      expect(isContinuingAnime(m, { year: 2026, season: 'WINTER' })).toBe(false);
+    });
   });
 });
