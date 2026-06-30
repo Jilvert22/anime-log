@@ -8,6 +8,7 @@ import { useStorage } from './useStorage';
 import { useAnimeSearchWithStreaming } from './useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../lib/storage/types';
 import type { AniListMediaWithStreaming } from '../lib/api/annict';
+import { getStartSeason } from '../utils/continuingAnime';
 
 interface UseSeasonSearchParams {
   allAnimes: Anime[];
@@ -288,14 +289,20 @@ export function useSeasonSearch({
       const nextSeason = getNextSeason();
       // 放送情報を取得
       const broadcastInfo = getBroadcastInfo(result);
-      
+
+      // 作品の開始期で保存 (v1設計: オリジナル開始シーズン基準)。
+      // 連続2クール作品で「来期から追加」した場合、AniList上の開始期は前期になる。
+      // AniListに開始期情報がなければ来期にフォールバック。
+      const start = getStartSeason(result);
+      const save = start ?? { year: nextSeason.year, season: nextSeason.season };
+
       const success = await storage.addToWatchlist({
         anilist_id: result.id,
         title: result.title?.native || result.title?.romaji || '',
         image: result.coverImage?.large || null,
         status: 'planned',
-        season_year: nextSeason.year,
-        season: nextSeason.season,
+        season_year: save.year,
+        season: save.season,
         broadcast_day: broadcastInfo.day,
         broadcast_time: broadcastInfo.time,
         streaming_sites: result.streamingServices || null,
