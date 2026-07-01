@@ -3,6 +3,7 @@
 import { supabase } from '../supabase';
 import type { IStorageService, WatchlistItem } from './types';
 import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
+import { getSeasonWatchlist as apiGetSeasonWatchlist } from '../api/watchlist';
 
 export class SupabaseStorageService implements IStorageService {
   async getWatchlist(): Promise<WatchlistItem[]> {
@@ -194,27 +195,14 @@ export class SupabaseStorageService implements IStorageService {
   ): Promise<WatchlistItem[]> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
-    
-    let query = supabase
-      .from('watchlist')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('season_year', year)
-      .eq('season', season)
-      .not('status', 'is', null);
-
-    if (status) {
-      query = query.eq('status', status);
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: false });
-
-    if (error) {
+    // API層の getSeasonWatchlist に委譲。前期開始で継続中の作品も和集合で拾う
+    // (以前はここで完全一致クエリを直書きしており、継続作品が漏れていた)
+    try {
+      return await apiGetSeasonWatchlist(user.id, year, season, status);
+    } catch (error) {
       console.error(`Failed to get watchlist for ${year} ${season}:`, error);
       return [];
     }
-
-    return (data || []) as WatchlistItem[];
   }
 
   async getCurrentSeasonWatchlist(
