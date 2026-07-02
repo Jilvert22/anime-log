@@ -70,4 +70,3 @@ export const logger = new AppLogger();
  * 新しいコードではlogger.errorを使用してください
  */
 export default logger;
-

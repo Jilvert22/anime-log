@@ -7,9 +7,7 @@ type Props = {
 
 export function StreamingBadge({ service, size = 'sm' }: Props) {
   const style = getStreamingServiceStyle(service);
-  const sizeClasses = size === 'sm' 
-    ? 'px-1.5 py-0.5 text-xs' 
-    : 'px-2 py-1 text-sm';
+  const sizeClasses = size === 'sm' ? 'px-1.5 py-0.5 text-xs' : 'px-2 py-1 text-sm';
 
   return (
     <span
@@ -19,4 +17,3 @@ export function StreamingBadge({ service, size = 'sm' }: Props) {
     </span>
   );
 }
-

@@ -78,11 +78,11 @@ export function CoachMark({
       // モバイルブラウザのアドレスバーを考慮して、少し余裕を持たせる
       const rectBeforeScroll = target.getBoundingClientRect();
       const isMobile = window.innerWidth < 768;
-      
-      target.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center', 
-        inline: 'center' 
+
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
       });
 
       // モバイルの場合、さらに少し上にスクロールしてアドレスバーを考慮
@@ -90,7 +90,7 @@ export function CoachMark({
         setTimeout(() => {
           window.scrollBy({
             top: -50, // 少し上にスクロール
-            behavior: 'smooth'
+            behavior: 'smooth',
           });
         }, 100);
       }
@@ -98,21 +98,20 @@ export function CoachMark({
       // スクロールアニメーション完了後、さらに少し待ってから位置を取得
       setTimeout(() => {
         const rect = target.getBoundingClientRect();
-        
+
         // 要素が画面内にあるか確認
-        const isInViewport = (
+        const isInViewport =
           rect.top >= 0 &&
           rect.left >= 0 &&
           rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-        );
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth);
 
         // 画面外の場合は再度スクロール
         if (!isInViewport) {
-          target.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center', 
-            inline: 'center' 
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center',
           });
           setTimeout(() => {
             const newRect = target.getBoundingClientRect();
@@ -175,10 +174,10 @@ export function CoachMark({
         top: `${top}px`,
         left: `${left}px`,
         transform: shouldCenter
-          ? 'translate(-50%, -50%)' 
+          ? 'translate(-50%, -50%)'
           : position === 'left' || position === 'right'
-          ? 'translateY(-50%)'
-          : 'translateX(-50%)',
+            ? 'translateY(-50%)'
+            : 'translateX(-50%)',
         zIndex: 10000,
       });
     };
@@ -235,23 +234,15 @@ export function CoachMark({
       )}
 
       {/* 吹き出し */}
-      <div
-        ref={overlayRef}
-        style={coachMarkStyle}
-        className="coach-mark-tooltip"
-      >
+      <div ref={overlayRef} style={coachMarkStyle} className="coach-mark-tooltip">
         <div
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 max-w-sm"
           style={{
             border: '2px solid #e879d4',
           }}
         >
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
-            {title}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            {description}
-          </p>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">{title}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{description}</p>
 
           {/* ボタン */}
           <div className="flex items-center justify-between gap-2">
@@ -287,4 +278,3 @@ export function CoachMark({
     </>
   );
 }
-

@@ -1,7 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, KeyRound, AlertTriangle, Search, Smartphone, Settings, ArrowRight, ChevronDown, Wrench } from 'lucide-react';
+import {
+  Mail,
+  KeyRound,
+  AlertTriangle,
+  Search,
+  Smartphone,
+  Settings,
+  ArrowRight,
+  ChevronDown,
+  Wrench,
+} from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { getSession, signOut, updateEmail, updatePassword } from '../../../lib/api';
 import { repairWatchlistSeasons } from '../../../lib/api/watchlist';
@@ -27,7 +37,7 @@ function getPasswordStrength(password: string): PasswordStrength {
       bars: 1,
     };
   }
-  
+
   if (password.length < 8) {
     return {
       level: 'fair',
@@ -37,10 +47,10 @@ function getPasswordStrength(password: string): PasswordStrength {
       bars: 2,
     };
   }
-  
+
   const hasNumber = /\d/.test(password);
   const hasUpperCase = /[A-Z]/.test(password);
-  
+
   if (hasNumber && hasUpperCase) {
     return {
       level: 'strong',
@@ -50,7 +60,7 @@ function getPasswordStrength(password: string): PasswordStrength {
       bars: 4,
     };
   }
-  
+
   if (hasNumber) {
     return {
       level: 'good',
@@ -60,7 +70,7 @@ function getPasswordStrength(password: string): PasswordStrength {
       bars: 3,
     };
   }
-  
+
   return {
     level: 'fair',
     label: 'やや弱い',
@@ -75,7 +85,10 @@ interface SettingsSectionProps {
   handleLogout: () => void;
 }
 
-export default function SettingsSection({ onOpenSettingsModal, handleLogout }: SettingsSectionProps) {
+export default function SettingsSection({
+  onOpenSettingsModal,
+  handleLogout,
+}: SettingsSectionProps) {
   const { user } = useAuth();
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -83,22 +96,22 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
   const [deleteError, setDeleteError] = useState('');
   const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
   const [showPWAInstallModal, setShowPWAInstallModal] = useState(false);
-  
+
   // メールアドレス変更用のstate
   const [showEmailChange, setShowEmailChange] = useState(false);
   const [newEmail, setNewEmail] = useState('');
-  
+
   // パスワード変更用のstate
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  
+
   // 共通のstate
   const [changeLoading, setChangeLoading] = useState(false);
   const [changeError, setChangeError] = useState('');
   const [changeSuccess, setChangeSuccess] = useState('');
-  
+
   // 重複削除用のstate
   const [showRemoveDuplicatesConfirm, setShowRemoveDuplicatesConfirm] = useState(false);
   const [removeDuplicatesLoading, setRemoveDuplicatesLoading] = useState(false);
@@ -126,7 +139,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         credentials: 'include',
       });
@@ -142,7 +155,8 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
       window.location.href = '/';
       return; // これ以降の処理を実行しない
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'アカウントの削除に失敗しました';
+      const errorMessage =
+        error instanceof Error ? error.message : 'アカウントの削除に失敗しました';
       setDeleteError(errorMessage);
       setDeleteLoading(false);
     }
@@ -162,14 +176,15 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
 
       setChangeSuccess('確認メールを送信しました');
       setNewEmail('');
-      
+
       // 3秒後にモーダルを閉じる
       setTimeout(() => {
         setShowEmailChange(false);
         setChangeSuccess('');
       }, 3000);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'メールアドレスの変更に失敗しました';
+      const errorMessage =
+        error instanceof Error ? error.message : 'メールアドレスの変更に失敗しました';
       setChangeError(errorMessage);
     } finally {
       setChangeLoading(false);
@@ -196,14 +211,15 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
       setNewPassword('');
       setConfirmNewPassword('');
       setCurrentPassword('');
-      
+
       // 3秒後にモーダルを閉じる
       setTimeout(() => {
         setShowPasswordChange(false);
         setChangeSuccess('');
       }, 3000);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'パスワードの変更に失敗しました';
+      const errorMessage =
+        error instanceof Error ? error.message : 'パスワードの変更に失敗しました';
       setChangeError(errorMessage);
     } finally {
       setChangeLoading(false);
@@ -227,8 +243,10 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         throw new Error(data.error || '重複アニメの削除に失敗しました');
       }
 
-      setRemoveDuplicatesSuccess(data.message || `${data.deletedCount}件の重複アニメを削除しました`);
-      
+      setRemoveDuplicatesSuccess(
+        data.message || `${data.deletedCount}件の重複アニメを削除しました`
+      );
+
       // 3秒後にモーダルを閉じてページをリロード
       setTimeout(() => {
         setShowRemoveDuplicatesConfirm(false);
@@ -236,7 +254,8 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         window.location.reload();
       }, 3000);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : '重複アニメの削除に失敗しました';
+      const errorMessage =
+        error instanceof Error ? error.message : '重複アニメの削除に失敗しました';
       setRemoveDuplicatesError(errorMessage);
     } finally {
       setRemoveDuplicatesLoading(false);
@@ -285,8 +304,11 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
   return (
     <>
       <section className="space-y-2">
-        <h2 className="text-xl font-bold px-4 text-[#6b5b6e] dark:text-white font-mixed flex items-center gap-2"><Settings className="w-5 h-5" aria-hidden />設定</h2>
-        
+        <h2 className="text-xl font-bold px-4 text-[#6b5b6e] dark:text-white font-mixed flex items-center gap-2">
+          <Settings className="w-5 h-5" aria-hidden />
+          設定
+        </h2>
+
         {/* PWAインストール（未インストール時のみ表示） */}
         {!isInstalled && (isInstallable || isIOS) && (
           <div className="px-4">
@@ -307,7 +329,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
             </div>
           </div>
         )}
-        
+
         {/* アカウント設定（折りたたみ可能） */}
         <div className="px-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-md">
@@ -317,11 +339,14 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
               className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
             >
               <span className="text-gray-700 dark:text-gray-200 font-medium">アカウント設定</span>
-              <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
-                isAccountSettingsOpen ? '' : '-rotate-90'
-              }`} aria-hidden />
+              <ChevronDown
+                className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
+                  isAccountSettingsOpen ? '' : '-rotate-90'
+                }`}
+                aria-hidden
+              />
             </button>
-            
+
             {/* 折りたたみコンテンツ */}
             <div
               className={`overflow-hidden transition-all duration-200 ${
@@ -329,13 +354,13 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
               }`}
             >
               <div className="border-t border-gray-200 dark:border-gray-700">
-                <button 
+                <button
                   onClick={onOpenSettingsModal}
                   className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-gray-700 dark:text-gray-200 font-mixed border-b border-gray-200 dark:border-gray-700"
                 >
                   プロフィール編集
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     setShowEmailChange(true);
                     setNewEmail('');
@@ -346,7 +371,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                 >
                   メールアドレスを変更
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     setShowPasswordChange(true);
                     setNewPassword('');
@@ -401,13 +426,13 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
         {/* ログアウト・アカウント削除 */}
         <div className="px-4 mt-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-md">
-            <button 
+            <button
               onClick={handleLogout}
               className="w-full px-4 py-3 text-left text-pink-500 dark:text-pink-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors font-mixed border-b border-gray-200 dark:border-gray-700"
             >
               ログアウト
             </button>
-            <button 
+            <button
               onClick={() => setShowDeleteConfirm(true)}
               className="w-full px-4 py-3 text-left text-red-500 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors font-mixed"
             >
@@ -436,9 +461,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
           >
             <div className="text-center mb-4">
               <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
-              <h2 className="text-xl font-bold mb-2 dark:text-white">
-                メールアドレスを変更
-              </h2>
+              <h2 className="text-xl font-bold mb-2 dark:text-white">メールアドレスを変更</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 現在: {user?.email || '未設定'}
               </p>
@@ -521,9 +544,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
           >
             <div className="text-center mb-4">
               <KeyRound className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
-              <h2 className="text-xl font-bold mb-2 dark:text-white">
-                パスワードを変更
-              </h2>
+              <h2 className="text-xl font-bold mb-2 dark:text-white">パスワードを変更</h2>
             </div>
 
             {/* 入力欄 */}
@@ -547,24 +568,25 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
                           <div
                             key={bar}
                             className={`h-1 flex-1 rounded ${
-                              bar <= strength.bars
-                                ? strength.color
-                                : 'bg-gray-200 dark:bg-gray-700'
+                              bar <= strength.bars ? strength.color : 'bg-gray-200 dark:bg-gray-700'
                             }`}
                           />
                         );
                       })}
                     </div>
-                    <p className={`text-xs ${
-                      getPasswordStrength(newPassword).level === 'weak'
-                        ? 'text-red-600 dark:text-red-400'
-                        : getPasswordStrength(newPassword).level === 'fair'
-                        ? 'text-orange-600 dark:text-orange-400'
-                        : getPasswordStrength(newPassword).level === 'good'
-                        ? 'text-yellow-600 dark:text-yellow-400'
-                        : 'text-green-600 dark:text-green-400'
-                    }`}>
-                      {getPasswordStrength(newPassword).label} - {getPasswordStrength(newPassword).message}
+                    <p
+                      className={`text-xs ${
+                        getPasswordStrength(newPassword).level === 'weak'
+                          ? 'text-red-600 dark:text-red-400'
+                          : getPasswordStrength(newPassword).level === 'fair'
+                            ? 'text-orange-600 dark:text-orange-400'
+                            : getPasswordStrength(newPassword).level === 'good'
+                              ? 'text-yellow-600 dark:text-yellow-400'
+                              : 'text-green-600 dark:text-green-400'
+                      }`}
+                    >
+                      {getPasswordStrength(newPassword).label} -{' '}
+                      {getPasswordStrength(newPassword).message}
                     </p>
                   </div>
                 )}
@@ -638,9 +660,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
           >
             <div className="text-center mb-4">
               <AlertTriangle className="w-10 h-10 mx-auto mb-4 text-amber-500" aria-hidden />
-              <h2 className="text-xl font-bold mb-2 dark:text-white">
-                アカウントを削除しますか？
-              </h2>
+              <h2 className="text-xl font-bold mb-2 dark:text-white">アカウントを削除しますか？</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 この操作は取り消せません。
               </p>
@@ -704,9 +724,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
           >
             <div className="text-center mb-4">
               <Search className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
-              <h2 className="text-xl font-bold mb-2 dark:text-white">
-                重複アニメを削除
-              </h2>
+              <h2 className="text-xl font-bold mb-2 dark:text-white">重複アニメを削除</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 同じタイトルのアニメが複数ある場合、最も古いものを残して残りを削除します。
               </p>
@@ -772,9 +790,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
           >
             <div className="text-center mb-4">
               <Wrench className="w-10 h-10 mx-auto mb-4 text-blue-500" aria-hidden />
-              <h2 className="text-xl font-bold mb-2 dark:text-white">
-                視聴予定データを修復
-              </h2>
+              <h2 className="text-xl font-bold mb-2 dark:text-white">視聴予定データを修復</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 連続2クール作品が今期/来季のどちらかに表示されない場合、シーズン情報が古い形式で保存されている可能性があります。
                 <br />
@@ -836,9 +852,7 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
           >
             <div className="text-center mb-4">
               <Smartphone className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
-              <h2 className="text-xl font-bold mb-2 dark:text-white">
-                ホーム画面に追加
-              </h2>
+              <h2 className="text-xl font-bold mb-2 dark:text-white">ホーム画面に追加</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 iOSの場合、以下の手順でアプリをインストールできます：
               </p>
@@ -846,19 +860,25 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
 
             <div className="space-y-3 mb-6 text-left">
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  1
+                </span>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   Safariの下部にある<strong>共有ボタン（□↑）</strong>をタップ
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  2
+                </span>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   <strong>「ホーム画面に追加」</strong>を選択
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-[#e879d4] text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  3
+                </span>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   <strong>「追加」</strong>をタップ
                 </p>
@@ -877,4 +897,3 @@ export default function SettingsSection({ onOpenSettingsModal, handleLogout }: S
     </>
   );
 }
-

@@ -36,7 +36,11 @@ export function AddAnimeFormModal({
   user: User | null;
   extractSeriesName: (title: string) => string | undefined;
   getSeasonName: (season: string) => string;
-  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => {
+  animeToSupabase: (
+    anime: Anime,
+    seasonName: string,
+    userId: string
+  ) => {
     user_id: string;
     season_name: string;
     title: string;
@@ -56,11 +60,17 @@ export function AddAnimeFormModal({
   const [searchResults, setSearchResults] = useState<AniListMediaWithStreaming[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedSearchAnimeIds, setSelectedSearchAnimeIds] = useState<Set<number>>(new Set());
-  const [selectedSeason, setSelectedSeason] = useState<'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null>(null);
+  const [selectedSeason, setSelectedSeason] = useState<
+    'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null
+  >(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [seasonSearchResults, setSeasonSearchResults] = useState<AniListMediaWithStreaming[]>([]);
   const [selectedSeasonAnimeIds, setSelectedSeasonAnimeIds] = useState<Set<number>>(new Set());
-  const { searchBySeason, searchByTitle, isLoading: isStreamingSearchLoading } = useAnimeSearchWithStreaming();
+  const {
+    searchBySeason,
+    searchByTitle,
+    isLoading: isStreamingSearchLoading,
+  } = useAnimeSearchWithStreaming();
   const { showToast } = useFeedback();
 
   const handleClose = () => {
@@ -82,10 +92,10 @@ export function AddAnimeFormModal({
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
-    
+
     setIsSearching(true);
     setSearchResults([]);
-    
+
     try {
       const results = await searchByTitle(searchQuery.trim());
       setSearchResults(results || []);
@@ -98,16 +108,16 @@ export function AddAnimeFormModal({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 my-4"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4 dark:text-white">新しいアニメを追加</h2>
-        
+
         {/* モード切り替えタブ */}
         <div className="flex gap-2 mb-4">
           <button
@@ -131,7 +141,7 @@ export function AddAnimeFormModal({
             クール検索
           </button>
         </div>
-        
+
         {/* クール検索モード */}
         {addModalMode === 'season' && (
           <div className="mb-4 space-y-4">
@@ -146,8 +156,13 @@ export function AddAnimeFormModal({
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 >
-                  {Array.from({ length: new Date().getFullYear() - 1970 + 1 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                    <option key={year} value={year}>{year}年</option>
+                  {Array.from(
+                    { length: new Date().getFullYear() - 1970 + 1 },
+                    (_, i) => new Date().getFullYear() - i
+                  ).map((year) => (
+                    <option key={year} value={year}>
+                      {year}年
+                    </option>
                   ))}
                 </select>
               </div>
@@ -157,7 +172,11 @@ export function AddAnimeFormModal({
                 </label>
                 <select
                   value={selectedSeason || ''}
-                  onChange={(e) => setSelectedSeason(e.target.value as 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null)}
+                  onChange={(e) =>
+                    setSelectedSeason(
+                      e.target.value as 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null
+                    )
+                  }
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">選択してください</option>
@@ -168,7 +187,7 @@ export function AddAnimeFormModal({
                 </select>
               </div>
             </div>
-            
+
             {/* 検索ボタン */}
             <button
               onClick={async () => {
@@ -188,7 +207,7 @@ export function AddAnimeFormModal({
             >
               {isStreamingSearchLoading ? '検索中...' : 'クールを検索'}
             </button>
-            
+
             {/* 検索結果 */}
             {seasonSearchResults.length > 0 && !isStreamingSearchLoading && (
               <div className="space-y-3">
@@ -201,15 +220,17 @@ export function AddAnimeFormModal({
                       if (selectedSeasonAnimeIds.size === seasonSearchResults.length) {
                         setSelectedSeasonAnimeIds(new Set());
                       } else {
-                        setSelectedSeasonAnimeIds(new Set(seasonSearchResults.map(r => r.id)));
+                        setSelectedSeasonAnimeIds(new Set(seasonSearchResults.map((r) => r.id)));
                       }
                     }}
                     className="text-xs text-[#e879d4] dark:text-[#e879d4] hover:underline"
                   >
-                    {selectedSeasonAnimeIds.size === seasonSearchResults.length ? 'すべて解除' : 'すべて選択'}
+                    {selectedSeasonAnimeIds.size === seasonSearchResults.length
+                      ? 'すべて解除'
+                      : 'すべて選択'}
                   </button>
                 </div>
-                
+
                 <div className="max-h-96 overflow-y-auto space-y-2">
                   {seasonSearchResults.map((result) => {
                     const isSelected = selectedSeasonAnimeIds.has(result.id);
@@ -246,13 +267,17 @@ export function AddAnimeFormModal({
                               className="object-cover rounded"
                               unoptimized
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
+                                (e.target as HTMLImageElement).src =
+                                  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
                               }}
                             />
                           </div>
                         ) : (
                           <div className="w-16 h-24 flex items-center justify-center shrink-0">
-                            <Film className="w-6 h-6 text-gray-400 dark:text-gray-500" aria-hidden />
+                            <Film
+                              className="w-6 h-6 text-gray-400 dark:text-gray-500"
+                              aria-hidden
+                            />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
@@ -267,51 +292,66 @@ export function AddAnimeFormModal({
                     );
                   })}
                 </div>
-                
+
                 {/* 一括登録ボタン */}
                 {selectedSeasonAnimeIds.size > 0 && (
                   <button
                     onClick={async () => {
-                      const selectedAnimes = seasonSearchResults.filter(r => selectedSeasonAnimeIds.has(r.id));
-                      const maxId = Math.max(...seasons.flatMap(s => s.animes).map(a => a.id), 0);
-                      
+                      const selectedAnimes = seasonSearchResults.filter((r) =>
+                        selectedSeasonAnimeIds.has(r.id)
+                      );
+                      const maxId = Math.max(
+                        ...seasons.flatMap((s) => s.animes).map((a) => a.id),
+                        0
+                      );
+
                       // 既存のアニメタイトルを取得（重複チェック用）
                       const existingTitles = new Set(
-                        seasons.flatMap(s => s.animes).map(a => 
-                          a.title.toLowerCase().trim()
-                        )
+                        seasons.flatMap((s) => s.animes).map((a) => a.title.toLowerCase().trim())
                       );
-                      
+
                       // 重複チェック（テスト環境ではスキップ）
-                      const isTestEnv = process.env.NODE_ENV === 'test' || (typeof window !== 'undefined' && window.__TEST_MODE__);
-                      const filteredAnimes = isTestEnv 
-                        ? selectedAnimes 
-                        : selectedAnimes.filter(result => {
+                      const isTestEnv =
+                        process.env.NODE_ENV === 'test' ||
+                        (typeof window !== 'undefined' && window.__TEST_MODE__);
+                      const filteredAnimes = isTestEnv
+                        ? selectedAnimes
+                        : selectedAnimes.filter((result) => {
                             const titleNative = (result.title?.native || '').toLowerCase().trim();
                             const titleRomaji = (result.title?.romaji || '').toLowerCase().trim();
                             const titleEnglish = (result.title?.english || '').toLowerCase().trim();
-                            return !existingTitles.has(titleNative) && 
-                                   !existingTitles.has(titleRomaji) && 
-                                   !existingTitles.has(titleEnglish);
+                            return (
+                              !existingTitles.has(titleNative) &&
+                              !existingTitles.has(titleRomaji) &&
+                              !existingTitles.has(titleEnglish)
+                            );
                           });
-                      
+
                       // 重複がある場合は警告を表示
                       if (!isTestEnv && filteredAnimes.length < selectedAnimes.length) {
                         const duplicateCount = selectedAnimes.length - filteredAnimes.length;
-                        showToast(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`, 'error');
+                        showToast(
+                          `${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`,
+                          'error'
+                        );
                       }
-                      
+
                       if (filteredAnimes.length === 0) {
-                        showToast('登録できるアニメがありません（すべて既に登録済みです）。', 'error');
+                        showToast(
+                          '登録できるアニメがありません（すべて既に登録済みです）。',
+                          'error'
+                        );
                         return;
                       }
-                      
+
                       // シーズン名を生成（例: "2024年秋"）
                       const seasonName = `${selectedYear}年${getSeasonName(selectedSeason!)}`;
-                      
+
                       // アニメを追加（評価は0、watchedはfalse）
                       const newAnimes: Anime[] = filteredAnimes.map((result, index) => {
-                        const seriesName = extractSeriesName(result.title?.native || result.title?.romaji || '');
+                        const seriesName = extractSeriesName(
+                          result.title?.native || result.title?.romaji || ''
+                        );
                         return {
                           id: maxId + index + 1,
                           anilistId: result.id,
@@ -320,17 +360,19 @@ export function AddAnimeFormModal({
                           rating: 0, // 未評価
                           watched: false,
                           rewatchCount: 1, // デフォルトで1周
-                          tags: result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
+                          tags:
+                            result.genres?.map((g: string) => translateGenre(g)).slice(0, 3) || [],
                           seriesName,
-                          studios: result.studios?.nodes?.map((s: { name: string }) => s.name) || [],
+                          studios:
+                            result.studios?.nodes?.map((s: { name: string }) => s.name) || [],
                           streamingSites: result.streamingServices || [],
                         };
                       });
-                      
+
                       // 既存のシーズンを探す、なければ作成してアニメを追加
-                      const existingSeasonIndex = seasons.findIndex(s => s.name === seasonName);
+                      const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
                       let updatedSeasons: Season[];
-                      
+
                       if (existingSeasonIndex === -1) {
                         // 新しいシーズンを作成
                         updatedSeasons = [...seasons, { name: seasonName, animes: newAnimes }];
@@ -342,43 +384,53 @@ export function AddAnimeFormModal({
                             : season
                         );
                       }
-                      
+
                       // 時系列順にソート
                       updatedSeasons = sortSeasonsByTime(updatedSeasons);
-                      
+
                       // 新しいシーズンが追加された場合は展開状態にする
                       const newExpandedSeasons = new Set(expandedSeasons);
-                      if (!seasons.find(s => s.name === seasonName)) {
+                      if (!seasons.find((s) => s.name === seasonName)) {
                         newExpandedSeasons.add(seasonName);
                       } else {
                         // 既存のシーズンでも展開状態を維持
                         newExpandedSeasons.add(seasonName);
                       }
                       setExpandedSeasons(newExpandedSeasons);
-                      
+
                       // Supabaseに保存（ログイン時のみ）
                       if (user) {
                         try {
-                          const supabaseData = newAnimes.map(anime => 
+                          const supabaseData = newAnimes.map((anime) =>
                             animeToSupabase(anime, seasonName, user.id)
                           );
-                          
+
                           const { error } = await supabase
                             .from('animes')
                             .insert(supabaseData)
                             .select();
-                          
+
                           if (error) throw error;
                         } catch (error: unknown) {
-                          const errorMessage = error instanceof Error ? error.message : 
-                            (typeof error === 'object' && error !== null && 'message' in error ? String((error as { message?: string }).message) : 
-                            (typeof error === 'object' && error !== null && 'details' in error ? String((error as { details?: string }).details) :
-                            (typeof error === 'object' && error !== null && 'hint' in error ? String((error as { hint?: string }).hint) :
-                            String(error)))) || '不明なエラー';
-                          showToast(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`, 'error');
+                          const errorMessage =
+                            error instanceof Error
+                              ? error.message
+                              : (typeof error === 'object' && error !== null && 'message' in error
+                                  ? String((error as { message?: string }).message)
+                                  : typeof error === 'object' &&
+                                      error !== null &&
+                                      'details' in error
+                                    ? String((error as { details?: string }).details)
+                                    : typeof error === 'object' && error !== null && 'hint' in error
+                                      ? String((error as { hint?: string }).hint)
+                                      : String(error)) || '不明なエラー';
+                          showToast(
+                            `アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`,
+                            'error'
+                          );
                         }
                       }
-                      
+
                       setSeasons(updatedSeasons);
                       handleClose();
                     }}
@@ -391,7 +443,7 @@ export function AddAnimeFormModal({
             )}
           </div>
         )}
-        
+
         {/* タイトル検索モード */}
         {addModalMode === 'search' && (
           <div className="space-y-4">
@@ -433,18 +485,22 @@ export function AddAnimeFormModal({
             {searchResults.length > 0 && !isSearching && (
               <div className="mb-4 max-h-80 overflow-y-auto">
                 <div className="flex items-center justify-between mb-2 sticky top-0 bg-white dark:bg-gray-800 py-1">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">検索結果: {searchResults.length}件</p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    検索結果: {searchResults.length}件
+                  </p>
                   <button
                     onClick={() => {
                       if (selectedSearchAnimeIds.size === searchResults.length) {
                         setSelectedSearchAnimeIds(new Set());
                       } else {
-                        setSelectedSearchAnimeIds(new Set(searchResults.map(r => r.id)));
+                        setSelectedSearchAnimeIds(new Set(searchResults.map((r) => r.id)));
                       }
                     }}
                     className="text-xs text-[#e879d4] dark:text-[#e879d4] hover:underline"
                   >
-                    {selectedSearchAnimeIds.size === searchResults.length ? 'すべて解除' : 'すべて選択'}
+                    {selectedSearchAnimeIds.size === searchResults.length
+                      ? 'すべて解除'
+                      : 'すべて選択'}
                   </button>
                 </div>
                 <div className="space-y-2">
@@ -483,33 +539,45 @@ export function AddAnimeFormModal({
                               className="object-cover rounded"
                               unoptimized
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
+                                (e.target as HTMLImageElement).src =
+                                  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><rect fill="%23ddd" width="64" height="96"/></svg>';
                               }}
                             />
                           </div>
                         ) : (
                           <div className="w-16 h-24 flex items-center justify-center shrink-0">
-                            <Film className="w-6 h-6 text-gray-400 dark:text-gray-500" aria-hidden />
+                            <Film
+                              className="w-6 h-6 text-gray-400 dark:text-gray-500"
+                              aria-hidden
+                            />
                           </div>
                         )}
                         <div className="flex-1 text-left">
                           <p className="font-bold text-sm dark:text-white">
                             {result.title?.native || result.title?.romaji}
                           </p>
-                          {result.title?.native && result.title?.romaji && result.title.native !== result.title.romaji && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {result.title.romaji}
-                            </p>
-                          )}
+                          {result.title?.native &&
+                            result.title?.romaji &&
+                            result.title.native !== result.title.romaji && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {result.title.romaji}
+                              </p>
+                            )}
                           {result.seasonYear && (
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {result.seasonYear}年 {result.season ? getSeasonNameWithMonths(getSeasonName(result.season)) : ''}
+                              {result.seasonYear}年{' '}
+                              {result.season
+                                ? getSeasonNameWithMonths(getSeasonName(result.season))
+                                : ''}
                             </p>
                           )}
                           {result.genres && result.genres.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {result.genres.slice(0, 3).map((genre: string) => (
-                                <span key={genre} className="text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full">
+                                <span
+                                  key={genre}
+                                  className="text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full"
+                                >
                                   {translateGenre(genre)}
                                 </span>
                               ))}
@@ -527,7 +595,9 @@ export function AddAnimeFormModal({
             {searchResults.length === 0 && !isSearching && searchQuery.trim() && (
               <div className="mb-4 text-center py-8">
                 <p className="text-gray-500 dark:text-gray-400">検索結果が見つかりませんでした</p>
-                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">別のキーワードで検索してください</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                  別のキーワードで検索してください
+                </p>
               </div>
             )}
 
@@ -541,64 +611,76 @@ export function AddAnimeFormModal({
             {/* 検索結果が選択されている場合のみ追加ボタンを表示 */}
             {selectedSearchAnimeIds.size > 0 && (
               <div className="flex gap-3">
-                <button 
+                <button
                   onClick={handleClose}
                   className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   キャンセル
                 </button>
-                <button 
+                <button
                   onClick={async () => {
                     if (selectedSearchAnimeIds.size === 0) {
                       showToast('アニメを選択してください', 'error');
                       return;
                     }
-                    
-                    const selectedAnimes = searchResults.filter(r => selectedSearchAnimeIds.has(r.id));
-                    const maxId = Math.max(...seasons.flatMap(s => s.animes).map(a => a.id), 0);
-                    
+
+                    const selectedAnimes = searchResults.filter((r) =>
+                      selectedSearchAnimeIds.has(r.id)
+                    );
+                    const maxId = Math.max(...seasons.flatMap((s) => s.animes).map((a) => a.id), 0);
+
                     // 既存のアニメタイトルを取得（重複チェック用）
                     const existingTitles = new Set(
-                      seasons.flatMap(s => s.animes).map(a => 
-                        a.title.toLowerCase().trim()
-                      )
+                      seasons.flatMap((s) => s.animes).map((a) => a.title.toLowerCase().trim())
                     );
-                    
+
                     // 重複チェック（テスト環境ではスキップ）
-                    const isTestEnv = process.env.NODE_ENV === 'test' || (typeof window !== 'undefined' && window.__TEST_MODE__);
-                    const filteredAnimes = isTestEnv 
-                      ? selectedAnimes 
-                      : selectedAnimes.filter(result => {
+                    const isTestEnv =
+                      process.env.NODE_ENV === 'test' ||
+                      (typeof window !== 'undefined' && window.__TEST_MODE__);
+                    const filteredAnimes = isTestEnv
+                      ? selectedAnimes
+                      : selectedAnimes.filter((result) => {
                           const titleNative = (result.title?.native || '').toLowerCase().trim();
                           const titleRomaji = (result.title?.romaji || '').toLowerCase().trim();
                           const titleEnglish = (result.title?.english || '').toLowerCase().trim();
-                          return !existingTitles.has(titleNative) && 
-                                 !existingTitles.has(titleRomaji) && 
-                                 !existingTitles.has(titleEnglish);
+                          return (
+                            !existingTitles.has(titleNative) &&
+                            !existingTitles.has(titleRomaji) &&
+                            !existingTitles.has(titleEnglish)
+                          );
                         });
-                    
+
                     // 重複がある場合は警告を表示
                     if (!isTestEnv && filteredAnimes.length < selectedAnimes.length) {
                       const duplicateCount = selectedAnimes.length - filteredAnimes.length;
-                      showToast(`${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`, 'error');
+                      showToast(
+                        `${duplicateCount}件のアニメは既に登録されています。重複をスキップして登録します。`,
+                        'error'
+                      );
                     }
-                    
+
                     if (filteredAnimes.length === 0) {
-                      showToast('登録できるアニメがありません（すべて既に登録済みです）。', 'error');
+                      showToast(
+                        '登録できるアニメがありません（すべて既に登録済みです）。',
+                        'error'
+                      );
                       return;
                     }
-                    
+
                     // 選択されたアニメを処理
                     const newAnimes: Anime[] = filteredAnimes.map((result, index) => {
                       const title = result.title?.native || result.title?.romaji || '';
                       const image = result.coverImage?.large || result.coverImage?.medium || '🎬';
-                      
+
                       // ジャンルをタグとして取得
                       const tags: string[] = [];
                       if (result?.genres && result.genres.length > 0) {
                         result.genres.forEach((genre: string) => {
                           const translatedGenre = translateGenre(genre);
-                          const matchingTag = availableTags.find(t => t.label === translatedGenre);
+                          const matchingTag = availableTags.find(
+                            (t) => t.label === translatedGenre
+                          );
                           if (matchingTag) {
                             tags.push(matchingTag.value);
                           } else {
@@ -606,16 +688,16 @@ export function AddAnimeFormModal({
                           }
                         });
                       }
-                      
+
                       // シリーズ名を自動判定
                       const seriesName = extractSeriesName(title);
-                      
+
                       // 制作会社を取得
                       const studios: string[] = [];
                       if (result?.studios?.nodes && Array.isArray(result.studios.nodes)) {
                         studios.push(...result.studios.nodes.map((s: { name: string }) => s.name));
                       }
-                      
+
                       return {
                         id: maxId + index + 1,
                         anilistId: result.id,
@@ -630,57 +712,59 @@ export function AddAnimeFormModal({
                         streamingSites: result.streamingServices || [],
                       };
                     });
-                    
+
                     // 各アニメを適切なシーズンに追加
                     let updatedSeasons: Season[] = [...seasons];
-                    
+
                     newAnimes.forEach((anime) => {
                       // シーズン名を取得（各アニメの情報から）
-                      const result = selectedAnimes.find(r => 
-                        (r.title?.native || r.title?.romaji) === anime.title
+                      const result = selectedAnimes.find(
+                        (r) => (r.title?.native || r.title?.romaji) === anime.title
                       );
                       let seasonName = '未分類';
                       if (result?.seasonYear && result?.season) {
                         seasonName = `${result.seasonYear}年${getSeasonName(result.season)}`;
                       }
-                      
-                      const existingSeasonIndex = updatedSeasons.findIndex(s => s.name === seasonName);
-                      
+
+                      const existingSeasonIndex = updatedSeasons.findIndex(
+                        (s) => s.name === seasonName
+                      );
+
                       if (existingSeasonIndex === -1) {
                         updatedSeasons.push({ name: seasonName, animes: [anime] });
                       } else {
                         updatedSeasons[existingSeasonIndex].animes.push(anime);
                       }
                     });
-                    
+
                     // 時系列順にソート
                     updatedSeasons = sortSeasonsByTime(updatedSeasons);
-                    
+
                     // 新しいシーズンが追加された場合は展開状態にする
                     const newExpandedSeasons = new Set(expandedSeasons);
                     newAnimes.forEach((anime) => {
-                      const result = selectedAnimes.find(r => 
-                        (r.title?.native || r.title?.romaji) === anime.title
+                      const result = selectedAnimes.find(
+                        (r) => (r.title?.native || r.title?.romaji) === anime.title
                       );
                       let seasonName = '未分類';
                       if (result?.seasonYear && result?.season) {
                         seasonName = `${result.seasonYear}年${getSeasonName(result.season)}`;
                       }
-                      if (!seasons.find(s => s.name === seasonName)) {
+                      if (!seasons.find((s) => s.name === seasonName)) {
                         newExpandedSeasons.add(seasonName);
                       } else {
                         newExpandedSeasons.add(seasonName);
                       }
                     });
                     setExpandedSeasons(newExpandedSeasons);
-                    
+
                     // Supabaseに保存（ログイン時のみ）
                     if (user) {
                       try {
                         const supabaseData: ReturnType<typeof animeToSupabase>[] = [];
                         newAnimes.forEach((anime) => {
-                          const result = selectedAnimes.find(r => 
-                            (r.title?.native || r.title?.romaji) === anime.title
+                          const result = selectedAnimes.find(
+                            (r) => (r.title?.native || r.title?.romaji) === anime.title
                           );
                           let seasonName = '未分類';
                           if (result?.seasonYear && result?.season) {
@@ -688,23 +772,31 @@ export function AddAnimeFormModal({
                           }
                           supabaseData.push(animeToSupabase(anime, seasonName, user.id));
                         });
-                        
+
                         const { error } = await supabase
                           .from('animes')
                           .insert(supabaseData)
                           .select();
-                        
+
                         if (error) throw error;
                       } catch (error: unknown) {
-                        const errorMessage = error instanceof Error ? error.message : 
-                          (typeof error === 'object' && error !== null && 'message' in error ? String((error as { message?: string }).message) : 
-                          (typeof error === 'object' && error !== null && 'details' in error ? String((error as { details?: string }).details) :
-                          (typeof error === 'object' && error !== null && 'hint' in error ? String((error as { hint?: string }).hint) :
-                          String(error)))) || '不明なエラー';
-                        showToast(`アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`, 'error');
+                        const errorMessage =
+                          error instanceof Error
+                            ? error.message
+                            : (typeof error === 'object' && error !== null && 'message' in error
+                                ? String((error as { message?: string }).message)
+                                : typeof error === 'object' && error !== null && 'details' in error
+                                  ? String((error as { details?: string }).details)
+                                  : typeof error === 'object' && error !== null && 'hint' in error
+                                    ? String((error as { hint?: string }).hint)
+                                    : String(error)) || '不明なエラー';
+                        showToast(
+                          `アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`,
+                          'error'
+                        );
                       }
                     }
-                    
+
                     setSeasons(updatedSeasons);
                     handleClose();
                   }}

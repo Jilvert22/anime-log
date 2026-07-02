@@ -22,12 +22,12 @@ export async function POST(request: NextRequest) {
     );
 
     // ユーザー認証を確認
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json(
-        { error: '認証が必要です' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
     }
 
     // ユーザーのアニメを取得
@@ -39,10 +39,7 @@ export async function POST(request: NextRequest) {
 
     if (fetchError) {
       console.error('アニメの取得に失敗しました:', fetchError);
-      return NextResponse.json(
-        { error: 'アニメの取得に失敗しました' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'アニメの取得に失敗しました' }, { status: 500 });
     }
 
     if (!animes || animes.length === 0) {
@@ -95,10 +92,7 @@ export async function POST(request: NextRequest) {
 
     if (deleteError) {
       console.error('重複アニメの削除に失敗しました:', deleteError);
-      return NextResponse.json(
-        { error: '重複アニメの削除に失敗しました' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '重複アニメの削除に失敗しました' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -107,10 +101,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('重複アニメ削除エラー:', error);
-    return NextResponse.json(
-      { error: 'サーバーエラーが発生しました' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'サーバーエラーが発生しました' }, { status: 500 });
   }
 }
-

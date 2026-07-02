@@ -8,21 +8,15 @@ import { AnimeCard } from '../AnimeCard';
 
 // タイトルから期数を取得する関数
 function getSeasonNumber(title: string): number | null {
-  const patterns = [
-    /第(\d+)期/,
-    /第(\d+)シーズン/i,
-    /(\d+)期/,
-    /Season\s*(\d+)/i,
-    /S(\d+)/i,
-  ];
-  
+  const patterns = [/第(\d+)期/, /第(\d+)シーズン/i, /(\d+)期/, /Season\s*(\d+)/i, /S(\d+)/i];
+
   for (const pattern of patterns) {
     const match = title.match(pattern);
     if (match && match[1]) {
       return parseInt(match[1], 10);
     }
   }
-  
+
   return null;
 }
 
@@ -32,14 +26,12 @@ interface SeriesViewProps {
   onOpenAddForm: () => void;
 }
 
-export function SeriesView({ 
-  seasons, 
-  setSelectedAnime,
-  onOpenAddForm
-}: SeriesViewProps) {
+export function SeriesView({ seasons, setSelectedAnime, onOpenAddForm }: SeriesViewProps) {
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
   const [expandedStandalone, setExpandedStandalone] = useState(false);
-  const [suggestedSeasons, setSuggestedSeasons] = useState<Map<string, AniListSearchResult[]>>(new Map());
+  const [suggestedSeasons, setSuggestedSeasons] = useState<Map<string, AniListSearchResult[]>>(
+    new Map()
+  );
   const [loadingSuggestions, setLoadingSuggestions] = useState<Set<string>>(new Set());
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(() => {
     // localStorageから非表示にした提案を読み込む
@@ -53,13 +45,13 @@ export function SeriesView({
   // シリーズごとのグループ化とソートをメモ化
   const { seriesArray, standaloneAnimes } = useMemo(() => {
     // すべてのアニメを取得
-    const allAnimes = seasons.flatMap(s => s.animes);
-    
+    const allAnimes = seasons.flatMap((s) => s.animes);
+
     // シリーズごとにグループ化
     const seriesMap = new Map<string, Anime[]>();
     const standalone: Anime[] = [];
-    
-    allAnimes.forEach(anime => {
+
+    allAnimes.forEach((anime) => {
       if (anime.seriesName) {
         if (!seriesMap.has(anime.seriesName)) {
           seriesMap.set(anime.seriesName, []);
@@ -69,7 +61,7 @@ export function SeriesView({
         standalone.push(anime);
       }
     });
-    
+
     // 1作品のみのシリーズは単発作品に移動
     const filteredSeriesMap = new Map<string, Anime[]>();
     seriesMap.forEach((animes, seriesName) => {
@@ -79,23 +71,23 @@ export function SeriesView({
         standalone.push(...animes);
       }
     });
-    
+
     // シリーズ内を時系列順にソート（期数とシーズン名から判断）
     filteredSeriesMap.forEach((animes) => {
       animes.sort((a, b) => {
         // 期数でソート
         const aSeasonNum = getSeasonNumber(a.title);
         const bSeasonNum = getSeasonNumber(b.title);
-        
+
         if (aSeasonNum !== null && bSeasonNum !== null) {
           return aSeasonNum - bSeasonNum;
         }
         if (aSeasonNum !== null) return -1;
         if (bSeasonNum !== null) return 1;
-        
+
         // 期数がない場合はシーズン名でソート
-        const aSeason = seasons.find(s => s.animes.includes(a));
-        const bSeason = seasons.find(s => s.animes.includes(b));
+        const aSeason = seasons.find((s) => s.animes.includes(a));
+        const bSeason = seasons.find((s) => s.animes.includes(b));
         if (aSeason && bSeason) {
           const seasonIndexA = seasons.indexOf(aSeason);
           const seasonIndexB = seasons.indexOf(bSeason);
@@ -109,7 +101,7 @@ export function SeriesView({
         return 0;
       });
     });
-    
+
     return {
       seriesArray: Array.from(filteredSeriesMap.entries()),
       standaloneAnimes: standalone,
@@ -122,12 +114,12 @@ export function SeriesView({
       return;
     }
 
-    setLoadingSuggestions(prev => new Set(prev).add(seriesName));
+    setLoadingSuggestions((prev) => new Set(prev).add(seriesName));
 
     try {
       const { searchAnime } = await import('../../lib/anilist');
       const results = await searchAnime(seriesName);
-      
+
       // 登録済みでない作品をフィルタリング（タイトルで比較）
       const unregistered = results.filter((anime: AniListSearchResult) => {
         const animeId = anime.id.toString();
@@ -135,22 +127,24 @@ export function SeriesView({
         if (dismissedSuggestions.has(animeId)) {
           return false;
         }
-        
+
         const titleRomaji = anime.title?.romaji?.toLowerCase() || '';
         const titleNative = anime.title?.native?.toLowerCase() || '';
-        
+
         // 登録済みタイトルと比較
-        return !Array.from(registeredTitles).some(registeredTitle => {
+        return !Array.from(registeredTitles).some((registeredTitle) => {
           const lowerRegistered = registeredTitle.toLowerCase();
-          return titleRomaji.includes(lowerRegistered) || 
-                 titleNative.includes(lowerRegistered) ||
-                 lowerRegistered.includes(titleRomaji) ||
-                 lowerRegistered.includes(titleNative);
+          return (
+            titleRomaji.includes(lowerRegistered) ||
+            titleNative.includes(lowerRegistered) ||
+            lowerRegistered.includes(titleRomaji) ||
+            lowerRegistered.includes(titleNative)
+          );
         });
       });
 
       if (unregistered.length > 0) {
-        setSuggestedSeasons(prev => {
+        setSuggestedSeasons((prev) => {
           const newMap = new Map(prev);
           newMap.set(seriesName, unregistered);
           return newMap;
@@ -159,7 +153,7 @@ export function SeriesView({
     } catch (error) {
       console.error('提案の取得に失敗しました:', error);
     } finally {
-      setLoadingSuggestions(prev => {
+      setLoadingSuggestions((prev) => {
         const newSet = new Set(prev);
         newSet.delete(seriesName);
         return newSet;
@@ -184,17 +178,19 @@ export function SeriesView({
     const newDismissed = new Set(dismissedSuggestions);
     newDismissed.add(animeId);
     setDismissedSuggestions(newDismissed);
-    
+
     // localStorageに保存
     if (typeof window !== 'undefined') {
       localStorage.setItem('dismissedAnimeSuggestions', JSON.stringify(Array.from(newDismissed)));
     }
-    
+
     // 提案リストから削除
-    setSuggestedSeasons(prev => {
+    setSuggestedSeasons((prev) => {
       const newMap = new Map(prev);
       newMap.forEach((suggestions, key) => {
-        const filtered = suggestions.filter((s: AniListSearchResult) => s.id.toString() !== animeId);
+        const filtered = suggestions.filter(
+          (s: AniListSearchResult) => s.id.toString() !== animeId
+        );
         if (filtered.length === 0) {
           newMap.delete(key);
         } else {
@@ -210,27 +206,28 @@ export function SeriesView({
       {/* シリーズ一覧 */}
       {seriesArray.map(([seriesName, animes]) => {
         const isExpanded = expandedSeries.has(seriesName);
-        const registeredTitles = new Set(animes.map(a => a.title));
+        const registeredTitles = new Set(animes.map((a) => a.title));
         const suggestions = suggestedSeasons.get(seriesName) || [];
         const isLoading = loadingSuggestions.has(seriesName);
 
         return (
-          <div key={seriesName} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+          <div
+            key={seriesName}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden"
+          >
             <button
               onClick={() => toggleSeries(seriesName, registeredTitles)}
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className="text-gray-400 text-sm">
-                  {isExpanded ? '▼' : '▶'}
-                </span>
+                <span className="text-gray-400 text-sm">{isExpanded ? '▼' : '▶'}</span>
                 <h2 className="text-xl font-bold dark:text-white">{seriesName}</h2>
               </div>
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 全{animes.length}作品
               </span>
             </button>
-            
+
             {isExpanded && (
               <div className="px-4 pb-4">
                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -279,12 +276,13 @@ export function SeriesView({
                             </p>
                             {suggestion.seasonYear && suggestion.season && (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {suggestion.seasonYear}年{getSeasonNameWithMonths(getSeasonName(suggestion.season))}
+                                {suggestion.seasonYear}年
+                                {getSeasonNameWithMonths(getSeasonName(suggestion.season))}
                               </p>
                             )}
                           </div>
                           <div className="flex gap-1">
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 dismissSuggestion(suggestion.id.toString());
@@ -294,7 +292,7 @@ export function SeriesView({
                             >
                               ×
                             </button>
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onOpenAddForm();
@@ -321,7 +319,7 @@ export function SeriesView({
           </div>
         );
       })}
-      
+
       {/* 単発作品 */}
       {standaloneAnimes.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
@@ -330,37 +328,29 @@ export function SeriesView({
             className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <span className="text-gray-400 text-sm">
-                {expandedStandalone ? '▼' : '▶'}
-              </span>
+              <span className="text-gray-400 text-sm">{expandedStandalone ? '▼' : '▶'}</span>
               <h2 className="text-xl font-bold dark:text-white">単発作品</h2>
             </div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               全{standaloneAnimes.length}作品
             </span>
           </button>
-          
+
           {expandedStandalone && (
             <div className="px-4 pb-4">
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                 {standaloneAnimes.map((anime) => (
-                  <AnimeCard
-                    key={anime.id}
-                    anime={anime}
-                    onClick={() => setSelectedAnime(anime)}
-                  />
+                  <AnimeCard key={anime.id} anime={anime} onClick={() => setSelectedAnime(anime)} />
                 ))}
               </div>
             </div>
           )}
         </div>
       )}
-      
+
       {seriesArray.length === 0 && standaloneAnimes.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
-            アニメが登録されていません
-          </p>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">アニメが登録されていません</p>
           <button
             onClick={onOpenAddForm}
             className="inline-flex items-center gap-1.5 py-3 px-6 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
@@ -373,4 +363,3 @@ export function SeriesView({
     </div>
   );
 }
-

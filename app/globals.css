@@ -1,36 +1,36 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  
+
   /* ===== アプリ全体で使用するカラーパレット ===== */
   /* プライマリカラー（ライトピンク） */
   --color-primary: #e879d4;
   --color-primary-light: #f09fe3;
   --color-primary-dark: #d45dbf;
-  
+
   /* セカンダリカラー（シアン） */
   --color-secondary: #00d4ff;
   --color-secondary-light: #33ddff;
   --color-secondary-dark: #00b8e0;
-  
+
   /* アクセントカラー（ゴールド） */
   --color-accent: #ffd700;
   --color-accent-light: #ffe44d;
-  
+
   /* グラデーション用パープル */
   --color-purple: #764ba2;
-  
+
   /* グラデーション */
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-purple));
   --gradient-primary-reverse: linear-gradient(135deg, var(--color-purple), var(--color-primary));
 
   /* ===== 形状トークン (.stitch/DESIGN.md 準拠) ===== */
-  --al-radius: 8px;          /* 標準カード・繰り返し要素の基準 */
-  --al-radius-brand: 24px;   /* ブランド面 (Anime DNAカード等) のみ大きい角丸を許可 */
+  --al-radius: 8px; /* 標準カード・繰り返し要素の基準 */
+  --al-radius-brand: 24px; /* ブランド面 (Anime DNAカード等) のみ大きい角丸を許可 */
   --al-shadow-soft: 0 18px 48px rgba(77, 46, 69, 0.13);
 }
 
@@ -91,38 +91,39 @@ body {
   --color-pink: #e879d4;
   --color-pink-light: #f09fe3;
   --color-pink-dark: #d45dbf;
-  
+
   --color-cyan: #00d4ff;
   --color-cyan-light: #33ddff;
   --color-cyan-dark: #00b8e0;
-  
+
   --color-gold: #ffd700;
   --color-gold-light: #ffe44d;
-  
+
   --color-purple: #764ba2;
-  
+
   /* グラデーション背景 */
-  --dna-primary-gradient: linear-gradient(165deg, 
-    rgba(102, 126, 234, 0.92) 0%, 
+  --dna-primary-gradient: linear-gradient(
+    165deg,
+    rgba(102, 126, 234, 0.92) 0%,
     rgba(118, 75, 162, 0.95) 35%,
     rgba(180, 80, 160, 0.92) 65%,
-    rgba(240, 147, 251, 0.88) 100%);
-  
+    rgba(240, 147, 251, 0.88) 100%
+  );
+
   /* グラスモーフィズム */
   --dna-glass-bg: rgba(255, 255, 255, 0.08);
   --dna-glass-bg-hover: rgba(255, 255, 255, 0.12);
   --dna-glass-border: rgba(255, 255, 255, 0.15);
-  
+
   /* テキスト */
   --dna-text-primary: #ffffff;
   --dna-text-secondary: rgba(255, 255, 255, 0.7);
-  
+
   /* アクセント */
   --dna-accent-pink: var(--color-pink);
   --dna-accent-cyan: var(--color-cyan);
   --dna-accent-gold: var(--color-gold);
 }
-
 
 /* 音符アイコン */
 .dna-type-icon {
@@ -206,10 +207,18 @@ body {
   display: block;
 }
 
-.dna-chart-icon span:nth-child(1) { height: 6px; }
-.dna-chart-icon span:nth-child(2) { height: 10px; }
-.dna-chart-icon span:nth-child(3) { height: 8px; }
-.dna-chart-icon span:nth-child(4) { height: 14px; }
+.dna-chart-icon span:nth-child(1) {
+  height: 6px;
+}
+.dna-chart-icon span:nth-child(2) {
+  height: 10px;
+}
+.dna-chart-icon span:nth-child(3) {
+  height: 8px;
+}
+.dna-chart-icon span:nth-child(4) {
+  height: 14px;
+}
 
 /* ペンアイコン */
 .dna-pen-icon {
@@ -338,13 +347,14 @@ body {
 
 /* アンビエントグロー */
 @keyframes dna-pulse {
-  0%, 100% { 
-    opacity: 0.3; 
-    transform: scale(0.95); 
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.95);
   }
-  50% { 
-    opacity: 0.45; 
-    transform: scale(1.02); 
+  50% {
+    opacity: 0.45;
+    transform: scale(1.02);
   }
 }
 
@@ -354,11 +364,12 @@ body {
 
 /* フロートアニメーション */
 @keyframes dna-float {
-  0%, 100% { 
-    transform: translate(0, 0); 
+  0%,
+  100% {
+    transform: translate(0, 0);
   }
-  50% { 
-    transform: translate(10px, -15px); 
+  50% {
+    transform: translate(10px, -15px);
   }
 }
 

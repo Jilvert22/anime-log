@@ -1,19 +1,11 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import type { UserProfile } from '../../lib/api';
-import { 
-  getProfileByUsername, 
-  getPublicAnimes, 
-  getFollowCounts,
-  isFollowing,
-} from '../../lib/api';
-import {
-  followUser,
-  unfollowUser
-} from '../../lib/api';
+import { getProfileByUsername, getPublicAnimes, getFollowCounts, isFollowing } from '../../lib/api';
+import { followUser, unfollowUser } from '../../lib/api';
 import type { User } from '@supabase/supabase-js';
 
 // アニメの型定義
@@ -35,12 +27,19 @@ interface ProfilePageClientProps {
   initialAnimes?: Anime[];
 }
 
-export default function ProfilePageClient({ username, initialProfile, initialAnimes }: ProfilePageClientProps) {
+export default function ProfilePageClient({
+  username,
+  initialProfile,
+  initialAnimes,
+}: ProfilePageClientProps) {
   const router = useRouter();
 
   const [profile, setProfile] = useState<UserProfile | null>(initialProfile ?? null);
   const [animes, setAnimes] = useState<Anime[]>(initialAnimes ?? []);
-  const [followCounts, setFollowCounts] = useState<{ following: number; followers: number }>({ following: 0, followers: 0 });
+  const [followCounts, setFollowCounts] = useState<{ following: number; followers: number }>({
+    following: 0,
+    followers: 0,
+  });
   const [isFollowingUser, setIsFollowingUser] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   // サーバから初期データが渡っていれば最初からローディング不要（SSRで本文が出る）
@@ -49,7 +48,9 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
   useEffect(() => {
     const run = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         setUser(user);
 
         // SSRで初期データが無い場合（後方互換）のみ、プロフィール/視聴記録を取得
@@ -83,7 +84,7 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
 
   const handleToggleFollow = async () => {
     if (!user || !profile) return;
-    
+
     try {
       if (isFollowingUser) {
         await unfollowUser(profile.id);
@@ -92,7 +93,7 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
         await followUser(profile.id);
         setIsFollowingUser(true);
       }
-      
+
       // フォロー数を更新
       const counts = await getFollowCounts(profile.id);
       setFollowCounts(counts);
@@ -116,7 +117,9 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">プロフィールが見つかりません</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            プロフィールが見つかりません
+          </h1>
           <button
             onClick={() => router.push('/')}
             className="px-4 py-2 bg-[#e879d4] text-white rounded-xl hover:bg-[#f09fe3] transition-colors"
@@ -148,7 +151,7 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
             <div className="w-24 h-24 rounded-full bg-linear-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-5xl shadow-lg">
               👤
             </div>
-            
+
             {/* プロフィール情報 */}
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
@@ -160,7 +163,7 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
                     <p className="text-gray-600 dark:text-gray-400 mb-4">{profile.bio}</p>
                   )}
                 </div>
-                
+
                 {/* フォローボタン（自分のプロフィールの場合は非表示） */}
                 {user && user.id !== profile.id && (
                   <button
@@ -175,15 +178,19 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
                   </button>
                 )}
               </div>
-              
+
               {/* フォロー数・フォロワー数 */}
               <div className="flex gap-6">
                 <div className="text-center">
-                  <p className="text-xl font-bold text-gray-800 dark:text-white">{followCounts.following}</p>
+                  <p className="text-xl font-bold text-gray-800 dark:text-white">
+                    {followCounts.following}
+                  </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">フォロー中</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xl font-bold text-gray-800 dark:text-white">{followCounts.followers}</p>
+                  <p className="text-xl font-bold text-gray-800 dark:text-white">
+                    {followCounts.followers}
+                  </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">フォロワー</p>
                 </div>
                 <div className="text-center">
@@ -207,13 +214,19 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
                 >
                   <div className="aspect-(3/4) bg-linear-to-br from-[#e879d4] to-[#764ba2] flex items-center justify-center text-4xl">
                     {anime.image && anime.image.startsWith('http') ? (
-                      <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
+                      <img
+                        src={anime.image}
+                        alt={anime.title}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <span>{anime.image || '🎬'}</span>
                     )}
                   </div>
                   <div className="p-2">
-                    <p className="text-sm font-medium text-gray-800 dark:text-white truncate">{anime.title}</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
+                      {anime.title}
+                    </p>
                     {anime.rating > 0 && (
                       <div className="flex gap-0.5 mt-1">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -240,4 +253,3 @@ export default function ProfilePageClient({ username, initialProfile, initialAni
     </div>
   );
 }
-

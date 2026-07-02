@@ -29,9 +29,7 @@ export function getNextWatchlistStatus(
 }
 
 // 日本語ラベル（E2E・UI表示で参照される文字列。変更厳禁）
-export function getWatchlistStatusLabel(
-  status: WatchlistStatusValue | undefined
-): string {
+export function getWatchlistStatusLabel(status: WatchlistStatusValue | undefined): string {
   switch (status) {
     case 'planned':
       return '視聴予定';
@@ -45,9 +43,7 @@ export function getWatchlistStatusLabel(
 }
 
 // バッジ背景色（Tailwindの完全なクラス文字列。動的組み立てはしない）
-export function getWatchlistStatusColor(
-  status: WatchlistStatusValue | undefined
-): string {
+export function getWatchlistStatusColor(status: WatchlistStatusValue | undefined): string {
   switch (status) {
     case 'planned':
       return 'bg-blue-500';

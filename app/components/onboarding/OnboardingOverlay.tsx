@@ -31,18 +31,13 @@ const ONBOARDING_STEPS = [
     targetSelector: '[data-onboarding="step-4"]',
     position: 'bottom' as const,
     title: '最推し作品を設定',
-    description: 'DNAカードの「最推し作品」エリアをタップして、あなたの最推し作品を設定しましょう。',
+    description:
+      'DNAカードの「最推し作品」エリアをタップして、あなたの最推し作品を設定しましょう。',
   },
 ];
 
 export function OnboardingOverlay() {
-  const {
-    currentStep,
-    isActive,
-    nextStep,
-    previousStep,
-    skipOnboarding,
-  } = useOnboardingContext();
+  const { currentStep, isActive, nextStep, previousStep, skipOnboarding } = useOnboardingContext();
 
   // タブ切り替えはHomeClientで処理されるため、ここでは何もしない
 
@@ -96,4 +91,3 @@ export function OnboardingOverlay() {
     </>
   );
 }
-

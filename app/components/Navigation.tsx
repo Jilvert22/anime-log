@@ -41,13 +41,13 @@ export function Navigation({
   useEffect(() => {
     // 認証状態の変化を監視（初期レンダリング後に実行してメインスレッドをブロックしない）
     let unsubscribe: (() => void) | undefined;
-    
+
     const timeoutId = setTimeout(() => {
       if (!supabase) {
         console.warn('[Navigation] Supabaseクライアントが利用できません');
         return;
       }
-      
+
       unsubscribe = onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
       });
@@ -64,13 +64,13 @@ export function Navigation({
     <header className="fixed top-0 left-0 right-0 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50">
       <div className="h-full max-w-7xl mx-auto px-4 relative flex items-center">
         {/* 左：ロゴ */}
-        <h1 
+        <h1
           className="hidden sm:block text-xl font-bold tracking-tight"
           style={{
             background: 'linear-gradient(135deg, #667eea 0%, #e879d4 50%, #f093fb 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            backgroundClip: 'text',
           }}
         >
           アニメログ
@@ -78,17 +78,14 @@ export function Navigation({
 
         {/* 中央：セグメントコントロール（PC/モバイル共通） */}
         <div className="static sm:absolute sm:left-1/2 sm:-translate-x-1/2">
-          <SegmentControl 
-            activeTab={activeTab} 
-            setActiveTab={setActiveTab} 
-          />
+          <SegmentControl activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
 
         {/* 右側：使い方ガイド + ダークモード + プロフィール */}
         <div className="flex items-center gap-1 sm:gap-0 ml-auto">
           {/* 使い方ガイドボタン */}
           <GuideButton />
-          
+
           {/* ダークモードトグル */}
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
@@ -108,7 +105,10 @@ export function Navigation({
               onClick={onOpenSettingsModal}
               className="flex items-center gap-2 pl-2 pr-5 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              {userIcon && (userIcon.startsWith('http://') || userIcon.startsWith('https://') || userIcon.startsWith('data:')) ? (
+              {userIcon &&
+              (userIcon.startsWith('http://') ||
+                userIcon.startsWith('https://') ||
+                userIcon.startsWith('data:')) ? (
                 <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0">
                   <img
                     src={userIcon}
@@ -122,7 +122,8 @@ export function Navigation({
                       const parent = target.parentElement;
                       if (parent && !parent.querySelector('span')) {
                         const span = document.createElement('span');
-                        span.className = 'text-base absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-700';
+                        span.className =
+                          'text-base absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-700';
                         span.textContent = '👤';
                         parent.appendChild(span);
                       }
@@ -134,7 +135,9 @@ export function Navigation({
                   <UserRound className="w-4 h-4 text-gray-500 dark:text-gray-300" />
                 </div>
               )}
-              <span className="text-base hidden sm:inline font-bold dark:text-white">{userName}</span>
+              <span className="text-base hidden sm:inline font-bold dark:text-white">
+                {userName}
+              </span>
             </button>
           ) : (
             <button

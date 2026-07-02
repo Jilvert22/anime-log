@@ -31,7 +31,7 @@ function calculateBackoffDelay(attempt: number, baseDelay: number): number {
  * 指定時間待機
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -41,12 +41,12 @@ function isRetryableError(error: unknown): boolean {
   if (error instanceof NetworkError) {
     return true;
   }
-  
+
   if (error && typeof error === 'object' && 'statusCode' in error) {
     const statusCode = Number(error.statusCode);
     return DEFAULT_RETRY_CONFIG.retryableStatusCodes.includes(statusCode);
   }
-  
+
   return false;
 }
 
@@ -60,26 +60,23 @@ export async function fetchWithRetry(
 ): Promise<Response> {
   const config = { ...DEFAULT_RETRY_CONFIG, ...retryConfig };
   let lastError: unknown;
-  
+
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     try {
       const response = await fetch(url, options);
-      
+
       // リトライ可能なステータスコードの場合
       if (config.retryableStatusCodes.includes(response.status) && attempt < config.maxRetries) {
         const delay = calculateBackoffDelay(attempt, config.retryDelay);
-        logError(
-          new Error(`HTTP ${response.status} received, retrying...`),
-          'fetchWithRetry'
-        );
+        logError(new Error(`HTTP ${response.status} received, retrying...`), 'fetchWithRetry');
         await sleep(delay);
         continue;
       }
-      
+
       return response;
     } catch (error) {
       lastError = error;
-      
+
       // リトライ可能なエラーで、まだリトライ回数に余裕がある場合
       if (isRetryableError(error) && attempt < config.maxRetries) {
         const delay = calculateBackoffDelay(attempt, config.retryDelay);
@@ -87,12 +84,12 @@ export async function fetchWithRetry(
         await sleep(delay);
         continue;
       }
-      
+
       // リトライ不可能、または最大リトライ回数に達した場合
       throw normalizeError(error);
     }
   }
-  
+
   // ここに到達することは通常ないが、型安全性のため
   throw normalizeError(lastError);
 }
@@ -118,10 +115,8 @@ export async function parseJsonResponse<T>(response: Response): Promise<T> {
  */
 export function checkResponseStatus(response: Response): void {
   if (!response.ok) {
-    throw new NetworkError(
-      `HTTPエラー: ${response.status} ${response.statusText}`,
-      { statusCode: response.status }
-    );
+    throw new NetworkError(`HTTPエラー: ${response.status} ${response.statusText}`, {
+      statusCode: response.status,
+    });
   }
 }
-

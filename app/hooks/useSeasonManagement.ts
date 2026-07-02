@@ -55,7 +55,7 @@ export function useSeasonManagement(isLoading: boolean) {
   // 視聴中に移行
   const handleKeepPreviousSeason = useCallback(async () => {
     if (previousSeasonItems.length === 0) return;
-    
+
     try {
       // 各アイテムのステータスをwatchingに変更
       for (const item of previousSeasonItems) {
@@ -88,12 +88,12 @@ export function useSeasonManagement(isLoading: boolean) {
     const timeoutId = setTimeout(() => {
       const checkSeasonStart = async () => {
         if (isLoading) return;
-        
+
         // 既に今シーズンの確認済みフラグがある場合はスキップ
         if (!shouldShowSeasonStartModal()) {
           return;
         }
-        
+
         try {
           const items = await storage.getCurrentSeasonWatchlist('planned');
           if (items.length > 0) {
@@ -105,7 +105,11 @@ export function useSeasonManagement(isLoading: boolean) {
           }
         } catch (error) {
           const normalizedError = normalizeError(error);
-          logger.error('シーズン開始チェックに失敗しました', normalizedError, 'useSeasonManagement');
+          logger.error(
+            'シーズン開始チェックに失敗しました',
+            normalizedError,
+            'useSeasonManagement'
+          );
         }
       };
 
@@ -123,4 +127,3 @@ export function useSeasonManagement(isLoading: boolean) {
     handleKeepPreviousSeason,
   };
 }
-

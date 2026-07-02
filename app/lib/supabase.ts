@@ -13,11 +13,11 @@ function getSupabaseClient(): SupabaseClient {
     // サーバー側では使用しない
     throw new Error('supabase client should only be used in client components');
   }
-  
+
   if (!supabaseInstance) {
     supabaseInstance = createBrowserSupabaseClient();
   }
-  
+
   return supabaseInstance;
 }
 

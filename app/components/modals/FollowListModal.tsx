@@ -31,11 +31,11 @@ export function FollowListModal({
   if (!show || !user) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
         onClick={(e) => e.stopPropagation()}
       >
@@ -79,7 +79,7 @@ export function FollowListModal({
             フォロワー
           </button>
         </div>
-        
+
         <div className="space-y-3">
           {followListUsers.length > 0 ? (
             followListUsers.map((u) => (
@@ -96,11 +96,13 @@ export function FollowListModal({
             ))
           ) : (
             <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-              {followListType === 'following' ? 'フォロー中のユーザーがいません' : 'フォロワーがいません'}
+              {followListType === 'following'
+                ? 'フォロー中のユーザーがいません'
+                : 'フォロワーがいません'}
             </p>
           )}
         </div>
-        
+
         <button
           onClick={onClose}
           className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

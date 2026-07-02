@@ -24,8 +24,3 @@ describe('getSeasonName', () => {
     expect(getSeasonName(2024, 4)).toBe('2024年秋');
   });
 });
-
-
-
-
-

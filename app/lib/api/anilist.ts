@@ -22,10 +22,12 @@ async function queryAniList<T>(query: string, variables: Record<string, unknown>
 
     checkResponseStatus(response);
 
-    const data = await parseJsonResponse<{ data?: T; errors?: Array<{ message: string }> }>(response);
+    const data = await parseJsonResponse<{ data?: T; errors?: Array<{ message: string }> }>(
+      response
+    );
 
     if (data.errors && data.errors.length > 0) {
-      const errorMessages = data.errors.map(e => e.message).join(', ');
+      const errorMessages = data.errors.map((e) => e.message).join(', ');
       throw new NetworkError(`AniList API エラー: ${errorMessages}`);
     }
 
@@ -91,10 +93,9 @@ export async function searchAnime(query: string): Promise<AniListMedia[]> {
       }
     `;
 
-    const data = await queryAniList<{ Page: { media: AniListMedia[] } }>(
-      graphqlQuery,
-      { search: query }
-    );
+    const data = await queryAniList<{ Page: { media: AniListMedia[] } }>(graphqlQuery, {
+      search: query,
+    });
 
     return data.Page?.media || [];
   } catch (error) {
@@ -300,9 +301,7 @@ export function getBroadcastInfo(anime: AniListMedia): { day: number | null; tim
  * 複数IDの作品を一括取得 (連続2クール判定用に最小フィールドのみ取得)
  * AniListのid_in は1ページ最大50件のため、自動でバッチ分割する
  */
-export async function fetchAnimeStatusByIds(
-  ids: number[]
-): Promise<Map<number, AniListMedia>> {
+export async function fetchAnimeStatusByIds(ids: number[]): Promise<Map<number, AniListMedia>> {
   const result = new Map<number, AniListMedia>();
   if (ids.length === 0) return result;
 
@@ -343,4 +342,3 @@ export async function fetchAnimeStatusByIds(
 
 // 既存のanilist.tsから型を再エクスポート
 export type { AniListMedia } from '../anilist';
-

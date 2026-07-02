@@ -23,9 +23,7 @@ export default function OfflinePage() {
           </svg>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          オフラインです
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">オフラインです</h1>
 
         <p className="text-gray-600 dark:text-gray-400 mb-6">
           インターネット接続がありません。
@@ -64,4 +62,3 @@ export default function OfflinePage() {
     </div>
   );
 }
-

@@ -1,10 +1,10 @@
-import type { Metadata, Viewport } from "next";
-import { M_PLUS_Rounded_1c, Poppins } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { Providers } from "./providers";
-import { JsonLd } from "./components/seo/JsonLd";
-import { siteStructuredData } from "./lib/seo/structuredData";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import { M_PLUS_Rounded_1c, Poppins } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+import { Providers } from './providers';
+import { JsonLd } from './components/seo/JsonLd';
+import { siteStructuredData } from './lib/seo/structuredData';
+import './globals.css';
 
 // M PLUS Rounded 1c（日本語用）
 const mPlusRounded = M_PLUS_Rounded_1c({
@@ -26,11 +26,12 @@ const poppins = Poppins({
   fallback: ['system-ui', 'arial'], // フォールバックフォント
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://animelog.jp'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://animelog.jp';
 
 export const metadata: Metadata = {
   title: 'アニメログ - あなたのアニメ視聴記録',
-  description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。視聴傾向の分析、感想の記録、積みアニメ管理など。',
+  description:
+    'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。視聴傾向の分析、感想の記録、積みアニメ管理など。',
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: '/',
@@ -40,8 +41,8 @@ export const metadata: Metadata = {
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
-  keywords: ["アニメ", "視聴履歴", "管理", "記録", "評価"],
-  authors: [{ name: "アニメログ" }],
+  keywords: ['アニメ', '視聴履歴', '管理', '記録', '評価'],
+  authors: [{ name: 'アニメログ' }],
   icons: {
     icon: '/favicon.ico',
     apple: [
@@ -107,9 +108,7 @@ export default function RootLayout({
       </head>
       <body className="font-mixed antialiased">
         <JsonLd data={siteStructuredData(siteUrl)} />
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
         {/* Analyticsは既に最適化されているが、必要に応じて遅延読み込み可能 */}
         <Analytics />
       </body>

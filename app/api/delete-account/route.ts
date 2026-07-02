@@ -6,8 +6,8 @@ import { getSupabaseEnv, getSupabaseServiceRoleKey } from '@/app/lib/env';
 
 // レート制限の設定
 const RATE_LIMIT = {
-  maxAttempts: 3,        // 最大試行回数
-  windowMs: 60 * 60 * 1000,  // 1時間（ミリ秒）
+  maxAttempts: 3, // 最大試行回数
+  windowMs: 60 * 60 * 1000, // 1時間（ミリ秒）
 };
 
 // インメモリレート制限ストア
@@ -23,18 +23,18 @@ const deleteAttempts = new Map<string, { count: number; resetTime: number }>();
 function checkRateLimit(userId: string): boolean {
   const now = Date.now();
   const record = deleteAttempts.get(userId);
-  
+
   // レコードが存在しない、または時間ウィンドウがリセットされている場合
   if (!record || now > record.resetTime) {
     deleteAttempts.set(userId, { count: 1, resetTime: now + RATE_LIMIT.windowMs });
     return true;
   }
-  
+
   // 試行回数が上限に達している場合
   if (record.count >= RATE_LIMIT.maxAttempts) {
     return false;
   }
-  
+
   // 試行回数をインクリメント
   record.count++;
   return true;
@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
   try {
     // Route Handler用のSupabaseクライアントを作成（認証確認用）
     const cookieStore = await cookies();
-    
+
     const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseEnv();
-    
+
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         get(name: string) {
@@ -87,7 +87,10 @@ export async function POST(request: NextRequest) {
     });
 
     // 認証されたユーザーを取得
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
     if (userError || !user) {
       console.error('認証エラー:', userError);
@@ -137,41 +140,25 @@ export async function POST(request: NextRequest) {
       .or(`follower_id.eq.${userId},following_id.eq.${userId}`);
 
     // 2. watchlistテーブル（積みアニメ）
-    await supabaseAdmin
-      .from('watchlist')
-      .delete()
-      .eq('user_id', userId);
+    await supabaseAdmin.from('watchlist').delete().eq('user_id', userId);
 
     // 3. reviewsテーブル（感想・レビュー）
     // CASCADEにより、review_likesとreview_helpfulも自動削除されます
-    await supabaseAdmin
-      .from('reviews')
-      .delete()
-      .eq('user_id', userId);
+    await supabaseAdmin.from('reviews').delete().eq('user_id', userId);
 
     // 4. animesテーブル（視聴履歴）
-    await supabaseAdmin
-      .from('animes')
-      .delete()
-      .eq('user_id', userId);
+    await supabaseAdmin.from('animes').delete().eq('user_id', userId);
 
     // 5. user_profilesテーブル（プロフィール情報）
-    await supabaseAdmin
-      .from('user_profiles')
-      .delete()
-      .eq('id', userId);
+    await supabaseAdmin.from('user_profiles').delete().eq('id', userId);
 
     // 6. アバター画像をStorageから削除
     try {
-      const { data: files } = await supabaseAdmin.storage
-        .from('avatars')
-        .list(userId);
-      
+      const { data: files } = await supabaseAdmin.storage.from('avatars').list(userId);
+
       if (files && files.length > 0) {
-        const filesToDelete = files.map(file => `${userId}/${file.name}`);
-        await supabaseAdmin.storage
-          .from('avatars')
-          .remove(filesToDelete);
+        const filesToDelete = files.map((file) => `${userId}/${file.name}`);
+        await supabaseAdmin.storage.from('avatars').remove(filesToDelete);
       }
     } catch (storageError) {
       // ストレージの削除に失敗しても続行（既に削除されている可能性がある）
@@ -183,20 +170,13 @@ export async function POST(request: NextRequest) {
 
     if (deleteError) {
       console.error('ユーザー削除エラー:', deleteError);
-      return NextResponse.json(
-        { error: 'アカウントの削除に失敗しました' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'アカウントの削除に失敗しました' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('アカウント削除エラー:', error);
     const errorMessage = error instanceof Error ? error.message : 'アカウントの削除に失敗しました';
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
-

@@ -28,7 +28,8 @@ export function usePWAInstall() {
     setIsIOS(iOS);
 
     // スタンドアロンモード（既にインストール済み）判定
-    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator.standalone === true;
     setIsStandalone(standalone);
     setIsInstalled(standalone);
@@ -49,7 +50,7 @@ export function usePWAInstall() {
         // バナー表示条件をチェック
         const firstVisitDateStr = localStorage.getItem(FIRST_VISIT_DATE_KEY);
         const dismissedDateStr = localStorage.getItem(BANNER_DISMISSED_DATE_KEY);
-        
+
         if (firstVisitDateStr) {
           const firstVisitDate = new Date(firstVisitDateStr);
           const now = new Date();
@@ -59,7 +60,9 @@ export function usePWAInstall() {
 
           // 30日以上経過しているかチェック
           const daysSinceDismissed = dismissedDateStr
-            ? Math.floor((now.getTime() - new Date(dismissedDateStr).getTime()) / (1000 * 60 * 60 * 24))
+            ? Math.floor(
+                (now.getTime() - new Date(dismissedDateStr).getTime()) / (1000 * 60 * 60 * 24)
+              )
             : Infinity;
 
           // 条件: 3回目以降 + 未インストール + 30日経過 + 最後の非表示から30日経過
@@ -113,7 +116,7 @@ export function usePWAInstall() {
     try {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      
+
       if (outcome === 'accepted') {
         setIsInstallable(false);
         setDeferredPrompt(null);
@@ -135,4 +138,3 @@ export function usePWAInstall() {
     install,
   };
 }
-

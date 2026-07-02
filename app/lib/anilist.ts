@@ -105,14 +105,14 @@ export async function searchAnime(query: string) {
         }
       }
     `,
-    variables: { search: query }
+    variables: { search: query },
   };
 
   try {
     const response = await fetch(ANILIST_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(graphqlQuery)
+      body: JSON.stringify(graphqlQuery),
     });
 
     if (!response.ok) {
@@ -120,13 +120,13 @@ export async function searchAnime(query: string) {
     }
 
     const data = await response.json();
-    
+
     if (data.errors) {
       logger.error('AniList API エラー', data.errors, 'searchAnime');
       return [];
     }
-    
-    return data.data?.Page?.media as AniListMedia[] || [];
+
+    return (data.data?.Page?.media as AniListMedia[]) || [];
   } catch (error) {
     const normalizedError = normalizeError(error);
     logger.error('アニメ検索に失敗しました', normalizedError, 'searchAnime');
@@ -192,19 +192,19 @@ export async function searchAnimeBySeason(
         }
       }
     `,
-    variables: { 
+    variables: {
       season,
       seasonYear,
       page,
-      perPage
-    }
+      perPage,
+    },
   };
 
   try {
     const response = await fetch(ANILIST_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(graphqlQuery)
+      body: JSON.stringify(graphqlQuery),
     });
 
     if (!response.ok) {
@@ -212,7 +212,7 @@ export async function searchAnimeBySeason(
     }
 
     const data = await response.json();
-    
+
     if (data.errors) {
       logger.error('AniList API エラー', data.errors, 'searchAnimeBySeason');
       return {
@@ -220,22 +220,22 @@ export async function searchAnimeBySeason(
         pageInfo: {
           total: 0,
           currentPage: page,
-          hasNextPage: false
-        }
+          hasNextPage: false,
+        },
       };
     }
-    
+
     return {
-      media: data.data?.Page?.media as AniListMedia[] || [],
-      pageInfo: data.data?.Page?.pageInfo as {
+      media: (data.data?.Page?.media as AniListMedia[]) || [],
+      pageInfo: (data.data?.Page?.pageInfo as {
         total: number;
         currentPage: number;
         hasNextPage: boolean;
-      } || {
+      }) || {
         total: 0,
         currentPage: page,
-        hasNextPage: false
-      }
+        hasNextPage: false,
+      },
     };
   } catch (error) {
     const normalizedError = normalizeError(error);
@@ -245,8 +245,8 @@ export async function searchAnimeBySeason(
       pageInfo: {
         total: 0,
         currentPage: page,
-        hasNextPage: false
-      }
+        hasNextPage: false,
+      },
     };
   }
 }
@@ -267,13 +267,17 @@ export async function searchAnimeBySeasonAll(
       allMedia.push(...result.media);
       hasNextPage = result.pageInfo.hasNextPage;
       currentPage++;
-      
+
       // 無限ループ防止（最大100ページ）
       if (currentPage > 100) break;
     }
   } catch (error) {
     const normalizedError = normalizeError(error);
-    logger.error('シーズン検索（全件取得）に失敗しました', normalizedError, 'searchAnimeBySeasonAll');
+    logger.error(
+      'シーズン検索（全件取得）に失敗しました',
+      normalizedError,
+      'searchAnimeBySeasonAll'
+    );
     // エラーが発生しても、取得できた分は返す
   }
 
@@ -284,41 +288,41 @@ export async function searchAnimeBySeasonAll(
 export function getBroadcastInfo(anime: AniListMedia): { day: number | null; time: string | null } {
   // nextAiringEpisodeまたはairingScheduleから取得
   let airingAt: number | null = null;
-  
+
   if (anime.nextAiringEpisode?.airingAt) {
     airingAt = anime.nextAiringEpisode.airingAt;
   } else if (anime.airingSchedule?.nodes && anime.airingSchedule.nodes.length > 0) {
     airingAt = anime.airingSchedule.nodes[0].airingAt;
   }
-  
+
   if (!airingAt) {
     return { day: null, time: null };
   }
-  
+
   // Unixタイムスタンプ（秒）をミリ秒に変換
   const date = new Date(airingAt * 1000);
-  
+
   // 日本時間に変換（UTC+9）
   // UTC時間から+9時間を計算
   const utcHours = date.getUTCHours();
   const utcMinutes = date.getUTCMinutes();
   const utcDay = date.getUTCDay();
-  
+
   // 日本時間（JST = UTC+9）を計算
   let jstHours = utcHours + 9;
   let jstDay = utcDay;
-  
+
   // 24時を超えた場合の処理
   if (jstHours >= 24) {
     jstHours -= 24;
     jstDay = (jstDay + 1) % 7;
   }
-  
+
   // 時間（HH:mm形式、24:00は00:00として扱う）
   const hours = String(jstHours).padStart(2, '0');
   const minutes = String(utcMinutes).padStart(2, '0');
   const time = `${hours}:${minutes}`;
-  
+
   return { day: jstDay, time };
 }
 
@@ -384,14 +388,14 @@ export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | 
         }
       }
     `,
-    variables: { id: anilistId }
+    variables: { id: anilistId },
   };
 
   try {
     const response = await fetch(ANILIST_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(graphqlQuery)
+      body: JSON.stringify(graphqlQuery),
     });
 
     if (!response.ok) {
@@ -399,12 +403,12 @@ export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | 
     }
 
     const data = await response.json();
-    
+
     if (data.errors) {
       logger.error('AniList API エラー', data.errors, 'getAnimeDetail');
       return null;
     }
-    
+
     return data.data?.Media as AniListMedia | null;
   } catch (error) {
     const normalizedError = normalizeError(error);

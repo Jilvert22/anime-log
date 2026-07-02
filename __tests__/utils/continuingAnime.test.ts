@@ -47,9 +47,7 @@ describe('getStartSeason', () => {
 
   it('startDateからの推定にフォールバック', () => {
     expect(
-      getStartSeason(
-        media({ seasonYear: null, season: null, startDate: { year: 2025, month: 7 } })
-      )
+      getStartSeason(media({ seasonYear: null, season: null, startDate: { year: 2025, month: 7 } }))
     ).toEqual({ year: 2025, season: 'SUMMER' });
   });
 
@@ -97,7 +95,12 @@ describe('isContinuingAnime', () => {
     });
 
     it('未来シーズン開始 (まだ始まってない) は false', () => {
-      const m = media({ seasonYear: 2025, season: 'FALL', episodes: 24, status: 'NOT_YET_RELEASED' });
+      const m = media({
+        seasonYear: 2025,
+        season: 'FALL',
+        episodes: 24,
+        status: 'NOT_YET_RELEASED',
+      });
       expect(isContinuingAnime(m, target)).toBe(false);
     });
 

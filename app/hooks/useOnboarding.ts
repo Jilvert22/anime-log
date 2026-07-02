@@ -38,7 +38,7 @@ export function useOnboarding() {
     const currentStep = savedStep ? (Number.parseInt(savedStep, 10) as OnboardingStep) : null;
 
     setState({
-      currentStep: completed ? null : (currentStep || 1),
+      currentStep: completed ? null : currentStep || 1,
       isActive: !completed && currentStep !== null,
       isCompleted: completed,
     });
@@ -61,7 +61,7 @@ export function useOnboarding() {
       if (prev.currentStep === null) return prev;
 
       const nextStepNumber = (prev.currentStep + 1) as OnboardingStep;
-      
+
       if (nextStepNumber > 4) {
         // すべてのステップが完了
         localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
@@ -119,7 +119,7 @@ export function useOnboarding() {
 
   // テストモードの場合は常にオンボーディングを無効化
   const isTestMode = typeof window !== 'undefined' && window.__TEST_MODE__;
-  
+
   return {
     currentStep: isTestMode ? null : state.currentStep,
     isActive: isTestMode ? false : state.isActive,
@@ -131,4 +131,3 @@ export function useOnboarding() {
     resetOnboarding,
   };
 }
-

@@ -15,8 +15,16 @@ interface SearchResultsSectionProps {
   expandedSeasonSearches: Set<string>;
   setExpandedSeasonSearches: (searches: Set<string>) => void;
   addedToWatchlistIds: Set<number>;
-  addAnimeFromSearch: (result: AniListMediaWithStreaming, year: string, season: string) => Promise<void>;
-  addToWatchlistFromSearch: (result: AniListMediaWithStreaming, year?: string, season?: string) => Promise<void>;
+  addAnimeFromSearch: (
+    result: AniListMediaWithStreaming,
+    year: string,
+    season: string
+  ) => Promise<void>;
+  addToWatchlistFromSearch: (
+    result: AniListMediaWithStreaming,
+    year?: string,
+    season?: string
+  ) => Promise<void>;
   addToNextSeasonWatchlist: (result: AniListMediaWithStreaming) => Promise<void>;
   year: string;
   season: string;
@@ -39,8 +47,10 @@ export function SearchResultsSection({
   dominantAnimeIds = new Set(),
 }: SearchResultsSectionProps) {
   const [loadingIds, setLoadingIds] = useState<Set<number>>(new Set());
-  const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<AniListMedia | AniListMediaWithStreaming | null>(null);
-  
+  const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<
+    AniListMedia | AniListMediaWithStreaming | null
+  >(null);
+
   const handleClose = useCallback(() => {
     const newExpandedSeasons = new Set(expandedSeasons);
     newExpandedSeasons.delete(seasonKey);
@@ -48,7 +58,13 @@ export function SearchResultsSection({
     const newExpandedSearches = new Set(expandedSeasonSearches);
     newExpandedSearches.delete(seasonKey);
     setExpandedSeasonSearches(newExpandedSearches);
-  }, [seasonKey, expandedSeasons, setExpandedSeasons, expandedSeasonSearches, setExpandedSeasonSearches]);
+  }, [
+    seasonKey,
+    expandedSeasons,
+    setExpandedSeasons,
+    expandedSeasonSearches,
+    setExpandedSeasonSearches,
+  ]);
 
   return (
     <div className="relative">
@@ -71,9 +87,13 @@ export function SearchResultsSection({
           const anilistId = result?.id;
           const isValidId = anilistId && typeof anilistId === 'number' && !isNaN(anilistId);
           const isLoading = loadingIds.has(anilistId);
-          const title = result?.title?.native || result?.title?.romaji || result?.title?.english || 'タイトル不明';
+          const title =
+            result?.title?.native ||
+            result?.title?.romaji ||
+            result?.title?.english ||
+            'タイトル不明';
           const imageUrl = result?.coverImage?.large || result?.coverImage?.medium;
-          
+
           // 無効なIDの場合はスキップ
           if (!isValidId) {
             console.warn('Invalid anime data:', result);
@@ -81,19 +101,19 @@ export function SearchResultsSection({
           }
 
           const isDominantAnime = dominantAnimeIds.has(anilistId);
-          
+
           return (
-            <div
-              key={anilistId}
-              className="relative group"
-            >
+            <div key={anilistId} className="relative group">
               {imageUrl ? (
                 <button
                   onClick={async () => {
                     try {
                       const detail = await getAnimeDetail(anilistId);
                       if (detail) {
-                        setSelectedAnimeMedia({ ...result, ...detail } as AniListMediaWithStreaming);
+                        setSelectedAnimeMedia({
+                          ...result,
+                          ...detail,
+                        } as AniListMediaWithStreaming);
                       } else {
                         setSelectedAnimeMedia(result);
                       }
@@ -132,15 +152,15 @@ export function SearchResultsSection({
                 onClick={async (e) => {
                   e.stopPropagation();
                   if (isLoading) return;
-                  
+
                   console.log('Add anime clicked:', { anilistId, title, result });
-                  setLoadingIds(prev => new Set(prev).add(anilistId));
+                  setLoadingIds((prev) => new Set(prev).add(anilistId));
                   try {
                     await addAnimeFromSearch(result, year, season);
                   } catch (error) {
                     console.error('アニメの追加に失敗しました:', error);
                   } finally {
-                    setLoadingIds(prev => {
+                    setLoadingIds((prev) => {
                       const newSet = new Set(prev);
                       newSet.delete(anilistId);
                       return newSet;
@@ -158,7 +178,7 @@ export function SearchResultsSection({
                     disabled
                     className="w-full px-2 py-1 text-xs font-medium bg-gray-400 text-white rounded cursor-not-allowed"
                   >
-                  積みアニメに追加済み
+                    積みアニメに追加済み
                   </button>
                 ) : (
                   <button
@@ -166,15 +186,15 @@ export function SearchResultsSection({
                       e.preventDefault();
                       e.stopPropagation();
                       if (isLoading) return;
-                      
+
                       console.log('Add to watchlist clicked:', { anilistId, title, result });
-                      setLoadingIds(prev => new Set(prev).add(anilistId));
+                      setLoadingIds((prev) => new Set(prev).add(anilistId));
                       try {
                         await addToWatchlistFromSearch(result, year, season);
                       } catch (error) {
                         console.error('積みアニメへの追加に失敗しました:', error);
                       } finally {
-                        setLoadingIds(prev => {
+                        setLoadingIds((prev) => {
                           const newSet = new Set(prev);
                           newSet.delete(anilistId);
                           return newSet;
@@ -192,24 +212,28 @@ export function SearchResultsSection({
                   const seasonYear = parseInt(year, 10);
                   const seasonEnum = season as 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
                   const isNext = isNextSeason(seasonYear, seasonEnum);
-                  
+
                   if (!isNext) return null;
-                  
+
                   return (
                     <button
                       onClick={async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         if (isLoading) return;
-                        
-                        console.log('Add to next season watchlist clicked:', { anilistId, title, result });
-                        setLoadingIds(prev => new Set(prev).add(anilistId));
+
+                        console.log('Add to next season watchlist clicked:', {
+                          anilistId,
+                          title,
+                          result,
+                        });
+                        setLoadingIds((prev) => new Set(prev).add(anilistId));
                         try {
                           await addToNextSeasonWatchlist(result);
                         } catch (error) {
                           console.error('来期積みアニメへの追加に失敗しました:', error);
                         } finally {
-                          setLoadingIds(prev => {
+                          setLoadingIds((prev) => {
                             const newSet = new Set(prev);
                             newSet.delete(anilistId);
                             return newSet;
@@ -252,4 +276,3 @@ export function SearchResultsSection({
     </div>
   );
 }
-

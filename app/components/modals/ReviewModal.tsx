@@ -29,7 +29,9 @@ export function ReviewModal({
   const [reviewMode, setReviewMode] = useState<'overall' | 'episode'>('overall');
   const [newReviewContent, setNewReviewContent] = useState('');
   const [newReviewContainsSpoiler, setNewReviewContainsSpoiler] = useState(false);
-  const [newReviewEpisodeNumber, setNewReviewEpisodeNumber] = useState<number | undefined>(undefined);
+  const [newReviewEpisodeNumber, setNewReviewEpisodeNumber] = useState<number | undefined>(
+    undefined
+  );
   const { showToast } = useFeedback();
 
   const handleClose = () => {
@@ -47,7 +49,7 @@ export function ReviewModal({
 
   const handleSubmit = async () => {
     if (!newReviewContent.trim() || !user || !selectedAnime) return;
-    
+
     if (reviewMode === 'episode' && !newReviewEpisodeNumber) {
       showToast('話数を入力してください', 'error');
       return;
@@ -75,14 +77,14 @@ export function ReviewModal({
         .eq('id', selectedAnime.id)
         .eq('user_id', user.id)
         .single();
-      
+
       if (animeError || !animeData) {
         console.error('Failed to find anime:', animeError);
         return;
       }
-      
+
       const animeUuid = animeData.id;
-      
+
       // 感想を投稿
       const { data: reviewData, error: reviewError } = await supabase
         .from('reviews')
@@ -101,12 +103,12 @@ export function ReviewModal({
         })
         .select()
         .single();
-      
+
       if (reviewError) throw reviewError;
-      
+
       // 感想を再読み込み
       await onReviewPosted();
-      
+
       // モーダルを閉じる
       onClose();
       setNewReviewContent('');
@@ -120,16 +122,16 @@ export function ReviewModal({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4"
       onClick={handleClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4 dark:text-white">感想を投稿</h2>
-        
+
         {/* モード切り替え */}
         <div className="flex gap-2 mb-4">
           <button
@@ -167,7 +169,9 @@ export function ReviewModal({
               type="number"
               min="1"
               value={newReviewEpisodeNumber || ''}
-              onChange={(e) => setNewReviewEpisodeNumber(e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) =>
+                setNewReviewEpisodeNumber(e.target.value ? Number(e.target.value) : undefined)
+              }
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
               placeholder="例: 1"
             />
@@ -208,9 +212,7 @@ export function ReviewModal({
               onChange={(e) => setNewReviewContainsSpoiler(e.target.checked)}
               className="w-4 h-4 accent-[#e879d4] rounded focus:ring-[#e879d4]"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              ネタバレを含む
-            </span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">ネタバレを含む</span>
           </label>
         </div>
 
@@ -224,7 +226,9 @@ export function ReviewModal({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!newReviewContent.trim() || (reviewMode === 'episode' && !newReviewEpisodeNumber)}
+            disabled={
+              !newReviewContent.trim() || (reviewMode === 'episode' && !newReviewEpisodeNumber)
+            }
             className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             投稿

@@ -24,11 +24,7 @@ export class ApiError extends Error {
  * Supabaseエラークラス
  */
 export class SupabaseError extends ApiError {
-  constructor(
-    message: string,
-    code?: string,
-    originalError?: unknown
-  ) {
+  constructor(message: string, code?: string, originalError?: unknown) {
     super(message, code, undefined, originalError);
     this.name = 'SupabaseError';
     Object.setPrototypeOf(this, SupabaseError.prototype);
@@ -74,7 +70,7 @@ export class ValidationError extends ApiError {
 export function translateSupabaseError(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) {
     const message = String(error.message);
-    
+
     // よくあるSupabaseエラーメッセージの日本語化
     const errorMap: Record<string, string> = {
       'Invalid login credentials': 'メールアドレスまたはパスワードが正しくありません',
@@ -87,23 +83,23 @@ export function translateSupabaseError(error: unknown): string {
       'new row violates row-level security policy': '権限が不足しています',
       'relation does not exist': 'データベースエラーが発生しました',
     };
-    
+
     // 完全一致チェック
     if (message in errorMap) {
       return errorMap[message];
     }
-    
+
     // 部分一致チェック
     for (const [key, value] of Object.entries(errorMap)) {
       if (message.includes(key)) {
         return value;
       }
     }
-    
+
     // マッチしない場合は元のメッセージを返す
     return message;
   }
-  
+
   return 'エラーが発生しました';
 }
 
@@ -114,16 +110,16 @@ export function normalizeError(error: unknown): ApiError {
   if (error instanceof ApiError) {
     return error;
   }
-  
+
   if (error && typeof error === 'object' && 'message' in error) {
     const message = translateSupabaseError(error);
     return new SupabaseError(message, undefined, error);
   }
-  
+
   if (error instanceof Error) {
     return new ApiError(error.message, undefined, undefined, error);
   }
-  
+
   return new ApiError('予期しないエラーが発生しました', undefined, undefined, error);
 }
 
@@ -132,7 +128,7 @@ export function normalizeError(error: unknown): ApiError {
  */
 export function logError(error: unknown, context?: string): void {
   const prefix = context ? `[${context}]` : '[API Error]';
-  
+
   if (process.env.NODE_ENV === 'development') {
     console.error(`${prefix}`, error);
     if (error instanceof ApiError && error.originalError) {
@@ -144,4 +140,3 @@ export function logError(error: unknown, context?: string): void {
     console.error(`${prefix} ${message}`);
   }
 }
-

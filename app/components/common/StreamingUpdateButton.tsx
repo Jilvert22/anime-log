@@ -55,10 +55,7 @@ export function StreamingUpdateButton({ onUpdate, lastUpdated, size = 'sm' }: Pr
           {isUpdating ? '更新中...' : '配信情報を更新'}
         </button>
       </div>
-      {error && (
-        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
     </div>
   );
 }
-

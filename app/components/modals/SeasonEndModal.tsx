@@ -39,26 +39,17 @@ export function SeasonEndModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
-        <h2 className="text-xl font-bold mb-4 dark:text-white">
-          今期が始まりました！
-        </h2>
-        
+        <h2 className="text-xl font-bold mb-4 dark:text-white">今期が始まりました！</h2>
+
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
           視聴予定のアニメが{items.length}件あります。どうしますか？
         </p>
 
         <div className="max-h-60 overflow-y-auto mb-4 space-y-2">
-          {items.map(item => (
-            <div
-              key={item.id}
-              className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg"
-            >
-              <p className="text-sm font-medium text-gray-800 dark:text-white">
-                {item.title}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                ステータス: 視聴予定
-              </p>
+          {items.map((item) => (
+            <div key={item.id} className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <p className="text-sm font-medium text-gray-800 dark:text-white">{item.title}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">ステータス: 視聴予定</p>
             </div>
           ))}
         </div>
@@ -103,4 +94,3 @@ export function SeasonEndModal({
     </div>
   );
 }
-

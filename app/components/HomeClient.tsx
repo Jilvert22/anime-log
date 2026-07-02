@@ -22,7 +22,12 @@ import { useDarkMode } from '../hooks/useDarkMode';
 import { useCountAnimation } from '../hooks/useCountAnimation';
 import { useModalHandlers } from '../hooks/useModalHandlers';
 import { useCollection } from '../hooks/useCollection';
-import { animeToSupabase, supabaseToAnime, extractSeriesName, getSeasonName } from '../utils/helpers';
+import {
+  animeToSupabase,
+  supabaseToAnime,
+  extractSeriesName,
+  getSeasonName,
+} from '../utils/helpers';
 import { useSeasonManagement } from '../hooks/useSeasonManagement';
 import { useOnboardingNavigation } from '../hooks/useOnboardingNavigation';
 import { ModalProvider, useModalContext } from '../contexts/ModalContext';
@@ -30,24 +35,19 @@ import { OnboardingOverlay } from './onboarding/OnboardingOverlay';
 import { useOnboardingContext } from '../contexts/OnboardingContext';
 import { HomeModals } from './HomeModals';
 
-
 // Server Componentで取得した初期データを受け取る場合はここに Props 型を追加する
 
 // 内側のコンポーネント（ModalProvider内でuseModalContextを使用）
 function HomeClientInner() {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
-  
+
   // オンボーディング管理
-  const {
-    currentStep,
-    isActive,
-    skipOnboarding,
-  } = useOnboardingContext();
-  
+  const { currentStep, isActive, skipOnboarding } = useOnboardingContext();
+
   // 認証管理をカスタムフックで管理
   const { user, isLoading, handleLogout: logout } = useAuth();
-  
+
   // シーズン管理をカスタムフックで管理
   const {
     showSeasonEndModal,
@@ -56,10 +56,10 @@ function HomeClientInner() {
     handleDeletePreviousSeason,
     handleKeepPreviousSeason,
   } = useSeasonManagement(isLoading);
-  
+
   // ダークモード管理をカスタムフックで管理
   const { isDarkMode, setIsDarkMode } = useDarkMode();
-  
+
   // ユーザープロフィール管理をContextから取得（UserProfileProvider内の状態を共有）
   const {
     profile,
@@ -76,25 +76,17 @@ function HomeClientInner() {
     userBio,
     userHandle,
   } = useUserProfileContext();
-  
+
   // タブ状態管理をカスタムフックで管理
-  const {
-    activeTab,
-    setActiveTab,
-    homeSubTab,
-    setHomeSubTab,
-  } = useTabs();
+  const { activeTab, setActiveTab, homeSubTab, setHomeSubTab } = useTabs();
 
   // オンボーディングナビゲーション（タブ自動切り替え）
   // 画面の描画に使っている実タブ状態を渡す(独立コピーを切り替えると固まる)
   useOnboardingNavigation({ activeTab, setActiveTab, setHomeSubTab });
-  
+
   // コレクション関連をカスタムフックで管理
-  const {
-    favoriteCharacters,
-    setFavoriteCharacters,
-  } = useCollection();
-  
+  const { favoriteCharacters, setFavoriteCharacters } = useCollection();
+
   // アニメデータ管理をContextから取得
   const {
     seasons,
@@ -105,13 +97,13 @@ function HomeClientInner() {
     averageRating,
     totalRewatchCount,
   } = useAnimeDataContext();
-  
+
   // カウントアニメーションをカスタムフックで管理
   const count = useCountAnimation(allAnimes.length);
-  
+
   // モーダル管理をuseModalContextに統一（ModalProvider内なので使用可能）
   const { modals, actions, formStates } = useModalContext();
-  
+
   // モーダルハンドラー
   const {
     handleCharacterSave,
@@ -125,11 +117,9 @@ function HomeClientInner() {
     setEditingCharacter: formStates.setEditingCharacter,
     setShowAddCharacterModal: modals.setShowAddCharacterModal,
   });
-  
+
   // レビュー関連の状態をカスタムフックで管理
-  const {
-    loadReviews,
-  } = useAnimeReviews(user);
+  const { loadReviews } = useAnimeReviews(user);
 
   // ログアウト処理
   const handleLogout = useCallback(async () => {
@@ -182,7 +172,7 @@ function HomeClientInner() {
             supabaseToAnime={supabaseToAnime}
           />
         )}
-        
+
         {activeTab === 'mypage' && (
           <MyPageTab
             allAnimes={allAnimes}
@@ -226,7 +216,6 @@ function HomeClientInner() {
 
       {/* オンボーディングオーバーレイ */}
       <OnboardingOverlay />
-
     </div>
   );
 }
@@ -241,4 +230,3 @@ export default function HomeClient() {
     </ModalProvider>
   );
 }
-

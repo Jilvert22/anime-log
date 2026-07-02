@@ -45,7 +45,7 @@ export function AnimeReviewSection({
   const { confirmDialog } = useFeedback();
 
   // フィルタリング
-  const filteredReviews = animeReviews.filter(review => {
+  const filteredReviews = animeReviews.filter((review) => {
     if (reviewFilter === 'overall' && review.type !== 'overall') return false;
     if (reviewFilter === 'episode' && review.type !== 'episode') return false;
     if (userSpoilerHidden && review.containsSpoiler) return false;
@@ -66,11 +66,11 @@ export function AnimeReviewSection({
   });
 
   // 話数感想をエピソード別にグループ化
-  const episodeReviews = filteredReviews.filter(r => r.type === 'episode');
-  const overallReviews = filteredReviews.filter(r => r.type === 'overall');
+  const episodeReviews = filteredReviews.filter((r) => r.type === 'episode');
+  const overallReviews = filteredReviews.filter((r) => r.type === 'overall');
 
   const episodeGroups = new Map<number, Review[]>();
-  episodeReviews.forEach(review => {
+  episodeReviews.forEach((review) => {
     if (review.episodeNumber) {
       if (!episodeGroups.has(review.episodeNumber)) {
         episodeGroups.set(review.episodeNumber, []);
@@ -99,7 +99,10 @@ export function AnimeReviewSection({
 
         {/* ユーザー情報 */}
         <div className="flex items-center gap-2 mb-2">
-          {review.userIcon && (review.userIcon.startsWith('http://') || review.userIcon.startsWith('https://') || review.userIcon.startsWith('data:')) ? (
+          {review.userIcon &&
+          (review.userIcon.startsWith('http://') ||
+            review.userIcon.startsWith('https://') ||
+            review.userIcon.startsWith('data:')) ? (
             <img
               src={review.userIcon}
               alt="アイコン"
@@ -116,12 +119,10 @@ export function AnimeReviewSection({
                 }
               }}
             />
-          ) : (
-            review.userIcon ? (
+          ) : review.userIcon ? (
             <span className="text-xl">{review.userIcon}</span>
           ) : (
             <UserRound className="w-6 h-6 text-gray-400" aria-hidden />
-          )
           )}
           <span className="font-bold text-sm dark:text-white">{review.userName}</span>
           <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
@@ -139,7 +140,10 @@ export function AnimeReviewSection({
             }}
             className="w-full text-left text-sm text-[#e879d4] dark:text-[#e879d4] hover:underline py-2"
           >
-            <span className="inline-flex items-center gap-1"><ChevronRight className="w-4 h-4" aria-hidden />クリックして展開</span>
+            <span className="inline-flex items-center gap-1">
+              <ChevronRight className="w-4 h-4" aria-hidden />
+              クリックして展開
+            </span>
           </button>
         ) : (
           <>
@@ -182,12 +186,10 @@ export function AnimeReviewSection({
                     .eq('review_id', review.id)
                     .eq('user_id', user.id);
                 } else {
-                  await supabase
-                    .from('review_likes')
-                    .insert({
-                      review_id: review.id,
-                      user_id: user.id,
-                    });
+                  await supabase.from('review_likes').insert({
+                    review_id: review.id,
+                    user_id: user.id,
+                  });
                 }
 
                 loadReviews(selectedAnime.id);
@@ -196,9 +198,7 @@ export function AnimeReviewSection({
               }
             }}
             className={`flex items-center gap-1 text-sm ${
-              review.userLiked
-                ? 'text-red-500'
-                : 'text-gray-500 dark:text-gray-400'
+              review.userLiked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
             }`}
           >
             <Heart className={`w-4 h-4 ${review.userLiked ? 'fill-current' : ''}`} aria-hidden />
@@ -225,12 +225,10 @@ export function AnimeReviewSection({
                     .eq('review_id', review.id)
                     .eq('user_id', user.id);
                 } else {
-                  await supabase
-                    .from('review_helpful')
-                    .insert({
-                      review_id: review.id,
-                      user_id: user.id,
-                    });
+                  await supabase.from('review_helpful').insert({
+                    review_id: review.id,
+                    user_id: user.id,
+                  });
                 }
 
                 loadReviews(selectedAnime.id);
@@ -239,9 +237,7 @@ export function AnimeReviewSection({
               }
             }}
             className={`flex items-center gap-1 text-sm ${
-              review.userHelpful
-                ? 'text-blue-500'
-                : 'text-gray-500 dark:text-gray-400'
+              review.userHelpful ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'
             }`}
           >
             <span>👍</span>
@@ -261,13 +257,17 @@ export function AnimeReviewSection({
               </button>
               <button
                 onClick={async () => {
-                  if (!(await confirmDialog({ message: 'この感想を削除しますか？', danger: true, confirmLabel: '削除' }))) return;
+                  if (
+                    !(await confirmDialog({
+                      message: 'この感想を削除しますか？',
+                      danger: true,
+                      confirmLabel: '削除',
+                    }))
+                  )
+                    return;
 
                   try {
-                    await supabase
-                      .from('reviews')
-                      .delete()
-                      .eq('id', review.id);
+                    await supabase.from('reviews').delete().eq('id', review.id);
 
                     loadReviews(selectedAnime.id);
                   } catch (error) {
@@ -377,10 +377,11 @@ export function AnimeReviewSection({
         </div>
       ) : (
         <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-          {user ? 'まだ感想がありません。最初の感想を投稿してみましょう！' : 'ログインすると感想を投稿・閲覧できます'}
+          {user
+            ? 'まだ感想がありません。最初の感想を投稿してみましょう！'
+            : 'ログインすると感想を投稿・閲覧できます'}
         </p>
       )}
     </div>
   );
 }
-

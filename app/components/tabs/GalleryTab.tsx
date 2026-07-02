@@ -6,26 +6,27 @@ import { Film } from 'lucide-react';
 import type { Anime } from '../../types';
 
 // サムネイルのみのカード
-const ThumbnailCard = memo(function ThumbnailCard({ 
-  anime, 
-  onClick, 
-  selected, 
-  onSelect, 
-  selectionMode 
-}: { 
-  anime: Anime; 
+const ThumbnailCard = memo(function ThumbnailCard({
+  anime,
+  onClick,
+  selected,
+  onSelect,
+  selectionMode,
+}: {
+  anime: Anime;
   onClick?: (anime: Anime) => void;
   selected: boolean;
   onSelect: (id: number) => void;
   selectionMode: boolean;
 }) {
   const [imageError, setImageError] = useState(false);
-  const isImageUrl = anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
+  const isImageUrl =
+    anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://'));
 
   return (
-    <div 
+    <div
       className={`cursor-pointer group relative ${selected ? 'ring-2 ring-[#e879d4] ring-offset-2 rounded-lg' : ''}`}
-      onClick={() => selectionMode ? onSelect(anime.id) : onClick?.(anime)}
+      onClick={() => (selectionMode ? onSelect(anime.id) : onClick?.(anime))}
     >
       <div className="aspect-[3/4] bg-gradient-to-br from-[#e879d4] to-[#764ba2] rounded-lg overflow-hidden shadow-sm group-hover:shadow-lg group-hover:scale-105 transition-all duration-200 relative">
         {/* 周回数バッジ */}
@@ -34,7 +35,7 @@ const ThumbnailCard = memo(function ThumbnailCard({
             <span className="text-white text-[8px] font-bold">{anime.rewatchCount}周</span>
           </div>
         )}
-        
+
         {/* 画像 */}
         {isImageUrl && !imageError ? (
           <Image
@@ -56,15 +57,19 @@ const ThumbnailCard = memo(function ThumbnailCard({
             )}
           </div>
         )}
-        
+
         {/* ホバー時のタイトル表示 */}
         <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-1">
-          <p className="text-white text-[10px] font-medium text-center line-clamp-3">{anime.title}</p>
+          <p className="text-white text-[10px] font-medium text-center line-clamp-3">
+            {anime.title}
+          </p>
         </div>
-        
+
         {/* 選択モード時のチェック */}
         {selectionMode && (
-          <div className={`absolute top-1 right-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selected ? 'bg-[#e879d4] border-[#e879d4]' : 'border-white bg-black/30'}`}>
+          <div
+            className={`absolute top-1 right-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selected ? 'bg-[#e879d4] border-[#e879d4]' : 'border-white bg-black/30'}`}
+          >
             {selected && <span className="text-white text-xs">✓</span>}
           </div>
         )}
@@ -98,12 +103,14 @@ export function GalleryTab({
   // ソートされたアニメリスト
   const sortedAnimes = useMemo(() => {
     const animes = selectedFolder
-      ? allAnimes.filter(a => selectedFolder.animeIds.includes(a.id))
+      ? allAnimes.filter((a) => selectedFolder.animeIds.includes(a.id))
       : [...allAnimes];
-    
+
     switch (sortType) {
       case 'rating':
-        return animes.sort((a, b) => b.rating - a.rating || (b.rewatchCount ?? 0) - (a.rewatchCount ?? 0));
+        return animes.sort(
+          (a, b) => b.rating - a.rating || (b.rewatchCount ?? 0) - (a.rewatchCount ?? 0)
+        );
       case 'rewatch':
         return animes.sort((a, b) => (b.rewatchCount ?? 0) - (a.rewatchCount ?? 0));
       case 'title':
@@ -114,7 +121,7 @@ export function GalleryTab({
   }, [allAnimes, sortType, selectedFolder]);
 
   const toggleSelection = useCallback((animeId: number) => {
-    setSelectedAnimeIds(prev => {
+    setSelectedAnimeIds((prev) => {
       const newSelected = new Set(prev);
       if (newSelected.has(animeId)) {
         newSelected.delete(animeId);
@@ -132,7 +139,7 @@ export function GalleryTab({
         name: newFolderName.trim(),
         animeIds: Array.from(selectedAnimeIds),
       };
-      setFolders(prev => [...prev, newFolder]);
+      setFolders((prev) => [...prev, newFolder]);
       setNewFolderName('');
       setShowCreateFolder(false);
       setSelectionMode(false);
@@ -140,12 +147,15 @@ export function GalleryTab({
     }
   }, [newFolderName, selectedAnimeIds]);
 
-  const deleteFolder = useCallback((folderId: number) => {
-    setFolders(prev => prev.filter(f => f.id !== folderId));
-    if (selectedFolder?.id === folderId) {
-      setSelectedFolder(null);
-    }
-  }, [selectedFolder]);
+  const deleteFolder = useCallback(
+    (folderId: number) => {
+      setFolders((prev) => prev.filter((f) => f.id !== folderId));
+      if (selectedFolder?.id === folderId) {
+        setSelectedFolder(null);
+      }
+    },
+    [selectedFolder]
+  );
 
   const cancelCreateFolder = useCallback(() => {
     setShowCreateFolder(false);
@@ -155,9 +165,12 @@ export function GalleryTab({
   }, []);
 
   // アニメクリックハンドラーをuseCallbackでメモ化
-  const handleAnimeClick = useCallback((anime: Anime) => {
-    setSelectedAnime(anime);
-  }, [setSelectedAnime]);
+  const handleAnimeClick = useCallback(
+    (anime: Anime) => {
+      setSelectedAnime(anime);
+    },
+    [setSelectedAnime]
+  );
 
   return (
     <>
@@ -173,8 +186,8 @@ export function GalleryTab({
         >
           すべて ({allAnimes.length})
         </button>
-        
-        {folders.map(folder => (
+
+        {folders.map((folder) => (
           <button
             key={folder.id}
             onClick={() => setSelectedFolder(folder)}
@@ -186,8 +199,11 @@ export function GalleryTab({
           >
             {folder.name} ({folder.animeIds.length})
             {selectedFolder?.id === folder.id && (
-              <span 
-                onClick={(e) => { e.stopPropagation(); deleteFolder(folder.id); }}
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteFolder(folder.id);
+                }}
                 className="text-white/70 hover:text-white"
               >
                 ×
@@ -195,9 +211,12 @@ export function GalleryTab({
             )}
           </button>
         ))}
-        
+
         <button
-          onClick={() => { setShowCreateFolder(true); setSelectionMode(true); }}
+          onClick={() => {
+            setShowCreateFolder(true);
+            setSelectionMode(true);
+          }}
           className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
         >
           + フォルダ作成
@@ -207,7 +226,9 @@ export function GalleryTab({
       {/* フォルダ作成モード */}
       {showCreateFolder && (
         <div className="bg-[#e879d4]/10 dark:bg-[#e879d4]/20 rounded-xl p-4 mb-4">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">フォルダに入れる作品を選択してください</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            フォルダに入れる作品を選択してください
+          </p>
           <div className="flex gap-2">
             <input
               type="text"
@@ -247,16 +268,14 @@ export function GalleryTab({
             <option value="title">タイトル順</option>
           </select>
         </div>
-        
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          {sortedAnimes.length}作品
-        </span>
+
+        <span className="text-sm text-gray-500 dark:text-gray-400">{sortedAnimes.length}作品</span>
       </div>
 
       {/* ギャラリーグリッド */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
         <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
-          {sortedAnimes.map(anime => (
+          {sortedAnimes.map((anime) => (
             <ThumbnailCard
               key={anime.id}
               anime={anime}
@@ -278,4 +297,3 @@ export function GalleryTab({
     </>
   );
 }
-

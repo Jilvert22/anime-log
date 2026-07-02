@@ -26,4 +26,3 @@ export { deleteFile, getPublicUrl } from './storage';
 
 // AniList API関連
 export * from './anilist';
-

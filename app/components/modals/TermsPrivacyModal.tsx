@@ -43,9 +43,7 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
               <X className="w-5 h-5" aria-hidden />
             </button>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            最終更新日：2026年1月
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">最終更新日：2026年1月</p>
         </div>
 
         {/* コンテンツエリア（スクロール可能） */}
@@ -66,7 +64,8 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                   第2条（サービス内容）
                 </h3>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  本サービスは、アニメの視聴記録・管理、レビューの投稿、視聴傾向の分析などの機能を提供します。本サービスは、AniList APIを利用してアニメ情報を取得しています。
+                  本サービスは、アニメの視聴記録・管理、レビューの投稿、視聴傾向の分析などの機能を提供します。本サービスは、AniList
+                  APIを利用してアニメ情報を取得しています。
                 </p>
               </section>
 
@@ -75,7 +74,9 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                   第3条（利用資格）
                 </h3>
                 <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <li>本サービスは13歳以上の方を対象としています。13歳未満の方は利用できません。</li>
+                  <li>
+                    本サービスは13歳以上の方を対象としています。13歳未満の方は利用できません。
+                  </li>
                   <li>未成年の方は、保護者の同意を得た上でご利用ください。</li>
                 </ol>
               </section>
@@ -87,7 +88,9 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                 <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
                   <li>本サービスの利用にはアカウント登録が必要です。</li>
                   <li>登録時には正確な情報を入力してください。</li>
-                  <li>アカウントの管理責任はユーザー本人にあります。パスワードの第三者への共有はお控えください。</li>
+                  <li>
+                    アカウントの管理責任はユーザー本人にあります。パスワードの第三者への共有はお控えください。
+                  </li>
                   <li>1人のユーザーが複数のアカウントを作成することは禁止します。</li>
                 </ol>
               </section>
@@ -115,8 +118,12 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                   第6条（サービスの変更・停止）
                 </h3>
                 <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <li>運営者は、事前の通知なく本サービスの内容を変更、または提供を停止することがあります。</li>
-                  <li>サービスの変更・停止によりユーザーに生じた損害について、運営者は責任を負いません。</li>
+                  <li>
+                    運営者は、事前の通知なく本サービスの内容を変更、または提供を停止することがあります。
+                  </li>
+                  <li>
+                    サービスの変更・停止によりユーザーに生じた損害について、運営者は責任を負いません。
+                  </li>
                 </ol>
               </section>
 
@@ -125,8 +132,12 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                   第7条（免責事項）
                 </h3>
                 <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <li>本サービスは現状のまま提供されます。すべての機能が常に正常に動作すること、特定の目的に適合することを保証するものではありません。</li>
-                  <li>本サービスの利用により生じた損害について、運営者は故意または重大な過失がある場合を除き、責任を負いません。</li>
+                  <li>
+                    本サービスは現状のまま提供されます。すべての機能が常に正常に動作すること、特定の目的に適合することを保証するものではありません。
+                  </li>
+                  <li>
+                    本サービスの利用により生じた損害について、運営者は故意または重大な過失がある場合を除き、責任を負いません。
+                  </li>
                   <li>AniList APIから取得するアニメ情報の正確性について、運営者は保証しません。</li>
                   <li>ユーザー間のトラブルについて、運営者は責任を負いません。</li>
                 </ol>
@@ -148,7 +159,9 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                 <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
                   <li>運営者は、必要に応じて本規約を変更できます。</li>
                   <li>変更後の規約は、本サービス上に掲載した時点で効力を生じます。</li>
-                  <li>変更後も本サービスを利用した場合、変更後の規約に同意したものとみなします。</li>
+                  <li>
+                    変更後も本サービスを利用した場合、変更後の規約に同意したものとみなします。
+                  </li>
                 </ol>
               </section>
 
@@ -171,9 +184,7 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
               </section>
 
               <div className="pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
-                <p className="text-lg font-bold text-[#6b5b6e] dark:text-white">
-                  以上
-                </p>
+                <p className="text-lg font-bold text-[#6b5b6e] dark:text-white">以上</p>
               </div>
             </div>
           ) : (
@@ -277,7 +288,8 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                   第5条（外部サービスの利用）
                 </h3>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  本サービスは、アニメ情報の取得にAniList APIを利用しています。AniListへのデータ送信は、アニメの検索・情報取得に必要な範囲に限られ、ユーザーの個人情報は送信されません。
+                  本サービスは、アニメ情報の取得にAniList
+                  APIを利用しています。AniListへのデータ送信は、アニメの検索・情報取得に必要な範囲に限られ、ユーザーの個人情報は送信されません。
                 </p>
               </section>
 
@@ -288,7 +300,9 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                 <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
                   <li>ユーザーデータはSupabase（クラウドサービス）上に保管されます。</li>
                   <li>パスワードは暗号化して保存され、運営者を含め誰も閲覧できません。</li>
-                  <li>データへのアクセスはユーザーごとに制限されており、他のユーザーのデータにはアクセスできません。</li>
+                  <li>
+                    データへのアクセスはユーザーごとに制限されており、他のユーザーのデータにはアクセスできません。
+                  </li>
                 </ol>
               </section>
 
@@ -298,7 +312,9 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
                 </h3>
                 <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
                   <li>ユーザーは、設定画面からいつでもアカウントを削除できます。</li>
-                  <li>アカウント削除時、ユーザーに紐づくすべてのデータ（プロフィール、視聴履歴、感想、積みアニメ等）は完全に削除されます。</li>
+                  <li>
+                    アカウント削除時、ユーザーに紐づくすべてのデータ（プロフィール、視聴履歴、感想、積みアニメ等）は完全に削除されます。
+                  </li>
                 </ol>
               </section>
 
@@ -331,9 +347,7 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
               </section>
 
               <div className="pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
-                <p className="text-lg font-bold text-[#6b5b6e] dark:text-white">
-                  以上
-                </p>
+                <p className="text-lg font-bold text-[#6b5b6e] dark:text-white">以上</p>
               </div>
             </div>
           )}
@@ -352,4 +366,3 @@ export function TermsPrivacyModal({ show, type, onClose }: TermsPrivacyModalProp
     </div>
   );
 }
-

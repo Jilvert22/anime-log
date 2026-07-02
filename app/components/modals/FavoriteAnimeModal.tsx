@@ -46,11 +46,11 @@ export function FavoriteAnimeModal({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
         onClick={(e) => e.stopPropagation()}
       >
@@ -63,7 +63,7 @@ export function FavoriteAnimeModal({
                 key={anime.id}
                 onClick={() => {
                   if (isSelected) {
-                    setFavoriteAnimeIds(favoriteAnimeIds.filter(id => id !== anime.id));
+                    setFavoriteAnimeIds(favoriteAnimeIds.filter((id) => id !== anime.id));
                   } else {
                     if (favoriteAnimeIds.length < 5) {
                       setFavoriteAnimeIds([...favoriteAnimeIds, anime.id]);
@@ -79,13 +79,15 @@ export function FavoriteAnimeModal({
                 }`}
               >
                 <div className="w-12 h-16 rounded overflow-hidden shrink-0">
-                  {anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://')) ? (
+                  {anime.image &&
+                  (anime.image.startsWith('http://') || anime.image.startsWith('https://')) ? (
                     <img
                       src={anime.image}
                       alt={anime.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="64"><rect fill="%23ddd" width="48" height="64"/></svg>';
+                        (e.target as HTMLImageElement).src =
+                          'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="64"><rect fill="%23ddd" width="48" height="64"/></svg>';
                       }}
                     />
                   ) : (

@@ -20,12 +20,7 @@ export function useOnboardingNavigation({
   setActiveTab: (tab: 'home' | 'mypage') => void;
   setHomeSubTab: (tab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => void;
 }) {
-  const {
-    currentStep,
-    isActive,
-    isCompleted,
-    startOnboarding,
-  } = useOnboardingContext();
+  const { currentStep, isActive, isCompleted, startOnboarding } = useOnboardingContext();
 
   // 初回訪問時にオンボーディングを自動開始
   useEffect(() => {
@@ -80,4 +75,3 @@ export function useOnboardingNavigation({
     }
   }, [currentStep, isActive, activeTab, setActiveTab, setHomeSubTab]);
 }
-

@@ -17,9 +17,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-bold text-white dark:text-white font-mixed">
             アニメログ プライバシーポリシー
           </h1>
-          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">
-            最終更新日：2026年6月
-          </p>
+          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">最終更新日：2026年6月</p>
         </div>
 
         {/* コンテンツ */}
@@ -83,7 +81,9 @@ export default function PrivacyPage() {
               <div>
                 <h3 className="font-semibold mb-1">5. 通知設定（任意）</h3>
                 <ul className="list-disc list-inside ml-4 space-y-1">
-                  <li>プッシュ通知を有効にした場合、配信に必要な購読情報（通知エンドポイント等）</li>
+                  <li>
+                    プッシュ通知を有効にした場合、配信に必要な購読情報（通知エンドポイント等）
+                  </li>
                   <li>通知のタイミング設定</li>
                 </ul>
               </div>
@@ -131,10 +131,12 @@ export default function PrivacyPage() {
               第5条（外部サービスの利用）
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
-              本サービスは、アニメ情報の取得にAniList APIを利用しています。AniListへのデータ送信は、アニメの検索・情報取得に必要な範囲に限られ、ユーザーの個人情報は送信されません。
+              本サービスは、アニメ情報の取得にAniList
+              APIを利用しています。AniListへのデータ送信は、アニメの検索・情報取得に必要な範囲に限られ、ユーザーの個人情報は送信されません。
             </p>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              また、サービスの改善のためにアクセス解析ツール「Vercel Analytics」を利用しています。これはCookieを使用せず、ページの閲覧状況やアプリのインストール操作などを匿名で集計するもので、個人を特定する情報は収集しません。
+              また、サービスの改善のためにアクセス解析ツール「Vercel
+              Analytics」を利用しています。これはCookieを使用せず、ページの閲覧状況やアプリのインストール操作などを匿名で集計するもので、個人を特定する情報は収集しません。
             </p>
           </section>
 
@@ -145,7 +147,9 @@ export default function PrivacyPage() {
             <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
               <li>ユーザーデータはSupabase（クラウドサービス）上に保管されます。</li>
               <li>パスワードは暗号化して保存され、運営者を含め誰も閲覧できません。</li>
-              <li>データへのアクセスはユーザーごとに制限されており、他のユーザーのデータにはアクセスできません。</li>
+              <li>
+                データへのアクセスはユーザーごとに制限されており、他のユーザーのデータにはアクセスできません。
+              </li>
             </ol>
           </section>
 
@@ -155,7 +159,9 @@ export default function PrivacyPage() {
             </h2>
             <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
               <li>ユーザーは、設定画面からいつでもアカウントを削除できます。</li>
-              <li>アカウント削除時、ユーザーに紐づくすべてのデータ（プロフィール、視聴履歴、感想、積みアニメ等）は完全に削除されます。</li>
+              <li>
+                アカウント削除時、ユーザーに紐づくすべてのデータ（プロフィール、視聴履歴、感想、積みアニメ等）は完全に削除されます。
+              </li>
             </ol>
           </section>
 
@@ -188,9 +194,7 @@ export default function PrivacyPage() {
           </section>
 
           <div className="pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
-            <p className="text-lg font-bold text-[#6b5b6e] dark:text-white font-mixed">
-              以上
-            </p>
+            <p className="text-lg font-bold text-[#6b5b6e] dark:text-white font-mixed">以上</p>
           </div>
 
           {/* 同意して登録画面に戻るボタン */}
@@ -210,4 +214,3 @@ export default function PrivacyPage() {
     </div>
   );
 }
-

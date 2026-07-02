@@ -6,17 +6,8 @@
 
 import { supabase } from '../supabase';
 import { requireAuth, getCurrentUser } from './auth';
-import {
-  SupabaseError,
-  translateSupabaseError,
-  logError,
-  normalizeError,
-} from './errors';
-import {
-  validateLength,
-  INPUT_LIMITS,
-  throwIfInvalid,
-} from '../validation';
+import { SupabaseError, translateSupabaseError, logError, normalizeError } from './errors';
+import { validateLength, INPUT_LIMITS, throwIfInvalid } from '../validation';
 import type { WatchlistItem, WatchlistItemInput, WatchlistItemUpdate, Season } from './types';
 import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
 import { fetchAnimeStatusByIds } from './anilist';
@@ -29,7 +20,7 @@ export async function getWatchlist(userId?: string): Promise<WatchlistItem[]> {
   try {
     const user = await getCurrentUser();
     const targetUserId = userId || user?.id;
-    
+
     if (!targetUserId) {
       return [];
     }
@@ -345,24 +336,22 @@ export async function getSeasonWatchlist(
     const prevItems = (prevRes.data || []) as WatchlistItem[];
 
     // 3. 全アイテムのAniListデータを一括取得 (継続判定 + 放送開始日表示用)
-    const allIds = [...startMatch, ...prevItems].map(it => it.anilist_id);
-    const mediaMap = allIds.length > 0
-      ? await fetchAnimeStatusByIds(allIds)
-      : new Map();
+    const allIds = [...startMatch, ...prevItems].map((it) => it.anilist_id);
+    const mediaMap = allIds.length > 0 ? await fetchAnimeStatusByIds(allIds) : new Map();
 
     // 4. startMatch に開始日を付与
-    const enrichedStartMatch = startMatch.map(it => {
+    const enrichedStartMatch = startMatch.map((it) => {
       const media = mediaMap.get(it.anilist_id);
       return media?.startDate ? { ...it, start_date: media.startDate } : it;
     });
 
     // 5. 前期アイテムの中から「対象シーズンに継続中」のものだけ抽出 + 開始日付与
     const continuing = prevItems
-      .filter(it => {
+      .filter((it) => {
         const media = mediaMap.get(it.anilist_id);
         return media ? isContinuingAnime(media, { year, season }) : false;
       })
-      .map(it => {
+      .map((it) => {
         const media = mediaMap.get(it.anilist_id);
         return {
           ...it,
@@ -388,7 +377,7 @@ export async function getCurrentSeasonWatchlist(
   try {
     const user = await getCurrentUser();
     const targetUserId = userId || user?.id;
-    
+
     if (!targetUserId) {
       return [];
     }
@@ -414,7 +403,7 @@ export async function getNextSeasonWatchlist(
   try {
     const user = await getCurrentUser();
     const targetUserId = userId || user?.id;
-    
+
     if (!targetUserId) {
       return [];
     }
@@ -434,13 +423,11 @@ export async function getNextSeasonWatchlist(
  * 今期（現在のシーズン）で視聴予定（planned）のアニメを取得
  * 「来期」が「今期」になった時点で、視聴予定のアニメをチェックするために使用
  */
-export async function getCurrentSeasonPlannedWatchlist(
-  userId?: string
-): Promise<WatchlistItem[]> {
+export async function getCurrentSeasonPlannedWatchlist(userId?: string): Promise<WatchlistItem[]> {
   try {
     const user = await getCurrentUser();
     const targetUserId = userId || user?.id;
-    
+
     if (!targetUserId) {
       return [];
     }
@@ -518,7 +505,7 @@ export async function repairWatchlistSeasons(
     if (list.length === 0) return { checked: 0, repaired: 0 };
 
     // 2. AniList から開始期情報を一括取得
-    const mediaMap = await fetchAnimeStatusByIds(list.map(it => it.anilist_id));
+    const mediaMap = await fetchAnimeStatusByIds(list.map((it) => it.anilist_id));
 
     // 3. (season_year, season) が AniList の開始期と違うものを修正
     const { getStartSeason } = await import('../../utils/continuingAnime');
@@ -547,4 +534,3 @@ export async function repairWatchlistSeasons(
     throw normalizeError(error);
   }
 }
-

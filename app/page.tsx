@@ -6,6 +6,6 @@ export default async function Home() {
   // 現在は認証状態やユーザーデータがクライアント側で管理されているため、
   // ここでは基本的な初期化のみ行う
   // 将来的にServer Componentで取得できるデータがあればここで取得
-  
+
   return <HomeClient />;
 }

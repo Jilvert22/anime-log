@@ -9,15 +9,8 @@ import { SupabaseError, translateSupabaseError, logError, normalizeError } from 
 /**
  * ユーザーIDでフィルタリングされたクエリを構築
  */
-export function queryByUserId<T>(
-  table: string,
-  userId: string,
-  select: string = '*'
-) {
-  return supabase
-    .from(table)
-    .select(select)
-    .eq('user_id', userId);
+export function queryByUserId<T>(table: string, userId: string, select: string = '*') {
+  return supabase.from(table).select(select).eq('user_id', userId);
 }
 
 /**
@@ -141,11 +134,7 @@ export async function deleteRecord(
   idColumn: string = 'id'
 ): Promise<void> {
   try {
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .eq('user_id', userId)
-      .eq(idColumn, id);
+    const { error } = await supabase.from(table).delete().eq('user_id', userId).eq(idColumn, id);
 
     if (error) {
       throw new SupabaseError(
@@ -215,4 +204,3 @@ export async function getRecords<T>(
     throw normalizeError(error);
   }
 }
-

@@ -34,13 +34,13 @@ export function useExpansionControl({
   const expandAll = useCallback(() => {
     const allYears = new Set<string>();
     const allSeasons = new Set<string>();
-    yearSeasonData.forEach(y => {
+    yearSeasonData.forEach((y) => {
       // 作品がある年のみ展開
-      const hasAnimes = y.seasons.some(s => s.animes.length > 0);
+      const hasAnimes = y.seasons.some((s) => s.animes.length > 0);
       if (hasAnimes) {
         allYears.add(y.year);
         // 作品がある季節のみ展開
-        y.seasons.forEach(s => {
+        y.seasons.forEach((s) => {
           if (s.animes.length > 0) {
             allSeasons.add(`${y.year}-${s.season}`);
           }
@@ -58,71 +58,94 @@ export function useExpansionControl({
 
   // 作品があるクールのみを対象に展開状態を判定
   const isAllExpanded = useMemo(() => {
-    const yearsWithAnimes = yearSeasonData.filter(y => 
-      y.seasons.some(s => s.animes.length > 0)
+    const yearsWithAnimes = yearSeasonData.filter((y) =>
+      y.seasons.some((s) => s.animes.length > 0)
     );
-    const seasonsWithAnimes = yearsWithAnimes.flatMap(y => 
-      y.seasons.filter(s => s.animes.length > 0).map(s => `${y.year}-${s.season}`)
+    const seasonsWithAnimes = yearsWithAnimes.flatMap((y) =>
+      y.seasons.filter((s) => s.animes.length > 0).map((s) => `${y.year}-${s.season}`)
     );
-    
-    return yearsWithAnimes.length > 0 &&
-           yearsWithAnimes.every(y => expandedYears.has(y.year)) &&
-           seasonsWithAnimes.every(key => expandedSeasons.has(key));
+
+    return (
+      yearsWithAnimes.length > 0 &&
+      yearsWithAnimes.every((y) => expandedYears.has(y.year)) &&
+      seasonsWithAnimes.every((key) => expandedSeasons.has(key))
+    );
   }, [yearSeasonData, expandedYears, expandedSeasons]);
 
   // 年の展開切り替え
-  const toggleYear = useCallback((year: string) => {
-    const newExpanded = new Set(expandedYears);
-    if (newExpanded.has(year)) {
-      newExpanded.delete(year);
-      // 年を閉じたら、その年の季節も閉じる
-      const newSeasons = new Set(expandedSeasons);
-      yearSeasonData.find(y => y.year === year)?.seasons.forEach(s => {
-        newSeasons.delete(`${year}-${s.season}`);
-      });
-      setExpandedSeasons(newSeasons);
-    } else {
-      newExpanded.add(year);
-      // 年を開いたら、登録済みの作品がある季節も自動的に開く
-      const newSeasons = new Set(expandedSeasons);
-      const yearData = yearSeasonData.find(y => y.year === year);
-      if (yearData) {
-        yearData.seasons.forEach(s => {
-          // 登録済みの作品がある季節のみ展開
-          if (s.animes.length > 0) {
-            newSeasons.add(`${year}-${s.season}`);
-          }
-        });
+  const toggleYear = useCallback(
+    (year: string) => {
+      const newExpanded = new Set(expandedYears);
+      if (newExpanded.has(year)) {
+        newExpanded.delete(year);
+        // 年を閉じたら、その年の季節も閉じる
+        const newSeasons = new Set(expandedSeasons);
+        yearSeasonData
+          .find((y) => y.year === year)
+          ?.seasons.forEach((s) => {
+            newSeasons.delete(`${year}-${s.season}`);
+          });
         setExpandedSeasons(newSeasons);
+      } else {
+        newExpanded.add(year);
+        // 年を開いたら、登録済みの作品がある季節も自動的に開く
+        const newSeasons = new Set(expandedSeasons);
+        const yearData = yearSeasonData.find((y) => y.year === year);
+        if (yearData) {
+          yearData.seasons.forEach((s) => {
+            // 登録済みの作品がある季節のみ展開
+            if (s.animes.length > 0) {
+              newSeasons.add(`${year}-${s.season}`);
+            }
+          });
+          setExpandedSeasons(newSeasons);
+        }
       }
-    }
-    setExpandedYears(newExpanded);
-  }, [expandedYears, expandedSeasons, yearSeasonData, setExpandedYears, setExpandedSeasons]);
+      setExpandedYears(newExpanded);
+    },
+    [expandedYears, expandedSeasons, yearSeasonData, setExpandedYears, setExpandedSeasons]
+  );
 
   // 季節の展開切り替え
-  const toggleSeason = useCallback((year: string, season: string) => {
-    const key = `${year}-${season}`;
-    const newExpanded = new Set(expandedSeasons);
-    if (newExpanded.has(key)) {
-      newExpanded.delete(key);
-    } else {
-      newExpanded.add(key);
-      // 未登録のシーズンの場合、検索を実行
-      const yearData = yearSeasonData.find(y => y.year === year);
-      const seasonData = yearData?.seasons.find(s => s.season === season);
-      if (seasonData && seasonData.animes.length === 0 && !seasonSearchResults.has(key) && !loadingSeasons.has(key)) {
-        // 検索を実行し、完了後に自動的に展開
-        searchSeasonAnimes(year, season, false).then(() => {
-          // 検索完了後、自動的に検索結果も展開
-          setExpandedSeasonSearches(prev => new Set(prev).add(key));
-        });
-      } else if (seasonData && seasonData.animes.length === 0 && seasonSearchResults.has(key)) {
-        // 既に検索結果がある場合は、自動的に展開
-        setExpandedSeasonSearches(prev => new Set(prev).add(key));
+  const toggleSeason = useCallback(
+    (year: string, season: string) => {
+      const key = `${year}-${season}`;
+      const newExpanded = new Set(expandedSeasons);
+      if (newExpanded.has(key)) {
+        newExpanded.delete(key);
+      } else {
+        newExpanded.add(key);
+        // 未登録のシーズンの場合、検索を実行
+        const yearData = yearSeasonData.find((y) => y.year === year);
+        const seasonData = yearData?.seasons.find((s) => s.season === season);
+        if (
+          seasonData &&
+          seasonData.animes.length === 0 &&
+          !seasonSearchResults.has(key) &&
+          !loadingSeasons.has(key)
+        ) {
+          // 検索を実行し、完了後に自動的に展開
+          searchSeasonAnimes(year, season, false).then(() => {
+            // 検索完了後、自動的に検索結果も展開
+            setExpandedSeasonSearches((prev) => new Set(prev).add(key));
+          });
+        } else if (seasonData && seasonData.animes.length === 0 && seasonSearchResults.has(key)) {
+          // 既に検索結果がある場合は、自動的に展開
+          setExpandedSeasonSearches((prev) => new Set(prev).add(key));
+        }
       }
-    }
-    setExpandedSeasons(newExpanded);
-  }, [expandedSeasons, setExpandedSeasons, yearSeasonData, seasonSearchResults, loadingSeasons, searchSeasonAnimes, setExpandedSeasonSearches]);
+      setExpandedSeasons(newExpanded);
+    },
+    [
+      expandedSeasons,
+      setExpandedSeasons,
+      yearSeasonData,
+      seasonSearchResults,
+      loadingSeasons,
+      searchSeasonAnimes,
+      setExpandedSeasonSearches,
+    ]
+  );
 
   return {
     expandAll,
@@ -132,4 +155,3 @@ export function useExpansionControl({
     toggleSeason,
   };
 }
-

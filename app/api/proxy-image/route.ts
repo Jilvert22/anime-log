@@ -2,16 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseEnv } from '@/app/lib/env';
 
 // 許可するドメインのホワイトリスト（AniList画像）
-const ALLOWED_ANILIST_DOMAINS = [
-  's4.anilist.co',
-  's3.anilist.co',
-  'cdn.anilist.co',
-];
+const ALLOWED_ANILIST_DOMAINS = ['s4.anilist.co', 's3.anilist.co', 'cdn.anilist.co'];
 
 // プライベートIPアドレスの範囲をチェック
 function isPrivateIP(hostname: string): boolean {
   // localhost, 127.x.x.x, ::1をブロック
-  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]') {
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname === '[::1]'
+  ) {
     return true;
   }
 
@@ -20,7 +21,7 @@ function isPrivateIP(hostname: string): boolean {
   if (/^10\./.test(hostname)) {
     return true;
   }
-  
+
   // 172.16.0.0/12
   const match172 = hostname.match(/^172\.(\d+)\./);
   if (match172) {
@@ -29,12 +30,12 @@ function isPrivateIP(hostname: string): boolean {
       return true;
     }
   }
-  
+
   // 192.168.0.0/16
   if (/^192\.168\./.test(hostname)) {
     return true;
   }
-  
+
   // 169.254.0.0/16 (リンクローカル)
   if (/^169\.254\./.test(hostname)) {
     return true;
@@ -47,24 +48,24 @@ function isPrivateIP(hostname: string): boolean {
 function isAllowedUrl(urlString: string, allowedSupabaseDomain: string | null): boolean {
   try {
     const url = new URL(urlString);
-    
+
     // HTTPSのみ許可
     if (url.protocol !== 'https:') {
       return false;
     }
-    
+
     const hostname = url.hostname.toLowerCase();
-    
+
     // プライベートIPをブロック
     if (isPrivateIP(hostname)) {
       return false;
     }
-    
+
     // ホワイトリストチェック（AniListドメイン）
     if (ALLOWED_ANILIST_DOMAINS.includes(hostname)) {
       return true;
     }
-    
+
     // Supabase Storageドメインのチェック
     if (allowedSupabaseDomain) {
       const supabaseHostname = new URL(allowedSupabaseDomain).hostname.toLowerCase();
@@ -73,7 +74,7 @@ function isAllowedUrl(urlString: string, allowedSupabaseDomain: string | null): 
         return true;
       }
     }
-    
+
     return false;
   } catch (error) {
     // URLのパースに失敗した場合は許可しない
@@ -83,7 +84,7 @@ function isAllowedUrl(urlString: string, allowedSupabaseDomain: string | null): 
 
 export async function GET(request: NextRequest) {
   const urlParam = request.nextUrl.searchParams.get('url');
-  
+
   if (!urlParam) {
     return NextResponse.json({ error: 'URL required' }, { status: 400 });
   }
@@ -100,10 +101,7 @@ export async function GET(request: NextRequest) {
 
   // URL検証
   if (!isAllowedUrl(urlParam, supabaseUrl)) {
-    return NextResponse.json(
-      { error: 'URL not allowed' },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: 'URL not allowed' }, { status: 403 });
   }
 
   try {
@@ -113,34 +111,25 @@ export async function GET(request: NextRequest) {
         'User-Agent': 'AnimeLog-ImageProxy/1.0',
       },
     });
-    
+
     if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Failed to fetch image' },
-        { status: response.status }
-      );
+      return NextResponse.json({ error: 'Failed to fetch image' }, { status: response.status });
     }
-    
+
     // Content-Typeが画像であることを確認
     const contentType = response.headers.get('Content-Type') || '';
     if (!contentType.startsWith('image/')) {
-      return NextResponse.json(
-        { error: 'Invalid content type' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid content type' }, { status: 400 });
     }
-    
+
     const blob = await response.blob();
-    
+
     // ファイルサイズ制限（10MB）
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (blob.size > maxSize) {
-      return NextResponse.json(
-        { error: 'Image too large' },
-        { status: 413 }
-      );
+      return NextResponse.json({ error: 'Image too large' }, { status: 413 });
     }
-    
+
     return new NextResponse(blob, {
       headers: {
         'Content-Type': contentType,
@@ -150,11 +139,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Proxy error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch image' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch image' }, { status: 500 });
   }
 }
-
-

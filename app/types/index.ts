@@ -115,4 +115,3 @@ export type SupabaseClientType = SupabaseClient;
 // ユーザー型（@supabase/supabase-jsから）
 import type { User } from '@supabase/supabase-js';
 export type { User };
-

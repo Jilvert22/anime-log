@@ -17,18 +17,18 @@ export function getRequiredEnv(
 ): string {
   // Next.jsのenvから取得（next.config.tsで設定した値）
   const value = process.env[name] || '';
-  
+
   if (!value || value.trim() === '') {
     const desc = description || name;
     const isDev = process.env.NODE_ENV === 'development';
-    
+
     // 開発環境またはクライアント側では警告のみで、空文字を返す（エラーをスローしない）
     // クライアント側では、環境変数が未設定でも後続の処理で適切にエラーハンドリングされる
     if (isDev || isClientSide) {
       console.warn(`[環境変数警告] ${name}が未設定です。`);
-      return ''; 
+      return '';
     }
-    
+
     // 本番環境のサーバー側ではエラーをスロー
     throw new Error(`必須の環境変数「${name}」が設定されていません。`);
   }
@@ -52,25 +52,21 @@ export function getEnv(name: string, defaultValue: string): string {
  * @throws Error 環境変数が未設定の場合（本番環境のみ）
  */
 export function getSupabaseEnv(isClientSide: boolean = false) {
-  const url = getRequiredEnv(
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'SupabaseプロジェクトのURL',
-    isClientSide
-  );
+  const url = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL', 'SupabaseプロジェクトのURL', isClientSide);
   const anonKey = getRequiredEnv(
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
     'Supabaseの匿名キー',
     isClientSide
   );
-  
+
   // 開発環境で両方が空文字の場合、警告を追加
   if (process.env.NODE_ENV === 'development' && (!url || !anonKey)) {
     console.warn(
       '[環境変数警告] Supabase環境変数が設定されていません。' +
-      'アプリケーションが正常に動作しない可能性があります。'
+        'アプリケーションが正常に動作しない可能性があります。'
     );
   }
-  
+
   return {
     url,
     anonKey,
@@ -111,8 +107,7 @@ export function validateRequiredEnv() {
   if (missing.length > 0) {
     throw new Error(
       `以下の必須環境変数が設定されていません:\n${missing.join('\n')}\n\n` +
-      `.env.localファイルに設定するか、Vercelの環境変数設定で設定してください。`
+        `.env.localファイルに設定するか、Vercelの環境変数設定で設定してください。`
     );
   }
 }
-

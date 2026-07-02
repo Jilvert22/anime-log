@@ -8,7 +8,7 @@ import {
   searchAnnictByTitle,
   formatAnnictSeason,
   mergeWithAnnictData,
-  type AniListMediaWithStreaming
+  type AniListMediaWithStreaming,
 } from '../lib/api/annict';
 import { isContinuingAnime, getPreviousSeason } from '../utils/continuingAnime';
 
@@ -82,84 +82,88 @@ export function useAnimeSearchWithStreaming() {
   /**
    * シーズン別検索（AniList + Annict並列）
    */
-  const searchBySeason = useCallback(async (
-    season: SeasonType,
-    year: number,
-    page: number = 1,
-    perPage: number = 50
-  ): Promise<AniListMediaWithStreaming[]> => {
-    // キャッシュキーを生成
-    const cacheKey = `season:${year}:${season}:${page}:${perPage}`;
-    
-    // キャッシュから取得を試みる
-    const cached = getFromCache(cacheKey);
-    if (cached) {
-      return cached;
-    }
+  const searchBySeason = useCallback(
+    async (
+      season: SeasonType,
+      year: number,
+      page: number = 1,
+      perPage: number = 50
+    ): Promise<AniListMediaWithStreaming[]> => {
+      // キャッシュキーを生成
+      const cacheKey = `season:${year}:${season}:${page}:${perPage}`;
 
-    setIsLoading(true);
-    setError(null);
+      // キャッシュから取得を試みる
+      const cached = getFromCache(cacheKey);
+      if (cached) {
+        return cached;
+      }
 
-    try {
-      const annictSeason = formatAnnictSeason(year, convertToAnnictSeason(season));
-      const prev = getPreviousSeason({ year, season });
+      setIsLoading(true);
+      setError(null);
 
-      const [anilistResults, prevAnilistResults, annictResults] = await Promise.all([
-        searchAnimeBySeason(season, year, page, perPage),
-        // 連続2クール作品候補として前シーズン開始の作品も取得
-        // 1ページ目のみ取得 (人気順なので継続候補は上位に集中)
-        page === 1
-          ? searchAnimeBySeason(prev.season, prev.year, 1, perPage)
-          : Promise.resolve({ media: [] as AniListMedia[], pageInfo: { total: 0, currentPage: 1, hasNextPage: false } }),
-        searchAnnictBySeason(annictSeason, 100).catch(err => {
-          console.warn('Annict search failed, continuing without streaming info:', err);
-          return [];
-        }),
-      ]);
+      try {
+        const annictSeason = formatAnnictSeason(year, convertToAnnictSeason(season));
+        const prev = getPreviousSeason({ year, season });
 
-      // 前シーズン作品のうち、対象シーズンに継続中のものだけ抽出
-      const continuingFromPrev = prevAnilistResults.media.filter(m =>
-        isContinuingAnime(m, { year, season })
-      );
+        const [anilistResults, prevAnilistResults, annictResults] = await Promise.all([
+          searchAnimeBySeason(season, year, page, perPage),
+          // 連続2クール作品候補として前シーズン開始の作品も取得
+          // 1ページ目のみ取得 (人気順なので継続候補は上位に集中)
+          page === 1
+            ? searchAnimeBySeason(prev.season, prev.year, 1, perPage)
+            : Promise.resolve({
+                media: [] as AniListMedia[],
+                pageInfo: { total: 0, currentPage: 1, hasNextPage: false },
+              }),
+          searchAnnictBySeason(annictSeason, 100).catch((err) => {
+            console.warn('Annict search failed, continuing without streaming info:', err);
+            return [];
+          }),
+        ]);
 
-      // 重複防止 (同IDが新規と継続両方にいた場合は新規を優先)
-      const existingIds = new Set(anilistResults.media.map(m => m.id));
-      const uniqueContinuing = continuingFromPrev.filter(m => !existingIds.has(m.id));
+        // 前シーズン作品のうち、対象シーズンに継続中のものだけ抽出
+        const continuingFromPrev = prevAnilistResults.media.filter((m) =>
+          isContinuingAnime(m, { year, season })
+        );
 
-      const combined = [...anilistResults.media, ...uniqueContinuing];
-      const mergedResults = await mergeWithAnnictData(combined, annictResults);
+        // 重複防止 (同IDが新規と継続両方にいた場合は新規を優先)
+        const existingIds = new Set(anilistResults.media.map((m) => m.id));
+        const uniqueContinuing = continuingFromPrev.filter((m) => !existingIds.has(m.id));
 
-      // 継続中フラグを付与
-      const continuingIds = new Set(uniqueContinuing.map(m => m.id));
-      const flagged = mergedResults.map(item =>
-        continuingIds.has(item.id) ? { ...item, isContinuing: true } : item
-      );
+        const combined = [...anilistResults.media, ...uniqueContinuing];
+        const mergedResults = await mergeWithAnnictData(combined, annictResults);
 
-      // キャッシュに保存
-      setCache(cacheKey, flagged);
+        // 継続中フラグを付与
+        const continuingIds = new Set(uniqueContinuing.map((m) => m.id));
+        const flagged = mergedResults.map((item) =>
+          continuingIds.has(item.id) ? { ...item, isContinuing: true } : item
+        );
 
-      return flagged;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : '検索に失敗しました';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+        // キャッシュに保存
+        setCache(cacheKey, flagged);
+
+        return flagged;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '検索に失敗しました';
+        setError(message);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   /**
    * タイトル検索（AniList + Annict並列）
    */
-  const searchByTitle = useCallback(async (
-    title: string
-  ): Promise<AniListMediaWithStreaming[]> => {
+  const searchByTitle = useCallback(async (title: string): Promise<AniListMediaWithStreaming[]> => {
     // 検索クエリを正規化（前後の空白を削除）
     const normalizedTitle = title.trim();
-    
+
     // キャッシュキーを生成
     const cacheKey = `title:${normalizedTitle}`;
-    
+
     // キャッシュから取得を試みる
     const cached = getFromCache(cacheKey);
     if (cached) {
@@ -172,17 +176,17 @@ export function useAnimeSearchWithStreaming() {
     try {
       const [anilistResults, annictResults] = await Promise.all([
         searchAnime(normalizedTitle),
-        searchAnnictByTitle(normalizedTitle, 20).catch(err => {
+        searchAnnictByTitle(normalizedTitle, 20).catch((err) => {
           console.warn('Annict title search failed:', err);
           return [];
         }),
       ]);
 
       const mergedResults = await mergeWithAnnictData(anilistResults, annictResults);
-      
+
       // キャッシュに保存
       setCache(cacheKey, mergedResults);
-      
+
       return mergedResults;
     } catch (err) {
       const message = err instanceof Error ? err.message : '検索に失敗しました';
@@ -200,4 +204,3 @@ export function useAnimeSearchWithStreaming() {
     error,
   };
 }
-

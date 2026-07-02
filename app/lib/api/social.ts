@@ -6,12 +6,7 @@
 
 import { supabase } from '../supabase';
 import { requireAuth } from './auth';
-import {
-  SupabaseError,
-  translateSupabaseError,
-  logError,
-  normalizeError,
-} from './errors';
+import { SupabaseError, translateSupabaseError, logError, normalizeError } from './errors';
 import type { UserProfile, FollowCounts } from './types';
 
 /**
@@ -118,12 +113,10 @@ export async function followUser(followingId: string): Promise<void> {
   try {
     const user = await requireAuth();
 
-    const { error } = await supabase
-      .from('follows')
-      .insert({
-        follower_id: user.id,
-        following_id: followingId,
-      });
+    const { error } = await supabase.from('follows').insert({
+      follower_id: user.id,
+      following_id: followingId,
+    });
 
     if (error) {
       throw new SupabaseError(
@@ -361,4 +354,3 @@ export async function getFollowCounts(userId: string): Promise<FollowCounts> {
     throw normalizeError(error);
   }
 }
-

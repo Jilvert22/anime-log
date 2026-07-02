@@ -17,9 +17,7 @@ export default function TermsPage() {
           <h1 className="text-3xl font-bold text-white dark:text-white font-mixed">
             アニメログ 利用規約
           </h1>
-          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">
-            最終更新日：2026年1月
-          </p>
+          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">最終更新日：2026年1月</p>
         </div>
 
         {/* コンテンツ */}
@@ -38,7 +36,8 @@ export default function TermsPage() {
               第2条（サービス内容）
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              本サービスは、アニメの視聴記録・管理、レビューの投稿、視聴傾向の分析などの機能を提供します。本サービスは、AniList APIを利用してアニメ情報を取得しています。
+              本サービスは、アニメの視聴記録・管理、レビューの投稿、視聴傾向の分析などの機能を提供します。本サービスは、AniList
+              APIを利用してアニメ情報を取得しています。
             </p>
           </section>
 
@@ -59,7 +58,9 @@ export default function TermsPage() {
             <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
               <li>本サービスの利用にはアカウント登録が必要です。</li>
               <li>登録時には正確な情報を入力してください。</li>
-              <li>アカウントの管理責任はユーザー本人にあります。パスワードの第三者への共有はお控えください。</li>
+              <li>
+                アカウントの管理責任はユーザー本人にあります。パスワードの第三者への共有はお控えください。
+              </li>
               <li>1人のユーザーが複数のアカウントを作成することは禁止します。</li>
             </ol>
           </section>
@@ -87,8 +88,12 @@ export default function TermsPage() {
               第6条（サービスの変更・停止）
             </h2>
             <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <li>運営者は、事前の通知なく本サービスの内容を変更、または提供を停止することがあります。</li>
-              <li>サービスの変更・停止によりユーザーに生じた損害について、運営者は責任を負いません。</li>
+              <li>
+                運営者は、事前の通知なく本サービスの内容を変更、または提供を停止することがあります。
+              </li>
+              <li>
+                サービスの変更・停止によりユーザーに生じた損害について、運営者は責任を負いません。
+              </li>
             </ol>
           </section>
 
@@ -97,8 +102,12 @@ export default function TermsPage() {
               第7条（免責事項）
             </h2>
             <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <li>本サービスは現状のまま提供されます。すべての機能が常に正常に動作すること、特定の目的に適合することを保証するものではありません。</li>
-              <li>本サービスの利用により生じた損害について、運営者は故意または重大な過失がある場合を除き、責任を負いません。</li>
+              <li>
+                本サービスは現状のまま提供されます。すべての機能が常に正常に動作すること、特定の目的に適合することを保証するものではありません。
+              </li>
+              <li>
+                本サービスの利用により生じた損害について、運営者は故意または重大な過失がある場合を除き、責任を負いません。
+              </li>
               <li>AniList APIから取得するアニメ情報の正確性について、運営者は保証しません。</li>
               <li>ユーザー間のトラブルについて、運営者は責任を負いません。</li>
             </ol>
@@ -143,9 +152,7 @@ export default function TermsPage() {
           </section>
 
           <div className="pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
-            <p className="text-lg font-bold text-[#6b5b6e] dark:text-white font-mixed">
-              以上
-            </p>
+            <p className="text-lg font-bold text-[#6b5b6e] dark:text-white font-mixed">以上</p>
           </div>
 
           {/* 同意して登録画面に戻るボタン */}
@@ -165,4 +172,3 @@ export default function TermsPage() {
     </div>
   );
 }
-

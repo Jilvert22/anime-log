@@ -7,7 +7,7 @@ import type { IStorageService } from '../lib/storage/types';
 
 export function useStorage(): IStorageService {
   const { user, isLoading } = useAuth();
-  
+
   const storage = useMemo(() => {
     // ローディング中はlocalStorageを使用（安全側に倒す）
     if (isLoading) {
@@ -18,5 +18,3 @@ export function useStorage(): IStorageService {
 
   return storage;
 }
-
-

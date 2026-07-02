@@ -80,12 +80,12 @@ export function AnimeDetailModal({
     const isAnilistId = selectedAnime.id < 1000000;
     if (isAnilistId) {
       getAnimeDetail(selectedAnime.id)
-        .then(detail => {
+        .then((detail) => {
           if (detail) {
             setAnilistDetail(detail);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           const normalizedError = normalizeError(error);
           logger.error('AniList詳細情報の取得に失敗しました', normalizedError, 'AnimeDetailModal');
         });
@@ -159,7 +159,10 @@ export function AnimeDetailModal({
           <>
             <div className="text-center mb-4">
               {(() => {
-                const isImageUrl = selectedAnime.image && (selectedAnime.image.startsWith('http://') || selectedAnime.image.startsWith('https://'));
+                const isImageUrl =
+                  selectedAnime.image &&
+                  (selectedAnime.image.startsWith('http://') ||
+                    selectedAnime.image.startsWith('https://'));
                 return isImageUrl ? (
                   <div className="flex justify-center mb-3">
                     <div className="relative w-32 h-44">
@@ -183,7 +186,10 @@ export function AnimeDetailModal({
                 ) : selectedAnime.image ? (
                   <span className="text-6xl block mb-3">{selectedAnime.image}</span>
                 ) : (
-                  <Film className="w-10 h-10 mx-auto mb-3 text-gray-400 dark:text-gray-500" aria-hidden />
+                  <Film
+                    className="w-10 h-10 mx-auto mb-3 text-gray-400 dark:text-gray-500"
+                    aria-hidden
+                  />
                 );
               })()}
               <h3 className="text-xl font-bold mt-2 dark:text-white">{selectedAnime.title}</h3>
@@ -191,7 +197,9 @@ export function AnimeDetailModal({
 
             {/* 評価ボタン */}
             <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">評価を選択</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">
+                評価を選択
+              </p>
               <div className="flex justify-center gap-2 mb-2">
                 {[1, 2, 3, 4, 5].map((rating) => (
                   <button
@@ -214,9 +222,13 @@ export function AnimeDetailModal({
                         ? 'text-[#ffd700] drop-shadow-sm'
                         : 'text-gray-400 dark:text-gray-500 opacity-50 hover:opacity-80'
                     }`}
-                    style={selectedAnime.rating >= rating ? {} : { 
-                      textShadow: '0 0 1px rgba(0,0,0,0.2)'
-                    }}
+                    style={
+                      selectedAnime.rating >= rating
+                        ? {}
+                        : {
+                            textShadow: '0 0 1px rgba(0,0,0,0.2)',
+                          }
+                    }
                     title={`${rating}つ星`}
                   >
                     {selectedAnime.rating >= rating ? '★' : '☆'}
@@ -225,7 +237,8 @@ export function AnimeDetailModal({
               </div>
               {selectedAnime.rating > 0 ? (
                 <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2 font-medium">
-                  {ratingLabels[selectedAnime.rating]?.emoji} {ratingLabels[selectedAnime.rating]?.label}
+                  {ratingLabels[selectedAnime.rating]?.emoji}{' '}
+                  {ratingLabels[selectedAnime.rating]?.label}
                 </p>
               ) : (
                 <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-2">
@@ -236,7 +249,9 @@ export function AnimeDetailModal({
 
             {/* 周回数編集 */}
             <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">周回数</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">
+                周回数
+              </p>
               <div className="flex items-center justify-center gap-3">
                 <button
                   onClick={async () => {
@@ -260,7 +275,7 @@ export function AnimeDetailModal({
                   -
                 </button>
                 <span className="text-2xl font-bold dark:text-white min-w-[60px] text-center">
-                  {(selectedAnime.rewatchCount ?? 0)}周
+                  {selectedAnime.rewatchCount ?? 0}周
                 </span>
                 <button
                   onClick={async () => {
@@ -289,7 +304,9 @@ export function AnimeDetailModal({
             {/* 配信サービス */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center font-medium flex-1">配信サービス</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center font-medium flex-1">
+                  配信サービス
+                </p>
                 {user && (
                   <StreamingUpdateButton
                     onUpdate={async () => {
@@ -297,7 +314,11 @@ export function AnimeDetailModal({
                       // selectedAnime.idがAniList IDかどうかを判定（1000000未満の場合はAniList ID）
                       const isAnilistId = selectedAnime.id < 1000000;
                       const anilistId = isAnilistId ? selectedAnime.id : undefined;
-                      const result = await updateAnimeStreamingInfo(selectedAnime.id, selectedAnime.title, anilistId);
+                      const result = await updateAnimeStreamingInfo(
+                        selectedAnime.id,
+                        selectedAnime.title,
+                        anilistId
+                      );
                       if (result.success && result.streamingSites) {
                         // アニメ情報を更新
                         await handleUpdateAnime(
@@ -322,7 +343,11 @@ export function AnimeDetailModal({
                         throw new Error(result.error);
                       }
                     }}
-                    lastUpdated={selectedAnime.streamingUpdatedAt || selectedAnime.streaming_updated_at || undefined}
+                    lastUpdated={
+                      selectedAnime.streamingUpdatedAt ||
+                      selectedAnime.streaming_updated_at ||
+                      undefined
+                    }
                     size="sm"
                   />
                 )}
@@ -343,7 +368,9 @@ export function AnimeDetailModal({
 
             {/* タグ選択 */}
             <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">タグ</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">
+                タグ
+              </p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {availableTags.map((tag) => {
                   const isSelected = selectedAnime.tags?.includes(tag.value) ?? false;
@@ -353,7 +380,7 @@ export function AnimeDetailModal({
                       onClick={async () => {
                         const currentTags = selectedAnime.tags ?? [];
                         const newTags = isSelected
-                          ? currentTags.filter(t => t !== tag.value)
+                          ? currentTags.filter((t) => t !== tag.value)
                           : [...currentTags, tag.value];
                         await handleUpdateAnime(
                           (anime) => ({ ...anime, tags: newTags }),
@@ -382,7 +409,9 @@ export function AnimeDetailModal({
 
             {/* シリーズ名編集 */}
             <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">シリーズ名</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">
+                シリーズ名
+              </p>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -436,7 +465,9 @@ export function AnimeDetailModal({
 
             {/* 主題歌セクション - 簡略化版（完全版は後で追加） */}
             <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 text-center font-medium">主題歌</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 text-center font-medium">
+                主題歌
+              </p>
               {/* OP */}
               <div className="mb-3">
                 <div className="flex items-center justify-between mb-2">
@@ -456,8 +487,12 @@ export function AnimeDetailModal({
                   <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1">
-                        <p className="font-bold text-sm dark:text-white">{selectedAnime.songs.op.title}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{selectedAnime.songs.op.artist}</p>
+                        <p className="font-bold text-sm dark:text-white">
+                          {selectedAnime.songs.op.title}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          {selectedAnime.songs.op.artist}
+                        </p>
                       </div>
                       <button
                         onClick={async () => {
@@ -489,7 +524,10 @@ export function AnimeDetailModal({
                         }}
                         className="text-xl"
                       >
-                        <Heart className={`w-5 h-5 ${selectedAnime.songs.op.isFavorite ? 'fill-[#e879d4] text-[#e879d4]' : 'text-gray-400'}`} aria-hidden />
+                        <Heart
+                          className={`w-5 h-5 ${selectedAnime.songs.op.isFavorite ? 'fill-[#e879d4] text-[#e879d4]' : 'text-gray-400'}`}
+                          aria-hidden
+                        />
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -502,9 +540,7 @@ export function AnimeDetailModal({
                                 ...anime,
                                 songs: {
                                   ...anime.songs,
-                                  op: anime.songs?.op
-                                    ? { ...anime.songs.op, rating }
-                                    : undefined,
+                                  op: anime.songs?.op ? { ...anime.songs.op, rating } : undefined,
                                 },
                               }),
                               async (anime) => {
@@ -584,8 +620,12 @@ export function AnimeDetailModal({
                   <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1">
-                        <p className="font-bold text-sm dark:text-white">{selectedAnime.songs.ed.title}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{selectedAnime.songs.ed.artist}</p>
+                        <p className="font-bold text-sm dark:text-white">
+                          {selectedAnime.songs.ed.title}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          {selectedAnime.songs.ed.artist}
+                        </p>
                       </div>
                       <button
                         onClick={async () => {
@@ -617,7 +657,10 @@ export function AnimeDetailModal({
                         }}
                         className="text-xl"
                       >
-                        <Heart className={`w-5 h-5 ${selectedAnime.songs.ed.isFavorite ? 'fill-[#e879d4] text-[#e879d4]' : 'text-gray-400'}`} aria-hidden />
+                        <Heart
+                          className={`w-5 h-5 ${selectedAnime.songs.ed.isFavorite ? 'fill-[#e879d4] text-[#e879d4]' : 'text-gray-400'}`}
+                          aria-hidden
+                        />
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -630,9 +673,7 @@ export function AnimeDetailModal({
                                 ...anime,
                                 songs: {
                                   ...anime.songs,
-                                  ed: anime.songs?.ed
-                                    ? { ...anime.songs.ed, rating }
-                                    : undefined,
+                                  ed: anime.songs?.ed ? { ...anime.songs.ed, rating } : undefined,
                                 },
                               }),
                               async (anime) => {
@@ -695,25 +736,28 @@ export function AnimeDetailModal({
             </div>
 
             {/* 公式サイトリンク */}
-            {anilistDetail && (() => {
-              const officialSiteUrl = getOfficialSiteUrl(anilistDetail);
-              return officialSiteUrl ? (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">公式サイト</p>
-                  <div className="flex justify-center">
-                    <a
-                      href={officialSiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      <ExternalLink className="w-4 h-4" />
+            {anilistDetail &&
+              (() => {
+                const officialSiteUrl = getOfficialSiteUrl(anilistDetail);
+                return officialSiteUrl ? (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center font-medium">
                       公式サイト
-                    </a>
+                    </p>
+                    <div className="flex justify-center">
+                      <a
+                        href={officialSiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        公式サイト
+                      </a>
+                    </div>
                   </div>
-                </div>
-              ) : null;
-            })()}
+                ) : null;
+              })()}
 
             {/* 名言 */}
             <div className="mb-4">
@@ -760,7 +804,13 @@ export function AnimeDetailModal({
                     <button
                       onClick={async () => {
                         if (!newQuoteText.trim()) return;
-                        const newQuotes = [...(selectedAnime.quotes || []), { text: newQuoteText.trim(), character: newQuoteCharacter.trim() || undefined }];
+                        const newQuotes = [
+                          ...(selectedAnime.quotes || []),
+                          {
+                            text: newQuoteText.trim(),
+                            character: newQuoteCharacter.trim() || undefined,
+                          },
+                        ];
                         await handleUpdateAnime(
                           (anime) => ({ ...anime, quotes: newQuotes }),
                           async (anime) => {
@@ -795,11 +845,14 @@ export function AnimeDetailModal({
                     >
                       <p className="text-sm dark:text-white mb-1">「{quote.text}」</p>
                       {quote.character && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400">— {quote.character}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          — {quote.character}
+                        </p>
                       )}
                       <button
                         onClick={async () => {
-                          const updatedQuotes = selectedAnime.quotes?.filter((_, i) => i !== index) || [];
+                          const updatedQuotes =
+                            selectedAnime.quotes?.filter((_, i) => i !== index) || [];
                           await handleUpdateAnime(
                             (anime) => ({ ...anime, quotes: updatedQuotes }),
                             async (anime) => {
@@ -820,7 +873,9 @@ export function AnimeDetailModal({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">名言が登録されていません</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">
+                  名言が登録されていません
+                </p>
               )}
             </div>
 
@@ -832,7 +887,7 @@ export function AnimeDetailModal({
                       showToast('ログインが必要です', 'error');
                       return;
                     }
-                    
+
                     // アニメを積みアニメに追加（AniList IDはないので、タイトルと画像で追加）
                     // AniList IDは後で検索できるように、-1を設定（AniList ID未設定のマーカー）
                     try {
@@ -844,7 +899,11 @@ export function AnimeDetailModal({
                       showToast('積みアニメに追加しました');
                     } catch (error) {
                       const normalizedError = normalizeError(error);
-                      logger.error('積みアニメの追加に失敗しました', normalizedError, 'AnimeDetailModal');
+                      logger.error(
+                        '積みアニメの追加に失敗しました',
+                        normalizedError,
+                        'AnimeDetailModal'
+                      );
                       showToast('積みアニメの追加に失敗しました', 'error');
                     }
                   }}
@@ -870,11 +929,15 @@ export function AnimeDetailModal({
                         }
                       } catch (error) {
                         const normalizedError = normalizeError(error);
-                        logger.error('Supabaseからのアニメ削除に失敗しました', normalizedError, 'AnimeDetailModal');
+                        logger.error(
+                          'Supabaseからのアニメ削除に失敗しました',
+                          normalizedError,
+                          'AnimeDetailModal'
+                        );
                       }
                     }
 
-                    const updatedSeasons = seasons.map(season => ({
+                    const updatedSeasons = seasons.map((season) => ({
                       ...season,
                       animes: season.animes.filter((anime) => anime.id !== selectedAnime.id),
                     }));
@@ -914,4 +977,3 @@ export function AnimeDetailModal({
     </div>
   );
 }
-

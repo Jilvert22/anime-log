@@ -8,32 +8,32 @@ import { StarRating } from './StarRating';
 import { ratingLabels, availableTags } from '../constants';
 import { translateGenre } from '../utils/helpers';
 
-function AnimeCardComponent({ 
-  anime, 
+function AnimeCardComponent({
+  anime,
   onClick,
-  priority = false 
-}: { 
-  anime: Anime; 
+  priority = false,
+}: {
+  anime: Anime;
   onClick: () => void;
   priority?: boolean;
 }) {
   const rating = ratingLabels[anime.rating];
   const rewatchCount = anime.rewatchCount ?? 0;
   const [imageError, setImageError] = useState(false);
-  
+
   // imageがURLか絵文字かを判定（httpまたはhttpsで始まる場合）
   const isImageUrl = useMemo(
     () => anime.image && (anime.image.startsWith('http://') || anime.image.startsWith('https://')),
     [anime.image]
   );
-  
+
   // 画像エラー時のフォールバック処理
   const handleImageError = useCallback(() => {
     setImageError(true);
   }, []);
-  
+
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-white dark:bg-gray-800 rounded-2xl shadow-md dark:shadow-gray-900/50 overflow-hidden cursor-pointer hover:scale-105 hover:shadow-2xl transition-all relative"
     >
@@ -43,14 +43,14 @@ function AnimeCardComponent({
           <RotateCcw className="w-3 h-3 text-white" aria-hidden />
           <span className="text-white text-xs font-bold">{rewatchCount}周</span>
         </div>
-        
+
         {/* 視聴済みチェックマーク */}
         {anime.watched && (
           <div className="absolute top-2 right-2 bg-green-500 rounded-full w-6 h-6 flex items-center justify-center z-10">
             <span className="text-white text-xs font-bold">✓</span>
           </div>
         )}
-        
+
         {/* 画像または絵文字を表示 */}
         {isImageUrl && !imageError ? (
           <Image
@@ -60,7 +60,7 @@ function AnimeCardComponent({
             className="object-cover"
             sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
             priority={priority}
-            loading={priority ? "eager" : "lazy"}
+            loading={priority ? 'eager' : 'lazy'}
             unoptimized
             onError={handleImageError}
           />
@@ -90,7 +90,7 @@ function AnimeCardComponent({
         {anime.tags && anime.tags.length > 0 && (
           <div className="flex gap-1 mt-2 flex-wrap">
             {anime.tags.slice(0, 2).map((tag, index) => {
-              const tagInfo = availableTags.find(t => t.value === tag);
+              const tagInfo = availableTags.find((t) => t.value === tag);
               // タグがavailableTagsにない場合は、ジャンル翻訳を試す
               const displayLabel = tagInfo?.label || translateGenre(tag) || tag;
               return (

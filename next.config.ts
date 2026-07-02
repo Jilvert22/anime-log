@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 // @ts-expect-error - next-pwa doesn't have type definitions
-import withPWA from "next-pwa";
-import bundleAnalyzer from "@next/bundle-analyzer";
+import withPWA from 'next-pwa';
+import bundleAnalyzer from '@next/bundle-analyzer';
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -33,9 +33,12 @@ const nextConfig: NextConfig = {
   // コンパイラ最適化
   compiler: {
     // 本番環境でのconsole.logを削除
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'],
-    } : false,
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? {
+            exclude: ['error', 'warn'],
+          }
+        : false,
   },
   // 実験的な機能（パフォーマンス改善）
   experimental: {
@@ -131,7 +134,8 @@ const pwaConfig = withPWA({
     },
     // 7. 同一オリジンのページ - NetworkFirst
     {
-      urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) => sameOrigin && !url.pathname.startsWith('/api/'),
+      urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
+        sameOrigin && !url.pathname.startsWith('/api/'),
       handler: 'NetworkFirst',
       options: {
         cacheName: 'pages',

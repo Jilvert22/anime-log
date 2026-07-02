@@ -2,7 +2,8 @@
  * アニメの放送開始日を表示用文字列に整形するユーティリティ
  */
 
-type FuzzyDate = { year: number | null; month: number | null; day?: number | null } | null | undefined;
+type FuzzyDate =
+  { year: number | null; month: number | null; day?: number | null } | null | undefined;
 
 /**
  * AniList の startDate を「7/3〜」のような短縮形式に整形する。

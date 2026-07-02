@@ -21,11 +21,11 @@ import type { User, Session } from '@supabase/supabase-js';
 export async function getSession(): Promise<Session | null> {
   try {
     const { data, error } = await supabase.auth.getSession();
-    
+
     if (error) {
       throw new SupabaseError(translateSupabaseError(error), undefined, error);
     }
-    
+
     return data.session;
   } catch (error) {
     logError(error, 'getSession');
@@ -39,11 +39,11 @@ export async function getSession(): Promise<Session | null> {
 export async function getCurrentUser(): Promise<User | null> {
   try {
     const { data, error } = await supabase.auth.getUser();
-    
+
     if (error) {
       throw new SupabaseError(translateSupabaseError(error), undefined, error);
     }
-    
+
     return data.user;
   } catch (error) {
     logError(error, 'getCurrentUser');
@@ -56,11 +56,11 @@ export async function getCurrentUser(): Promise<User | null> {
  */
 export async function requireAuth(): Promise<User> {
   const user = await getCurrentUser();
-  
+
   if (!user) {
     throw new AuthenticationError();
   }
-  
+
   return user;
 }
 
@@ -75,20 +75,20 @@ export async function signInWithPassword(
     if (!email || !password) {
       throw new AuthenticationError('メールアドレスとパスワードを入力してください');
     }
-    
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    
+
     if (error) {
       throw new AuthenticationError(translateSupabaseError(error), error);
     }
-    
+
     if (!data.user || !data.session) {
       throw new AuthenticationError('ログインに失敗しました');
     }
-    
+
     return {
       user: data.user,
       session: data.session,
@@ -110,15 +110,14 @@ export async function signUp(
     if (!email || !password) {
       throw new AuthenticationError('メールアドレスとパスワードを入力してください');
     }
-    
+
     if (password.length < 6) {
       throw new AuthenticationError('パスワードは6文字以上で入力してください');
     }
-    
+
     // メール確認後のリダイレクトURLを設定
-    const redirectTo = typeof window !== 'undefined' 
-      ? `${window.location.origin}/auth/callback`
-      : undefined;
+    const redirectTo =
+      typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined;
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -127,11 +126,11 @@ export async function signUp(
         emailRedirectTo: redirectTo,
       },
     });
-    
+
     if (error) {
       throw new AuthenticationError(translateSupabaseError(error), error);
     }
-    
+
     return {
       user: data.user,
       session: data.session,
@@ -148,7 +147,7 @@ export async function signUp(
 export async function signOut(): Promise<void> {
   try {
     const { error } = await supabase.auth.signOut();
-    
+
     if (error) {
       throw new SupabaseError(translateSupabaseError(error), undefined, error);
     }
@@ -161,19 +160,16 @@ export async function signOut(): Promise<void> {
 /**
  * パスワードリセットメールを送信
  */
-export async function resetPasswordForEmail(
-  email: string,
-  redirectTo?: string
-): Promise<void> {
+export async function resetPasswordForEmail(email: string, redirectTo?: string): Promise<void> {
   try {
     if (!email) {
       throw new AuthenticationError('メールアドレスを入力してください');
     }
-    
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectTo || `${window.location.origin}/reset-password`,
     });
-    
+
     if (error) {
       throw new SupabaseError(translateSupabaseError(error), undefined, error);
     }
@@ -186,21 +182,18 @@ export async function resetPasswordForEmail(
 /**
  * ユーザー情報を更新
  */
-export async function updateUser(updates: {
-  email?: string;
-  password?: string;
-}): Promise<User> {
+export async function updateUser(updates: { email?: string; password?: string }): Promise<User> {
   try {
     const { data, error } = await supabase.auth.updateUser(updates);
-    
+
     if (error) {
       throw new SupabaseError(translateSupabaseError(error), undefined, error);
     }
-    
+
     if (!data.user) {
       throw new AuthenticationError('ユーザー情報の更新に失敗しました');
     }
-    
+
     return data.user;
   } catch (error) {
     logError(error, 'updateUser');
@@ -216,7 +209,7 @@ export async function updateEmail(newEmail: string): Promise<User> {
     if (!newEmail || !newEmail.includes('@')) {
       throw new AuthenticationError('有効なメールアドレスを入力してください');
     }
-    
+
     return await updateUser({ email: newEmail });
   } catch (error) {
     logError(error, 'updateEmail');
@@ -232,7 +225,7 @@ export async function updatePassword(newPassword: string): Promise<User> {
     if (!newPassword || newPassword.length < 6) {
       throw new AuthenticationError('パスワードは6文字以上で入力してください');
     }
-    
+
     return await updateUser({ password: newPassword });
   } catch (error) {
     logError(error, 'updatePassword');
@@ -254,7 +247,7 @@ export function onAuthStateChange(
     } = supabase.auth.onAuthStateChange((event, session) => {
       callback(event, session);
     });
-    
+
     return () => {
       subscription.unsubscribe();
     };
@@ -264,4 +257,3 @@ export function onAuthStateChange(
     return () => {};
   }
 }
-

@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 // ============================================================
@@ -62,23 +55,26 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   const toastIdRef = useRef(0);
 
   const dismissToast = useCallback((id: number) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = 'success') => {
-    const id = ++toastIdRef.current;
-    setToasts(prev => [...prev.slice(-2), { id, message, type }]);
-    setTimeout(() => dismissToast(id), TOAST_DURATION_MS);
-  }, [dismissToast]);
+  const showToast = useCallback(
+    (message: string, type: ToastType = 'success') => {
+      const id = ++toastIdRef.current;
+      setToasts((prev) => [...prev.slice(-2), { id, message, type }]);
+      setTimeout(() => dismissToast(id), TOAST_DURATION_MS);
+    },
+    [dismissToast]
+  );
 
   const confirmDialog = useCallback((options: ConfirmOptions) => {
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve) => {
       setConfirmState({ ...options, resolve });
     });
   }, []);
 
   const closeConfirm = useCallback((ok: boolean) => {
-    setConfirmState(prev => {
+    setConfirmState((prev) => {
       prev?.resolve(ok);
       return null;
     });
@@ -91,7 +87,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
       {/* トースト */}
       {toasts.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm pointer-events-none">
-          {toasts.map(toast => (
+          {toasts.map((toast) => (
             <div
               key={toast.id}
               role="status"
@@ -125,7 +121,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         >
           <div
             className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl"
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             role="alertdialog"
             aria-modal="true"
           >
