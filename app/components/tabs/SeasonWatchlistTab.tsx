@@ -24,7 +24,7 @@ import { Spinner } from '../common/Spinner';
 import { supabase } from '../../lib/supabase';
 import type { Anime } from '../../types';
 import SeasonCardForExport from './SeasonCardForExport';
-import { renderCardToBlob, shareOrDownloadImage } from '../../lib/share/cardExport';
+import { renderCardToBlob, shareOrDownloadImage, downloadImage } from '../../lib/share/cardExport';
 import { useUserProfileContext } from '../../contexts/UserProfileContext';
 import { formatStartDate } from '../../utils/animeDate';
 import { getStartSeason } from '../../utils/continuingAnime';
@@ -377,52 +377,83 @@ export default function SeasonWatchlistTab() {
   const { userName } = useUserProfileContext();
   const [isCardSaving, setIsCardSaving] = useState(false);
 
-  // 視聴予定カードを画像化して共有/保存する。
-  // 未ログイン(localStorageのみ)でも生成できるよう、プロフィール無しはブランドのみ表示。
-  const handleSaveCard = useCallback(async () => {
+  // 視聴予定カード用の画像 Blob を生成する。呼び出し側でシェア or ダウンロードを選ぶ。
+  // 「視聴予定 (planned) + 視聴中 (watching)」を含める。継続中作品も含める。
+  const buildSeasonCardBlob = useCallback(async () => {
+    const [planned, watching] = await Promise.all([
+      selectedSeason === 'current'
+        ? storage.getCurrentSeasonWatchlist('planned')
+        : storage.getNextSeasonWatchlist('planned'),
+      selectedSeason === 'current'
+        ? storage.getCurrentSeasonWatchlist('watching')
+        : storage.getNextSeasonWatchlist('watching'),
+    ]);
+    const items = [...planned, ...watching];
+    if (items.length === 0) return null;
+
+    const seasonLabel = `${getSeasonName(activeSeason.year, SEASON_QUARTER[activeSeason.season])} 視聴予定`;
+    const cardUserName = userName && userName !== 'ユーザー' ? userName : null;
+    const covers = items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      imageUrl: item.image,
+      isContinuing: item.isContinuing,
+      status: (item.status === 'planned' || item.status === 'watching' || item.status === 'completed')
+        ? item.status
+        : undefined,
+      startDate: item.start_date,
+    }));
+
+    const blob = await renderCardToBlob(
+      <SeasonCardForExport
+        seasonLabel={seasonLabel}
+        userName={cardUserName}
+        animeCount={items.length}
+        covers={covers}
+      />,
+    );
+    return { blob, seasonLabel, count: items.length };
+  }, [selectedSeason, storage, activeSeason.year, activeSeason.season, userName]);
+
+  const handleDownloadCard = useCallback(async () => {
     setIsCardSaving(true);
     try {
-      // 画面のフィルタに依存せず、選択中シーズンの「視聴予定(planned)」を直接取得する
-      const planned = selectedSeason === 'current'
-        ? await storage.getCurrentSeasonWatchlist('planned')
-        : await storage.getNextSeasonWatchlist('planned');
-
-      if (planned.length === 0) {
-        showToast('視聴予定がありません', 'error');
+      const result = await buildSeasonCardBlob();
+      if (!result) {
+        showToast('視聴予定・視聴中のアニメがありません', 'error');
         return;
       }
-
-      const seasonLabel = `${getSeasonName(activeSeason.year, SEASON_QUARTER[activeSeason.season])} 視聴予定`;
-      // 'ユーザー' は未設定時の既定値なので名前なし扱い（未ログインは匿名カード）
-      const cardUserName = userName && userName !== 'ユーザー' ? userName : null;
-      const covers = planned.slice(0, 12).map((item) => ({
-        id: item.id,
-        title: item.title,
-        imageUrl: item.image,
-      }));
-
-      const blob = await renderCardToBlob(
-        <SeasonCardForExport
-          seasonLabel={seasonLabel}
-          userName={cardUserName}
-          animeCount={planned.length}
-          covers={covers}
-        />,
-      );
-
-      const result = await shareOrDownloadImage(blob, `anime-season-${Date.now()}.png`, {
-        title: seasonLabel,
-        text: `${seasonLabel} #アニメログ`,
-      });
-      if (result === 'cancelled') return;
-      showToast(result === 'shared' ? 'シェアしました' : '画像を保存しました');
+      downloadImage(result.blob, `anime-season-${Date.now()}.png`);
+      showToast('画像を保存しました');
     } catch (error) {
       console.error('予定カードの生成に失敗:', error);
       showToast('カードの生成に失敗しました', 'error');
     } finally {
       setIsCardSaving(false);
     }
-  }, [selectedSeason, storage, activeSeason.year, activeSeason.season, userName, showToast]);
+  }, [buildSeasonCardBlob, showToast]);
+
+  const handleShareCard = useCallback(async () => {
+    setIsCardSaving(true);
+    try {
+      const result = await buildSeasonCardBlob();
+      if (!result) {
+        showToast('視聴予定・視聴中のアニメがありません', 'error');
+        return;
+      }
+      const outcome = await shareOrDownloadImage(result.blob, `anime-season-${Date.now()}.png`, {
+        title: result.seasonLabel,
+        text: `${result.seasonLabel} #アニメログ`,
+      });
+      if (outcome === 'cancelled') return;
+      showToast(outcome === 'shared' ? 'シェアしました' : '画像を保存しました');
+    } catch (error) {
+      console.error('予定カードの生成に失敗:', error);
+      showToast('カードの生成に失敗しました', 'error');
+    } finally {
+      setIsCardSaving(false);
+    }
+  }, [buildSeasonCardBlob, showToast]);
 
   // 視聴済みモーダルを開く
   // クールの初期値はwatchlist側のシーズン情報を優先(ユーザーの入力ミス防止)
@@ -772,14 +803,23 @@ export default function SeasonWatchlistTab() {
         </p>
       </div>
 
-      {/* 視聴予定カードを保存・シェア */}
-      <button
-        onClick={handleSaveCard}
-        disabled={isCardSaving}
-        className="w-full mb-4 px-4 py-3 rounded-xl font-bold bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-300 dark:border-gray-600 shadow-md hover:border-[#e879d4] active:border-[#e879d4] hover:shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] font-mixed disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isCardSaving ? '作成中...' : '視聴予定カードを保存・シェア'}
-      </button>
+      {/* 視聴予定カードのダウンロード / シェア */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={handleDownloadCard}
+          disabled={isCardSaving}
+          className="flex-1 px-4 py-3 rounded-xl font-bold bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-300 dark:border-gray-600 shadow-md hover:border-[#e879d4] active:border-[#e879d4] hover:shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] font-mixed disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isCardSaving ? '作成中...' : '画像を保存'}
+        </button>
+        <button
+          onClick={handleShareCard}
+          disabled={isCardSaving}
+          className="flex-1 px-4 py-3 rounded-xl font-bold bg-[#e879d4] text-white shadow-md hover:bg-[#d666c1] active:bg-[#d666c1] hover:shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] font-mixed disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isCardSaving ? '作成中...' : 'シェア'}
+        </button>
+      </div>
 
       {/* シーズン切り替えタブ */}
       <div className="flex gap-2 mb-4" data-onboarding="step-3">
