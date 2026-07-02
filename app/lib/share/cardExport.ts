@@ -74,6 +74,11 @@ export async function renderCardToBlob(element: ReactElement): Promise<Blob> {
   }
 }
 
+/** 画像Blobを直接ダウンロードする (共有ダイアログを開かない) */
+export function downloadImage(blob: Blob, fileName: string): void {
+  downloadBlob(blob, fileName);
+}
+
 function downloadBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

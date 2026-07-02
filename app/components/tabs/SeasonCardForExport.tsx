@@ -1,34 +1,69 @@
 'use client';
 
 import { forwardRef } from 'react';
+import { formatStartDate } from '../../utils/animeDate';
+
+export interface SeasonCoverItem {
+  id: string;
+  title: string;
+  imageUrl: string | null;
+  isContinuing?: boolean;
+  status?: 'planned' | 'watching' | 'completed';
+  startDate?: { year: number | null; month: number | null; day?: number | null } | null;
+}
 
 export interface SeasonCardForExportProps {
-  /** 例: "2026年夏 視聴予定"（呼び出し側で組み立てる） */
+  /** 例: "2026年秋 視聴予定"（呼び出し側で組み立てる） */
   seasonLabel: string;
   /** ログインしていれば「〇〇の」を前置。未ログインは null/undefined */
   userName?: string | null;
-  /** 視聴予定の総数（covers は上限12でも、ここは全件数） */
+  /** 視聴予定の総数（covers は上限16でも、ここは全件数） */
   animeCount: number;
-  /** 上限12件のカバー画像 */
-  covers: { id: string; title: string; imageUrl: string | null }[];
+  /** 上限は内部で丸める。overflow時は最後のセルに「+N」を表示 */
+  covers: SeasonCoverItem[];
 }
 
-// 画像URLをプロキシ経由に変換（DNACardForExport と同方式・CORS汚染回避）
+// 画像URLをプロキシ経由に変換（外部URL のみ、内部パスはそのまま）
 const getProxiedUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
   if (url.startsWith('data:') || url.startsWith('/')) return url;
   return `/api/proxy-image?url=${encodeURIComponent(url)}`;
 };
 
+const MAX_COVERS = 12;
+
+// 作品数に応じたグリッドレイアウト。少作品時は列数を減らして余白を減らす。
+function getGridLayout(n: number): { cols: number; rows: number } {
+  if (n <= 1) return { cols: 1, rows: 1 };
+  if (n <= 2) return { cols: 2, rows: 1 };
+  if (n <= 3) return { cols: 3, rows: 1 };
+  if (n <= 4) return { cols: 2, rows: 2 };
+  if (n <= 6) return { cols: 3, rows: 2 };
+  if (n <= 9) return { cols: 3, rows: 3 };
+  return { cols: 4, rows: 3 }; // 10-12
+}
+
 /**
- * オフスクリーンで html2canvas に撮影させる用の「来期視聴予定カード」。
- * 1200×630（OGP標準）。絵文字を使わず文字＋図形のみ（html2canvasの豆腐回避）。
- * アカウント/プロフィールに依存せず、watchlist だけで描画できる（未ログインでも生成可）。
+ * オフスクリーンで html2canvas に撮影させる用の「シーズン視聴予定カード」。
+ * 1200×630（OGP標準）。動的グリッドで作品数に応じて列数調整。
+ * 継続中タグ・視聴中タグ・放送開始日を各カバーに重畳。
  */
 const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>(
   ({ seasonLabel, userName, animeCount, covers }, ref) => {
     const title = userName ? `${userName}の${seasonLabel}` : seasonLabel;
-    const items = covers.slice(0, 12);
+
+    // 上限を超えた場合は最後のセルを「+N」表示に置き換える
+    const overflow = covers.length > MAX_COVERS;
+    const shownCovers = overflow ? covers.slice(0, MAX_COVERS - 1) : covers.slice(0, MAX_COVERS);
+    const remaining = overflow ? covers.length - shownCovers.length : 0;
+
+    // グリッド計算 (overflow 表示の +1 セル分も含める)
+    const cellCount = shownCovers.length + (overflow ? 1 : 0);
+    const { cols, rows } = getGridLayout(cellCount);
+
+    // グリッドエリアの利用可能高さ (container 630 - padding 96 - header 90 - watermark 30 - 余白)
+    const gridAreaHeight = 400;
+    const rowHeight = Math.floor(gridAreaHeight / rows);
 
     const styles = {
       container: {
@@ -47,20 +82,15 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
         display: 'flex',
         alignItems: 'center',
         gap: 16,
-        marginBottom: 28,
+        marginBottom: 24,
       },
       logo: {
-        width: 52,
-        height: 52,
-        background: 'rgba(255, 255, 255, 0.25)',
+        width: 56,
+        height: 56,
         borderRadius: 12,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 26,
-        color: '#ffffff',
-        fontWeight: 'bold' as const,
+        objectFit: 'cover' as const,
         flexShrink: 0,
+        boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
       },
       headerText: {
         display: 'flex',
@@ -73,7 +103,7 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
         letterSpacing: 2,
       },
       title: {
-        fontSize: 40,
+        fontSize: 36,
         fontWeight: 'bold' as const,
         color: '#ffffff',
       },
@@ -87,36 +117,93 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
         color: '#ffffff',
         flexShrink: 0,
       },
-      grid: {
+      gridWrapper: {
         flex: 1,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      grid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gridAutoRows: '222px',
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridAutoRows: `${rowHeight}px`,
         gap: 14,
-        alignContent: 'start' as const,
+        // 少作品時に横幅を絞って画像が縦伸びしないように
+        width: cols <= 2 ? `${cols * 260}px` : '100%',
+        maxWidth: '100%',
+      },
+      coverWrap: {
+        position: 'relative' as const,
+        width: '100%',
+        height: rowHeight,
+        borderRadius: 12,
+        overflow: 'hidden' as const,
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
       },
       cover: {
         width: '100%',
-        height: 222,
-        borderRadius: 12,
+        height: '100%',
         objectFit: 'cover' as const,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        border: '3px solid rgba(255, 255, 255, 0.25)',
+        display: 'block',
       },
       coverPlaceholder: {
         width: '100%',
-        height: 222,
-        borderRadius: 12,
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
-        border: '3px solid rgba(255, 255, 255, 0.25)',
+        height: '100%',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'rgba(255, 255, 255, 0.5)',
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
+        color: 'rgba(255, 255, 255, 0.6)',
         fontSize: 13,
         textAlign: 'center' as const,
         padding: 8,
         boxSizing: 'border-box' as const,
+      },
+      badgeContinuing: {
+        position: 'absolute' as const,
+        top: 6,
+        left: 6,
+        padding: '3px 8px',
+        fontSize: 11,
+        fontWeight: 'bold' as const,
+        color: '#ffffff',
+        backgroundColor: 'rgb(147, 51, 234)', // purple-600
+        borderRadius: 4,
+        letterSpacing: 1,
+      },
+      badgeWatching: {
+        position: 'absolute' as const,
+        top: 6,
+        left: 6,
+        padding: '3px 8px',
+        fontSize: 11,
+        fontWeight: 'bold' as const,
+        color: '#ffffff',
+        backgroundColor: 'rgb(234, 179, 8)', // yellow-500
+        borderRadius: 4,
+        letterSpacing: 1,
+      },
+      startDate: {
+        position: 'absolute' as const,
+        bottom: 6,
+        left: 6,
+        padding: '2px 6px',
+        fontSize: 11,
+        fontWeight: 'bold' as const,
+        color: '#ffffff',
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+        borderRadius: 4,
+      },
+      overflowBadge: {
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
+        fontSize: rows >= 3 ? 28 : 44,
+        fontWeight: 'bold' as const,
+        color: '#ffffff',
+        backgroundColor: 'rgba(255, 255, 255, 0.18)',
+        borderRadius: 12,
       },
       watermark: {
         position: 'absolute' as const,
@@ -124,7 +211,7 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
         right: 48,
         fontSize: 18,
         fontWeight: 'bold' as const,
-        color: 'rgba(255, 255, 255, 0.6)',
+        color: 'rgba(255, 255, 255, 0.7)',
         letterSpacing: 1,
       },
     };
@@ -132,7 +219,7 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
     return (
       <div ref={ref} style={styles.container}>
         <div style={styles.header}>
-          <div style={styles.logo}>A</div>
+          <img src="/icon-192.png" alt="アニメログ" style={styles.logo} crossOrigin="anonymous" />
           <div style={styles.headerText}>
             <span style={styles.brand}>アニメログ</span>
             <span style={styles.title}>{title}</span>
@@ -140,23 +227,41 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
           <div style={styles.countBadge}>全{animeCount}作品</div>
         </div>
 
-        <div style={styles.grid}>
-          {items.map((item, index) => {
-            const proxiedUrl = getProxiedUrl(item.imageUrl);
-            return proxiedUrl ? (
-              <img
-                key={item.id || index}
-                src={proxiedUrl}
-                alt={item.title}
-                style={styles.cover}
-                crossOrigin="anonymous"
-              />
-            ) : (
-              <div key={item.id || index} style={styles.coverPlaceholder}>
-                {item.title || 'No Image'}
+        <div style={styles.gridWrapper}>
+          <div style={styles.grid}>
+            {shownCovers.map((item, index) => {
+              const proxiedUrl = getProxiedUrl(item.imageUrl);
+              const startDateText = formatStartDate(item.startDate);
+              return (
+                <div key={item.id || index} style={styles.coverWrap}>
+                  {proxiedUrl ? (
+                    <img
+                      src={proxiedUrl}
+                      alt={item.title}
+                      style={styles.cover}
+                      crossOrigin="anonymous"
+                    />
+                  ) : (
+                    <div style={styles.coverPlaceholder}>{item.title || 'No Image'}</div>
+                  )}
+                  {item.isContinuing && (
+                    <span style={styles.badgeContinuing}>継続中</span>
+                  )}
+                  {!item.isContinuing && item.status === 'watching' && (
+                    <span style={styles.badgeWatching}>視聴中</span>
+                  )}
+                  {startDateText && (
+                    <span style={styles.startDate}>{startDateText}</span>
+                  )}
+                </div>
+              );
+            })}
+            {overflow && (
+              <div style={styles.coverWrap}>
+                <div style={styles.overflowBadge}>+{remaining}</div>
               </div>
-            );
-          })}
+            )}
+          </div>
         </div>
 
         <div style={styles.watermark}>animelog.jp</div>
