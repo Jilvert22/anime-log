@@ -85,8 +85,6 @@ export function getStartSeason(media: AniListMedia): { year: number; season: Sea
  *      - status === 'RELEASING' (副シグナル — まだ放送中)
  *      - episodes == null (安全側推定 — 話数不明だが過去開始)
  *   5. それ以外は false
- *
- * TODO: ここから下の本体ロジックを永安さんに書いてもらう
  */
 export function isContinuingAnime(
   media: AniListMedia,

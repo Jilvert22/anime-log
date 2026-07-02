@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack && node scripts/inject-push-notifications.js",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --max-warnings 141",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
@@ -45,6 +45,7 @@
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
     "jsdom": "^27.4.0",
+    "prettier": "3.9.4",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
     "typescript": "^5",

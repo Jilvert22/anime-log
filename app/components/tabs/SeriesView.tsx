@@ -39,7 +39,7 @@ export function SeriesView({
 }: SeriesViewProps) {
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
   const [expandedStandalone, setExpandedStandalone] = useState(false);
-  const [suggestedSeasons, setSuggestedSeasons] = useState<Map<string, any[]>>(new Map());
+  const [suggestedSeasons, setSuggestedSeasons] = useState<Map<string, AniListSearchResult[]>>(new Map());
   const [loadingSuggestions, setLoadingSuggestions] = useState<Set<string>>(new Set());
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(() => {
     // localStorageから非表示にした提案を読み込む

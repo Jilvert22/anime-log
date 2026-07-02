@@ -23,7 +23,7 @@ export function useOnboarding() {
   // 初期化時にlocalStorageから状態を読み込む
   useEffect(() => {
     // テストモードの場合はオンボーディングを無効化
-    const isTestMode = typeof window !== 'undefined' && (window as any).__TEST_MODE__;
+    const isTestMode = typeof window !== 'undefined' && window.__TEST_MODE__;
     if (isTestMode) {
       setState({
         currentStep: null,
@@ -118,7 +118,7 @@ export function useOnboarding() {
   }, []);
 
   // テストモードの場合は常にオンボーディングを無効化
-  const isTestMode = typeof window !== 'undefined' && (window as any).__TEST_MODE__;
+  const isTestMode = typeof window !== 'undefined' && window.__TEST_MODE__;
   
   return {
     currentStep: isTestMode ? null : state.currentStep,

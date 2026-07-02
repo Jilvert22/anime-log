@@ -29,7 +29,7 @@ export function usePWAInstall() {
 
     // スタンドアロンモード（既にインストール済み）判定
     const standalone = window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
+      window.navigator.standalone === true;
     setIsStandalone(standalone);
     setIsInstalled(standalone);
 

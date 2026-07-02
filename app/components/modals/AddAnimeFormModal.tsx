@@ -283,7 +283,7 @@ export function AddAnimeFormModal({
                       );
                       
                       // 重複チェック（テスト環境ではスキップ）
-                      const isTestEnv = process.env.NODE_ENV === 'test' || (typeof window !== 'undefined' && (window as any).__TEST_MODE__);
+                      const isTestEnv = process.env.NODE_ENV === 'test' || (typeof window !== 'undefined' && window.__TEST_MODE__);
                       const filteredAnimes = isTestEnv 
                         ? selectedAnimes 
                         : selectedAnimes.filter(result => {
@@ -565,7 +565,7 @@ export function AddAnimeFormModal({
                     );
                     
                     // 重複チェック（テスト環境ではスキップ）
-                    const isTestEnv = process.env.NODE_ENV === 'test' || (typeof window !== 'undefined' && (window as any).__TEST_MODE__);
+                    const isTestEnv = process.env.NODE_ENV === 'test' || (typeof window !== 'undefined' && window.__TEST_MODE__);
                     const filteredAnimes = isTestEnv 
                       ? selectedAnimes 
                       : selectedAnimes.filter(result => {

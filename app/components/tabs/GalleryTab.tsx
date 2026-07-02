@@ -97,7 +97,7 @@ export function GalleryTab({
 
   // ソートされたアニメリスト
   const sortedAnimes = useMemo(() => {
-    let animes = selectedFolder 
+    const animes = selectedFolder
       ? allAnimes.filter(a => selectedFolder.animeIds.includes(a.id))
       : [...allAnimes];
     

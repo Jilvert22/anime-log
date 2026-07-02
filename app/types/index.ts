@@ -110,7 +110,7 @@ export type AniListSearchResult = AniListMedia;
 // Supabaseクライアント型（Database型が定義されていない場合はanyを使用）
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export type SupabaseClientType = SupabaseClient<any>;
+export type SupabaseClientType = SupabaseClient;
 
 // ユーザー型（@supabase/supabase-jsから）
 import type { User } from '@supabase/supabase-js';

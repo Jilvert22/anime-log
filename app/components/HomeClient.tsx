@@ -31,9 +31,7 @@ import { useOnboardingContext } from '../contexts/OnboardingContext';
 import { HomeModals } from './HomeModals';
 
 
-interface HomeClientProps {
-  // Server Componentで取得した初期データがあればここに追加
-}
+// Server Componentで取得した初期データを受け取る場合はここに Props 型を追加する
 
 // 内側のコンポーネント（ModalProvider内でuseModalContextを使用）
 function HomeClientInner() {
@@ -234,7 +232,7 @@ function HomeClientInner() {
 }
 
 // 外側のコンポーネント（ModalProviderでラップ）
-export default function HomeClient({}: HomeClientProps) {
+export default function HomeClient() {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
 
   return (

@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
-// @ts-ignore - next-pwa doesn't have type definitions
+// @ts-expect-error - next-pwa doesn't have type definitions
 import withPWA from "next-pwa";
-// @ts-ignore - @next/bundle-analyzer doesn't have type definitions
 import bundleAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = bundleAnalyzer({
