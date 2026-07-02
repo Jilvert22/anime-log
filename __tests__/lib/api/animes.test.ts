@@ -45,12 +45,10 @@ function makeChain(): Chain {
   return chain;
 }
 
-const fromMock = vi.fn((_table: string) => makeChain());
+const { fromMock } = vi.hoisted(() => ({ fromMock: vi.fn() }));
 
 vi.mock('../../../app/lib/supabase', () => ({
-  supabase: {
-    from: (table: string) => fromMock(table),
-  },
+  supabase: { from: fromMock },
 }));
 
 import {
@@ -77,7 +75,8 @@ function anime(overrides: Partial<Anime> = {}): Anime {
 beforeEach(() => {
   terminal.data = null;
   terminal.error = null;
-  fromMock.mockClear();
+  fromMock.mockReset();
+  fromMock.mockImplementation(() => makeChain());
 });
 
 describe('getAnimesByUser', () => {

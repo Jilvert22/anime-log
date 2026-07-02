@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { Anime, Season } from '../../types';
-import { supabase } from '../../lib/supabase';
+import { updateAnimeFields } from '../../lib/api/animes';
 
 export function SongModal({
   show,
@@ -77,13 +77,7 @@ export function SongModal({
             ...selectedAnime.songs,
             [songType]: newSong,
           };
-          const { error } = await supabase
-            .from('animes')
-            .update({ songs: updatedSongs })
-            .eq('id', selectedAnime.id)
-            .eq('user_id', user.id);
-
-          if (error) throw error;
+          await updateAnimeFields(selectedAnime.id, user.id, { songs: updatedSongs });
         } catch (error) {
           console.error('Failed to save anime song to Supabase:', error);
         }

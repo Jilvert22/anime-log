@@ -88,16 +88,15 @@ export async function insertAnime(
 }
 
 /**
- * 複数アニメを一括追加し、挿入後の行を返す
+ * 変換済みの行データを一括追加し、挿入後の行を返す。
+ * 各行が異なるシーズンを持つ場合など、呼び出し側で animeToSupabase 済みの
+ * ペイロード配列を渡す (単一シーズンの Anime 追加は insertAnime を使う)。
  */
-export async function insertAnimes(
-  animes: Anime[],
-  seasonName: string,
-  userId: string
+export async function insertAnimeRows(
+  rows: Partial<SupabaseAnimeRow>[]
 ): Promise<SupabaseAnimeRow[]> {
   try {
-    const payloads = animes.map((anime) => animeToSupabase(anime, seasonName, userId));
-    const { data, error } = await supabase.from('animes').insert(payloads).select();
+    const { data, error } = await supabase.from('animes').insert(rows).select();
 
     if (error) {
       throw new SupabaseError(
@@ -109,7 +108,7 @@ export async function insertAnimes(
 
     return (data as SupabaseAnimeRow[]) || [];
   } catch (error) {
-    logError(error, 'insertAnimes');
+    logError(error, 'insertAnimeRows');
     throw normalizeError(error);
   }
 }

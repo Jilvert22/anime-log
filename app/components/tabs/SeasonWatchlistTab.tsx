@@ -19,7 +19,6 @@ import {
 import {
   getCurrentSeason,
   getNextSeason,
-  animeToSupabase,
   sortSeasonsByTime,
   extractSeriesName,
   getSeasonName,
@@ -29,7 +28,7 @@ import { getBroadcastInfo, getAnimeDetail, type AniListMedia } from '../../lib/a
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
 import { Spinner } from '../common/Spinner';
-import { supabase } from '../../lib/supabase';
+import { insertAnime } from '../../lib/api/animes';
 import type { Anime } from '../../types';
 import SeasonCardForExport from './SeasonCardForExport';
 import { renderCardToBlob, shareOrDownloadImage, downloadImage } from '../../lib/share/cardExport';
@@ -651,9 +650,7 @@ export default function SeasonWatchlistTab() {
       newExpandedSeasons.add(seasonName);
       setExpandedSeasons(newExpandedSeasons);
 
-      const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
-      const { error } = await supabase.from('animes').insert(supabaseData).select();
-      if (error) throw error;
+      await insertAnime(newAnime, seasonName, user.id);
 
       await storage.removeFromWatchlist(selectedWatchlistItem.anilist_id);
       await loadWatchlist();

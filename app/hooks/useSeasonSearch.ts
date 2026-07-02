@@ -1,9 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../types';
-import { searchAnimeBySeason } from '../lib/api/anilist';
+import type { Anime, Season, User } from '../types';
 import { translateGenre, sortSeasonsByTime, getNextSeason, JA_TO_SEASON } from '../utils/helpers';
 import { getBroadcastInfo } from '../lib/api/anilist';
-import { supabase } from '../lib/supabase';
+import { insertAnime } from '../lib/api/animes';
 import { useStorage } from './useStorage';
 import { useAnimeSearchWithStreaming } from './useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../lib/storage/types';
@@ -16,7 +15,6 @@ interface UseSeasonSearchParams {
   setSeasons: (seasons: Season[]) => void;
   user: User | null;
   extractSeriesName: (title: string) => string | undefined;
-  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => SupabaseAnimeRow;
 }
 
 export function useSeasonSearch({
@@ -25,7 +23,6 @@ export function useSeasonSearch({
   setSeasons,
   user,
   extractSeriesName,
-  animeToSupabase,
 }: UseSeasonSearchParams) {
   const [seasonSearchResults, setSeasonSearchResults] = useState<
     Map<string, AniListMediaWithStreaming[]>
@@ -183,12 +180,11 @@ export function useSeasonSearch({
 
         // ログインしている場合はSupabaseに保存
         if (user) {
-          const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
-          const { error } = await supabase.from('animes').insert(supabaseData);
-
-          if (error) {
+          try {
+            await insertAnime(newAnime, seasonName, user.id);
+          } catch (error) {
             console.error('アニメの追加に失敗しました:', error);
-            const errorMessage = error.message || '不明なエラー';
+            const errorMessage = error instanceof Error ? error.message : '不明なエラー';
             alert(
               `アニメの追加に失敗しました${errorMessage !== '不明なエラー' ? `: ${errorMessage}` : ''}`
             );
@@ -242,7 +238,7 @@ export function useSeasonSearch({
         );
       }
     },
-    [user, seasons, setSeasons, extractSeriesName, animeToSupabase, setSeasonSearchResults]
+    [user, seasons, setSeasons, extractSeriesName, setSeasonSearchResults]
   );
 
   // 積みアニメに追加

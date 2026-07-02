@@ -168,7 +168,6 @@ function HomeClientInner() {
             user={user}
             extractSeriesName={extractSeriesName}
             getSeasonName={getSeasonName}
-            animeToSupabase={animeToSupabase}
             supabaseToAnime={supabaseToAnime}
           />
         )}

@@ -357,7 +357,6 @@ export default function CollectionSection(props: CollectionSectionProps) {
               setSelectedAnime={props.setSelectedAnime}
               setShowSongModal={props.setShowSongModal}
               user={props.user}
-              supabase={props.supabaseClient}
             />
           </CollectionDetail>
         )}

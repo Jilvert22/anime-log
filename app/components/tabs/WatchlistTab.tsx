@@ -14,9 +14,8 @@ import {
 import { useStorage } from '../../hooks/useStorage';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../../lib/storage/types';
-import { supabase } from '../../lib/supabase';
+import { insertAnime } from '../../lib/api/animes';
 import {
-  animeToSupabase,
   sortSeasonsByTime,
   extractSeriesName,
   getSeasonName,
@@ -373,11 +372,7 @@ export function WatchlistTab({
 
       // Supabaseに保存
       try {
-        const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
-
-        const { error } = await supabase.from('animes').insert(supabaseData).select();
-
-        if (error) throw error;
+        await insertAnime(newAnime, seasonName, user.id);
       } catch (error: unknown) {
         console.error('アニメの保存に失敗しました:', error);
         const errorMessage = error instanceof Error ? error.message : 'アニメの保存に失敗しました';
@@ -620,8 +615,7 @@ export function WatchlistTab({
 
         // Supabaseに保存
         try {
-          const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
-          await supabase.from('animes').insert(supabaseData).select();
+          await insertAnime(newAnime, seasonName, user.id);
         } catch (error) {
           console.error('アニメの保存に失敗しました:', error);
         }

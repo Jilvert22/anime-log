@@ -2,9 +2,10 @@
 import { Pencil, Trash2, Heart } from 'lucide-react';
 
 import { useState } from 'react';
-import type { Anime, Season, User, SupabaseClientType } from '../../types';
+import type { Anime, Season, User } from '../../types';
 import { StarRating } from '../StarRating';
 import { useFeedback } from '../../contexts/FeedbackContext';
+import { updateAnimeFields } from '../../lib/api/animes';
 
 export function MusicTab({
   allAnimes,
@@ -13,7 +14,6 @@ export function MusicTab({
   setSelectedAnime,
   setShowSongModal,
   user,
-  supabase,
 }: {
   allAnimes: Anime[];
   seasons: Season[];
@@ -21,7 +21,6 @@ export function MusicTab({
   setSelectedAnime: (anime: Anime | null) => void;
   setShowSongModal: (show: boolean) => void;
   user: User | null;
-  supabase: SupabaseClientType;
 }) {
   const [musicSearchQuery, setMusicSearchQuery] = useState('');
   const [musicFilterType, setMusicFilterType] = useState<'all' | 'op' | 'ed' | 'artist'>('all');
@@ -263,13 +262,9 @@ export function MusicTab({
                           // Supabaseを更新（ログイン時のみ）
                           if (user && anime) {
                             try {
-                              const { error } = await supabase
-                                .from('animes')
-                                .update({ songs: updatedSongs })
-                                .eq('id', song.animeId)
-                                .eq('user_id', user.id);
-
-                              if (error) throw error;
+                              await updateAnimeFields(song.animeId, user.id, {
+                                songs: updatedSongs,
+                              });
                             } catch (error) {
                               console.error('Supabaseでの曲の削除に失敗しました:', error);
                             }

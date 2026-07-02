@@ -49,7 +49,6 @@ export function HomeTab({
   user,
   extractSeriesName,
   getSeasonName,
-  animeToSupabase,
   supabaseToAnime,
 }: {
   homeSubTab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season';
@@ -61,7 +60,6 @@ export function HomeTab({
   user: User | null;
   extractSeriesName: (title: string) => string | undefined;
   getSeasonName: (season: string) => string;
-  animeToSupabase: (anime: Anime, seasonName: string, userId: string) => SupabaseAnimeRow;
   supabaseToAnime: (row: SupabaseAnimeRow) => Anime;
 }) {
   // Contextからアニメデータを取得
@@ -113,7 +111,6 @@ export function HomeTab({
     setSeasons,
     user,
     extractSeriesName,
-    animeToSupabase,
   });
 
   // 展開/折りたたみ関連のロジックをフックから取得
