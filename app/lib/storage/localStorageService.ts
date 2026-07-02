@@ -14,7 +14,7 @@ export class LocalStorageService implements IStorageService {
 
   private getWatchlistFromStorage(): WatchlistItem[] {
     if (!this.isClient()) return [];
-    
+
     try {
       const data = localStorage.getItem(WATCHLIST_KEY);
       return data ? JSON.parse(data) : [];
@@ -27,7 +27,7 @@ export class LocalStorageService implements IStorageService {
 
   private saveWatchlistToStorage(items: WatchlistItem[]): void {
     if (!this.isClient()) return;
-    
+
     try {
       localStorage.setItem(WATCHLIST_KEY, JSON.stringify(items));
     } catch (error) {
@@ -54,10 +54,10 @@ export class LocalStorageService implements IStorageService {
   }): Promise<boolean> {
     try {
       const items = this.getWatchlistFromStorage();
-      
+
       // 重複チェック（anilist_idが-1でない場合）
       if (item.anilist_id !== -1) {
-        const existing = items.find(i => i.anilist_id === item.anilist_id);
+        const existing = items.find((i) => i.anilist_id === item.anilist_id);
         if (existing) {
           // シーズン指定付きの追加で既存のシーズンが異なる場合は付け替えて「移動」
           // (積みアニメ→視聴予定への追加が黙って無視されるのを防ぐ。Supabase側と同じ挙動)
@@ -106,7 +106,7 @@ export class LocalStorageService implements IStorageService {
   async removeFromWatchlist(anilistId: number): Promise<boolean> {
     try {
       const items = this.getWatchlistFromStorage();
-      const filtered = items.filter(item => item.anilist_id !== anilistId);
+      const filtered = items.filter((item) => item.anilist_id !== anilistId);
       this.saveWatchlistToStorage(filtered);
       return true;
     } catch (error) {
@@ -131,8 +131,8 @@ export class LocalStorageService implements IStorageService {
   ): Promise<boolean> {
     try {
       const items = this.getWatchlistFromStorage();
-      const index = items.findIndex(item => item.anilist_id === anilistId);
-      
+      const index = items.findIndex((item) => item.anilist_id === anilistId);
+
       if (index === -1) return false;
 
       items[index] = {
@@ -152,7 +152,7 @@ export class LocalStorageService implements IStorageService {
   // 配信情報更新用メソッド
   updateStreamingInfo(id: string, streamingSites: string[]): void {
     const items = this.getWatchlistFromStorage();
-    const index = items.findIndex(item => item.id === id);
+    const index = items.findIndex((item) => item.id === id);
     if (index !== -1) {
       items[index].streaming_sites = streamingSites;
       items[index].streaming_updated_at = new Date().toISOString();
@@ -160,14 +160,11 @@ export class LocalStorageService implements IStorageService {
     }
   }
 
-  async updateWatchlistItemsStatus(
-    ids: string[],
-    status: WatchlistStatusValue
-  ): Promise<boolean> {
+  async updateWatchlistItemsStatus(ids: string[], status: WatchlistStatusValue): Promise<boolean> {
     try {
       const items = this.getWatchlistFromStorage();
-      
-      items.forEach(item => {
+
+      items.forEach((item) => {
         if (ids.includes(item.id)) {
           item.status = status;
         }
@@ -177,7 +174,11 @@ export class LocalStorageService implements IStorageService {
       return true;
     } catch (error) {
       const normalizedError = normalizeError(error);
-      logger.error('Failed to update watchlist items status', normalizedError, 'LocalStorageService');
+      logger.error(
+        'Failed to update watchlist items status',
+        normalizedError,
+        'LocalStorageService'
+      );
       return false;
     }
   }
@@ -185,7 +186,7 @@ export class LocalStorageService implements IStorageService {
   async deleteWatchlistItems(ids: string[]): Promise<boolean> {
     try {
       const items = this.getWatchlistFromStorage();
-      const filtered = items.filter(item => !ids.includes(item.id));
+      const filtered = items.filter((item) => !ids.includes(item.id));
       this.saveWatchlistToStorage(filtered);
       return true;
     } catch (error) {
@@ -201,13 +202,13 @@ export class LocalStorageService implements IStorageService {
     status?: WatchlistStatus
   ): Promise<WatchlistItem[]> {
     const items = this.getWatchlistFromStorage();
-    
+
     let filtered = items.filter(
-      item => item.season_year === year && item.season === season && item.status !== null
+      (item) => item.season_year === year && item.season === season && item.status !== null
     );
 
     if (status) {
-      filtered = filtered.filter(item => item.status === status);
+      filtered = filtered.filter((item) => item.status === status);
     }
 
     return filtered.sort((a, b) => {
@@ -217,17 +218,13 @@ export class LocalStorageService implements IStorageService {
     });
   }
 
-  async getCurrentSeasonWatchlist(
-    status?: WatchlistStatus
-  ): Promise<WatchlistItem[]> {
+  async getCurrentSeasonWatchlist(status?: WatchlistStatus): Promise<WatchlistItem[]> {
     const { getCurrentSeason } = await import('../../utils/helpers');
     const { year, season } = getCurrentSeason();
     return this.getSeasonWatchlist(year, season, status);
   }
 
-  async getNextSeasonWatchlist(
-    status?: WatchlistStatus
-  ): Promise<WatchlistItem[]> {
+  async getNextSeasonWatchlist(status?: WatchlistStatus): Promise<WatchlistItem[]> {
     const { getNextSeason } = await import('../../utils/helpers');
     const { year, season } = getNextSeason();
     return this.getSeasonWatchlist(year, season, status);
@@ -245,5 +242,3 @@ export class LocalStorageService implements IStorageService {
     }
   }
 }
-
-

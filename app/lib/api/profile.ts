@@ -42,16 +42,12 @@ export async function uploadAvatar(file: File): Promise<string> {
 
     // 既存のアバターを削除（オプション）
     try {
-      const { data: existingFiles } = await supabase.storage
-        .from('avatars')
-        .list(user.id);
+      const { data: existingFiles } = await supabase.storage.from('avatars').list(user.id);
 
       if (existingFiles && existingFiles.length > 0) {
         // 古いファイルを削除（最新の1つだけ保持する場合）
-        const filesToDelete = existingFiles.map(f => `${user.id}/${f.name}`);
-        await supabase.storage
-          .from('avatars')
-          .remove(filesToDelete);
+        const filesToDelete = existingFiles.map((f) => `${user.id}/${f.name}`);
+        await supabase.storage.from('avatars').remove(filesToDelete);
       }
     } catch (error) {
       // 既存ファイルの削除に失敗しても続行（初回アップロードの場合など）
@@ -59,12 +55,10 @@ export async function uploadAvatar(file: File): Promise<string> {
     }
 
     // 新しいファイルをアップロード
-    const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+    const { data, error } = await supabase.storage.from('avatars').upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
 
     if (error) {
       throw new SupabaseError(
@@ -79,9 +73,7 @@ export async function uploadAvatar(file: File): Promise<string> {
     }
 
     // 公開URLを取得
-    const { data: urlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
     return urlData.publicUrl;
   } catch (error) {
@@ -116,7 +108,13 @@ export async function upsertUserProfile(profile: UserProfileInput): Promise<User
 
     // otaku_type_customの検証
     if (profile.otaku_type_custom !== undefined && profile.otaku_type_custom !== null) {
-      throwIfInvalid(validateLength(profile.otaku_type_custom, 'カスタムオタクタイプ', INPUT_LIMITS.otakuTypeCustom));
+      throwIfInvalid(
+        validateLength(
+          profile.otaku_type_custom,
+          'カスタムオタクタイプ',
+          INPUT_LIMITS.otakuTypeCustom
+        )
+      );
     }
 
     // 既存のプロフィールを取得
@@ -161,13 +159,16 @@ export async function upsertUserProfile(profile: UserProfileInput): Promise<User
 
     const { data, error } = await supabase
       .from('user_profiles')
-      .upsert({
-        id: user.id,
-        ...normalizedProfile,
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'id'
-      })
+      .upsert(
+        {
+          id: user.id,
+          ...normalizedProfile,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'id',
+        }
+      )
       .select()
       .single();
 
@@ -293,4 +294,3 @@ export async function getProfileByHandle(handle: string): Promise<UserProfile | 
     throw normalizeError(error);
   }
 }
-

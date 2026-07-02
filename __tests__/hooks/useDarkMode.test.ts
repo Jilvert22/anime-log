@@ -17,23 +17,18 @@ describe('useDarkMode', () => {
 
   it('setIsDarkModeでダークモードを切り替えられる', () => {
     const { result } = renderHook(() => useDarkMode());
-    
+
     act(() => {
       result.current.setIsDarkMode(true);
     });
-    
+
     expect(result.current.isDarkMode).toBe(true);
   });
 
   it('localStorageに保存された値を読み込む', () => {
     vi.mocked(localStorage.getItem).mockReturnValue('true');
-    
+
     const { result } = renderHook(() => useDarkMode());
     expect(result.current.isDarkMode).toBe(true);
   });
 });
-
-
-
-
-

@@ -30,7 +30,7 @@ export function AddQuoteModal({
 
   useEffect(() => {
     if (editingQuote) {
-      const anime = allAnimes.find(a => a.id === editingQuote.animeId);
+      const anime = allAnimes.find((a) => a.id === editingQuote.animeId);
       if (anime && anime.quotes && anime.quotes[editingQuote.quoteIndex]) {
         const quote = anime.quotes[editingQuote.quoteIndex];
         setNewQuoteText(quote.text);
@@ -48,7 +48,7 @@ export function AddQuoteModal({
   const handleSave = async () => {
     const animeId = editingQuote ? editingQuote.animeId : newQuoteAnimeId;
     if (newQuoteText.trim() && animeId) {
-      const anime = allAnimes.find(a => a.id === animeId);
+      const anime = allAnimes.find((a) => a.id === animeId);
       if (anime) {
         if (editingQuote) {
           // 編集
@@ -57,16 +57,14 @@ export function AddQuoteModal({
             text: newQuoteText.trim(),
             character: newQuoteCharacter.trim() || undefined,
           };
-          
-          const updatedSeasons = seasons.map(season => ({
+
+          const updatedSeasons = seasons.map((season) => ({
             ...season,
-            animes: season.animes.map(a =>
-              a.id === animeId
-                ? { ...a, quotes: updatedQuotes }
-                : a
+            animes: season.animes.map((a) =>
+              a.id === animeId ? { ...a, quotes: updatedQuotes } : a
             ),
           }));
-          
+
           // Supabaseを更新（ログイン時のみ）
           if (user) {
             try {
@@ -75,30 +73,29 @@ export function AddQuoteModal({
                 .update({ quotes: updatedQuotes })
                 .eq('id', animeId)
                 .eq('user_id', user.id);
-              
+
               if (error) throw error;
             } catch (error) {
               console.error('Failed to update quote in Supabase:', error);
             }
           }
-          
+
           setSeasons(updatedSeasons);
         } else {
           // 新規追加
-          const newQuotes = [...(anime.quotes || []), {
-            text: newQuoteText.trim(),
-            character: newQuoteCharacter.trim() || undefined,
-          }];
-          
-          const updatedSeasons = seasons.map(season => ({
+          const newQuotes = [
+            ...(anime.quotes || []),
+            {
+              text: newQuoteText.trim(),
+              character: newQuoteCharacter.trim() || undefined,
+            },
+          ];
+
+          const updatedSeasons = seasons.map((season) => ({
             ...season,
-            animes: season.animes.map(a =>
-              a.id === animeId
-                ? { ...a, quotes: newQuotes }
-                : a
-            ),
+            animes: season.animes.map((a) => (a.id === animeId ? { ...a, quotes: newQuotes } : a)),
           }));
-          
+
           // Supabaseを更新（ログイン時のみ）
           if (user) {
             try {
@@ -107,16 +104,16 @@ export function AddQuoteModal({
                 .update({ quotes: newQuotes })
                 .eq('id', animeId)
                 .eq('user_id', user.id);
-              
+
               if (error) throw error;
             } catch (error) {
               console.error('Failed to add quote to Supabase:', error);
             }
           }
-          
+
           setSeasons(updatedSeasons);
         }
-        
+
         onSave();
         onClose();
       }
@@ -131,25 +128,25 @@ export function AddQuoteModal({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={handleClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4 dark:text-white">
           {editingQuote ? '名言を編集' : '名言を追加'}
         </h2>
-        
+
         {/* アニメ選択 */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             アニメ
           </label>
           <select
-            value={editingQuote ? editingQuote.animeId : (newQuoteAnimeId || '')}
+            value={editingQuote ? editingQuote.animeId : newQuoteAnimeId || ''}
             onChange={(e) => {
               if (editingQuote) {
                 // 編集時は変更不可

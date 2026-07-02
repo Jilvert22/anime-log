@@ -85,8 +85,8 @@ const STREAMING_SERVICES = [
  * チャンネル名が配信サービスかどうかを判定
  */
 export function isStreamingService(channelName: string): boolean {
-  return STREAMING_SERVICES.some(service => 
-    channelName.includes(service) || service.includes(channelName)
+  return STREAMING_SERVICES.some(
+    (service) => channelName.includes(service) || service.includes(channelName)
   );
 }
 
@@ -95,13 +95,13 @@ export function isStreamingService(channelName: string): boolean {
  */
 export function extractStreamingServices(programs: AnnictProgram[]): string[] {
   const services = new Set<string>();
-  
+
   for (const program of programs) {
     if (isStreamingService(program.channel.name)) {
       services.add(program.channel.name);
     }
   }
-  
+
   return Array.from(services);
 }
 
@@ -110,13 +110,13 @@ export function extractStreamingServices(programs: AnnictProgram[]): string[] {
  */
 export function extractBroadcastChannels(programs: AnnictProgram[]): string[] {
   const channels = new Set<string>();
-  
+
   for (const program of programs) {
     if (!isStreamingService(program.channel.name)) {
       channels.add(program.channel.name);
     }
   }
-  
+
   return Array.from(channels);
 }
 
@@ -125,11 +125,11 @@ export function extractBroadcastChannels(programs: AnnictProgram[]): string[] {
  */
 export function extractBroadcastTime(programs: AnnictProgram[]): string | null {
   if (programs.length === 0) return null;
-  
+
   // 最初の放送情報を取得
   const firstProgram = programs[0];
   if (!firstProgram.startedAt) return null;
-  
+
   try {
     const date = new Date(firstProgram.startedAt);
     const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
@@ -232,11 +232,11 @@ export async function searchAnnictBySeason(
     }
   `;
 
-  const data = await queryAnnict<AnnictSearchResult>(query, { 
-    season: [season], 
-    first 
+  const data = await queryAnnict<AnnictSearchResult>(query, {
+    season: [season],
+    first,
   });
-  
+
   return data.searchWorks.nodes;
 }
 
@@ -250,7 +250,9 @@ export async function searchAnnictById(annictId: number): Promise<AnnictWork | n
   // Annict APIではIDで直接検索する方法が提供されていないため、
   // この関数は常にnullを返します。
   // IDマッピングは使用されず、タイトルマッチングにフォールバックします。
-  console.warn('Annict ID検索はサポートされていません。タイトルマッチングを使用してください。', { annictId });
+  console.warn('Annict ID検索はサポートされていません。タイトルマッチングを使用してください。', {
+    annictId,
+  });
   return null;
 }
 
@@ -296,11 +298,11 @@ export async function searchAnnictByTitle(
     }
   `;
 
-  const data = await queryAnnict<AnnictSearchResult>(query, { 
-    titles: [title], 
-    first 
+  const data = await queryAnnict<AnnictSearchResult>(query, {
+    titles: [title],
+    first,
   });
-  
+
   return data.searchWorks.nodes;
 }
 
@@ -327,34 +329,36 @@ export function formatAnnictSeason(year: number, season: string): string {
  * - スペースの統一
  */
 export function normalizeTitle(title: string): string {
-  return title
-    // 全角→半角変換
-    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
-    // 記号の統一
-    .replace(/[！!]/g, '')
-    .replace(/[？?]/g, '')
-    .replace(/[〜～~]/g, '')
-    .replace(/[：:]/g, '')
-    .replace(/[・·]/g, '')
-    .replace(/[「」『』【】\[\]()（）]/g, '')
-    .replace(/["'""'']/g, '')
-    // スペースの統一
-    .replace(/[\s　]+/g, ' ')
-    // シーズン表記の統一
-    .replace(/第?(\d+)期/g, ' $1 ')
-    .replace(/(\d+)(nd|rd|th)?\s*season/gi, ' $1 ')
-    .replace(/season\s*(\d+)/gi, ' $1 ')
-    .replace(/part\s*(\d+)/gi, ' $1 ')
-    .replace(/パート\s*(\d+)/gi, ' $1 ')
-    // ローマ数字→アラビア数字
-    .replace(/\bII\b/gi, '2')
-    .replace(/\bIII\b/gi, '3')
-    .replace(/\bIV\b/gi, '4')
-    .replace(/\bV\b/gi, '5')
-    // 小文字化
-    .toLowerCase()
-    // 前後の空白削除
-    .trim();
+  return (
+    title
+      // 全角→半角変換
+      .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xfee0))
+      // 記号の統一
+      .replace(/[！!]/g, '')
+      .replace(/[？?]/g, '')
+      .replace(/[〜～~]/g, '')
+      .replace(/[：:]/g, '')
+      .replace(/[・·]/g, '')
+      .replace(/[「」『』【】\[\]()（）]/g, '')
+      .replace(/["'""'']/g, '')
+      // スペースの統一
+      .replace(/[\s　]+/g, ' ')
+      // シーズン表記の統一
+      .replace(/第?(\d+)期/g, ' $1 ')
+      .replace(/(\d+)(nd|rd|th)?\s*season/gi, ' $1 ')
+      .replace(/season\s*(\d+)/gi, ' $1 ')
+      .replace(/part\s*(\d+)/gi, ' $1 ')
+      .replace(/パート\s*(\d+)/gi, ' $1 ')
+      // ローマ数字→アラビア数字
+      .replace(/\bII\b/gi, '2')
+      .replace(/\bIII\b/gi, '3')
+      .replace(/\bIV\b/gi, '4')
+      .replace(/\bV\b/gi, '5')
+      // 小文字化
+      .toLowerCase()
+      // 前後の空白削除
+      .trim()
+  );
 }
 
 /**
@@ -371,18 +375,21 @@ export function titlesMatch(anilistTitle: string, annictTitle: string): boolean 
   if (normalizedAnilist === normalizedAnnict) return true;
 
   // 片方がもう片方を含む（部分一致）
-  if (normalizedAnilist.includes(normalizedAnnict) || normalizedAnnict.includes(normalizedAnilist)) {
+  if (
+    normalizedAnilist.includes(normalizedAnnict) ||
+    normalizedAnnict.includes(normalizedAnilist)
+  ) {
     return true;
   }
 
   // 単語分割して一致度を計算
-  const anilistWords = normalizedAnilist.split(/\s+/).filter(w => w.length > 1);
-  const annictWords = normalizedAnnict.split(/\s+/).filter(w => w.length > 1);
+  const anilistWords = normalizedAnilist.split(/\s+/).filter((w) => w.length > 1);
+  const annictWords = normalizedAnnict.split(/\s+/).filter((w) => w.length > 1);
 
   if (anilistWords.length === 0 || annictWords.length === 0) return false;
 
   // 共通単語数をカウント
-  const commonWords = anilistWords.filter(word => annictWords.includes(word));
+  const commonWords = anilistWords.filter((word) => annictWords.includes(word));
   const matchRatio = commonWords.length / Math.min(anilistWords.length, annictWords.length);
 
   // 60%以上の単語が一致すればマッチとみなす
@@ -395,10 +402,10 @@ export function titlesMatch(anilistTitle: string, annictTitle: string): boolean 
 export type AniListMediaWithStreaming = AniListMedia & {
   streamingServices?: string[];
   broadcastChannels?: string[];
-  synopsisJa?: string | null;  // 日本語あらすじ
-  synopsisSource?: string | null;  // あらすじ出典
-  broadcastTime?: string | null;  // 放送日時（Annictから取得）
-  casts?: { character: string; actor: string }[];  // キャスト情報
+  synopsisJa?: string | null; // 日本語あらすじ
+  synopsisSource?: string | null; // あらすじ出典
+  broadcastTime?: string | null; // 放送日時（Annictから取得）
+  casts?: { character: string; actor: string }[]; // キャスト情報
   // 連続2クール: 検索対象シーズンに継続中の作品 (前シーズン開始)
   isContinuing?: boolean;
 };
@@ -426,7 +433,7 @@ export async function mergeWithAnnictData(
 ): Promise<AniListMediaWithStreaming[]> {
   // IDマッピングが必要な項目を先に抽出してバッチ並列処理
   const idMappedItems: Array<{ anilist: AniListMedia; annictId: number }> = [];
-  
+
   // IDマッピング情報を収集
   anilistResults.forEach((anilist) => {
     const annictId = getAnnictIdFromAniList(anilist.id);
@@ -463,7 +470,7 @@ export async function mergeWithAnnictData(
     });
 
     const batchResults = await Promise.all(batchPromises);
-    
+
     // 結果をMapに保存
     batchResults.forEach(({ anilistId, matchedAnnict }) => {
       idMappedResults.set(anilistId, matchedAnnict);
@@ -491,9 +498,10 @@ export async function mergeWithAnnictData(
         ...(anilist.synonyms || []),
       ].filter(Boolean) as string[];
 
-      matchedAnnict = annictResults.find((annict) =>
-        titlesToMatch.some((title) => titlesMatch(title, annict.title))
-      ) || null;
+      matchedAnnict =
+        annictResults.find((annict) =>
+          titlesToMatch.some((title) => titlesMatch(title, annict.title))
+        ) || null;
 
       if (matchedAnnict && process.env.NODE_ENV === 'development') {
         console.log('[Annict Title Match]', {
@@ -507,10 +515,11 @@ export async function mergeWithAnnictData(
 
     // 3. マッチしたAnnictデータを統合
     if (matchedAnnict) {
-      const casts = matchedAnnict.casts?.nodes?.map((cast) => ({
-        character: cast.character?.name || '',
-        actor: cast.person?.name || '',
-      })) || [];
+      const casts =
+        matchedAnnict.casts?.nodes?.map((cast) => ({
+          character: cast.character?.name || '',
+          actor: cast.person?.name || '',
+        })) || [];
 
       results.push({
         ...anilist,
@@ -528,4 +537,3 @@ export async function mergeWithAnnictData(
 
   return results;
 }
-

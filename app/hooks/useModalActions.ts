@@ -79,13 +79,16 @@ export function useModalActions({
     setEditingQuote(null);
   }, [setShowAddQuoteModal, setEditingQuote]);
 
-  const editQuote = useCallback((animeId: number, quoteIndex: number) => {
-    const anime = allAnimes.find(a => a.id === animeId);
-    if (anime?.quotes?.[quoteIndex]) {
-      setEditingQuote({ animeId, quoteIndex });
-      setShowAddQuoteModal(true);
-    }
-  }, [allAnimes, setEditingQuote, setShowAddQuoteModal]);
+  const editQuote = useCallback(
+    (animeId: number, quoteIndex: number) => {
+      const anime = allAnimes.find((a) => a.id === animeId);
+      if (anime?.quotes?.[quoteIndex]) {
+        setEditingQuote({ animeId, quoteIndex });
+        setShowAddQuoteModal(true);
+      }
+    },
+    [allAnimes, setEditingQuote, setShowAddQuoteModal]
+  );
 
   // 楽曲モーダル
   const closeSongModal = useCallback(() => {
@@ -121,4 +124,3 @@ export function useModalActions({
     closeDNAModal,
   };
 }
-

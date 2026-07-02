@@ -7,15 +7,21 @@ import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from 
 import { AnimeCard } from '../AnimeCard';
 
 // タブコンポーネントを動的インポート（初期表示タブ以外）
-const GalleryTab = dynamic(() => import('./GalleryTab').then(mod => ({ default: mod.GalleryTab })), {
-  ssr: false,
-  loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
-});
+const GalleryTab = dynamic(
+  () => import('./GalleryTab').then((mod) => ({ default: mod.GalleryTab })),
+  {
+    ssr: false,
+    loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
+  }
+);
 
-const WatchlistTab = dynamic(() => import('./WatchlistTab').then(mod => ({ default: mod.WatchlistTab })), {
-  ssr: false,
-  loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
-});
+const WatchlistTab = dynamic(
+  () => import('./WatchlistTab').then((mod) => ({ default: mod.WatchlistTab })),
+  {
+    ssr: false,
+    loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
+  }
+);
 
 const SeasonWatchlistTab = dynamic(() => import('./SeasonWatchlistTab'), {
   ssr: false,
@@ -68,7 +74,7 @@ export function HomeTab({
     averageRating,
     totalRewatchCount,
   } = useAnimeDataContext();
-  
+
   // カウントアニメーションを計算
   const count = useCountAnimation(allAnimes.length);
 
@@ -111,13 +117,7 @@ export function HomeTab({
   });
 
   // 展開/折りたたみ関連のロジックをフックから取得
-  const {
-    expandAll,
-    collapseAll,
-    isAllExpanded,
-    toggleYear,
-    toggleSeason,
-  } = useExpansionControl({
+  const { expandAll, collapseAll, isAllExpanded, toggleYear, toggleSeason } = useExpansionControl({
     yearSeasonData,
     expandedYears,
     setExpandedYears,
@@ -150,20 +150,26 @@ export function HomeTab({
   }, [expandedSeasons, yearSeasonData, fetchRepresentativeAnimes]);
 
   // タブ切り替えハンドラーをメモ化
-  const handleTabChange = useCallback((tabId: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => {
-    setHomeSubTab(tabId);
-  }, [setHomeSubTab]);
+  const handleTabChange = useCallback(
+    (tabId: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => {
+      setHomeSubTab(tabId);
+    },
+    [setHomeSubTab]
+  );
 
   // アニメ選択ハンドラーをメモ化
-  const handleAnimeClick = useCallback((anime: Anime) => {
-    setSelectedAnime(anime);
-  }, [setSelectedAnime]);
+  const handleAnimeClick = useCallback(
+    (anime: Anime) => {
+      setSelectedAnime(anime);
+    },
+    [setSelectedAnime]
+  );
 
   // LCP要素の優先読み込み用カウンター（最初の6枚にpriorityを設定）
   // コンポーネントの再レンダリング時にリセットされるため、各レンダリングで最初の6枚にpriorityを設定
   const priorityImageCountRef = useRef(0);
   const PRIORITY_IMAGE_LIMIT = 6;
-  
+
   // レンダリング開始時にカウンターをリセット
   priorityImageCountRef.current = 0;
 
@@ -177,7 +183,7 @@ export function HomeTab({
           { id: 'current-season', label: '来期視聴予定' },
           { id: 'series', label: 'シリーズ' },
           { id: 'gallery', label: 'ギャラリー' },
-        ].map(tab => (
+        ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id as typeof homeSubTab)}
@@ -201,7 +207,9 @@ export function HomeTab({
             <div
               aria-hidden
               className="absolute inset-x-0 top-0 h-1"
-              style={{ background: 'linear-gradient(90deg, #667eea 0%, #e879d4 60%, #f093fb 100%)' }}
+              style={{
+                background: 'linear-gradient(90deg, #667eea 0%, #e879d4 60%, #f093fb 100%)',
+              }}
             />
             {/* 統計情報 */}
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -210,7 +218,9 @@ export function HomeTab({
                 <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">作品</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-black tabular-nums text-[#d45dbf]">{totalRewatchCount}</p>
+                <p className="text-3xl font-black tabular-nums text-[#d45dbf]">
+                  {totalRewatchCount}
+                </p>
                 <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">周</p>
               </div>
               <div className="text-center">
@@ -233,7 +243,7 @@ export function HomeTab({
               <Plus className="w-4 h-4" strokeWidth={3} aria-hidden />
               アニメを追加
             </button>
-            
+
             <div className="flex flex-wrap items-center gap-2">
               {/* フィルター */}
               <div className="relative">
@@ -246,9 +256,12 @@ export function HomeTab({
                   <option value="unrated">未評価</option>
                   <option value="unwatched">周回未登録</option>
                 </select>
-                <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" aria-hidden />
+                <ChevronDown
+                  className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400"
+                  aria-hidden
+                />
               </div>
-              
+
               {/* 未登録のクールも含めて表示するトグル */}
               <label className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-[#e879d4]/50 transition-colors">
                 <input
@@ -266,7 +279,7 @@ export function HomeTab({
                   未登録のクールも含めて表示
                 </span>
               </label>
-              
+
               {/* 未登録シーズンのみ表示トグル */}
               {showAllSeasons && (
                 <label className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-[#e879d4]/50 transition-colors">
@@ -281,7 +294,7 @@ export function HomeTab({
                   </span>
                 </label>
               )}
-              
+
               {/* 全展開/全折りたたみ（上部ヘッダーに移動） */}
               <button
                 onClick={isAllExpanded ? collapseAll : expandAll}
@@ -302,14 +315,17 @@ export function HomeTab({
           {/* 年別リスト */}
           <div className="space-y-3 relative">
             {yearSeasonData.map(({ year, seasons: yearSeasons, allAnimes }) => (
-              <div key={year} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+              <div
+                key={year}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden"
+              >
                 <YearHeader
                   year={year}
                   animes={allAnimes}
                   isExpanded={expandedYears.has(year)}
                   onToggle={() => toggleYear(year)}
                 />
-                
+
                 {expandedYears.has(year) && (
                   <div className="px-2 pb-3 space-y-2">
                     {yearSeasons.map(({ season, animes }) => {
@@ -319,11 +335,13 @@ export function HomeTab({
                       const searchResults = seasonSearchResults.get(seasonKey) || [];
                       const isLoading = loadingSeasons.has(seasonKey);
                       const isSearchExpanded = expandedSeasonSearches.has(seasonKey);
-                      
+
                       const seasonName = `${year}年${season}`;
                       const representativeAnimes = getRepresentativeAnimesForSeason(seasonName);
-                      const dominantAnimeIds = new Set(representativeAnimes.map(anime => anime.id));
-                      
+                      const dominantAnimeIds = new Set(
+                        representativeAnimes.map((anime) => anime.id)
+                      );
+
                       return (
                         <div key={seasonKey}>
                           <SeasonHeader
@@ -334,7 +352,7 @@ export function HomeTab({
                             isEmpty={isEmpty}
                             onSearch={!isEmpty ? () => handleSeasonSearch(year, season) : undefined}
                           />
-                          
+
                           {isExpanded && (
                             <>
                               {/* 登録済み作品の表示 */}
@@ -342,13 +360,20 @@ export function HomeTab({
                                 <>
                                   <div className="ml-8 mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 px-2">
                                     {animes.map((anime, index) => {
-                                      const shouldPriority = priorityImageCountRef.current < PRIORITY_IMAGE_LIMIT;
+                                      const shouldPriority =
+                                        priorityImageCountRef.current < PRIORITY_IMAGE_LIMIT;
                                       if (shouldPriority) {
                                         priorityImageCountRef.current += 1;
                                       }
                                       return (
-                                        <AnimeCard 
-                                          key={anime.id && typeof anime.id === 'number' && !isNaN(anime.id) ? anime.id : `anime-${year}-${season}-${index}`} 
+                                        <AnimeCard
+                                          key={
+                                            anime.id &&
+                                            typeof anime.id === 'number' &&
+                                            !isNaN(anime.id)
+                                              ? anime.id
+                                              : `anime-${year}-${season}-${index}`
+                                          }
                                           anime={anime}
                                           onClick={() => handleAnimeClick(anime)}
                                           priority={shouldPriority}
@@ -356,7 +381,7 @@ export function HomeTab({
                                       );
                                     })}
                                   </div>
-                                  
+
                                   {/* 登録済みクールの検索結果表示 */}
                                   {isSearchExpanded && (
                                     <div className="ml-8 mt-4 px-2">
@@ -385,7 +410,7 @@ export function HomeTab({
                                   )}
                                 </>
                               )}
-                              
+
                               {/* 未登録シーズンの検索結果表示 */}
                               {isEmpty && (
                                 <div className="ml-8 mt-2 px-2">
@@ -394,21 +419,21 @@ export function HomeTab({
                                       作品を検索中...
                                     </div>
                                   ) : searchResults.length > 0 ? (
-                                        <SearchResultsSection
-                                          searchResults={searchResults}
-                                          seasonKey={seasonKey}
-                                          expandedSeasons={expandedSeasons}
-                                          setExpandedSeasons={setExpandedSeasons}
-                                          expandedSeasonSearches={expandedSeasonSearches}
-                                          setExpandedSeasonSearches={setExpandedSeasonSearches}
-                                          addedToWatchlistIds={addedToWatchlistIds}
-                                          addAnimeFromSearch={addAnimeFromSearch}
-                                          addToWatchlistFromSearch={addToWatchlistFromSearch}
-                                          addToNextSeasonWatchlist={addToNextSeasonWatchlist}
-                                          year={year}
-                                          season={season}
-                                          dominantAnimeIds={dominantAnimeIds}
-                                        />
+                                    <SearchResultsSection
+                                      searchResults={searchResults}
+                                      seasonKey={seasonKey}
+                                      expandedSeasons={expandedSeasons}
+                                      setExpandedSeasons={setExpandedSeasons}
+                                      expandedSeasonSearches={expandedSeasonSearches}
+                                      setExpandedSeasonSearches={setExpandedSeasonSearches}
+                                      addedToWatchlistIds={addedToWatchlistIds}
+                                      addAnimeFromSearch={addAnimeFromSearch}
+                                      addToWatchlistFromSearch={addToWatchlistFromSearch}
+                                      addToNextSeasonWatchlist={addToNextSeasonWatchlist}
+                                      year={year}
+                                      season={season}
+                                      dominantAnimeIds={dominantAnimeIds}
+                                    />
                                   ) : (
                                     <div className="py-4 text-center text-gray-500 dark:text-gray-400 text-sm font-medium">
                                       作品が見つかりませんでした
@@ -428,16 +453,14 @@ export function HomeTab({
           </div>
 
           {/* 作品がない場合 */}
-          {yearSeasonData.length === 0 && (
-            filter !== 'all' ? (
+          {yearSeasonData.length === 0 &&
+            (filter !== 'all' ? (
               <p className="text-gray-500 dark:text-gray-400 text-center py-8">
                 該当する作品がありません
               </p>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400 mb-4">
-                  アニメが登録されていません
-                </p>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">アニメが登録されていません</p>
                 <button
                   onClick={onOpenAddForm}
                   className="inline-flex items-center gap-1.5 py-3 px-6 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors"
@@ -446,20 +469,20 @@ export function HomeTab({
                   アニメを追加
                 </button>
               </div>
-            )
-          )}
+            ))}
         </>
       )}
 
       {homeSubTab === 'series' && (
-        <SeriesView seasons={seasons} setSelectedAnime={setSelectedAnime} onOpenAddForm={onOpenAddForm} />
+        <SeriesView
+          seasons={seasons}
+          setSelectedAnime={setSelectedAnime}
+          onOpenAddForm={onOpenAddForm}
+        />
       )}
 
       {homeSubTab === 'gallery' && (
-        <GalleryTab
-          allAnimes={allAnimes}
-          setSelectedAnime={setSelectedAnime}
-        />
+        <GalleryTab allAnimes={allAnimes} setSelectedAnime={setSelectedAnime} />
       )}
 
       {homeSubTab === 'watchlist' && (
@@ -474,9 +497,7 @@ export function HomeTab({
         />
       )}
 
-      {homeSubTab === 'current-season' && (
-        <SeasonWatchlistTab />
-      )}
+      {homeSubTab === 'current-season' && <SeasonWatchlistTab />}
     </>
   );
 }

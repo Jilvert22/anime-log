@@ -5,27 +5,38 @@ import { useFeedback } from '../../contexts/FeedbackContext';
 import { useState, useCallback, useEffect, memo, useMemo } from 'react';
 import Image from 'next/image';
 import type { Anime, Season, User, AniListSearchResult } from '../../types';
-import { searchAnime, searchAnimeBySeason, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
+import {
+  searchAnime,
+  searchAnimeBySeason,
+  getAnimeDetail,
+  type AniListMedia,
+} from '../../lib/anilist';
 import { useStorage } from '../../hooks/useStorage';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { supabase } from '../../lib/supabase';
-import { animeToSupabase, sortSeasonsByTime, extractSeriesName, getSeasonName, SEASON_QUARTER } from '../../utils/helpers';
+import {
+  animeToSupabase,
+  sortSeasonsByTime,
+  extractSeriesName,
+  getSeasonName,
+  SEASON_QUARTER,
+} from '../../utils/helpers';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
 import { StreamingBadges } from '../common/StreamingBadges';
 
 // 積みアニメカード
-const WatchlistCard = memo(function WatchlistCard({ 
-  item, 
+const WatchlistCard = memo(function WatchlistCard({
+  item,
   onRemove,
   onMarkAsWatched,
   isSelectionMode,
   isSelected,
   onToggleSelect,
   onCardClick,
-}: { 
-  item: WatchlistItem; 
+}: {
+  item: WatchlistItem;
   onRemove: (anilistId: number) => void;
   onMarkAsWatched: (item: WatchlistItem) => void;
   isSelectionMode?: boolean;
@@ -34,13 +45,14 @@ const WatchlistCard = memo(function WatchlistCard({
   onCardClick?: (item: WatchlistItem) => void;
 }) {
   const [imageError, setImageError] = useState(false);
-  const isImageUrl = item.image && (item.image.startsWith('http://') || item.image.startsWith('https://'));
+  const isImageUrl =
+    item.image && (item.image.startsWith('http://') || item.image.startsWith('https://'));
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (isSelectionMode) {
       return;
     }
-    
+
     // カードをタップしたら詳細画面を開く
     if (onCardClick) {
       onCardClick(item);
@@ -55,7 +67,7 @@ const WatchlistCard = memo(function WatchlistCard({
   };
 
   return (
-    <div 
+    <div
       className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group relative cursor-pointer ${isSelected ? 'ring-2 ring-[#e879d4]' : ''}`}
       onClick={handleCardClick}
     >
@@ -70,7 +82,7 @@ const WatchlistCard = memo(function WatchlistCard({
           />
         </div>
       )}
-      
+
       <div className="aspect-[3/4] bg-gradient-to-br from-[#e879d4] to-[#764ba2] relative">
         {isImageUrl && !imageError && item.image ? (
           <Image
@@ -88,7 +100,7 @@ const WatchlistCard = memo(function WatchlistCard({
             <Film className="w-8 h-8 text-white/60" aria-hidden />
           </div>
         )}
-        
+
         {/* ホバー時の「詳細を表示」テキスト（デスクトップ用、選択モード時は非表示） */}
         {!isSelectionMode && (
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none md:pointer-events-none">
@@ -96,11 +108,13 @@ const WatchlistCard = memo(function WatchlistCard({
           </div>
         )}
       </div>
-      
+
       <div className="p-2">
-        <p className="text-sm font-medium text-gray-800 dark:text-white line-clamp-2">{item.title}</p>
+        <p className="text-sm font-medium text-gray-800 dark:text-white line-clamp-2">
+          {item.title}
+        </p>
         {/* 放送情報表示 */}
-        {(item.broadcast_day !== null && item.broadcast_day !== undefined && item.broadcast_time) ? (
+        {item.broadcast_day !== null && item.broadcast_day !== undefined && item.broadcast_time ? (
           <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
             {(() => {
               const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
@@ -134,7 +148,11 @@ export function WatchlistTab({
   setExpandedSeasons: (seasons: Set<string>) => void;
 }) {
   const storage = useStorage();
-  const { searchBySeason, searchByTitle, isLoading: isStreamingSearchLoading } = useAnimeSearchWithStreaming();
+  const {
+    searchBySeason,
+    searchByTitle,
+    isLoading: isStreamingSearchLoading,
+  } = useAnimeSearchWithStreaming();
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<AniListMediaWithStreaming[]>([]);
@@ -143,24 +161,28 @@ export function WatchlistTab({
   const [searchMode, setSearchMode] = useState<'name' | 'season'>('name');
   const [seasonYear, setSeasonYear] = useState<number>(new Date().getFullYear());
   const [season, setSeason] = useState<'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'>('SPRING');
-  
+
   // 並び替え設定
-  const [sortOrder, setSortOrder] = useState<'created_desc' | 'created_asc' | 'title' | 'broadcast'>('created_desc');
-  
+  const [sortOrder, setSortOrder] = useState<
+    'created_desc' | 'created_asc' | 'title' | 'broadcast'
+  >('created_desc');
+
   // 選択モード関連の状態
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  
+
   // 詳細表示関連の状態
   const [selectedItem, setSelectedItem] = useState<WatchlistItem | null>(null);
   const [selectedAnimeMedia, setSelectedAnimeMedia] = useState<AniListMedia | null>(null);
-  
+
   // 視聴済み確認モーダルの状態
   const [showWatchedModal, setShowWatchedModal] = useState(false);
   const [selectedWatchlistItem, setSelectedWatchlistItem] = useState<WatchlistItem | null>(null);
   const [watchedRating, setWatchedRating] = useState<number>(0);
   const [watchedSeasonYear, setWatchedSeasonYear] = useState<number>(new Date().getFullYear());
-  const [watchedSeason, setWatchedSeason] = useState<'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'>('SPRING');
+  const [watchedSeason, setWatchedSeason] = useState<'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'>(
+    'SPRING'
+  );
 
   const { showToast, confirmDialog } = useFeedback();
 
@@ -171,7 +193,7 @@ export function WatchlistTab({
   const loadWatchlist = useCallback(async () => {
     try {
       const items = await storage.getWatchlist();
-      setWatchlist(items.filter(item => item.season_year == null && item.season == null));
+      setWatchlist(items.filter((item) => item.season_year == null && item.season == null));
     } catch (error) {
       console.error('積みアニメの読み込みに失敗しました:', error);
     }
@@ -184,7 +206,7 @@ export function WatchlistTab({
   // AniList APIで名前検索（配信情報付き）
   const handleSearchAnime = useCallback(async () => {
     if (!searchQuery.trim()) return;
-    
+
     setIsSearching(true);
     try {
       const results = await searchByTitle(searchQuery.trim());
@@ -212,59 +234,69 @@ export function WatchlistTab({
   }, [season, seasonYear, searchBySeason]);
 
   // 追加済みかどうかを判定（積みアニメ）
-  const isAnimeAdded = useCallback((anilistId: number) => {
-    return watchlist.some(item => item.anilist_id === anilistId);
-  }, [watchlist]);
+  const isAnimeAdded = useCallback(
+    (anilistId: number) => {
+      return watchlist.some((item) => item.anilist_id === anilistId);
+    },
+    [watchlist]
+  );
 
   // 視聴済みかどうかを判定（クール別に追加済み）
-  const isAnimeWatched = useCallback((anilistId: number) => {
-    return seasons.some(season => 
-      season.animes.some(anime => anime.id === anilistId)
-    );
-  }, [seasons]);
+  const isAnimeWatched = useCallback(
+    (anilistId: number) => {
+      return seasons.some((season) => season.animes.some((anime) => anime.id === anilistId));
+    },
+    [seasons]
+  );
 
   // 積みアニメに追加（重複チェックあり、配信情報付き）
-  const handleAddToWatchlist = useCallback(async (anime: AniListMediaWithStreaming) => {
-    // 既に登録済みかチェック
-    const isAlreadyAdded = isAnimeAdded(anime.id);
-    const isAlreadyWatched = isAnimeWatched(anime.id);
-    
-    if (isAlreadyWatched) {
-      showToast('このアニメは既に視聴済み（クール別に追加済み）です', 'error');
-      return;
-    }
-    
-    if (isAlreadyAdded) {
-      showToast('このアニメは既に積みアニメに追加されています', 'error');
-      return;
-    }
-    
-    const success = await storage.addToWatchlist({
-      anilist_id: anime.id,
-      title: anime.title?.native || anime.title?.romaji || '',
-      image: anime.coverImage?.large || null,
-      streaming_sites: anime.streamingServices || null,
-    });
-    
-    if (success) {
-      await loadWatchlist();
-      showToast('積みアニメに追加しました');
-      // 検索フォームは開いたままにする（追加後も続けて検索できるように）
-    } else {
-      showToast('積みアニメの追加に失敗しました', 'error');
-    }
-  }, [storage, loadWatchlist, isAnimeAdded, isAnimeWatched]);
+  const handleAddToWatchlist = useCallback(
+    async (anime: AniListMediaWithStreaming) => {
+      // 既に登録済みかチェック
+      const isAlreadyAdded = isAnimeAdded(anime.id);
+      const isAlreadyWatched = isAnimeWatched(anime.id);
+
+      if (isAlreadyWatched) {
+        showToast('このアニメは既に視聴済み（クール別に追加済み）です', 'error');
+        return;
+      }
+
+      if (isAlreadyAdded) {
+        showToast('このアニメは既に積みアニメに追加されています', 'error');
+        return;
+      }
+
+      const success = await storage.addToWatchlist({
+        anilist_id: anime.id,
+        title: anime.title?.native || anime.title?.romaji || '',
+        image: anime.coverImage?.large || null,
+        streaming_sites: anime.streamingServices || null,
+      });
+
+      if (success) {
+        await loadWatchlist();
+        showToast('積みアニメに追加しました');
+        // 検索フォームは開いたままにする（追加後も続けて検索できるように）
+      } else {
+        showToast('積みアニメの追加に失敗しました', 'error');
+      }
+    },
+    [storage, loadWatchlist, isAnimeAdded, isAnimeWatched]
+  );
 
   // 積みアニメから削除
-  const handleRemoveFromWatchlist = useCallback(async (anilistId: number) => {
-    const success = await storage.removeFromWatchlist(anilistId);
-    if (success) {
-      await loadWatchlist();
-      showToast('積みアニメから削除しました');
-    } else {
-      showToast('削除に失敗しました', 'error');
-    }
-  }, [storage, loadWatchlist]);
+  const handleRemoveFromWatchlist = useCallback(
+    async (anilistId: number) => {
+      const success = await storage.removeFromWatchlist(anilistId);
+      if (success) {
+        await loadWatchlist();
+        showToast('積みアニメから削除しました');
+      } else {
+        showToast('削除に失敗しました', 'error');
+      }
+    },
+    [storage, loadWatchlist]
+  );
 
   // 視聴済み確認モーダルを開く
   const openWatchedModal = useCallback((item: WatchlistItem) => {
@@ -283,8 +315,10 @@ export function WatchlistTab({
       // AniListからアニメ情報を取得
       const { searchAnime } = await import('../../lib/anilist');
       const results = await searchAnime(selectedWatchlistItem.title);
-      const animeData = results?.find((a: AniListSearchResult) => a.id === selectedWatchlistItem.anilist_id);
-      
+      const animeData = results?.find(
+        (a: AniListSearchResult) => a.id === selectedWatchlistItem.anilist_id
+      );
+
       if (!animeData) {
         showToast('アニメ情報の取得に失敗しました', 'error');
         return;
@@ -303,12 +337,14 @@ export function WatchlistTab({
         watched: true,
         rewatchCount: 0,
         tags: [],
-        seriesName: extractSeriesName(animeData.title.native || animeData.title.romaji || selectedWatchlistItem.title),
+        seriesName: extractSeriesName(
+          animeData.title.native || animeData.title.romaji || selectedWatchlistItem.title
+        ),
         studios: animeData.studios?.nodes?.map((s) => s.name) || [],
       };
 
       // シーズンに追加
-      const existingSeasonIndex = seasons.findIndex(s => s.name === seasonName);
+      const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
       let updatedSeasons: Season[];
 
       if (existingSeasonIndex === -1) {
@@ -328,7 +364,7 @@ export function WatchlistTab({
 
       // 新しいシーズンが追加された場合は展開状態にする
       const newExpandedSeasons = new Set(expandedSeasons);
-      if (!seasons.find(s => s.name === seasonName)) {
+      if (!seasons.find((s) => s.name === seasonName)) {
         newExpandedSeasons.add(seasonName);
       } else {
         newExpandedSeasons.add(seasonName);
@@ -338,17 +374,17 @@ export function WatchlistTab({
       // Supabaseに保存
       try {
         const supabaseData = animeToSupabase(newAnime, seasonName, user.id);
-        
-        const { error } = await supabase
-          .from('animes')
-          .insert(supabaseData)
-          .select();
-        
+
+        const { error } = await supabase.from('animes').insert(supabaseData).select();
+
         if (error) throw error;
       } catch (error: unknown) {
         console.error('アニメの保存に失敗しました:', error);
         const errorMessage = error instanceof Error ? error.message : 'アニメの保存に失敗しました';
-        showToast(`アニメの保存に失敗しました${errorMessage !== 'アニメの保存に失敗しました' ? `: ${errorMessage}` : ''}`, 'error');
+        showToast(
+          `アニメの保存に失敗しました${errorMessage !== 'アニメの保存に失敗しました' ? `: ${errorMessage}` : ''}`,
+          'error'
+        );
         return;
       }
 
@@ -364,19 +400,39 @@ export function WatchlistTab({
     } catch (error: unknown) {
       console.error('視聴済みマークに失敗しました:', error);
       const errorMessage = error instanceof Error ? error.message : 'エラーが発生しました';
-      showToast(`エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`, 'error');
+      showToast(
+        `エラーが発生しました${errorMessage !== 'エラーが発生しました' ? `: ${errorMessage}` : ''}`,
+        'error'
+      );
     }
-  }, [selectedWatchlistItem, user, watchedRating, watchedSeasonYear, watchedSeason, seasons, setSeasons, expandedSeasons, setExpandedSeasons, handleRemoveFromWatchlist]);
+  }, [
+    selectedWatchlistItem,
+    user,
+    watchedRating,
+    watchedSeasonYear,
+    watchedSeason,
+    seasons,
+    setSeasons,
+    expandedSeasons,
+    setExpandedSeasons,
+    handleRemoveFromWatchlist,
+  ]);
 
   // 削除ハンドラーをuseCallbackでメモ化（anilistIdを受け取る）
-  const handleRemove = useCallback((anilistId: number) => {
-    handleRemoveFromWatchlist(anilistId);
-  }, [handleRemoveFromWatchlist]);
+  const handleRemove = useCallback(
+    (anilistId: number) => {
+      handleRemoveFromWatchlist(anilistId);
+    },
+    [handleRemoveFromWatchlist]
+  );
 
   // 視聴済みマークハンドラーをuseCallbackでメモ化（itemを受け取る）
-  const handleMarkAsWatchedClick = useCallback((item: WatchlistItem) => {
-    openWatchedModal(item);
-  }, [openWatchedModal]);
+  const handleMarkAsWatchedClick = useCallback(
+    (item: WatchlistItem) => {
+      openWatchedModal(item);
+    },
+    [openWatchedModal]
+  );
 
   // フィルタリングと並び替え
   const filteredWatchlist = useMemo(() => {
@@ -391,35 +447,37 @@ export function WatchlistTab({
           const bDate = new Date(b.created_at).getTime();
           return bDate - aDate;
         }
-        
+
         case 'created_asc': {
           // 追加日（古い順）
           const aDate = new Date(a.created_at).getTime();
           const bDate = new Date(b.created_at).getTime();
           return aDate - bDate;
         }
-        
+
         case 'title': {
           // タイトル順（あいうえお順/ABC順）
           const aTitle = a.title || '';
           const bTitle = b.title || '';
           return aTitle.localeCompare(bTitle, 'ja');
         }
-        
+
         case 'broadcast': {
           // 放送曜日順：broadcast_day昇順 → broadcast_time昇順 → 放送情報なしは最後
-          const aHasBroadcast = a.broadcast_day !== null && a.broadcast_day !== undefined && a.broadcast_time;
-          const bHasBroadcast = b.broadcast_day !== null && b.broadcast_day !== undefined && b.broadcast_time;
-          
+          const aHasBroadcast =
+            a.broadcast_day !== null && a.broadcast_day !== undefined && a.broadcast_time;
+          const bHasBroadcast =
+            b.broadcast_day !== null && b.broadcast_day !== undefined && b.broadcast_time;
+
           if (!aHasBroadcast && !bHasBroadcast) return 0;
           if (!aHasBroadcast) return 1; // aが放送情報なし → 後ろ
           if (!bHasBroadcast) return -1; // bが放送情報なし → 後ろ
-          
+
           // 曜日で比較
           if (a.broadcast_day! !== b.broadcast_day!) {
             return a.broadcast_day! - b.broadcast_day!;
           }
-          
+
           // 同じ曜日の場合は時間で比較
           if (a.broadcast_time && b.broadcast_time) {
             const aTime = a.broadcast_time.split(':').map(Number);
@@ -428,10 +486,10 @@ export function WatchlistTab({
             const bMinutes = bTime[0] * 60 + bTime[1];
             return aMinutes - bMinutes;
           }
-          
+
           return 0;
         }
-        
+
         default:
           return 0;
       }
@@ -450,7 +508,7 @@ export function WatchlistTab({
 
   // 個別選択の切り替え
   const toggleSelectItem = useCallback((id: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
         newSet.delete(id);
@@ -463,7 +521,7 @@ export function WatchlistTab({
 
   // すべて選択
   const selectAll = useCallback(() => {
-    setSelectedIds(new Set(filteredWatchlist.map(item => item.id)));
+    setSelectedIds(new Set(filteredWatchlist.map((item) => item.id)));
   }, [filteredWatchlist]);
 
   // 選択解除
@@ -475,13 +533,19 @@ export function WatchlistTab({
   const handleBulkDelete = useCallback(async () => {
     if (selectedIds.size === 0) return;
 
-    if (!(await confirmDialog({ message: `${selectedIds.size}件のアニメを削除しますか？`, danger: true, confirmLabel: '削除' }))) {
+    if (
+      !(await confirmDialog({
+        message: `${selectedIds.size}件のアニメを削除しますか？`,
+        danger: true,
+        confirmLabel: '削除',
+      }))
+    ) {
       return;
     }
 
     const ids = Array.from(selectedIds);
     const success = await storage.deleteWatchlistItems(ids);
-    
+
     if (success) {
       await loadWatchlist();
       setSelectedIds(new Set());
@@ -496,20 +560,25 @@ export function WatchlistTab({
   const handleBulkMarkAsWatched = useCallback(async () => {
     if (selectedIds.size === 0 || !user) return;
 
-    if (!(await confirmDialog({ message: `${selectedIds.size}件のアニメを視聴済みにしますか？\n評価とクールは後で個別に設定できます。`, confirmLabel: '視聴済みにする' }))) {
+    if (
+      !(await confirmDialog({
+        message: `${selectedIds.size}件のアニメを視聴済みにしますか？\n評価とクールは後で個別に設定できます。`,
+        confirmLabel: '視聴済みにする',
+      }))
+    ) {
       return;
     }
 
     const ids = Array.from(selectedIds);
-    const selectedItems = watchlist.filter(item => ids.includes(item.id));
-    
+    const selectedItems = watchlist.filter((item) => ids.includes(item.id));
+
     try {
       for (const item of selectedItems) {
         // AniListからアニメ情報を取得
         const { searchAnime } = await import('../../lib/anilist');
         const results = await searchAnime(item.title);
         const animeData = results?.find((a: AniListSearchResult) => a.id === item.anilist_id);
-        
+
         if (!animeData) continue;
 
         // シーズン名を生成（現在のシーズンを使用）
@@ -529,12 +598,14 @@ export function WatchlistTab({
           watched: true,
           rewatchCount: 0,
           tags: [],
-          seriesName: extractSeriesName(animeData.title.native || animeData.title.romaji || item.title),
+          seriesName: extractSeriesName(
+            animeData.title.native || animeData.title.romaji || item.title
+          ),
           studios: animeData.studios?.nodes?.map((s) => s.name) || [],
         };
 
         // シーズンに追加
-        const existingSeasonIndex = seasons.findIndex(s => s.name === seasonName);
+        const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
         let updatedSeasons: Season[];
 
         if (existingSeasonIndex === -1) {
@@ -562,7 +633,7 @@ export function WatchlistTab({
       // シーズンを更新
       const updatedSeasons = sortSeasonsByTime(seasons);
       setSeasons(updatedSeasons);
-      
+
       // リストを更新
       await loadWatchlist();
       setSelectedIds(new Set());
@@ -598,7 +669,7 @@ export function WatchlistTab({
 
       {/* 追加ボタン */}
       {!showAddForm ? (
-        <button 
+        <button
           onClick={() => setShowAddForm(true)}
           data-onboarding="step-2"
           className="w-full mb-4 py-4 border-2 border-dashed border-[#e879d4] rounded-xl text-[#e879d4] font-bold hover:border-[#d45dbf] hover:text-[#d45dbf] hover:bg-[#e879d4]/5 transition-colors inline-flex items-center justify-center gap-1.5"
@@ -612,7 +683,10 @@ export function WatchlistTab({
           {/* 検索モード切り替え */}
           <div className="flex gap-2 mb-3">
             <button
-              onClick={() => { setSearchMode('name'); setSearchResults([]); }}
+              onClick={() => {
+                setSearchMode('name');
+                setSearchResults([]);
+              }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 searchMode === 'name'
                   ? 'bg-[#e879d4] text-white'
@@ -622,7 +696,10 @@ export function WatchlistTab({
               名前検索
             </button>
             <button
-              onClick={() => { setSearchMode('season'); setSearchResults([]); }}
+              onClick={() => {
+                setSearchMode('season');
+                setSearchResults([]);
+              }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 searchMode === 'season'
                   ? 'bg-[#e879d4] text-white'
@@ -652,7 +729,11 @@ export function WatchlistTab({
                   {isSearching || isStreamingSearchLoading ? '検索中...' : '検索'}
                 </button>
                 <button
-                  onClick={() => { setShowAddForm(false); setSearchQuery(''); setSearchResults([]); }}
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
                   className="flex-1 sm:flex-none px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   キャンセル
@@ -690,7 +771,10 @@ export function WatchlistTab({
                     {isSearching || isStreamingSearchLoading ? '検索中...' : '検索'}
                   </button>
                   <button
-                    onClick={() => { setShowAddForm(false); setSearchResults([]); }}
+                    onClick={() => {
+                      setShowAddForm(false);
+                      setSearchResults([]);
+                    }}
                     className="flex-1 sm:flex-none px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                   >
                     キャンセル
@@ -699,16 +783,16 @@ export function WatchlistTab({
               </div>
             </div>
           )}
-          
+
           {/* 検索結果 */}
           {searchResults.length > 0 && (
             <div className="space-y-2 max-h-60 overflow-y-auto">
-              {searchResults.map(anime => {
+              {searchResults.map((anime) => {
                 const isAdded = isAnimeAdded(anime.id);
                 const isWatched = isAnimeWatched(anime.id);
                 const isDisabled = isAdded || isWatched;
                 const statusType = isWatched ? 'watched' : isAdded ? 'watchlist' : null;
-                
+
                 return (
                   <button
                     key={anime.id}
@@ -720,9 +804,11 @@ export function WatchlistTab({
                         : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
-                    <div className={`w-10 h-14 rounded overflow-hidden shrink-0 relative ${
-                      isDisabled ? 'bg-gray-300 dark:bg-gray-700' : 'bg-gray-200 dark:bg-gray-600'
-                    }`}>
+                    <div
+                      className={`w-10 h-14 rounded overflow-hidden shrink-0 relative ${
+                        isDisabled ? 'bg-gray-300 dark:bg-gray-700' : 'bg-gray-200 dark:bg-gray-600'
+                      }`}
+                    >
                       {anime.coverImage?.large && (
                         <Image
                           src={anime.coverImage.large}
@@ -736,11 +822,13 @@ export function WatchlistTab({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm line-clamp-2 block ${
-                          isDisabled
-                            ? 'text-gray-500 dark:text-gray-400'
-                            : 'text-gray-800 dark:text-white'
-                        }`}>
+                        <span
+                          className={`text-sm line-clamp-2 block ${
+                            isDisabled
+                              ? 'text-gray-500 dark:text-gray-400'
+                              : 'text-gray-800 dark:text-white'
+                          }`}
+                        >
                           {anime.title?.native || anime.title?.romaji}
                         </span>
                         {statusType === 'watchlist' && (
@@ -840,7 +928,7 @@ export function WatchlistTab({
       {/* 積みアニメ一覧 */}
       {filteredWatchlist.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {filteredWatchlist.map(item => (
+          {filteredWatchlist.map((item) => (
             <WatchlistCard
               key={item.id}
               item={item}
@@ -856,9 +944,7 @@ export function WatchlistTab({
       ) : (
         <div className="text-center py-12">
           <p className="text-4xl mb-3">📚</p>
-          <p className="text-gray-500 dark:text-gray-400">
-            積みアニメがありません
-          </p>
+          <p className="text-gray-500 dark:text-gray-400">積みアニメがありません</p>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
             気になる作品を追加してみましょう
           </p>
@@ -876,7 +962,7 @@ export function WatchlistTab({
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4 dark:text-white">視聴済みにする</h2>
-            
+
             {/* アニメ情報 */}
             <div className="mb-4">
               <div className="flex items-center gap-3 mb-3">
@@ -893,7 +979,9 @@ export function WatchlistTab({
                   </div>
                 )}
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-white">{selectedWatchlistItem.title}</p>
+                  <p className="font-medium text-gray-800 dark:text-white">
+                    {selectedWatchlistItem.title}
+                  </p>
                 </div>
               </div>
             </div>
@@ -914,7 +1002,10 @@ export function WatchlistTab({
                         : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
                   >
-                    <span className="inline-flex items-center gap-0.5">{rating}<Star className="w-3.5 h-3.5 fill-current" aria-hidden /></span>
+                    <span className="inline-flex items-center gap-0.5">
+                      {rating}
+                      <Star className="w-3.5 h-3.5 fill-current" aria-hidden />
+                    </span>
                   </button>
                 ))}
               </div>
@@ -997,7 +1088,9 @@ export function WatchlistTab({
           // 詳細画面は閉じずに、更新されたアイテムを再取得して設定
           if (selectedItem?.anilist_id) {
             const updatedItems = await storage.getWatchlist();
-            const updatedItem = updatedItems.find(item => item.anilist_id === selectedItem.anilist_id);
+            const updatedItem = updatedItems.find(
+              (item) => item.anilist_id === selectedItem.anilist_id
+            );
             if (updatedItem) {
               setSelectedItem(updatedItem);
             }
@@ -1007,4 +1100,3 @@ export function WatchlistTab({
     </>
   );
 }
-

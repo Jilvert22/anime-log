@@ -32,11 +32,11 @@ export function UserProfileModal({
   if (!show || !selectedUserProfile) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full max-h-[90vh] overflow-y-auto p-6"
         onClick={(e) => e.stopPropagation()}
       >
@@ -47,7 +47,9 @@ export function UserProfileModal({
           <div className="flex-1">
             <h2 className="text-xl font-bold dark:text-white">{selectedUserProfile.username}</h2>
             {selectedUserProfile.bio && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedUserProfile.bio}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {selectedUserProfile.bio}
+              </p>
             )}
           </div>
           {user && user.id !== selectedUserProfile.id && (
@@ -63,13 +65,13 @@ export function UserProfileModal({
             </button>
           )}
         </div>
-        
+
         {/* 視聴作品数 */}
         <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
           <p className="text-sm text-gray-600 dark:text-gray-400">視聴作品数</p>
           <p className="text-2xl font-bold dark:text-white">{selectedUserAnimes.length}作品</p>
         </div>
-        
+
         {/* 視聴履歴 */}
         {selectedUserAnimes.length > 0 && (
           <div className="mb-4">
@@ -88,7 +90,7 @@ export function UserProfileModal({
             </div>
           </div>
         )}
-        
+
         <button
           onClick={onClose}
           className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

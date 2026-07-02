@@ -34,16 +34,16 @@ export default function MyPageTab(props: MyPageTabProps) {
     favoriteAnimeIds,
     setFavoriteAnimeIds,
   } = useUserProfileContext();
-  
+
   // Contextからモーダル関連の状態とアクションを取得
   const { modals, actions, formStates } = useModalContext();
-  
+
   // モーダルハンドラ（キャラクター関連は後でContext化する可能性があるが、今回はpropsとして受け取る）
   // 注意: useModalHandlersはfavoriteCharactersに依存するため、ここでは使用しない
   return (
     <div className="space-y-6">
       {/* ANIME DNAカード */}
-      <AnimeDNASection 
+      <AnimeDNASection
         allAnimes={props.allAnimes}
         seasons={props.seasons}
         userName={userName}
@@ -57,17 +57,14 @@ export default function MyPageTab(props: MyPageTabProps) {
         setShowFavoriteAnimeModal={modals.setShowFavoriteAnimeModal}
         onOpenDNAModal={() => modals.setShowDNAModal(true)}
       />
-      
+
       {/* 統計・傾向とコレクション（同じレイヤー） */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 統計・傾向 */}
-        <StatisticsSection 
-          allAnimes={props.allAnimes}
-          seasons={props.seasons}
-        />
-        
+        <StatisticsSection allAnimes={props.allAnimes} seasons={props.seasons} />
+
         {/* コレクション（アコーディオン） */}
-        <CollectionSection 
+        <CollectionSection
           allAnimes={props.allAnimes}
           seasons={props.seasons}
           setSeasons={props.setSeasons}
@@ -94,16 +91,15 @@ export default function MyPageTab(props: MyPageTabProps) {
           setShowSongModal={modals.setShowSongModal}
         />
       </div>
-      
+
       {/* 設定 */}
-      <SettingsSection 
+      <SettingsSection
         onOpenSettingsModal={() => modals.setShowSettings(true)}
         handleLogout={props.handleLogout}
       />
-      
+
       {/* フッター */}
       <Footer />
     </div>
   );
 }
-

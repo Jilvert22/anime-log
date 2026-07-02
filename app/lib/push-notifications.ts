@@ -21,7 +21,7 @@ export interface PushSubscriptionData {
  */
 async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
   console.log('🔧 getServiceWorkerRegistration開始');
-  
+
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
     console.warn('⚠️ Service Workerが利用できません', {
       hasWindow: typeof window !== 'undefined',
@@ -35,7 +35,7 @@ async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration
     // Service Workerを登録（next-pwaが既に登録している場合は取得）
     const registration = await navigator.serviceWorker.ready;
     console.log('✅ Service Workerの準備が完了しました');
-    
+
     // プッシュ通知用のService Workerコードを追加登録
     // next-pwaが生成するService Workerの後に追加
     try {
@@ -47,7 +47,7 @@ async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration
     } catch (error) {
       console.warn('⚠️ プッシュ通知用Service Workerの追加登録に失敗しました:', error);
     }
-    
+
     return registration;
   } catch (error) {
     console.error('❌ Service Workerの取得に失敗しました:', error);
@@ -71,11 +71,9 @@ function getVapidPublicKey(): string {
  * @param user 現在のユーザー
  * @returns 購読情報またはnull
  */
-export async function subscribeToPushNotifications(
-  user: User
-): Promise<PushSubscription | null> {
+export async function subscribeToPushNotifications(user: User): Promise<PushSubscription | null> {
   console.log('📱 subscribeToPushNotifications開始', { userId: user.id });
-  
+
   if (typeof window === 'undefined') {
     console.warn('⚠️ windowが未定義のため、nullを返します');
     return null;
@@ -109,7 +107,7 @@ export async function subscribeToPushNotifications(
     console.log('🔑 VAPID公開鍵を取得中...');
     const vapidPublicKey = getVapidPublicKey();
     console.log('🔑 VAPID公開鍵を取得しました（長さ:', vapidPublicKey.length, '）');
-    
+
     if (!subscription) {
       console.log('📝 新規購読を開始します...');
       try {
@@ -134,22 +132,20 @@ export async function subscribeToPushNotifications(
       hasKeys: !!subscriptionData.keys,
       keys: subscriptionData.keys ? Object.keys(subscriptionData.keys) : [],
     });
-    
+
     if (subscriptionData.keys) {
       console.log('💾 Supabaseにupsert実行中...');
-      const { error } = await supabase
-        .from('push_subscriptions')
-        .upsert(
-          {
-            user_id: user.id,
-            endpoint: subscriptionData.endpoint || '',
-            p256dh: subscriptionData.keys.p256dh || '',
-            auth: subscriptionData.keys.auth || '',
-          },
-          {
-            onConflict: 'user_id,endpoint',
-          }
-        );
+      const { error } = await supabase.from('push_subscriptions').upsert(
+        {
+          user_id: user.id,
+          endpoint: subscriptionData.endpoint || '',
+          p256dh: subscriptionData.keys.p256dh || '',
+          auth: subscriptionData.keys.auth || '',
+        },
+        {
+          onConflict: 'user_id,endpoint',
+        }
+      );
 
       if (error) {
         console.error('❌ 購読情報の保存に失敗しました:', error);
@@ -172,9 +168,7 @@ export async function subscribeToPushNotifications(
  * プッシュ通知の購読を解除する
  * @param user 現在のユーザー
  */
-export async function unsubscribeFromPushNotifications(
-  user: User
-): Promise<void> {
+export async function unsubscribeFromPushNotifications(user: User): Promise<void> {
   if (typeof window === 'undefined') {
     return;
   }
@@ -248,4 +242,3 @@ function urlBase64ToUint8Array(base64String: string): BufferSource {
   }
   return outputArray.buffer;
 }
-

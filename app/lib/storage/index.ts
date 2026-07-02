@@ -29,5 +29,3 @@ export function getSupabaseStorageService(): SupabaseStorageService {
   }
   return supabaseStorageServiceInstance;
 }
-
-

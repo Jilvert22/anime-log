@@ -113,4 +113,3 @@ export type { User };
  * シーズン型
  */
 export type Season = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
-

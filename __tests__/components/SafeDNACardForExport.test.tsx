@@ -19,7 +19,9 @@ describe('SafeDNACardForExport', () => {
     expect(container.textContent).not.toContain('SENTINEL_ANIME_TITLE');
     expect(container.textContent).not.toContain('@sentinel_handle');
     expect(container.textContent).not.toContain('https://example.com/icon.png');
-    expect(screen.getByText('作品画像・作品名・ハンドル・ユーザーアイコンは含めていません。')).toBeInTheDocument();
+    expect(
+      screen.getByText('作品画像・作品名・ハンドル・ユーザーアイコンは含めていません。')
+    ).toBeInTheDocument();
   });
 
   it('safe export 用のハイライトを統計値から作る', () => {

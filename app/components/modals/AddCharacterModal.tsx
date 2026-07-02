@@ -47,7 +47,7 @@ export function AddCharacterModal({
 
   const handleSave = () => {
     if (newCharacterName.trim() && newCharacterAnimeId) {
-      const selectedAnime = allAnimes.find(a => a.id === newCharacterAnimeId);
+      const selectedAnime = allAnimes.find((a) => a.id === newCharacterAnimeId);
       if (selectedAnime) {
         if (editingCharacter) {
           // 編集
@@ -90,18 +90,18 @@ export function AddCharacterModal({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={handleClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm lg:max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4 dark:text-white">
           {editingCharacter ? '推しを編集' : '推しを追加'}
         </h2>
-        
+
         {/* キャラ名入力 */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -141,7 +141,30 @@ export function AddCharacterModal({
             アイコン
           </label>
           <div className="grid grid-cols-8 gap-2">
-            {['👤', '👻', '🧝', '🎸', '👑', '🦄', '🌟', '💫', '⚡', '🔥', '💕', '❤️', '🎭', '🛡️', '😇', '🤡', '💀', '🎪', '🎨', '🎯', '🎬', '🎮'].map((icon) => (
+            {[
+              '👤',
+              '👻',
+              '🧝',
+              '🎸',
+              '👑',
+              '🦄',
+              '🌟',
+              '💫',
+              '⚡',
+              '🔥',
+              '💕',
+              '❤️',
+              '🎭',
+              '🛡️',
+              '😇',
+              '🤡',
+              '💀',
+              '🎪',
+              '🎨',
+              '🎯',
+              '🎬',
+              '🎮',
+            ].map((icon) => (
               <button
                 key={icon}
                 onClick={() => setNewCharacterImage(icon)}
@@ -190,7 +213,7 @@ export function AddCharacterModal({
                 key={tag}
                 onClick={() => {
                   if (newCharacterTags.includes(tag)) {
-                    setNewCharacterTags(newCharacterTags.filter(t => t !== tag));
+                    setNewCharacterTags(newCharacterTags.filter((t) => t !== tag));
                   } else {
                     setNewCharacterTags([...newCharacterTags, tag]);
                   }
@@ -205,7 +228,7 @@ export function AddCharacterModal({
               </button>
             ))}
           </div>
-          
+
           {/* カスタムタグ追加 */}
           <div className="flex gap-2">
             <input
@@ -213,7 +236,11 @@ export function AddCharacterModal({
               value={newCustomTag}
               onChange={(e) => setNewCustomTag(e.target.value)}
               onKeyPress={(e) => {
-                if (e.key === 'Enter' && newCustomTag.trim() && !newCharacterTags.includes(newCustomTag.trim())) {
+                if (
+                  e.key === 'Enter' &&
+                  newCustomTag.trim() &&
+                  !newCharacterTags.includes(newCustomTag.trim())
+                ) {
                   setNewCharacterTags([...newCharacterTags, newCustomTag.trim()]);
                   setNewCustomTag('');
                 }
@@ -222,7 +249,7 @@ export function AddCharacterModal({
               placeholder="新しいタグを入力してEnter"
             />
           </div>
-          
+
           {/* 選択中のタグ表示 */}
           {newCharacterTags.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
@@ -233,7 +260,9 @@ export function AddCharacterModal({
                 >
                   {tag}
                   <button
-                    onClick={() => setNewCharacterTags(newCharacterTags.filter((_, i) => i !== index))}
+                    onClick={() =>
+                      setNewCharacterTags(newCharacterTags.filter((_, i) => i !== index))
+                    }
                     className="hover:text-red-500"
                   >
                     <X className="w-3.5 h-3.5" aria-hidden />

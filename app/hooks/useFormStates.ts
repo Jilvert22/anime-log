@@ -9,7 +9,9 @@ export function useFormStates() {
   const [characterFilter, setCharacterFilter] = useState<string | null>(null);
 
   // 名言関連のフォーム状態
-  const [editingQuote, setEditingQuote] = useState<{ animeId: number; quoteIndex: number } | null>(null);
+  const [editingQuote, setEditingQuote] = useState<{ animeId: number; quoteIndex: number } | null>(
+    null
+  );
   const [quoteSearchQuery, setQuoteSearchQuery] = useState('');
   const [quoteFilterType, setQuoteFilterType] = useState<'all' | 'anime' | 'character'>('all');
   const [selectedAnimeForFilter, setSelectedAnimeForFilter] = useState<number | null>(null);
@@ -31,4 +33,3 @@ export function useFormStates() {
     setSelectedAnimeForFilter,
   };
 }
-

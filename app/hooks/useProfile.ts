@@ -18,7 +18,9 @@ export function useProfile({ updateAvatarUrl, uploadAvatar }: UseProfileProps) {
   // ========== プロフィール読み込み ==========
   const loadProfile = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return;
@@ -37,7 +39,7 @@ export function useProfile({ updateAvatarUrl, uploadAvatar }: UseProfileProps) {
 
       if (data) {
         setProfile(data);
-        
+
         // アバターURLを更新
         if (data.avatar_url) {
           updateAvatarUrl(data.avatar_url);
@@ -55,13 +57,13 @@ export function useProfile({ updateAvatarUrl, uploadAvatar }: UseProfileProps) {
           otaku_type: 'auto',
           is_public: false,
         };
-        
+
         const { data: created, error: createError } = await supabase
           .from('user_profiles')
           .insert(newProfile)
           .select()
           .single();
-        
+
         if (createError) {
           console.error('Profile create error:', {
             code: createError.code,
@@ -77,7 +79,7 @@ export function useProfile({ updateAvatarUrl, uploadAvatar }: UseProfileProps) {
       }
     } catch (err) {
       console.error('Profile load error:', err);
-      
+
       // オフライン時はlocalStorageから読み込み
       const cached = localStorage.getItem('userProfile');
       if (cached) {
@@ -99,76 +101,89 @@ export function useProfile({ updateAvatarUrl, uploadAvatar }: UseProfileProps) {
   }, [updateAvatarUrl]);
 
   // ========== プロフィール保存 ==========
-  const saveProfile = useCallback(async (updates: {
-    username?: string;
-    handle?: string | null;
-    bio?: string | null;
-    is_public?: boolean;
-    avatarFile?: File | null;
-    otaku_type?: string;
-    otaku_type_custom?: string | null;
-  }) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { success: false, error: 'Not authenticated' };
+  const saveProfile = useCallback(
+    async (updates: {
+      username?: string;
+      handle?: string | null;
+      bio?: string | null;
+      is_public?: boolean;
+      avatarFile?: File | null;
+      otaku_type?: string;
+      otaku_type_custom?: string | null;
+    }) => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: 'Not authenticated' };
 
-      const updateData: Partial<UserProfile> = {};
+        const updateData: Partial<UserProfile> = {};
 
-      // アバター画像のアップロード
-      if (updates.avatarFile) {
-        const avatarPath = await uploadAvatar(updates.avatarFile);
-        if (avatarPath) {
-          updateData.avatar_url = avatarPath;
+        // アバター画像のアップロード
+        if (updates.avatarFile) {
+          const avatarPath = await uploadAvatar(updates.avatarFile);
+          if (avatarPath) {
+            updateData.avatar_url = avatarPath;
+          }
         }
+
+        // 新APIを使用してプロフィールを保存
+        const savedProfile = await upsertUserProfile({
+          username: updates.username ?? profile?.username ?? 'ユーザー',
+          handle: updates.handle !== undefined ? updates.handle : (profile?.handle ?? null),
+          bio:
+            updates.bio !== undefined && updates.bio !== null
+              ? updates.bio
+              : profile?.bio
+                ? profile.bio
+                : undefined,
+          is_public: updates.is_public ?? profile?.is_public ?? false,
+          otaku_type: updates.otaku_type ?? profile?.otaku_type ?? null,
+          otaku_type_custom: updates.otaku_type_custom ?? profile?.otaku_type_custom ?? null,
+          avatar_url: updateData.avatar_url ?? profile?.avatar_url ?? null,
+        });
+
+        // 状態を更新
+        setProfile(savedProfile);
+
+        // アバターURLを更新
+        if (savedProfile.avatar_url) {
+          updateAvatarUrl(savedProfile.avatar_url);
+        } else {
+          updateAvatarUrl(null);
+        }
+
+        // localStorageにもキャッシュ
+        localStorage.setItem('userProfile', JSON.stringify(savedProfile));
+
+        return { success: true, data: savedProfile };
+      } catch (err) {
+        console.error('Profile save error:', err);
+
+        // エラーメッセージを取得
+        let errorMessage = 'プロフィールの保存に失敗しました';
+        if (err instanceof ApiError) {
+          errorMessage = err.message;
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+
+        return { success: false, error: errorMessage };
       }
-
-      // 新APIを使用してプロフィールを保存
-      const savedProfile = await upsertUserProfile({
-        username: updates.username ?? profile?.username ?? 'ユーザー',
-        handle: updates.handle !== undefined ? updates.handle : (profile?.handle ?? null),
-        bio: updates.bio !== undefined && updates.bio !== null ? updates.bio : (profile?.bio ? profile.bio : undefined),
-        is_public: updates.is_public ?? profile?.is_public ?? false,
-        otaku_type: updates.otaku_type ?? profile?.otaku_type ?? null,
-        otaku_type_custom: updates.otaku_type_custom ?? profile?.otaku_type_custom ?? null,
-        avatar_url: updateData.avatar_url ?? profile?.avatar_url ?? null,
-      });
-
-      // 状態を更新
-      setProfile(savedProfile);
-      
-      // アバターURLを更新
-      if (savedProfile.avatar_url) {
-        updateAvatarUrl(savedProfile.avatar_url);
-      } else {
-        updateAvatarUrl(null);
-      }
-
-      // localStorageにもキャッシュ
-      localStorage.setItem('userProfile', JSON.stringify(savedProfile));
-
-      return { success: true, data: savedProfile };
-    } catch (err) {
-      console.error('Profile save error:', err);
-      
-      // エラーメッセージを取得
-      let errorMessage = 'プロフィールの保存に失敗しました';
-      if (err instanceof ApiError) {
-        errorMessage = err.message;
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      
-      return { success: false, error: errorMessage };
-    }
-  }, [profile, uploadAvatar, updateAvatarUrl]);
+    },
+    [profile, uploadAvatar, updateAvatarUrl]
+  );
 
   // ========== オタクタイプのみ保存（簡易版） ==========
-  const saveOtakuType = useCallback(async (type: string, customText?: string) => {
-    return saveProfile({
-      otaku_type: type === 'auto' ? 'auto' : (customText ? 'custom' : type),
-      otaku_type_custom: customText || null,
-    });
-  }, [saveProfile]);
+  const saveOtakuType = useCallback(
+    async (type: string, customText?: string) => {
+      return saveProfile({
+        otaku_type: type === 'auto' ? 'auto' : customText ? 'custom' : type,
+        otaku_type_custom: customText || null,
+      });
+    },
+    [saveProfile]
+  );
 
   // ========== 初期化 ==========
   useEffect(() => {
@@ -197,4 +212,3 @@ export function useProfile({ updateAvatarUrl, uploadAvatar }: UseProfileProps) {
     setProfile,
   };
 }
-

@@ -7,7 +7,6 @@ import { arm } from '@kawaiioverflow/arm';
  * @returns Annict ID（見つからない場合はnull）
  */
 export function getAnnictIdFromAniList(anilistId: number): number | null {
-  const mapping = arm.find(item => item.anilist_id === anilistId);
+  const mapping = arm.find((item) => item.anilist_id === anilistId);
   return mapping?.annict_id ?? null;
 }
-

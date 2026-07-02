@@ -15,30 +15,31 @@ export default function ResetPasswordPage() {
 
   const handleUpdatePassword = async () => {
     setError('');
-    
+
     // バリデーション
     if (!password || !confirmPassword) {
       setError('パスワードを入力してください');
       return;
     }
-    
+
     if (password.length < 6) {
       setError('パスワードは6文字以上で入力してください');
       return;
     }
-    
+
     if (password !== confirmPassword) {
       setError('パスワードが一致しません');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       await updatePassword(password);
       setSuccess(true);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'パスワードの更新に失敗しました';
+      const errorMessage =
+        error instanceof Error ? error.message : 'パスワードの更新に失敗しました';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -51,9 +52,7 @@ export default function ResetPasswordPage() {
         {success ? (
           <div className="text-center py-4">
             <div className="text-4xl mb-4">✅</div>
-            <h1 className="text-2xl font-bold mb-4 dark:text-white">
-              パスワードを更新しました
-            </h1>
+            <h1 className="text-2xl font-bold mb-4 dark:text-white">パスワードを更新しました</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               新しいパスワードでログインできます。
             </p>
@@ -68,9 +67,7 @@ export default function ResetPasswordPage() {
           <>
             <div className="text-center mb-6">
               <div className="text-4xl mb-4">🔐</div>
-              <h1 className="text-2xl font-bold mb-2 dark:text-white">
-                新しいパスワードを設定
-              </h1>
+              <h1 className="text-2xl font-bold mb-2 dark:text-white">新しいパスワードを設定</h1>
             </div>
 
             {/* エラーメッセージ */}
@@ -132,4 +129,3 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
-

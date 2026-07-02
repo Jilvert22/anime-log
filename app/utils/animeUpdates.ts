@@ -22,7 +22,7 @@ export async function updateAnimeInSeasons(
 ): Promise<{ updatedSeasons: Season[]; updatedAnime: Anime | null }> {
   // 更新対象のアニメを探す
   let targetAnime: Anime | null = null;
-  const updatedSeasons = seasons.map(season => ({
+  const updatedSeasons = seasons.map((season) => ({
     ...season,
     animes: season.animes.map((anime) => {
       if (anime.id === animeId) {
@@ -48,4 +48,3 @@ export async function updateAnimeInSeasons(
     updatedAnime: targetAnime,
   };
 }
-

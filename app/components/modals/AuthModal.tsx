@@ -26,7 +26,7 @@ function getPasswordStrength(password: string): PasswordStrength {
       bars: 1,
     };
   }
-  
+
   if (password.length < 8) {
     return {
       level: 'fair',
@@ -36,10 +36,10 @@ function getPasswordStrength(password: string): PasswordStrength {
       bars: 2,
     };
   }
-  
+
   const hasNumber = /\d/.test(password);
   const hasUpperCase = /[A-Z]/.test(password);
-  
+
   if (hasNumber && hasUpperCase) {
     return {
       level: 'strong',
@@ -49,7 +49,7 @@ function getPasswordStrength(password: string): PasswordStrength {
       bars: 4,
     };
   }
-  
+
   if (hasNumber) {
     return {
       level: 'good',
@@ -59,7 +59,7 @@ function getPasswordStrength(password: string): PasswordStrength {
       bars: 3,
     };
   }
-  
+
   return {
     level: 'fair',
     label: 'やや弱い',
@@ -96,17 +96,17 @@ export function AuthModal({
       setIsMigrating(true);
       const { getLocalStorageService } = await import('../../lib/storage');
       const { getSupabaseStorageService } = await import('../../lib/storage');
-      
+
       const localStorageService = getLocalStorageService();
       const supabaseService = getSupabaseStorageService();
-      
+
       // localStorageから全データを取得
       const items = localStorageService.getAllWatchlistItems();
-      
+
       if (items.length > 0) {
         // Supabaseに移行
         const success = await supabaseService.migrateToSupabase(items);
-        
+
         if (success) {
           // 移行成功後、localStorageをクリア
           localStorageService.clearWatchlist();
@@ -133,7 +133,8 @@ export function AuthModal({
         supabaseUrl = env.url;
         supabaseAnonKey = env.anonKey;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Supabaseの設定が正しくありません';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Supabaseの設定が正しくありません';
         setAuthError(`${errorMessage}。管理者にお問い合わせください。`);
         console.error('Supabase環境変数が不足しています:', error);
         return;
@@ -141,10 +142,10 @@ export function AuthModal({
 
       if (authMode === 'login') {
         await signInWithPassword(authEmail, authPassword);
-        
+
         // ログイン成功後、マイグレーションを実行
         await migrateLocalStorageToSupabase();
-        
+
         onClose();
         setAuthEmail('');
         setAuthPassword('');
@@ -155,10 +156,10 @@ export function AuthModal({
           setAuthError('利用規約とプライバシーポリシーへの同意が必要です');
           return;
         }
-        
+
         try {
           const result = await signUp(authEmail, authPassword);
-          
+
           // 登録成功時、確認メール送信画面を表示
           setEmailSent(true);
           setAuthPassword('');
@@ -167,10 +168,14 @@ export function AuthModal({
         } catch (error) {
           // エラーメッセージに「既に登録されています」が含まれているかチェック
           const errorMessage = error instanceof Error ? error.message : String(error);
-          if (errorMessage.includes('既に登録されています') || 
-              errorMessage.includes('already registered') ||
-              errorMessage.includes('User already registered')) {
-            setAuthError('このメールアドレスは既に登録されています。ログインタブからログインしてください。');
+          if (
+            errorMessage.includes('既に登録されています') ||
+            errorMessage.includes('already registered') ||
+            errorMessage.includes('User already registered')
+          ) {
+            setAuthError(
+              'このメールアドレスは既に登録されています。ログインタブからログインしてください。'
+            );
             setAuthPassword('');
             setAgreedToTerms(false);
             // ログインタブに切り替える
@@ -186,7 +191,9 @@ export function AuthModal({
       // より詳細なエラーメッセージを表示
       if (error instanceof Error) {
         // 新APIのエラーメッセージは既に日本語化されている
-        setAuthError(error.message || 'エラーが発生しました。しばらく待ってから再度お試しください。');
+        setAuthError(
+          error.message || 'エラーが発生しました。しばらく待ってから再度お試しください。'
+        );
       } else {
         setAuthError('エラーが発生しました。しばらく待ってから再度お試しください。');
       }
@@ -234,7 +241,11 @@ export function AuthModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4 dark:text-white">
-          {authMode === 'login' ? 'ログイン' : authMode === 'signup' ? '新規登録' : 'パスワードをリセット'}
+          {authMode === 'login'
+            ? 'ログイン'
+            : authMode === 'signup'
+              ? '新規登録'
+              : 'パスワードをリセット'}
         </h2>
 
         {/* タブ切り替え */}
@@ -285,9 +296,7 @@ export function AuthModal({
         {resetEmailSent ? (
           <div className="text-center py-4">
             <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
-            <h3 className="text-lg font-bold mb-2 dark:text-white">
-              リセットメールを送信しました
-            </h3>
+            <h3 className="text-lg font-bold mb-2 dark:text-white">リセットメールを送信しました</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
               {authEmail} 宛てにパスワードリセット用のメールを送信しました。
             </p>
@@ -307,9 +316,7 @@ export function AuthModal({
         ) : emailSent ? (
           <div className="text-center py-4">
             <Mail className="w-10 h-10 mx-auto mb-4 text-[#e879d4]" aria-hidden />
-            <h3 className="text-lg font-bold mb-2 dark:text-white">
-              確認メールを送信しました
-            </h3>
+            <h3 className="text-lg font-bold mb-2 dark:text-white">確認メールを送信しました</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
               {authEmail} 宛てに確認メールを送信しました。
             </p>
@@ -470,24 +477,25 @@ export function AuthModal({
                         <div
                           key={bar}
                           className={`h-1 flex-1 rounded ${
-                            bar <= strength.bars
-                              ? strength.color
-                              : 'bg-gray-200 dark:bg-gray-700'
+                            bar <= strength.bars ? strength.color : 'bg-gray-200 dark:bg-gray-700'
                           }`}
                         />
                       );
                     })}
                   </div>
-                  <p className={`text-xs ${
-                    getPasswordStrength(authPassword).level === 'weak'
-                      ? 'text-red-600 dark:text-red-400'
-                      : getPasswordStrength(authPassword).level === 'fair'
-                      ? 'text-orange-600 dark:text-orange-400'
-                      : getPasswordStrength(authPassword).level === 'good'
-                      ? 'text-yellow-600 dark:text-yellow-400'
-                      : 'text-green-600 dark:text-green-400'
-                  }`}>
-                    {getPasswordStrength(authPassword).label} - {getPasswordStrength(authPassword).message}
+                  <p
+                    className={`text-xs ${
+                      getPasswordStrength(authPassword).level === 'weak'
+                        ? 'text-red-600 dark:text-red-400'
+                        : getPasswordStrength(authPassword).level === 'fair'
+                          ? 'text-orange-600 dark:text-orange-400'
+                          : getPasswordStrength(authPassword).level === 'good'
+                            ? 'text-yellow-600 dark:text-yellow-400'
+                            : 'text-green-600 dark:text-green-400'
+                    }`}
+                  >
+                    {getPasswordStrength(authPassword).label} -{' '}
+                    {getPasswordStrength(authPassword).message}
                   </p>
                 </div>
               )}
@@ -559,10 +567,15 @@ export function AuthModal({
               </button>
               <button
                 onClick={handleAuth}
-                disabled={!authEmail || !authPassword || (authMode === 'signup' && !agreedToTerms) || isMigrating}
+                disabled={
+                  !authEmail ||
+                  !authPassword ||
+                  (authMode === 'signup' && !agreedToTerms) ||
+                  isMigrating
+                }
                 className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {isMigrating ? 'データ移行中...' : (authMode === 'login' ? 'ログイン' : '登録')}
+                {isMigrating ? 'データ移行中...' : authMode === 'login' ? 'ログイン' : '登録'}
               </button>
             </div>
           </>

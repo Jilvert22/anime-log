@@ -18,7 +18,6 @@ export function useModalHandlers({
   setEditingCharacter,
   setShowAddCharacterModal,
 }: UseModalHandlersProps) {
-
   // キャラクター保存
   const handleCharacterSave = useCallback(
     (character: FavoriteCharacter) => {
@@ -32,7 +31,13 @@ export function useModalHandlers({
       setShowAddCharacterModal(false);
       setEditingCharacter(null);
     },
-    [editingCharacter, favoriteCharacters, setFavoriteCharacters, setShowAddCharacterModal, setEditingCharacter]
+    [
+      editingCharacter,
+      favoriteCharacters,
+      setFavoriteCharacters,
+      setShowAddCharacterModal,
+      setEditingCharacter,
+    ]
   );
 
   // キャラクターモーダルを閉じる
@@ -45,10 +50,7 @@ export function useModalHandlers({
   const handleOpenAddCharacterModal = useCallback(() => {
     setEditingCharacter(null);
     setShowAddCharacterModal(true);
-  }, [
-    setEditingCharacter,
-    setShowAddCharacterModal,
-  ]);
+  }, [setEditingCharacter, setShowAddCharacterModal]);
 
   // キャラクター編集
   const handleEditCharacter = useCallback(
@@ -56,10 +58,7 @@ export function useModalHandlers({
       setEditingCharacter(character);
       setShowAddCharacterModal(true);
     },
-    [
-      setEditingCharacter,
-      setShowAddCharacterModal,
-    ]
+    [setEditingCharacter, setShowAddCharacterModal]
   );
 
   return {

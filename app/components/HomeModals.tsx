@@ -13,57 +13,96 @@ import { useCollection } from '../hooks/useCollection';
 import { supabase } from '../lib/supabase';
 
 // モーダルを動的インポート（初期バンドルサイズの削減）
-const ReviewModal = dynamic(() => import('./modals/ReviewModal').then(mod => ({ default: mod.ReviewModal })), {
-  ssr: false,
-});
+const ReviewModal = dynamic(
+  () => import('./modals/ReviewModal').then((mod) => ({ default: mod.ReviewModal })),
+  {
+    ssr: false,
+  }
+);
 
-const SettingsModal = dynamic(() => import('./modals/SettingsModal').then(mod => ({ default: mod.SettingsModal })), {
-  ssr: false,
-});
+const SettingsModal = dynamic(
+  () => import('./modals/SettingsModal').then((mod) => ({ default: mod.SettingsModal })),
+  {
+    ssr: false,
+  }
+);
 
-const AuthModal = dynamic(() => import('./modals/AuthModal').then(mod => ({ default: mod.AuthModal })), {
-  ssr: false,
-});
+const AuthModal = dynamic(
+  () => import('./modals/AuthModal').then((mod) => ({ default: mod.AuthModal })),
+  {
+    ssr: false,
+  }
+);
 
-const FavoriteAnimeModal = dynamic(() => import('./modals/FavoriteAnimeModal').then(mod => ({ default: mod.FavoriteAnimeModal })), {
-  ssr: false,
-});
+const FavoriteAnimeModal = dynamic(
+  () => import('./modals/FavoriteAnimeModal').then((mod) => ({ default: mod.FavoriteAnimeModal })),
+  {
+    ssr: false,
+  }
+);
 
-const AddAnimeFormModal = dynamic(() => import('./modals/AddAnimeFormModal').then(mod => ({ default: mod.AddAnimeFormModal })), {
-  ssr: false,
-});
+const AddAnimeFormModal = dynamic(
+  () => import('./modals/AddAnimeFormModal').then((mod) => ({ default: mod.AddAnimeFormModal })),
+  {
+    ssr: false,
+  }
+);
 
-const AnimeDetailModal = dynamic(() => import('./modals/AnimeDetailModal').then(mod => ({ default: mod.AnimeDetailModal })), {
-  ssr: false,
-});
+const AnimeDetailModal = dynamic(
+  () => import('./modals/AnimeDetailModal').then((mod) => ({ default: mod.AnimeDetailModal })),
+  {
+    ssr: false,
+  }
+);
 
-const SongModal = dynamic(() => import('./modals/SongModal').then(mod => ({ default: mod.SongModal })), {
-  ssr: false,
-});
+const SongModal = dynamic(
+  () => import('./modals/SongModal').then((mod) => ({ default: mod.SongModal })),
+  {
+    ssr: false,
+  }
+);
 
-const UserProfileModal = dynamic(() => import('./modals/UserProfileModal').then(mod => ({ default: mod.UserProfileModal })), {
-  ssr: false,
-});
+const UserProfileModal = dynamic(
+  () => import('./modals/UserProfileModal').then((mod) => ({ default: mod.UserProfileModal })),
+  {
+    ssr: false,
+  }
+);
 
-const FollowListModal = dynamic(() => import('./modals/FollowListModal').then(mod => ({ default: mod.FollowListModal })), {
-  ssr: false,
-});
+const FollowListModal = dynamic(
+  () => import('./modals/FollowListModal').then((mod) => ({ default: mod.FollowListModal })),
+  {
+    ssr: false,
+  }
+);
 
-const AddCharacterModal = dynamic(() => import('./modals/AddCharacterModal').then(mod => ({ default: mod.AddCharacterModal })), {
-  ssr: false,
-});
+const AddCharacterModal = dynamic(
+  () => import('./modals/AddCharacterModal').then((mod) => ({ default: mod.AddCharacterModal })),
+  {
+    ssr: false,
+  }
+);
 
-const AddQuoteModal = dynamic(() => import('./modals/AddQuoteModal').then(mod => ({ default: mod.AddQuoteModal })), {
-  ssr: false,
-});
+const AddQuoteModal = dynamic(
+  () => import('./modals/AddQuoteModal').then((mod) => ({ default: mod.AddQuoteModal })),
+  {
+    ssr: false,
+  }
+);
 
-const DNAModal = dynamic(() => import('./modals/DNAModal').then(mod => ({ default: mod.DNAModal })), {
-  ssr: false,
-});
+const DNAModal = dynamic(
+  () => import('./modals/DNAModal').then((mod) => ({ default: mod.DNAModal })),
+  {
+    ssr: false,
+  }
+);
 
-const SeasonEndModal = dynamic(() => import('./modals/SeasonEndModal').then(mod => ({ default: mod.SeasonEndModal })), {
-  ssr: false,
-});
+const SeasonEndModal = dynamic(
+  () => import('./modals/SeasonEndModal').then((mod) => ({ default: mod.SeasonEndModal })),
+  {
+    ssr: false,
+  }
+);
 
 interface HomeModalsProps {
   selectedAnime: Anime | null;
@@ -132,11 +171,8 @@ export function HomeModals({
     averageRating,
     totalRewatchCount,
   } = useAnimeDataContext();
-  const {
-    favoriteCharacters,
-    setFavoriteCharacters,
-  } = useCollection();
-  
+  const { favoriteCharacters, setFavoriteCharacters } = useCollection();
+
   // レビュー関連の状態をカスタムフックで管理
   const {
     animeReviews,
@@ -181,7 +217,7 @@ export function HomeModals({
   //   handleViewUserProfile,
   //   handleToggleFollow,
   // } = useSocial(user);
-  
+
   // ダミー値（SNS機能未実装時のプレースホルダー）
   const showUserProfileModal = false;
   const selectedUserProfile: UserProfile | null = null;
@@ -190,7 +226,7 @@ export function HomeModals({
   const showFollowListModal = false;
   const followListType: 'following' | 'followers' = 'following';
   const followListUsers: UserProfile[] = [];
-  
+
   // ダミーのセッター関数（SNS機能未実装時）
   const setFollowListType = (_value: 'following' | 'followers') => {
     // SNS機能実装時に実装
@@ -198,7 +234,7 @@ export function HomeModals({
   const setFollowListUsers = (_value: UserProfile[]) => {
     // SNS機能実装時に実装
   };
-  
+
   const handleCloseUserProfileModal = () => {
     // SNS機能実装時に削除
   };
@@ -378,4 +414,3 @@ export function HomeModals({
     </>
   );
 }
-

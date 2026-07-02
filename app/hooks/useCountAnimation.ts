@@ -16,7 +16,7 @@ export function useCountAnimation(targetCount: number) {
       currentStep++;
       const nextCount = Math.min(Math.ceil(increment * currentStep), targetCount);
       setCount(nextCount);
-      
+
       if (nextCount >= targetCount) {
         clearInterval(timer);
       }
@@ -27,4 +27,3 @@ export function useCountAnimation(targetCount: number) {
 
   return count;
 }
-

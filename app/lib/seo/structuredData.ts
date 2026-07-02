@@ -53,9 +53,5 @@ export function softwareApplicationJsonLd(siteUrl: string): JsonLdObject {
 
 /** サイト全体（トップ/layout）に出す構造化データ一式 */
 export function siteStructuredData(siteUrl: string): JsonLdObject[] {
-  return [
-    websiteJsonLd(siteUrl),
-    organizationJsonLd(siteUrl),
-    softwareApplicationJsonLd(siteUrl),
-  ];
+  return [websiteJsonLd(siteUrl), organizationJsonLd(siteUrl), softwareApplicationJsonLd(siteUrl)];
 }

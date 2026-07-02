@@ -8,13 +8,13 @@ export function SimpleHeader() {
       <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between">
         {/* 左：ロゴ */}
         <Link href="/">
-          <h1 
+          <h1
             className="text-xl font-bold tracking-tight cursor-pointer"
             style={{
               background: 'linear-gradient(135deg, #667eea 0%, #e879d4 50%, #f093fb 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              backgroundClip: 'text',
             }}
           >
             アニメログ
@@ -32,4 +32,3 @@ export function SimpleHeader() {
     </header>
   );
 }
-

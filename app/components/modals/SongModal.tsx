@@ -54,8 +54,8 @@ export function SongModal({
         rating: 0,
         isFavorite: false,
       };
-      
-      const updatedSeasons = seasons.map(season => ({
+
+      const updatedSeasons = seasons.map((season) => ({
         ...season,
         animes: season.animes.map((anime) =>
           anime.id === selectedAnime.id
@@ -69,7 +69,7 @@ export function SongModal({
             : anime
         ),
       }));
-      
+
       // Supabaseを更新（ログイン時のみ）
       if (user) {
         try {
@@ -82,31 +82,31 @@ export function SongModal({
             .update({ songs: updatedSongs })
             .eq('id', selectedAnime.id)
             .eq('user_id', user.id);
-          
+
           if (error) throw error;
         } catch (error) {
           console.error('Failed to save anime song to Supabase:', error);
         }
       }
-      
+
       setSeasons(updatedSeasons);
       handleClose();
     }
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={handleClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4 dark:text-white">
           {songType ? `${songType === 'op' ? 'OP' : 'ED'}を登録` : '主題歌を追加'}
         </h2>
-        
+
         {/* アニメ選択（selectedAnimeがない場合） */}
         {!selectedAnime && (
           <div className="mb-4">
@@ -115,7 +115,7 @@ export function SongModal({
             </label>
             <select
               onChange={(e) => {
-                const anime = allAnimes.find(a => a.id === Number(e.target.value));
+                const anime = allAnimes.find((a) => a.id === Number(e.target.value));
                 if (anime) {
                   setSelectedAnime(anime);
                   setSelectedAnimeParent(anime);
@@ -186,7 +186,7 @@ export function SongModal({
             </button>
           </div>
         )}
-        
+
         {/* 曲名入力 */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

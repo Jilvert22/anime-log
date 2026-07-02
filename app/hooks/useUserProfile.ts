@@ -12,7 +12,7 @@ export function useUserProfile() {
 
   // アバター管理用の一時的なprofile状態
   const [tempProfile, setTempProfile] = useState<UserProfile | null>(null);
-  
+
   // アバター管理（プロフィールに依存）
   const avatar = useAvatar({ profile: tempProfile });
 
@@ -29,7 +29,10 @@ export function useUserProfile() {
 
   // ========== 後方互換性のための値 ==========
   const userName = profile.profile?.username || 'ユーザー';
-  const userIcon = avatar.avatarPublicUrl || (typeof window !== 'undefined' ? localStorage.getItem('userIcon') : null) || null;
+  const userIcon =
+    avatar.avatarPublicUrl ||
+    (typeof window !== 'undefined' ? localStorage.getItem('userIcon') : null) ||
+    null;
   const userHandle = profile.profile?.handle || null;
   const userOtakuType = profile.profile?.otaku_type_custom || profile.profile?.otaku_type || '';
   const otakuType = profile.profile?.otaku_type || 'auto';
@@ -56,7 +59,7 @@ export function useUserProfile() {
     saveProfile: profile.saveProfile,
     saveOtakuType: profile.saveOtakuType,
     loadProfile: profile.loadProfile,
-    
+
     // 後方互換性
     userName,
     userIcon,
@@ -69,7 +72,7 @@ export function useUserProfile() {
     myProfile,
     favoriteAnimeIds,
     setFavoriteAnimeIds,
-    
+
     // setUserOtakuType: AnimeDNASectionで使用
     setUserOtakuType,
   };

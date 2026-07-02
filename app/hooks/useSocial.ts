@@ -2,7 +2,7 @@
 
 /**
  * SNS機能（フォロー/フォロワー管理）のカスタムフック
- * 
+ *
  * @status 未使用（将来実装予定）
  * @todo SNS機能実装時に有効化
  * @see Phase 5でAPI層は移行済み（app/lib/api/social.ts）
@@ -67,9 +67,10 @@ export function useSocial(user: User | null) {
 
     const loadFollowList = async () => {
       try {
-        const list = followListType === 'following'
-          ? await getFollowing(user.id)
-          : await getFollowers(user.id);
+        const list =
+          followListType === 'following'
+            ? await getFollowing(user.id)
+            : await getFollowers(user.id);
         setFollowListUsers(list);
       } catch (error) {
         console.error('フォロー/フォロワー一覧の読み込みに失敗しました:', error);
@@ -112,10 +113,7 @@ export function useSocial(user: User | null) {
         return;
       }
 
-      const [animes, following] = await Promise.all([
-        getPublicAnimes(userId),
-        isFollowing(userId),
-      ]);
+      const [animes, following] = await Promise.all([getPublicAnimes(userId), isFollowing(userId)]);
 
       setSelectedUserProfile(profile);
       setSelectedUserAnimes(animes.map((a) => supabaseToAnime(a as SupabaseAnimeRow)));
@@ -127,34 +125,37 @@ export function useSocial(user: User | null) {
     }
   }, []);
 
-  const handleToggleFollow = useCallback(async (userId: string) => {
-    if (!user) {
-      alert('ログインが必要です');
-      return;
-    }
-
-    const currentlyFollowing = userFollowStatus[userId] || false;
-
-    try {
-      if (currentlyFollowing) {
-        await unfollowUser(userId);
-      } else {
-        await followUser(userId);
+  const handleToggleFollow = useCallback(
+    async (userId: string) => {
+      if (!user) {
+        alert('ログインが必要です');
+        return;
       }
 
-      setUserFollowStatus((prev) => ({
-        ...prev,
-        [userId]: !currentlyFollowing,
-      }));
+      const currentlyFollowing = userFollowStatus[userId] || false;
 
-      // フォロー数を更新
-      const counts = await getFollowCounts(user.id);
-      setFollowCounts(counts);
-    } catch (error) {
-      console.error('フォロー操作に失敗しました:', error);
-      alert('フォロー操作に失敗しました');
-    }
-  }, [user, userFollowStatus]);
+      try {
+        if (currentlyFollowing) {
+          await unfollowUser(userId);
+        } else {
+          await followUser(userId);
+        }
+
+        setUserFollowStatus((prev) => ({
+          ...prev,
+          [userId]: !currentlyFollowing,
+        }));
+
+        // フォロー数を更新
+        const counts = await getFollowCounts(user.id);
+        setFollowCounts(counts);
+      } catch (error) {
+        console.error('フォロー操作に失敗しました:', error);
+        alert('フォロー操作に失敗しました');
+      }
+    },
+    [user, userFollowStatus]
+  );
 
   return {
     userSearchQuery,

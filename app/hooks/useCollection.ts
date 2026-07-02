@@ -23,7 +23,7 @@ function saveToStorage<T>(key: string, data: T): void {
 
 export function useCollection() {
   const [favoriteCharacters, setFavoriteCharacters] = useState<FavoriteCharacter[]>([]);
-  
+
   // 初回読み込み完了フラグ
   const isInitialized = useRef(false);
 

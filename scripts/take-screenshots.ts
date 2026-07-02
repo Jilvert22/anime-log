@@ -73,4 +73,3 @@ async function takeScreenshots() {
 }
 
 takeScreenshots();
-

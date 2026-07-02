@@ -70,7 +70,9 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
     const availableHeight = 400; // ヘッダー・ウォーターマーク・余白ぶんを引いた実効
     const cellHeightFromRows = (availableHeight - gap * (rows - 1)) / rows;
     const cellWidthFromCols = (availableWidth - gap * (cols - 1)) / cols;
-    const cellHeight = Math.floor(Math.min(cellHeightFromRows, cellWidthFromCols / POSTER_W_OVER_H));
+    const cellHeight = Math.floor(
+      Math.min(cellHeightFromRows, cellWidthFromCols / POSTER_W_OVER_H)
+    );
     const rowHeight = cellHeight; // 縦方向のセル高さ (バッジ配置計算で参照)
     const cellWidth = Math.floor(cellHeight * POSTER_W_OVER_H);
 
@@ -253,15 +255,11 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
                   ) : (
                     <div style={styles.coverPlaceholder}>{item.title || 'No Image'}</div>
                   )}
-                  {item.isContinuing && (
-                    <span style={styles.badgeContinuing}>継続中</span>
-                  )}
+                  {item.isContinuing && <span style={styles.badgeContinuing}>継続中</span>}
                   {!item.isContinuing && item.status === 'watching' && (
                     <span style={styles.badgeWatching}>視聴中</span>
                   )}
-                  {startDateText && (
-                    <span style={styles.startDate}>{startDateText}</span>
-                  )}
+                  {startDateText && <span style={styles.startDate}>{startDateText}</span>}
                 </div>
               );
             })}
@@ -276,7 +274,7 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
         <div style={styles.watermark}>animelog.jp</div>
       </div>
     );
-  },
+  }
 );
 
 SeasonCardForExport.displayName = 'SeasonCardForExport';

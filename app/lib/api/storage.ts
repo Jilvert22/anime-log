@@ -7,12 +7,7 @@
 
 import { supabase } from '../supabase';
 import { requireAuth } from './auth';
-import {
-  SupabaseError,
-  translateSupabaseError,
-  logError,
-  normalizeError,
-} from './errors';
+import { SupabaseError, translateSupabaseError, logError, normalizeError } from './errors';
 
 /**
  * アバター画像をSupabase Storageにアップロード
@@ -28,16 +23,12 @@ export async function uploadAvatar(file: File): Promise<string> {
 
     // 既存のアバターを削除（オプション）
     try {
-      const { data: existingFiles } = await supabase.storage
-        .from('avatars')
-        .list(user.id);
+      const { data: existingFiles } = await supabase.storage.from('avatars').list(user.id);
 
       if (existingFiles && existingFiles.length > 0) {
         // 古いファイルを削除（最新の1つだけ保持する場合）
-        const filesToDelete = existingFiles.map(f => `${user.id}/${f.name}`);
-        await supabase.storage
-          .from('avatars')
-          .remove(filesToDelete);
+        const filesToDelete = existingFiles.map((f) => `${user.id}/${f.name}`);
+        await supabase.storage.from('avatars').remove(filesToDelete);
       }
     } catch (error) {
       // 既存ファイルの削除に失敗しても続行（初回アップロードの場合など）
@@ -45,12 +36,10 @@ export async function uploadAvatar(file: File): Promise<string> {
     }
 
     // 新しいファイルをアップロード
-    const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+    const { data, error } = await supabase.storage.from('avatars').upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
 
     if (error) {
       throw new SupabaseError(
@@ -65,9 +54,7 @@ export async function uploadAvatar(file: File): Promise<string> {
     }
 
     // 公開URLを取得
-    const { data: urlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
     return urlData.publicUrl;
   } catch (error) {
@@ -83,9 +70,7 @@ export async function deleteFile(bucket: string, path: string): Promise<void> {
   try {
     const user = await requireAuth();
 
-    const { error } = await supabase.storage
-      .from(bucket)
-      .remove([path]);
+    const { error } = await supabase.storage.from(bucket).remove([path]);
 
     if (error) {
       throw new SupabaseError(
@@ -105,9 +90,7 @@ export async function deleteFile(bucket: string, path: string): Promise<void> {
  */
 export function getPublicUrl(bucket: string, path: string): string {
   try {
-    const { data } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
 
     return data.publicUrl;
   } catch (error) {
@@ -115,4 +98,3 @@ export function getPublicUrl(bucket: string, path: string): string {
     throw normalizeError(error);
   }
 }
-

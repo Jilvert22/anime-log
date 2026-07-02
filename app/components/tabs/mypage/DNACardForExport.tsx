@@ -34,11 +34,7 @@ export function buildSafeDNAExportHighlights({
 }: SafeDNAExportHighlightInput): string[] {
   const ratingLabel = averageRating > 0 ? averageRating.toFixed(1) : '未評価';
 
-  return [
-    `記録数 ${animeCount}作品`,
-    `平均評価 ${ratingLabel}`,
-    `周回 ${rewatchCount}回`,
-  ];
+  return [`記録数 ${animeCount}作品`, `平均評価 ${ratingLabel}`, `周回 ${rewatchCount}回`];
 }
 
 export function SafeDNACardForExport({
@@ -162,7 +158,9 @@ export function SafeDNACardForExport({
         <div style={styles.type}>{otakuTypeDisplay}</div>
         <div style={styles.highlights}>
           {highlights.map((highlight) => (
-            <div key={highlight} style={styles.highlight}>{highlight}</div>
+            <div key={highlight} style={styles.highlight}>
+              {highlight}
+            </div>
           ))}
         </div>
       </div>
@@ -182,7 +180,6 @@ const getProxiedUrl = (url: string | undefined): string | null => {
 
 const DNACardForExport = forwardRef<HTMLDivElement, DNACardForExportProps>(
   ({ userName, userHandle, avatarUrl, otakuTypeDisplay, favoriteAnimes }, ref) => {
-    
     const styles = {
       container: {
         width: 1200,
@@ -329,14 +326,16 @@ const DNACardForExport = forwardRef<HTMLDivElement, DNACardForExportProps>(
         {/* プロフィールセクション */}
         <div style={styles.profileSection}>
           {avatarUrl ? (
-            <img 
-              src={getProxiedUrl(avatarUrl) || avatarUrl} 
-              alt={userName} 
-              style={styles.avatar} 
-              crossOrigin="anonymous" 
+            <img
+              src={getProxiedUrl(avatarUrl) || avatarUrl}
+              alt={userName}
+              style={styles.avatar}
+              crossOrigin="anonymous"
             />
           ) : (
-            <div style={styles.avatarPlaceholder}><UserRound size={32} color="rgba(255,255,255,0.85)" aria-hidden /></div>
+            <div style={styles.avatarPlaceholder}>
+              <UserRound size={32} color="rgba(255,255,255,0.85)" aria-hidden />
+            </div>
           )}
           <div style={styles.profileInfo}>
             <div style={styles.userName}>{userName}</div>

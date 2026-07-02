@@ -33,9 +33,9 @@ export function validateLength(
   if (value === null || value === undefined) {
     return { isValid: true };
   }
-  
+
   const trimmed = value.trim();
-  
+
   // 最小文字数チェック
   if (limits.min !== undefined && trimmed.length < limits.min) {
     return {
@@ -43,7 +43,7 @@ export function validateLength(
       error: `${fieldName}は${limits.min}文字以上で入力してください`,
     };
   }
-  
+
   // 最大文字数チェック
   if (trimmed.length > limits.max) {
     return {
@@ -51,7 +51,7 @@ export function validateLength(
       error: `${fieldName}は${limits.max}文字以内で入力してください（現在: ${trimmed.length}文字）`,
     };
   }
-  
+
   return { isValid: true };
 }
 
@@ -61,11 +61,11 @@ export function validateLength(
 export function validateUsername(value: string): ValidationResult {
   const trimmed = value.trim();
   const limits = INPUT_LIMITS.username;
-  
+
   // 文字数チェック
   const lengthCheck = validateLength(trimmed, 'ユーザー名', limits);
   if (!lengthCheck.isValid) return lengthCheck;
-  
+
   // 使用可能文字チェック（英数字、日本語、一部記号）
   const validPattern = /^[a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF_\-]+$/;
   if (!validPattern.test(trimmed)) {
@@ -74,7 +74,7 @@ export function validateUsername(value: string): ValidationResult {
       error: 'ユーザー名に使用できない文字が含まれています',
     };
   }
-  
+
   return { isValid: true };
 }
 
@@ -86,19 +86,19 @@ export function validateHandle(value: string | null | undefined): ValidationResu
   if (!value) {
     return { isValid: true };
   }
-  
+
   const trimmed = value.trim();
-  
+
   // 空文字列の場合は許可（nullに変換される）
   if (trimmed === '') {
     return { isValid: true };
   }
-  
+
   const limits = INPUT_LIMITS.handle;
-  
+
   const lengthCheck = validateLength(trimmed, 'ハンドル', limits);
   if (!lengthCheck.isValid) return lengthCheck;
-  
+
   // 英数字とアンダースコアのみ
   const validPattern = /^[a-zA-Z0-9_]+$/;
   if (!validPattern.test(trimmed)) {
@@ -107,7 +107,7 @@ export function validateHandle(value: string | null | undefined): ValidationResu
       error: 'ハンドルは英数字とアンダースコアのみ使用できます',
     };
   }
-  
+
   return { isValid: true };
 }
 
@@ -119,4 +119,3 @@ export function throwIfInvalid(result: ValidationResult): void {
     throw new ValidationError(result.error);
   }
 }
-

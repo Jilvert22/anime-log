@@ -11,12 +11,9 @@ export function Providers({ children }: { children: ReactNode }) {
     <FeedbackProvider>
       <UserProfileProvider>
         <AnimeDataProvider>
-          <OnboardingProvider>
-            {children}
-          </OnboardingProvider>
+          <OnboardingProvider>{children}</OnboardingProvider>
         </AnimeDataProvider>
       </UserProfileProvider>
     </FeedbackProvider>
   );
 }
-

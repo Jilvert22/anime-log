@@ -14,9 +14,7 @@ export function useAvatar({ profile }: UseAvatarProps) {
   // アバターURLを更新するヘルパー関数
   const updateAvatarUrl = useCallback((avatarUrl: string | null) => {
     if (avatarUrl) {
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(avatarUrl);
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(avatarUrl);
       setAvatarPublicUrl(urlData.publicUrl);
     } else {
       setAvatarPublicUrl(null);
@@ -39,45 +37,46 @@ export function useAvatar({ profile }: UseAvatarProps) {
   }, [profile?.avatar_url, updateAvatarUrl]);
 
   // ========== アバター画像アップロード ==========
-  const uploadAvatar = useCallback(async (file: File): Promise<string | null> => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+  const uploadAvatar = useCallback(
+    async (file: File): Promise<string | null> => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return null;
 
-      // ファイル名を生成（user_id/timestamp.extension）
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        // ファイル名を生成（user_id/timestamp.extension）
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      // 古いアバターを削除（あれば）
-      if (profile?.avatar_url) {
-        try {
-          await supabase.storage
-            .from('avatars')
-            .remove([profile.avatar_url]);
-        } catch (e) {
-          console.warn('Failed to delete old avatar:', e);
+        // 古いアバターを削除（あれば）
+        if (profile?.avatar_url) {
+          try {
+            await supabase.storage.from('avatars').remove([profile.avatar_url]);
+          } catch (e) {
+            console.warn('Failed to delete old avatar:', e);
+          }
         }
-      }
 
-      // 新しいアバターをアップロード
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, {
+        // 新しいアバターをアップロード
+        const { data, error } = await supabase.storage.from('avatars').upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
         });
 
-      if (error) {
-        console.error('Avatar upload error:', error);
+        if (error) {
+          console.error('Avatar upload error:', error);
+          return null;
+        }
+
+        return data.path;
+      } catch (err) {
+        console.error('Avatar upload error:', err);
         return null;
       }
-
-      return data.path;
-    } catch (err) {
-      console.error('Avatar upload error:', err);
-      return null;
-    }
-  }, [profile?.avatar_url]);
+    },
+    [profile?.avatar_url]
+  );
 
   return {
     avatarPublicUrl,
@@ -86,4 +85,3 @@ export function useAvatar({ profile }: UseAvatarProps) {
     updateAvatarUrl,
   };
 }
-

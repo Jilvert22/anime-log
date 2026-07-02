@@ -1,0 +1,27 @@
+# ビルド成果物
+.next/
+out/
+build/
+next-env.d.ts
+
+# 生成物 (next-pwa)
+public/sw.js
+public/workbox-*.js
+public/fallback-*.js
+
+# テスト成果物
+playwright-report/
+test-results/
+coverage/
+
+# Claude Code worktree
+.claude/
+
+# ロックファイル
+package-lock.json
+
+# ドキュメント (整形対象外 — 手書きの改行を保持)
+*.md
+
+# SQL (Prettier非対応)
+*.sql

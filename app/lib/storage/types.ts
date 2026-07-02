@@ -55,29 +55,21 @@ export interface IStorageService {
       streaming_updated_at?: string | null;
     }
   ): Promise<boolean>;
-  updateWatchlistItemsStatus(
-    ids: string[],
-    status: WatchlistStatusValue
-  ): Promise<boolean>;
+  updateWatchlistItemsStatus(ids: string[], status: WatchlistStatusValue): Promise<boolean>;
   deleteWatchlistItems(ids: string[]): Promise<boolean>;
-  
+
   // シーズン別watchlist取得
   getSeasonWatchlist(
     year: number,
     season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL',
     status?: WatchlistStatus
   ): Promise<WatchlistItem[]>;
-  getCurrentSeasonWatchlist(
-    status?: WatchlistStatus
-  ): Promise<WatchlistItem[]>;
-  getNextSeasonWatchlist(
-    status?: WatchlistStatus
-  ): Promise<WatchlistItem[]>;
-  
+  getCurrentSeasonWatchlist(status?: WatchlistStatus): Promise<WatchlistItem[]>;
+  getNextSeasonWatchlist(status?: WatchlistStatus): Promise<WatchlistItem[]>;
+
   // マイグレーション用
   migrateToSupabase?(items: WatchlistItem[]): Promise<boolean>;
-  
+
   // 配信情報の更新（LocalStorageService専用メソッド）
   updateStreamingInfo?(id: string, streamingSites: string[]): void;
 }
-

@@ -14,11 +14,11 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  
+
   use: {
     // ローカル開発サーバーに向ける
     baseURL: 'http://localhost:3000',
-    
+
     // スクリーンショットとトレースを残す（デバッグ用）
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',

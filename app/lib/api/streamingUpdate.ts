@@ -1,4 +1,9 @@
-import { searchAnnictByTitle, searchAnnictById, extractStreamingServices, extractBroadcastTime } from './annict';
+import {
+  searchAnnictByTitle,
+  searchAnnictById,
+  extractStreamingServices,
+  extractBroadcastTime,
+} from './annict';
 import { getAnnictIdFromAniList } from './anime-mapping';
 import { createBrowserSupabaseClient } from '../supabase/client';
 
@@ -47,7 +52,7 @@ export async function updateAnimeStreamingInfo(
 
     // 2. フォールバック: タイトル検索
     const annictResults = await searchAnnictByTitle(title);
-    
+
     if (!annictResults || annictResults.length === 0) {
       return { success: false, error: '配信情報が見つかりませんでした' };
     }
@@ -114,7 +119,7 @@ export async function updateWatchlistStreamingInfo(
 
     // 2. フォールバック: タイトル検索
     const annictResults = await searchAnnictByTitle(title);
-    
+
     if (!annictResults || annictResults.length === 0) {
       return { success: false, error: '配信情報が見つかりませんでした' };
     }
@@ -142,4 +147,3 @@ export async function updateWatchlistStreamingInfo(
     return { success: false, error: errorMessage };
   }
 }
-

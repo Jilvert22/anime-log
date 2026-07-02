@@ -24,8 +24,7 @@ export const ABOUT_FAQ: { question: string; answer: string }[] = [
   },
   {
     question: '視聴予定カードとは何ですか？',
-    answer:
-      '今期・来期の視聴予定を1枚の画像カードにして、保存したりSNSでシェアできる機能です。',
+    answer: '今期・来期の視聴予定を1枚の画像カードにして、保存したりSNSでシェアできる機能です。',
   },
 ];
 

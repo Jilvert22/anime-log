@@ -41,7 +41,8 @@ export default function AboutClient() {
                     const parent = target.parentElement;
                     if (parent && !parent.querySelector('.placeholder')) {
                       const placeholder = document.createElement('div');
-                      placeholder.className = 'placeholder aspect-video flex items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800';
+                      placeholder.className =
+                        'placeholder aspect-video flex items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800';
                       placeholder.textContent = 'スクリーンショット準備中';
                       parent.appendChild(placeholder);
                     }
@@ -59,7 +60,7 @@ export default function AboutClient() {
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-16 text-gray-900 dark:text-white">
             主な機能
           </h2>
-          
+
           {/* クール別管理 - 左画像・右テキスト */}
           <div className="mb-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -76,7 +77,8 @@ export default function AboutClient() {
                       const parent = target.parentElement;
                       if (parent && !parent.querySelector('.placeholder')) {
                         const placeholder = document.createElement('div');
-                        placeholder.className = 'placeholder aspect-video flex items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800';
+                        placeholder.className =
+                          'placeholder aspect-video flex items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800';
                         placeholder.textContent = 'スクリーンショット準備中';
                         parent.appendChild(placeholder);
                       }
@@ -151,7 +153,8 @@ export default function AboutClient() {
                       const parent = target.parentElement;
                       if (parent && !parent.querySelector('.placeholder')) {
                         const placeholder = document.createElement('div');
-                        placeholder.className = 'placeholder aspect-video flex items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800';
+                        placeholder.className =
+                          'placeholder aspect-video flex items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800';
                         placeholder.textContent = 'スクリーンショット準備中';
                         parent.appendChild(placeholder);
                       }
@@ -178,7 +181,8 @@ export default function AboutClient() {
                       const parent = target.parentElement;
                       if (parent && !parent.querySelector('.placeholder')) {
                         const placeholder = document.createElement('div');
-                        placeholder.className = 'placeholder aspect-[9/16] flex items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800';
+                        placeholder.className =
+                          'placeholder aspect-[9/16] flex items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800';
                         placeholder.textContent = 'スクリーンショット準備中';
                         parent.appendChild(placeholder);
                       }
@@ -203,9 +207,7 @@ export default function AboutClient() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-                  DNAカード
-                </h3>
+                <h3 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">DNAカード</h3>
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                   最推し作品5つと視聴傾向タイプを1枚の画像に。SNSでシェアして、趣味の合う人を見つけよう。あなただけのアニメ視聴DNAを可視化します。
                 </p>
@@ -289,9 +291,7 @@ export default function AboutClient() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
-                無料
-              </h3>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">無料</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 すべての機能を無料でご利用いただけます。
               </p>
@@ -333,9 +333,7 @@ export default function AboutClient() {
                 <dt className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                   {faq.question}
                 </dt>
-                <dd className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {faq.answer}
-                </dd>
+                <dd className="text-gray-600 dark:text-gray-400 leading-relaxed">{faq.answer}</dd>
               </div>
             ))}
           </dl>
@@ -347,4 +345,3 @@ export default function AboutClient() {
     </div>
   );
 }
-

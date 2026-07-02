@@ -59,9 +59,10 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
           seasonMap.get(seasonName)!.push(anime);
         });
 
-        const loadedSeasons: Season[] = Array.from(seasonMap.entries()).map(
-          ([name, animes]) => ({ name, animes })
-        );
+        const loadedSeasons: Season[] = Array.from(seasonMap.entries()).map(([name, animes]) => ({
+          name,
+          animes,
+        }));
 
         // 時系列順にソート
         const sortedSeasons = sortSeasonsByTime(loadedSeasons);
@@ -95,7 +96,7 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
       }
 
       const parsedSeasons: Season[] = JSON.parse(savedSeasons);
-      
+
       // サンプルデータを検出（IDが1-4のアニメが含まれている場合）
       const hasSampleData = parsedSeasons.some((season) =>
         season.animes.some((anime) => anime.id >= 1 && anime.id <= 4)
@@ -143,10 +144,7 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
   }, [user, isLoading]);
 
   // すべてのアニメを取得
-  const allAnimes = useMemo(
-    () => seasons.flatMap((season) => season.animes),
-    [seasons]
-  );
+  const allAnimes = useMemo(() => seasons.flatMap((season) => season.animes), [seasons]);
 
   // 平均評価を計算
   const averageRating = useMemo(() => {

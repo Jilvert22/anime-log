@@ -7,10 +7,7 @@ import type { ReactElement } from 'react';
  * 壊れた1枚の画像がdecode()でハングしてもカード生成全体を止めないために使う。
  */
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | void> {
-  return Promise.race([
-    promise,
-    new Promise<void>((resolve) => setTimeout(resolve, ms)),
-  ]);
+  return Promise.race([promise, new Promise<void>((resolve) => setTimeout(resolve, ms))]);
 }
 
 /**
@@ -48,7 +45,12 @@ export async function renderCardToBlob(element: ReactElement): Promise<Blob> {
     // 画像のデコード完了を待つ（空カード対策）。1枚のハング/失敗は無視。
     const images = Array.from(node.querySelectorAll('img'));
     await Promise.all(
-      images.map((img) => withTimeout(img.decode().catch(() => undefined), 4000)),
+      images.map((img) =>
+        withTimeout(
+          img.decode().catch(() => undefined),
+          4000
+        )
+      )
     );
 
     const html2canvas = (await import('html2canvas')).default;
@@ -105,7 +107,7 @@ function downloadBlob(blob: Blob, fileName: string): void {
 export async function shareOrDownloadImage(
   blob: Blob,
   fileName: string,
-  shareMeta?: { title?: string; text?: string },
+  shareMeta?: { title?: string; text?: string }
 ): Promise<'shared' | 'downloaded' | 'cancelled'> {
   if (
     typeof navigator !== 'undefined' &&

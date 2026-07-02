@@ -27,7 +27,7 @@ export function MusicTab({
   const [musicFilterType, setMusicFilterType] = useState<'all' | 'op' | 'ed' | 'artist'>('all');
   const [selectedArtistForFilter, setSelectedArtistForFilter] = useState<string | null>(null);
   const { confirmDialog } = useFeedback();
-  
+
   // すべての曲を取得
   const allSongs: Array<{
     title: string;
@@ -59,24 +59,30 @@ export function MusicTab({
   });
 
   // フィルタリング
-  const filteredSongs = allSongs.filter(song => {
+  const filteredSongs = allSongs.filter((song) => {
     // 検索クエリでフィルタ
-    if (musicSearchQuery && 
-        !song.title.toLowerCase().includes(musicSearchQuery.toLowerCase()) &&
-        !song.artist.toLowerCase().includes(musicSearchQuery.toLowerCase()) &&
-        !song.animeTitle.toLowerCase().includes(musicSearchQuery.toLowerCase())) {
+    if (
+      musicSearchQuery &&
+      !song.title.toLowerCase().includes(musicSearchQuery.toLowerCase()) &&
+      !song.artist.toLowerCase().includes(musicSearchQuery.toLowerCase()) &&
+      !song.animeTitle.toLowerCase().includes(musicSearchQuery.toLowerCase())
+    ) {
       return false;
     }
-    
+
     // タイプでフィルタ
     if (musicFilterType === 'op' && song.type !== 'op') return false;
     if (musicFilterType === 'ed' && song.type !== 'ed') return false;
-    
+
     // アーティストでフィルタ
-    if (musicFilterType === 'artist' && selectedArtistForFilter && song.artist !== selectedArtistForFilter) {
+    if (
+      musicFilterType === 'artist' &&
+      selectedArtistForFilter &&
+      song.artist !== selectedArtistForFilter
+    ) {
       return false;
     }
-    
+
     return true;
   });
 
@@ -84,9 +90,7 @@ export function MusicTab({
   const favoriteSongs = filteredSongs.filter((song) => song.isFavorite);
 
   // 高評価TOP10（フィルタ後）
-  const topRatedSongs = [...filteredSongs]
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 10);
+  const topRatedSongs = [...filteredSongs].sort((a, b) => b.rating - a.rating).slice(0, 10);
 
   // よく聴くアーティスト
   const artistCounts: { [key: string]: number } = {};
@@ -96,9 +100,9 @@ export function MusicTab({
   const topArtists = Object.entries(artistCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
-  
+
   // ユニークなアーティストリスト
-  const uniqueArtists = Array.from(new Set(allSongs.map(s => s.artist))).sort();
+  const uniqueArtists = Array.from(new Set(allSongs.map((s) => s.artist))).sort();
 
   return (
     <div className="space-y-6">
@@ -127,7 +131,7 @@ export function MusicTab({
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e879d4] dark:bg-gray-700 dark:text-white"
             placeholder="曲名、アーティスト、アニメで検索..."
           />
-          
+
           {/* フィルタボタン */}
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             <button
@@ -183,7 +187,7 @@ export function MusicTab({
               アーティスト別
             </button>
           </div>
-          
+
           {/* アーティスト選択（アーティスト別フィルタ時） */}
           {musicFilterType === 'artist' && (
             <select
@@ -208,7 +212,7 @@ export function MusicTab({
           <h2 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">お気に入り曲</h2>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {favoriteSongs.map((song, index) => {
-              const anime = allAnimes.find(a => a.id === song.animeId);
+              const anime = allAnimes.find((a) => a.id === song.animeId);
               return (
                 <div
                   key={index}
@@ -232,15 +236,21 @@ export function MusicTab({
                     </button>
                     <button
                       onClick={async () => {
-                        if (await confirmDialog({ message: `${song.title}を削除しますか？`, danger: true, confirmLabel: '削除' })) {
+                        if (
+                          await confirmDialog({
+                            message: `${song.title}を削除しますか？`,
+                            danger: true,
+                            confirmLabel: '削除',
+                          })
+                        ) {
                           const updatedSongs = {
                             ...anime?.songs,
                             [song.type]: undefined,
                           };
-                          
-                          const updatedSeasons = seasons.map(season => ({
+
+                          const updatedSeasons = seasons.map((season) => ({
                             ...season,
-                            animes: season.animes.map(a =>
+                            animes: season.animes.map((a) =>
                               a.id === song.animeId
                                 ? {
                                     ...a,
@@ -249,7 +259,7 @@ export function MusicTab({
                                 : a
                             ),
                           }));
-                          
+
                           // Supabaseを更新（ログイン時のみ）
                           if (user && anime) {
                             try {
@@ -258,13 +268,13 @@ export function MusicTab({
                                 .update({ songs: updatedSongs })
                                 .eq('id', song.animeId)
                                 .eq('user_id', user.id);
-                              
+
                               if (error) throw error;
                             } catch (error) {
                               console.error('Supabaseでの曲の削除に失敗しました:', error);
                             }
                           }
-                          
+
                           setSeasons(updatedSeasons);
                         }
                       }}
@@ -274,7 +284,7 @@ export function MusicTab({
                       <Trash2 className="w-4 h-4" aria-hidden />
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">
                       {song.type.toUpperCase()}
@@ -319,12 +329,16 @@ export function MusicTab({
                       {song.type.toUpperCase()}
                     </span>
                     <StarRating rating={song.rating} size="text-sm" />
-                    {song.isFavorite && <Heart className="w-4 h-4 fill-[#e879d4] text-[#e879d4]" aria-hidden />}
+                    {song.isFavorite && (
+                      <Heart className="w-4 h-4 fill-[#e879d4] text-[#e879d4]" aria-hidden />
+                    )}
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">検索結果がありません</p>
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                検索結果がありません
+              </p>
             )}
           </div>
         </div>
@@ -332,7 +346,9 @@ export function MusicTab({
 
       {/* よく聴くアーティスト */}
       <div>
-        <h2 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">よく聴くアーティスト</h2>
+        <h2 className="font-bold text-lg mb-3 text-[#6b5b6e] dark:text-white">
+          よく聴くアーティスト
+        </h2>
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
           {topArtists.length > 0 ? (
             topArtists.map(([artist, count], index) => (
@@ -354,7 +370,9 @@ export function MusicTab({
               </button>
             ))
           ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">アーティストが登録されていません</p>
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+              アーティストが登録されていません
+            </p>
           )}
         </div>
       </div>

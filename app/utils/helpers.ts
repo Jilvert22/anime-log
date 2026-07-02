@@ -17,12 +17,13 @@ export function animeToSupabase(anime: Anime, seasonName: string, userId: string
     rating: anime.rating && anime.rating > 0 ? anime.rating : null, // 0の場合はNULLにする
     watched: anime.watched ?? false,
     rewatch_count: anime.rewatchCount ?? 0,
-    tags: (anime.tags && anime.tags.length > 0) ? anime.tags : null,
+    tags: anime.tags && anime.tags.length > 0 ? anime.tags : null,
     songs: anime.songs || null,
     quotes: anime.quotes || null,
     series_name: anime.seriesName || null,
-    studios: (anime.studios && anime.studios.length > 0) ? anime.studios : null,
-    streaming_sites: (anime.streamingSites && anime.streamingSites.length > 0) ? anime.streamingSites : null,
+    studios: anime.studios && anime.studios.length > 0 ? anime.studios : null,
+    streaming_sites:
+      anime.streamingSites && anime.streamingSites.length > 0 ? anime.streamingSites : null,
   };
 }
 
@@ -57,14 +58,14 @@ export function extractSeriesName(title: string): string {
     /^(.+?)\s*第(\d+)シーズン/i,
     /^(.+?)\s*The\s+Final\s+Season/i,
   ];
-  
+
   for (const pattern of patterns) {
     const match = title.match(pattern);
     if (match && match[1]) {
       return match[1].trim();
     }
   }
-  
+
   // パターンにマッチしない場合は元の文字列を返す
   return title;
 }
@@ -82,10 +83,10 @@ export const SEASON_TO_JA: Record<SeasonCode, string> = {
 
 // 任意の文字列キーを受けるため、未対応キーは undefined（呼び出し側でガードする）
 export const JA_TO_SEASON: Record<string, SeasonCode | undefined> = {
-  '冬': 'WINTER',
-  '春': 'SPRING',
-  '夏': 'SUMMER',
-  '秋': 'FALL',
+  冬: 'WINTER',
+  春: 'SPRING',
+  夏: 'SUMMER',
+  秋: 'FALL',
 };
 
 // 季節コード → クォーター番号（1=冬, 2=春, 3=夏, 4=秋）。getSeasonName(year, quarter) と対になる。
@@ -99,10 +100,10 @@ export const SEASON_QUARTER: Record<SeasonCode, number> = {
 // 季節名に月の範囲を追加する関数
 export function getSeasonNameWithMonths(seasonName: string): string {
   const monthRanges: { [key: string]: string } = {
-    '冬': '1~3月',
-    '春': '4~6月',
-    '夏': '7~9月',
-    '秋': '10~12月',
+    冬: '1~3月',
+    春: '4~6月',
+    夏: '7~9月',
+    秋: '10~12月',
   };
   const months = monthRanges[seasonName] || '';
   return months ? `${seasonName} (${months})` : seasonName;
@@ -123,20 +124,24 @@ export function getSeasonName(seasonOrYear: string | number, quarter?: number): 
     }
     return `${seasonOrYear}年${seasonNames[quarter - 1]}`;
   }
-  
+
   // 1つの引数が渡された場合（文字列のシーズン名）
   return SEASON_TO_JA[seasonOrYear as SeasonCode] || (seasonOrYear as string);
 }
 
 // 現在のシーズンを取得する関数
-export function getCurrentSeason(): { year: number; season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'; seasonName: string } {
+export function getCurrentSeason(): {
+  year: number;
+  season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
+  seasonName: string;
+} {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1; // 1-12
-  
+
   let season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
   let seasonName: string;
-  
+
   if (month >= 1 && month <= 3) {
     season = 'WINTER';
     seasonName = '冬 (1~3月)';
@@ -150,18 +155,27 @@ export function getCurrentSeason(): { year: number; season: 'WINTER' | 'SPRING' 
     season = 'FALL';
     seasonName = '秋 (10~12月)';
   }
-  
+
   return { year, season, seasonName };
 }
 
 // 来期（次のシーズン）を取得する関数
-export function getNextSeason(): { year: number; season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'; seasonName: string } {
+export function getNextSeason(): {
+  year: number;
+  season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
+  seasonName: string;
+} {
   const current = getCurrentSeason();
-  
-  const seasonOrder: ('WINTER' | 'SPRING' | 'SUMMER' | 'FALL')[] = ['WINTER', 'SPRING', 'SUMMER', 'FALL'];
+
+  const seasonOrder: ('WINTER' | 'SPRING' | 'SUMMER' | 'FALL')[] = [
+    'WINTER',
+    'SPRING',
+    'SUMMER',
+    'FALL',
+  ];
   const seasonNames: string[] = ['冬 (1~3月)', '春 (4~6月)', '夏 (7~9月)', '秋 (10~12月)'];
   const currentIndex = seasonOrder.indexOf(current.season);
-  
+
   if (currentIndex === 3) {
     // FALL → 翌年のWINTER
     return { year: current.year + 1, season: 'WINTER', seasonName: '冬 (1~3月)' };
@@ -171,7 +185,10 @@ export function getNextSeason(): { year: number; season: 'WINTER' | 'SPRING' | '
 }
 
 // 指定された年とシーズンが来期かどうかを判定する関数
-export function isNextSeason(year: number, season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'): boolean {
+export function isNextSeason(
+  year: number,
+  season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'
+): boolean {
   const next = getNextSeason();
   return next.year === year && next.season === season;
 }
@@ -190,10 +207,10 @@ const SEASON_CHECK_KEY = 'lastSeasonCheck';
 export function shouldShowSeasonStartModal(): boolean {
   const { year, season } = getCurrentSeason();
   const currentKey = `${year}-${season}`;
-  
+
   // ブラウザ環境でのみlocalStorageを使用
   if (typeof window === 'undefined') return false;
-  
+
   const lastCheck = localStorage.getItem(SEASON_CHECK_KEY);
   return lastCheck !== currentKey;
 }
@@ -202,16 +219,18 @@ export function shouldShowSeasonStartModal(): boolean {
 export function markSeasonChecked(): void {
   const { year, season } = getCurrentSeason();
   const currentKey = `${year}-${season}`;
-  
+
   // ブラウザ環境でのみlocalStorageを使用
   if (typeof window === 'undefined') return;
-  
+
   localStorage.setItem(SEASON_CHECK_KEY, currentKey);
 }
 
 // シーズン名を解析して年と季節を取得する関数
 // シーズン名の形式: "YYYY年[春|夏|秋|冬]" または "YYYY年[春|夏|秋|冬] (X~Y月)"
-export function parseSeasonName(seasonName: string): { year: number; season: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' } | null {
+export function parseSeasonName(
+  seasonName: string
+): { year: number; season: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' } | null {
   // "未分類"の場合はnullを返す
   if (seasonName === '未分類') return null;
 
@@ -231,12 +250,14 @@ export function parseSeasonName(seasonName: string): { year: number; season: 'SP
 // シーズン名を時系列順にソートする関数
 // シーズン名の形式: "YYYY年[春|夏|秋|冬]" または "未分類"
 // ソート順: 新しい年→古い年、同じ年は秋→夏→春→冬の順（秋が最新、アニメのクールは冬→春→夏→秋の順で放送されるため）、"未分類"は最後
-export function sortSeasonsByTime(seasons: { name: string; animes: Anime[] }[]): { name: string; animes: Anime[] }[] {
+export function sortSeasonsByTime(
+  seasons: { name: string; animes: Anime[] }[]
+): { name: string; animes: Anime[] }[] {
   const seasonOrder: { [key: string]: number } = {
-    '秋': 0,  // 最新
-    '夏': 1,
-    '春': 2,
-    '冬': 3,
+    秋: 0, // 最新
+    夏: 1,
+    春: 2,
+    冬: 3,
   };
 
   return [...seasons].sort((a, b) => {

@@ -51,7 +51,9 @@ function CollectionCard({ label, count, selected, onClick }: CollectionCardProps
           : 'bg-gray-100 dark:bg-gray-700/50 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
       }`}
     >
-      <div className={`font-bold text-2xl font-mixed ${selected ? 'text-[#e879d4]' : 'text-[#6b5b6e] dark:text-white'}`}>
+      <div
+        className={`font-bold text-2xl font-mixed ${selected ? 'text-[#e879d4]' : 'text-[#6b5b6e] dark:text-white'}`}
+      >
         {count}
       </div>
       <div className="text-gray-500 dark:text-gray-400 text-base font-mixed mt-0.5">{label}</div>
@@ -93,14 +95,15 @@ export default function CollectionSection(props: CollectionSectionProps) {
   // カウント計算
   const counts = useMemo(() => {
     const characters = props.favoriteCharacters?.length || 0;
-    const quotes = props.allAnimes?.reduce((sum, anime) => 
-      sum + (anime.quotes?.length || 0), 0) || 0;
-    const songs = props.allAnimes?.reduce((sum, anime) => {
-      let count = 0;
-      if (anime.songs?.op) count++;
-      if (anime.songs?.ed) count++;
-      return sum + count;
-    }, 0) || 0;
+    const quotes =
+      props.allAnimes?.reduce((sum, anime) => sum + (anime.quotes?.length || 0), 0) || 0;
+    const songs =
+      props.allAnimes?.reduce((sum, anime) => {
+        let count = 0;
+        if (anime.songs?.op) count++;
+        if (anime.songs?.ed) count++;
+        return sum + count;
+      }, 0) || 0;
     return { characters, quotes, songs };
   }, [props.favoriteCharacters, props.allAnimes]);
 
@@ -109,12 +112,13 @@ export default function CollectionSection(props: CollectionSectionProps) {
   };
 
   const filteredCharacters = props.characterFilter
-    ? props.favoriteCharacters.filter(c => c.category === props.characterFilter)
+    ? props.favoriteCharacters.filter((c) => c.category === props.characterFilter)
     : props.favoriteCharacters;
 
   // allQuotesListをuseMemoでメモ化
   const allQuotesList = useMemo(() => {
-    const quotes: Array<{ text: string; character?: string; animeTitle: string; animeId: number }> = [];
+    const quotes: Array<{ text: string; character?: string; animeTitle: string; animeId: number }> =
+      [];
     props.allAnimes.forEach((anime) => {
       anime.quotes?.forEach((quote) => {
         quotes.push({ ...quote, animeTitle: anime.title, animeId: anime.id });
@@ -125,13 +129,23 @@ export default function CollectionSection(props: CollectionSectionProps) {
 
   // filteredQuotesをuseMemoでメモ化
   const filteredQuotes = useMemo(() => {
-    return allQuotesList.filter(quote => {
-      if (props.quoteSearchQuery && !quote.text.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()) &&
-          !quote.animeTitle.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()) &&
-          !(quote.character && quote.character.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()))) {
+    return allQuotesList.filter((quote) => {
+      if (
+        props.quoteSearchQuery &&
+        !quote.text.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()) &&
+        !quote.animeTitle.toLowerCase().includes(props.quoteSearchQuery.toLowerCase()) &&
+        !(
+          quote.character &&
+          quote.character.toLowerCase().includes(props.quoteSearchQuery.toLowerCase())
+        )
+      ) {
         return false;
       }
-      if (props.quoteFilterType === 'anime' && props.selectedAnimeForFilter && quote.animeId !== props.selectedAnimeForFilter) {
+      if (
+        props.quoteFilterType === 'anime' &&
+        props.selectedAnimeForFilter &&
+        quote.animeId !== props.selectedAnimeForFilter
+      ) {
         return false;
       }
       if (props.quoteFilterType === 'character' && !quote.character) {
@@ -171,9 +185,11 @@ export default function CollectionSection(props: CollectionSectionProps) {
       </div>
 
       {/* 選択時の詳細表示 */}
-      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-        selectedCategory ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-      }`}>
+      <div
+        className={`overflow-hidden transition-all duration-500 ease-in-out ${
+          selectedCategory ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
         {selectedCategory === 'characters' && (
           <CollectionDetail
             title="推しキャラ"
@@ -209,7 +225,9 @@ export default function CollectionSection(props: CollectionSectionProps) {
                     すべて
                   </button>
                   {characterCategories.map((category) => {
-                    const count = props.favoriteCharacters.filter(c => c.category === category.value).length;
+                    const count = props.favoriteCharacters.filter(
+                      (c) => c.category === category.value
+                    ).length;
                     if (count === 0) return null;
                     return (
                       <button
@@ -226,7 +244,7 @@ export default function CollectionSection(props: CollectionSectionProps) {
                     );
                   })}
                 </div>
-                
+
                 {filteredCharacters.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3">
                     {filteredCharacters.slice(0, 4).map((character) => (
@@ -244,8 +262,16 @@ export default function CollectionSection(props: CollectionSectionProps) {
                           </button>
                           <button
                             onClick={async () => {
-                              if (await confirmDialog({ message: `${character.name}を削除しますか？`, danger: true, confirmLabel: '削除' })) {
-                                props.setFavoriteCharacters(props.favoriteCharacters.filter(c => c.id !== character.id));
+                              if (
+                                await confirmDialog({
+                                  message: `${character.name}を削除しますか？`,
+                                  danger: true,
+                                  confirmLabel: '削除',
+                                })
+                              ) {
+                                props.setFavoriteCharacters(
+                                  props.favoriteCharacters.filter((c) => c.id !== character.id)
+                                );
                               }
                             }}
                             className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition-colors"
@@ -254,10 +280,14 @@ export default function CollectionSection(props: CollectionSectionProps) {
                             <Trash2 className="w-4 h-4" aria-hidden />
                           </button>
                         </div>
-                        
+
                         <div className="text-4xl text-center mb-2">{character.image}</div>
-                        <h3 className="font-bold text-sm text-[#6b5b6e] dark:text-white text-center mb-1 font-mixed">{character.name}</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-2 font-mixed">{character.animeName}</p>
+                        <h3 className="font-bold text-sm text-[#6b5b6e] dark:text-white text-center mb-1 font-mixed">
+                          {character.name}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-2 font-mixed">
+                          {character.animeName}
+                        </p>
                         <div className="flex items-center justify-center mb-2">
                           <span className="text-xs bg-[#e879d4]/20 dark:bg-[#e879d4]/20 text-[#e879d4] dark:text-[#e879d4] px-2 py-1 rounded-full font-mixed">
                             {character.category}
@@ -282,11 +312,7 @@ export default function CollectionSection(props: CollectionSectionProps) {
         )}
 
         {selectedCategory === 'quotes' && (
-          <CollectionDetail
-            title="名言"
-            count={counts.quotes}
-            onAdd={props.onOpenAddQuoteModal}
-          >
+          <CollectionDetail title="名言" count={counts.quotes} onAdd={props.onOpenAddQuoteModal}>
             {allQuotesList.length > 0 && (
               <div className="space-y-3">
                 {filteredQuotes.slice(0, 3).map((quote, index) => {
@@ -295,9 +321,12 @@ export default function CollectionSection(props: CollectionSectionProps) {
                       key={index}
                       className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border-l-4 border-[#e879d4]"
                     >
-                      <p className="text-sm text-[#6b5b6e] dark:text-white mb-2 font-mixed">「{quote.text}」</p>
+                      <p className="text-sm text-[#6b5b6e] dark:text-white mb-2 font-mixed">
+                        「{quote.text}」
+                      </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 font-mixed">
-                        {quote.character ? `${quote.character} / ` : ''}{quote.animeTitle}
+                        {quote.character ? `${quote.character} / ` : ''}
+                        {quote.animeTitle}
                       </p>
                     </div>
                   );
@@ -321,9 +350,9 @@ export default function CollectionSection(props: CollectionSectionProps) {
               props.setShowSongModal(true);
             }}
           >
-            <MusicTab 
-              allAnimes={props.allAnimes} 
-              seasons={props.seasons} 
+            <MusicTab
+              allAnimes={props.allAnimes}
+              seasons={props.seasons}
               setSeasons={props.setSeasons}
               setSelectedAnime={props.setSelectedAnime}
               setShowSongModal={props.setShowSongModal}
