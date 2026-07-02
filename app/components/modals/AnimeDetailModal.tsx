@@ -12,7 +12,7 @@ import { addToWatchlist } from '../../lib/api';
 import { StreamingBadges } from '../common/StreamingBadges';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateAnimeStreamingInfo } from '../../lib/api/streamingUpdate';
-import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
+import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/api/anilist';
 import { ExternalLink, X, Heart, Star, Film, Plus } from 'lucide-react';
 import { logger } from '../../lib/logger';
 import { normalizeError } from '../../lib/api/errors';

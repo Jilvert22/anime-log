@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../types';
-import { searchAnimeBySeason } from '../lib/anilist';
+import { searchAnimeBySeason } from '../lib/api/anilist';
 import { translateGenre, sortSeasonsByTime, getNextSeason, JA_TO_SEASON } from '../utils/helpers';
-import { getBroadcastInfo } from '../lib/anilist';
+import { getBroadcastInfo } from '../lib/api/anilist';
 import { supabase } from '../lib/supabase';
 import { useStorage } from './useStorage';
 import { useAnimeSearchWithStreaming } from './useAnimeSearchWithStreaming';

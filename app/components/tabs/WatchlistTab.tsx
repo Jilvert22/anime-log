@@ -10,7 +10,7 @@ import {
   searchAnimeBySeason,
   getAnimeDetail,
   type AniListMedia,
-} from '../../lib/anilist';
+} from '../../lib/api/anilist';
 import { useStorage } from '../../hooks/useStorage';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../../lib/storage/types';
@@ -313,7 +313,7 @@ export function WatchlistTab({
 
     try {
       // AniListからアニメ情報を取得
-      const { searchAnime } = await import('../../lib/anilist');
+      const { searchAnime } = await import('../../lib/api/anilist');
       const results = await searchAnime(selectedWatchlistItem.title);
       const animeData = results?.find(
         (a: AniListSearchResult) => a.id === selectedWatchlistItem.anilist_id
@@ -575,7 +575,7 @@ export function WatchlistTab({
     try {
       for (const item of selectedItems) {
         // AniListからアニメ情報を取得
-        const { searchAnime } = await import('../../lib/anilist');
+        const { searchAnime } = await import('../../lib/api/anilist');
         const results = await searchAnime(item.title);
         const animeData = results?.find((a: AniListSearchResult) => a.id === item.anilist_id);
 

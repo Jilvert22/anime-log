@@ -5,7 +5,7 @@
  */
 
 import { NetworkError, logError, normalizeError } from './errors';
-import type { AniListMedia } from '../anilist';
+import type { AniListMedia } from './anilist';
 import { getAnnictIdFromAniList } from './anime-mapping';
 
 // ============================================

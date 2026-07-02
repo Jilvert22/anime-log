@@ -7,7 +7,7 @@ import {
   getBroadcastInfo,
   getOfficialSiteUrl,
   type AniListMedia,
-} from '../../lib/anilist';
+} from '../../lib/api/anilist';
 import { ExternalLink, X } from 'lucide-react';
 import { useFeedback } from '../../contexts/FeedbackContext';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';

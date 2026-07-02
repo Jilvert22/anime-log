@@ -5,7 +5,7 @@ import { Film } from 'lucide-react';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { isNextSeason } from '../../utils/helpers';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
-import { getAnimeDetail, type AniListMedia } from '../../lib/anilist';
+import { getAnimeDetail, type AniListMedia } from '../../lib/api/anilist';
 
 interface SearchResultsSectionProps {
   searchResults: AniListMediaWithStreaming[];

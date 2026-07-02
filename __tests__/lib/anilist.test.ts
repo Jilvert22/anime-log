@@ -1,23 +1,25 @@
 /**
  * AniList API の特性テスト (characterization test)
  *
- * 目的: Phase 2 で「旧 app/lib/anilist.ts」と「新 app/lib/api/anilist.ts」を
- *       1本に統合する前に、両実装の現挙動を固定する。
- *       仕様の正しさではなく「統合で挙動を変えていないこと」を検証する網。
- *
- * このファイルの最下部 describe('新旧実装の差分') が Phase 2 の統合仕様書を兼ねる:
- *   統合後の1本は「両者のフィールドの和集合」を満たすこと。
+ * Phase 2 で旧 app/lib/anilist.ts と新 app/lib/api/anilist.ts を1本に統合した。
+ * 統合方針は「両実装のフィールドの和集合」。このテストは統合後の単一実装が
+ * その和集合を満たし、かつ元の各挙動を保持していることを検証する。
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-import * as oldApi from '../../app/lib/anilist';
-import * as newApi from '../../app/lib/api/anilist';
-import type { AniListMedia } from '../../app/lib/anilist';
+import {
+  searchAnime,
+  searchAnimeBySeason,
+  getBroadcastInfo,
+  getOfficialSiteUrl,
+  getAnimeDetail,
+  type AniListMedia,
+} from '../../app/lib/api/anilist';
 
 // --- fetch モックのユーティリティ ------------------------------------------
 
-/** 旧実装は response.json()、新実装は response.text() を使うため両対応の Response を返す */
+/** parseJsonResponse は response.text() を使うため text/json 両対応の Response を返す */
 function makeResponse(payload: unknown) {
   const body = JSON.stringify(payload);
   return {
@@ -53,9 +55,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// --- getBroadcastInfo (新旧で完全一致) --------------------------------------
+// --- getBroadcastInfo -------------------------------------------------------
 
-describe('getBroadcastInfo — 新旧同一実装', () => {
+describe('getBroadcastInfo', () => {
   // airingAt は Unix 秒。JST(UTC+9) に変換した曜日(0=日)と HH:mm を返す。
   const cases: Array<[string, AniListMedia, { day: number | null; time: string | null }]> = [
     [
@@ -89,15 +91,13 @@ describe('getBroadcastInfo — 新旧同一実装', () => {
   ];
 
   it.each(cases)('%s', (_label, input, expected) => {
-    expect(oldApi.getBroadcastInfo(input)).toEqual(expected);
-    // 新実装も同一の結果を返すこと
-    expect(newApi.getBroadcastInfo(input)).toEqual(expected);
+    expect(getBroadcastInfo(input)).toEqual(expected);
   });
 });
 
-// --- getOfficialSiteUrl (旧のみに存在。統合後も残すこと) ----------------------
+// --- getOfficialSiteUrl -----------------------------------------------------
 
-describe('getOfficialSiteUrl — 旧のみ (Phase 2で統合先へ移設)', () => {
+describe('getOfficialSiteUrl', () => {
   const base = { title: { native: null, romaji: null }, coverImage: null } as AniListMedia;
 
   it('type === INFO のリンクを優先', () => {
@@ -108,7 +108,7 @@ describe('getOfficialSiteUrl — 旧のみ (Phase 2で統合先へ移設)', () =
         { site: 'x', url: 'https://info', type: 'INFO' },
       ],
     } as AniListMedia;
-    expect(oldApi.getOfficialSiteUrl(media)).toBe('https://info');
+    expect(getOfficialSiteUrl(media)).toBe('https://info');
   });
 
   it('site === "Official Site" でも拾う', () => {
@@ -116,106 +116,86 @@ describe('getOfficialSiteUrl — 旧のみ (Phase 2で統合先へ移設)', () =
       ...base,
       externalLinks: [{ site: 'Official Site', url: 'https://official' }],
     } as AniListMedia;
-    expect(oldApi.getOfficialSiteUrl(media)).toBe('https://official');
+    expect(getOfficialSiteUrl(media)).toBe('https://official');
   });
 
   it('該当リンクが無ければ siteUrl にフォールバック', () => {
     const media = { ...base, externalLinks: [], siteUrl: 'https://anilist' } as AniListMedia;
-    expect(oldApi.getOfficialSiteUrl(media)).toBe('https://anilist');
+    expect(getOfficialSiteUrl(media)).toBe('https://anilist');
   });
 
   it('何も無ければ null', () => {
-    expect(oldApi.getOfficialSiteUrl(base)).toBeNull();
+    expect(getOfficialSiteUrl(base)).toBeNull();
   });
 });
 
-// --- searchAnime (新旧で挙動差あり) -----------------------------------------
+// --- searchAnime ------------------------------------------------------------
 
-describe('searchAnime — 現挙動の固定', () => {
-  it('旧: 成功時に media 配列を返す', async () => {
+describe('searchAnime', () => {
+  it('成功時に media 配列を返す', async () => {
     fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [{ id: 1 }] } } }));
-    await expect(oldApi.searchAnime('鬼滅')).resolves.toEqual([{ id: 1 }]);
+    await expect(searchAnime('鬼滅')).resolves.toEqual([{ id: 1 }]);
   });
 
-  it('新: 成功時に media 配列を返す', async () => {
-    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [{ id: 1 }] } } }));
-    await expect(newApi.searchAnime('鬼滅')).resolves.toEqual([{ id: 1 }]);
-  });
-
-  it('旧新とも: API エラー時は空配列 (握りつぶし)', async () => {
+  it('API エラー時は空配列 (握りつぶし)', async () => {
     fetchMock.mockResolvedValue(makeResponse({ errors: [{ message: 'boom' }] }));
-    await expect(oldApi.searchAnime('x')).resolves.toEqual([]);
-    await expect(newApi.searchAnime('x')).resolves.toEqual([]);
+    await expect(searchAnime('x')).resolves.toEqual([]);
+  });
+
+  it('空文字クエリは通信せず即 [] (新実装由来のショートサーキット)', async () => {
+    await expect(searchAnime('   ')).resolves.toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('和集合: externalLinks.type を取得する (旧実装由来)', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [] } } }));
+    await searchAnime('x');
+    expect(externalLinksBlock(lastQuery(fetchMock))).toContain('type');
   });
 });
 
-// --- searchAnimeBySeason (新旧で挙動差あり) ----------------------------------
+// --- searchAnimeBySeason ----------------------------------------------------
 
-describe('searchAnimeBySeason — 現挙動の固定', () => {
+describe('searchAnimeBySeason', () => {
   const ok = {
     data: {
       Page: { media: [{ id: 1 }], pageInfo: { total: 1, currentPage: 1, hasNextPage: false } },
     },
   };
 
-  it('旧新とも: media と pageInfo を返す', async () => {
+  it('media と pageInfo を返す', async () => {
     fetchMock.mockResolvedValue(makeResponse(ok));
-    await expect(oldApi.searchAnimeBySeason('SPRING', 2025)).resolves.toEqual({
+    await expect(searchAnimeBySeason('SPRING', 2025)).resolves.toEqual({
       media: [{ id: 1 }],
       pageInfo: { total: 1, currentPage: 1, hasNextPage: false },
     });
-    fetchMock.mockResolvedValue(makeResponse(ok));
-    await expect(newApi.searchAnimeBySeason('SPRING', 2025)).resolves.toEqual({
-      media: [{ id: 1 }],
-      pageInfo: { total: 1, currentPage: 1, hasNextPage: false },
-    });
+  });
+
+  it('和集合: 継続判定用の status/startDate/endDate を取得する (新実装由来)', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [], pageInfo: {} } } }));
+    await searchAnimeBySeason('SPRING', 2025);
+    const q = lastQuery(fetchMock);
+    expect(q).toContain('status');
+    expect(q).toContain('startDate');
+    expect(q).toContain('endDate');
   });
 });
 
-// --- 新旧実装の差分 = Phase 2 の統合仕様書 -----------------------------------
-//
-// ここで「現状ズレている点」をコードとして固定する。Phase 2 の統合では
-// 各テストの意図(和集合)を満たすよう1本化し、下記のアサーションを
-// 「統合後の1実装」に対して通るよう書き換える。
+// --- getAnimeDetail ---------------------------------------------------------
 
-describe('新旧差分 (Phase 2で和集合に統合すること)', () => {
-  it('差分1: searchAnime の externalLinks.type は旧のみ取得 → 統合後も残す', async () => {
-    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [] } } }));
-    await oldApi.searchAnime('x');
-    expect(externalLinksBlock(lastQuery(fetchMock))).toContain('type');
-
-    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [] } } }));
-    await newApi.searchAnime('x');
-    // 現状: 新は type を取っていない (これが失われている挙動)
-    expect(externalLinksBlock(lastQuery(fetchMock))).not.toContain('type');
+describe('getAnimeDetail', () => {
+  it('Media を返す', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ data: { Media: { id: 42 } } }));
+    await expect(getAnimeDetail(42)).resolves.toEqual({ id: 42 });
   });
 
-  it('差分2: searchAnimeBySeason の status/startDate/endDate は新のみ取得 → 統合後も残す', async () => {
-    const ok = makeResponse({ data: { Page: { media: [], pageInfo: {} } } });
-
-    fetchMock.mockResolvedValue(ok);
-    await oldApi.searchAnimeBySeason('SPRING', 2025);
-    const oldQ = lastQuery(fetchMock);
-    // 現状: 旧は継続判定に必要な status/startDate/endDate を取れていない
-    expect(oldQ).not.toContain('status');
-    expect(oldQ).not.toContain('startDate');
-
-    fetchMock.mockResolvedValue(ok);
-    await newApi.searchAnimeBySeason('SPRING', 2025);
-    const newQ = lastQuery(fetchMock);
-    expect(newQ).toContain('status');
-    expect(newQ).toContain('startDate');
-    expect(newQ).toContain('endDate');
+  it('見つからない (Media: null) 場合は null', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ data: { Media: null } }));
+    await expect(getAnimeDetail(999)).resolves.toBeNull();
   });
 
-  it('差分3: 新 searchAnime は空文字クエリを通信せず即 [] (旧は通信する)', async () => {
-    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [] } } }));
-    await expect(newApi.searchAnime('   ')).resolves.toEqual([]);
-    expect(fetchMock).not.toHaveBeenCalled(); // 新はショートサーキット
-
-    fetchMock.mockClear();
-    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [] } } }));
-    await oldApi.searchAnime('   ');
-    expect(fetchMock).toHaveBeenCalled(); // 旧は通信する
+  it('API エラー時は null', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ errors: [{ message: 'boom' }] }));
+    await expect(getAnimeDetail(1)).resolves.toBeNull();
   });
 });

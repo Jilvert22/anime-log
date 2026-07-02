@@ -117,7 +117,7 @@ export function SeriesView({ seasons, setSelectedAnime, onOpenAddForm }: SeriesV
     setLoadingSuggestions((prev) => new Set(prev).add(seriesName));
 
     try {
-      const { searchAnime } = await import('../../lib/anilist');
+      const { searchAnime } = await import('../../lib/api/anilist');
       const results = await searchAnime(seriesName);
 
       // 登録済みでない作品をフィルタリング（タイトルで比較）
