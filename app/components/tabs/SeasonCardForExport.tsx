@@ -61,9 +61,18 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
     const cellCount = shownCovers.length + (overflow ? 1 : 0);
     const { cols, rows } = getGridLayout(cellCount);
 
-    // グリッドエリアの利用可能高さ (container 630 - padding 96 - header 90 - watermark 30 - 余白)
-    const gridAreaHeight = 400;
-    const rowHeight = Math.floor(gridAreaHeight / rows);
+    // セルサイズを 2:3 のポスター aspect に固定して計算。
+    // 利用可能領域 (padding 96 + header ~90 + watermark ~30 を差し引いた実効エリア) の
+    // width/height 両制約から min を取って、セル最大サイズを求める。
+    const POSTER_W_OVER_H = 2 / 3;
+    const gap = 14;
+    const availableWidth = 1104; // 1200 - padding 96
+    const availableHeight = 400; // ヘッダー・ウォーターマーク・余白ぶんを引いた実効
+    const cellHeightFromRows = (availableHeight - gap * (rows - 1)) / rows;
+    const cellWidthFromCols = (availableWidth - gap * (cols - 1)) / cols;
+    const cellHeight = Math.floor(Math.min(cellHeightFromRows, cellWidthFromCols / POSTER_W_OVER_H));
+    const rowHeight = cellHeight; // 縦方向のセル高さ (バッジ配置計算で参照)
+    const cellWidth = Math.floor(cellHeight * POSTER_W_OVER_H);
 
     const styles = {
       container: {
@@ -125,17 +134,17 @@ const SeasonCardForExport = forwardRef<HTMLDivElement, SeasonCardForExportProps>
       },
       grid: {
         display: 'grid',
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gridAutoRows: `${rowHeight}px`,
-        gap: 14,
-        // 少作品時に横幅を絞って画像が縦伸びしないように
-        width: cols <= 2 ? `${cols * 260}px` : '100%',
-        maxWidth: '100%',
+        gridTemplateColumns: `repeat(${cols}, ${cellWidth}px)`,
+        gridAutoRows: `${cellHeight}px`,
+        gap: `${gap}px`,
+        // ポスター aspect 保持のため、grid 自体は固定サイズ。中央寄せは gridWrapper 側で
+        justifyContent: 'center' as const,
+        alignContent: 'center' as const,
       },
       coverWrap: {
         position: 'relative' as const,
-        width: '100%',
-        height: rowHeight,
+        width: cellWidth,
+        height: cellHeight,
         borderRadius: 12,
         overflow: 'hidden' as const,
         backgroundColor: 'rgba(255, 255, 255, 0.12)',
