@@ -9,7 +9,7 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack && node scripts/inject-push-notifications.js",
     "start": "next start",
-    "lint": "eslint . --max-warnings 141",
+    "lint": "eslint . --max-warnings 139",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
@@ -18,7 +18,6 @@
     "screenshots": "tsx scripts/take-screenshots.ts"
   },
   "dependencies": {
-    "@kawaiioverflow/arm": "^0.221.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "@vercel/analytics": "^1.6.1",

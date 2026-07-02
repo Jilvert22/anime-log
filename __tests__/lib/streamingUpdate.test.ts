@@ -2,12 +2,12 @@
  * 配信情報更新 (streamingUpdate) の特性テスト
  *
  * 目的: Phase 2 で updateAnimeStreamingInfo / updateWatchlistStreamingInfo の
- *       重複2関数を updateStreamingInfo(table, id, title) に統合する前に、
+ *       重複2関数を updateStreamingInfo(table, id, title) に統合した。
  *       「どのテーブルの・どのカラムを・どんなキーで更新するか」を固定する。
  *
- * 前提: searchAnnictById は @deprecated で常に null を返すため、
- *       両関数冒頭の「IDマッピング分岐」は到達不能なデッドコード。
- *       このテストは実際に通るタイトルマッチ経路のみを固定する。
+ * 補足: 旧実装にあった「AniList ID → Annict ID マッピング分岐」は
+ *       searchAnnictById が常に null を返す仕様で到達不能だったため Phase 2 で削除済み。
+ *       現在はタイトルマッチ経路一本。
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -15,14 +15,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Annict 層をモック (タイトル検索が1件ヒットする状態)
 vi.mock('../../app/lib/api/annict', () => ({
   searchAnnictByTitle: vi.fn().mockResolvedValue([{ programs: { nodes: [] } }]),
-  searchAnnictById: vi.fn().mockResolvedValue(null), // @deprecated 実物同様
   extractStreamingServices: vi.fn().mockReturnValue(['Netflix', 'dアニメストア']),
   extractBroadcastTime: vi.fn().mockReturnValue('金 23:30'),
-}));
-
-// IDマッピングは常に null (デッドブランチを踏ませない)
-vi.mock('../../app/lib/api/anime-mapping', () => ({
-  getAnnictIdFromAniList: vi.fn().mockReturnValue(null),
 }));
 
 // Supabase クライアントをモックし、update チェーンを記録する

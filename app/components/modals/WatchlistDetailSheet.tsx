@@ -632,8 +632,7 @@ export function WatchlistDetailSheet({
                         if (!currentItem?.id || !currentItem?.title) return;
                         const result = await updateWatchlistStreamingInfo(
                           currentItem.id,
-                          currentItem.title,
-                          currentItem.anilist_id
+                          currentItem.title
                         );
                         if (result.success && result.streamingSites) {
                           // ローカルストレージまたはSupabaseから更新されたデータを取得
