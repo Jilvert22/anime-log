@@ -25,7 +25,7 @@ import {
   getSeasonName,
   SEASON_QUARTER,
 } from '../../utils/helpers';
-import { getBroadcastInfo, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
+import { getBroadcastInfo, getAnimeDetail, type AniListMedia } from '../../lib/api/anilist';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { WatchlistDetailSheet } from '../modals/WatchlistDetailSheet';
 import { Spinner } from '../common/Spinner';

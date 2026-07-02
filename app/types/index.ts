@@ -104,7 +104,7 @@ export type SupabaseAnimeRow = {
 
 // AniList APIの検索結果型（HomeTabで使用）
 // AniListMediaのエイリアスとして定義（型定義の重複を解消）
-import type { AniListMedia } from '../lib/anilist';
+import type { AniListMedia } from '../lib/api/anilist';
 export type AniListSearchResult = AniListMedia;
 
 // Supabaseクライアント型（Database型が定義されていない場合はanyを使用）

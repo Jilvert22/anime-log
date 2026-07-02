@@ -28,33 +28,6 @@ export const supabase = new Proxy({} as SupabaseClient, {
   },
 });
 
-// SNS機能用の型定義
-export type UserProfile = {
-  id: string;
-  username: string;
-  handle: string | null; // @で始まるハンドル（@なしで保存）
-  bio: string | null;
-  is_public: boolean;
-  otaku_type: string | null; // 'auto' | プリセット名 | null
-  otaku_type_custom: string | null; // カスタム入力の場合のテキスト
-  avatar_url: string | null; // Supabase StorageのURL
-  created_at: string;
-  updated_at: string;
-};
-
-export type Follow = {
-  id: string;
-  follower_id: string;
-  following_id: string;
-  created_at: string;
-};
-
-// UUID形式かどうかを判定する関数
-function isUUID(str: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
-}
-
-// 注意: 以下の関数は新API (app/lib/api) に移行されました
-// 後方互換性のため、型定義のみ残しています
-// 関数を使用する場合は app/lib/api からimportしてください
+// SNS機能用の型は app/lib/api/types.ts を正とする (供給元を1つに統一)。
+// 後方互換のため re-export のみ残す。
+export type { UserProfile, Follow } from './api/types';

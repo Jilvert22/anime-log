@@ -15,7 +15,7 @@
  *     NOT_YET_RELEASED や FINISHED の null 話数は誤検知の温床なので除外。
  */
 
-import type { AniListMedia } from '../lib/anilist';
+import type { AniListMedia } from '../lib/api/anilist';
 import type { Season } from '../lib/api/types';
 
 const SEASON_ORDER: readonly Season[] = ['WINTER', 'SPRING', 'SUMMER', 'FALL'] as const;

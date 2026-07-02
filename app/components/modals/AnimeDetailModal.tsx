@@ -12,7 +12,7 @@ import { addToWatchlist } from '../../lib/api';
 import { StreamingBadges } from '../common/StreamingBadges';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateAnimeStreamingInfo } from '../../lib/api/streamingUpdate';
-import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/anilist';
+import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/api/anilist';
 import { ExternalLink, X, Heart, Star, Film, Plus } from 'lucide-react';
 import { logger } from '../../lib/logger';
 import { normalizeError } from '../../lib/api/errors';
@@ -311,13 +311,9 @@ export function AnimeDetailModal({
                   <StreamingUpdateButton
                     onUpdate={async () => {
                       if (!user) return;
-                      // selectedAnime.idがAniList IDかどうかを判定（1000000未満の場合はAniList ID）
-                      const isAnilistId = selectedAnime.id < 1000000;
-                      const anilistId = isAnilistId ? selectedAnime.id : undefined;
                       const result = await updateAnimeStreamingInfo(
                         selectedAnime.id,
-                        selectedAnime.title,
-                        anilistId
+                        selectedAnime.title
                       );
                       if (result.success && result.streamingSites) {
                         // アニメ情報を更新

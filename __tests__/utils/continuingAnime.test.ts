@@ -5,7 +5,7 @@ import {
   seasonFromMonth,
   seasonIndex,
 } from '../../app/utils/continuingAnime';
-import type { AniListMedia } from '../../app/lib/anilist';
+import type { AniListMedia } from '../../app/lib/api/anilist';
 
 // テスト用のミニファクトリ — AniListMedia の必須フィールドだけ埋める
 function media(overrides: Partial<AniListMedia> = {}): AniListMedia {

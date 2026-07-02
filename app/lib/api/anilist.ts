@@ -1,13 +1,69 @@
 /**
  * AniList API関連
- * GraphQL APIのラッパー関数
+ * GraphQL APIのラッパー関数（旧 app/lib/anilist.ts を統合した単一の実装）
  */
 
 import { fetchWithRetry, parseJsonResponse, checkResponseStatus } from './client';
 import { NetworkError, logError, normalizeError } from './errors';
-import type { AniListMedia } from '../anilist';
 
 const ANILIST_API = 'https://graphql.anilist.co';
+
+export type AniListMedia = {
+  id: number;
+  title: {
+    native: string | null;
+    romaji: string | null;
+    english?: string | null;
+  };
+  coverImage: {
+    medium: string | null;
+    large: string | null;
+  } | null;
+  seasonYear: number | null;
+  season: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null;
+  genres: string[];
+  studios: {
+    nodes: {
+      name: string;
+    }[];
+  } | null;
+  externalLinks?: {
+    site: string;
+    url: string;
+    type?: string;
+  }[];
+  siteUrl?: string;
+  format?: string;
+  episodes?: number | null;
+  airingSchedule?: {
+    nodes: {
+      airingAt: number;
+      timeUntilAiring: number;
+      episode: number;
+    }[];
+  } | null;
+  nextAiringEpisode?: {
+    airingAt: number;
+    timeUntilAiring: number;
+    episode: number;
+  } | null;
+  description?: string | null;
+  tags?: {
+    name: string;
+  }[];
+  duration?: number | null;
+  source?: string | null;
+  trailer?: {
+    id: string | null;
+    site: string | null;
+  } | null;
+  averageScore?: number | null;
+  synonyms?: string[];
+  // 連続2クール判定用フィールド
+  status?: 'FINISHED' | 'RELEASING' | 'NOT_YET_RELEASED' | 'CANCELLED' | 'HIATUS' | null;
+  startDate?: { year: number | null; month: number | null; day?: number | null } | null;
+  endDate?: { year: number | null; month: number | null; day?: number | null } | null;
+};
 
 /**
  * AniList GraphQL APIにリクエストを送信
@@ -75,7 +131,9 @@ export async function searchAnime(query: string): Promise<AniListMedia[]> {
             externalLinks {
               site
               url
+              type
             }
+            siteUrl
             airingSchedule(notYetAired: true, perPage: 1) {
               nodes {
                 airingAt
@@ -298,6 +356,81 @@ export function getBroadcastInfo(anime: AniListMedia): { day: number | null; tim
 }
 
 /**
+ * 公式サイトURLを取得
+ * externalLinksから公式サイトを探す
+ */
+export function getOfficialSiteUrl(media: AniListMedia): string | null {
+  // externalLinksから公式サイトを探す
+  const officialLink = media.externalLinks?.find(
+    (link) => link.type === 'INFO' || link.site === 'Official Site'
+  );
+  return officialLink?.url || media.siteUrl || null;
+}
+
+/**
+ * アニメの詳細情報を取得（AniList IDから）
+ */
+export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | null> {
+  const graphqlQuery = `
+    query ($id: Int) {
+      Media(id: $id, type: ANIME) {
+        id
+        title {
+          native
+          romaji
+          english
+        }
+        coverImage {
+          medium
+          large
+        }
+        description
+        genres
+        tags {
+          name
+        }
+        episodes
+        duration
+        source
+        studios {
+          nodes {
+            name
+          }
+        }
+        trailer {
+          id
+          site
+        }
+        averageScore
+        nextAiringEpisode {
+          airingAt
+          timeUntilAiring
+          episode
+        }
+        externalLinks {
+          url
+          site
+          type
+        }
+        siteUrl
+        seasonYear
+        season
+      }
+    }
+  `;
+
+  try {
+    const data = await queryAniList<{ Media: AniListMedia | null }>(graphqlQuery, {
+      id: anilistId,
+    });
+    return data.Media ?? null;
+  } catch (error) {
+    logError(error, 'getAnimeDetail');
+    return null;
+  }
+}
+
+/**
  * 複数IDの作品を一括取得 (連続2クール判定用に最小フィールドのみ取得)
  * AniListのid_in は1ページ最大50件のため、自動でバッチ分割する
  */
@@ -339,6 +472,3 @@ export async function fetchAnimeStatusByIds(ids: number[]): Promise<Map<number, 
   }
   return result;
 }
-
-// 既存のanilist.tsから型を再エクスポート
-export type { AniListMedia } from '../anilist';
