@@ -12,6 +12,7 @@ import { addToWatchlist } from '../../lib/api';
 import { StreamingBadges } from '../common/StreamingBadges';
 import { StreamingUpdateButton } from '../common/StreamingUpdateButton';
 import { updateAnimeStreamingInfo } from '../../lib/api/streamingUpdate';
+import { updateAnimeFields, deleteAnime } from '../../lib/api/animes';
 import { getOfficialSiteUrl, getAnimeDetail, type AniListMedia } from '../../lib/api/anilist';
 import { ExternalLink, X, Heart, Star, Film, Plus } from 'lucide-react';
 import { logger } from '../../lib/logger';
@@ -208,12 +209,7 @@ export function AnimeDetailModal({
                       await handleUpdateAnime(
                         (anime) => ({ ...anime, rating }),
                         async (anime) => {
-                          const { error } = await supabase
-                            .from('animes')
-                            .update({ rating })
-                            .eq('id', anime.id)
-                            .eq('user_id', user!.id);
-                          if (error) throw error;
+                          await updateAnimeFields(anime.id, user!.id, { rating });
                         }
                       );
                     }}
@@ -260,12 +256,7 @@ export function AnimeDetailModal({
                     await handleUpdateAnime(
                       (anime) => ({ ...anime, rewatchCount: newCount }),
                       async (anime) => {
-                        const { error } = await supabase
-                          .from('animes')
-                          .update({ rewatch_count: newCount })
-                          .eq('id', anime.id)
-                          .eq('user_id', user!.id);
-                        if (error) throw error;
+                        await updateAnimeFields(anime.id, user!.id, { rewatch_count: newCount });
                       }
                     );
                   }}
@@ -284,12 +275,7 @@ export function AnimeDetailModal({
                     await handleUpdateAnime(
                       (anime) => ({ ...anime, rewatchCount: newCount }),
                       async (anime) => {
-                        const { error } = await supabase
-                          .from('animes')
-                          .update({ rewatch_count: newCount })
-                          .eq('id', anime.id)
-                          .eq('user_id', user!.id);
-                        if (error) throw error;
+                        await updateAnimeFields(anime.id, user!.id, { rewatch_count: newCount });
                       }
                     );
                   }}
@@ -324,15 +310,10 @@ export function AnimeDetailModal({
                             streamingUpdatedAt: new Date().toISOString(),
                           }),
                           async (anime) => {
-                            const { error } = await supabase
-                              .from('animes')
-                              .update({
-                                streaming_sites: result.streamingSites,
-                                streaming_updated_at: new Date().toISOString(),
-                              })
-                              .eq('id', anime.id)
-                              .eq('user_id', user.id);
-                            if (error) throw error;
+                            await updateAnimeFields(anime.id, user.id, {
+                              streaming_sites: result.streamingSites,
+                              streaming_updated_at: new Date().toISOString(),
+                            });
                           }
                         );
                       } else if (result.error) {
@@ -381,12 +362,7 @@ export function AnimeDetailModal({
                         await handleUpdateAnime(
                           (anime) => ({ ...anime, tags: newTags }),
                           async (anime) => {
-                            const { error } = await supabase
-                              .from('animes')
-                              .update({ tags: newTags })
-                              .eq('id', anime.id)
-                              .eq('user_id', user!.id);
-                            if (error) throw error;
+                            await updateAnimeFields(anime.id, user!.id, { tags: newTags });
                           }
                         );
                       }}
@@ -421,12 +397,7 @@ export function AnimeDetailModal({
                     await handleUpdateAnime(
                       (anime) => ({ ...anime, seriesName: newSeriesName }),
                       async (anime) => {
-                        const { error } = await supabase
-                          .from('animes')
-                          .update({ series_name: newSeriesName })
-                          .eq('id', anime.id)
-                          .eq('user_id', user!.id);
-                        if (error) throw error;
+                        await updateAnimeFields(anime.id, user!.id, { series_name: newSeriesName });
                       }
                     );
                   }}
@@ -439,12 +410,7 @@ export function AnimeDetailModal({
                       await handleUpdateAnime(
                         (anime) => ({ ...anime, seriesName: undefined }),
                         async (anime) => {
-                          const { error } = await supabase
-                            .from('animes')
-                            .update({ series_name: null })
-                            .eq('id', anime.id)
-                            .eq('user_id', user!.id);
-                          if (error) throw error;
+                          await updateAnimeFields(anime.id, user!.id, { series_name: null });
                         }
                       );
                     }}
@@ -508,12 +474,9 @@ export function AnimeDetailModal({
                                   ...anime.songs,
                                   op: { ...anime.songs.op, isFavorite: !anime.songs.op.isFavorite },
                                 };
-                                const { error } = await supabase
-                                  .from('animes')
-                                  .update({ songs: updatedSongs })
-                                  .eq('id', anime.id)
-                                  .eq('user_id', user!.id);
-                                if (error) throw error;
+                                await updateAnimeFields(anime.id, user!.id, {
+                                  songs: updatedSongs,
+                                });
                               }
                             }
                           );
@@ -545,12 +508,9 @@ export function AnimeDetailModal({
                                     ...anime.songs,
                                     op: { ...anime.songs.op, rating },
                                   };
-                                  const { error } = await supabase
-                                    .from('animes')
-                                    .update({ songs: updatedSongs })
-                                    .eq('id', anime.id)
-                                    .eq('user_id', user!.id);
-                                  if (error) throw error;
+                                  await updateAnimeFields(anime.id, user!.id, {
+                                    songs: updatedSongs,
+                                  });
                                 }
                               }
                             );
@@ -580,12 +540,7 @@ export function AnimeDetailModal({
                               ...anime.songs,
                               op: undefined,
                             };
-                            const { error } = await supabase
-                              .from('animes')
-                              .update({ songs: updatedSongs })
-                              .eq('id', anime.id)
-                              .eq('user_id', user!.id);
-                            if (error) throw error;
+                            await updateAnimeFields(anime.id, user!.id, { songs: updatedSongs });
                           }
                         );
                       }}
@@ -641,12 +596,9 @@ export function AnimeDetailModal({
                                   ...anime.songs,
                                   ed: { ...anime.songs.ed, isFavorite: !anime.songs.ed.isFavorite },
                                 };
-                                const { error } = await supabase
-                                  .from('animes')
-                                  .update({ songs: updatedSongs })
-                                  .eq('id', anime.id)
-                                  .eq('user_id', user!.id);
-                                if (error) throw error;
+                                await updateAnimeFields(anime.id, user!.id, {
+                                  songs: updatedSongs,
+                                });
                               }
                             }
                           );
@@ -678,12 +630,9 @@ export function AnimeDetailModal({
                                     ...anime.songs,
                                     ed: { ...anime.songs.ed, rating },
                                   };
-                                  const { error } = await supabase
-                                    .from('animes')
-                                    .update({ songs: updatedSongs })
-                                    .eq('id', anime.id)
-                                    .eq('user_id', user!.id);
-                                  if (error) throw error;
+                                  await updateAnimeFields(anime.id, user!.id, {
+                                    songs: updatedSongs,
+                                  });
                                 }
                               }
                             );
@@ -713,12 +662,7 @@ export function AnimeDetailModal({
                               ...anime.songs,
                               ed: undefined,
                             };
-                            const { error } = await supabase
-                              .from('animes')
-                              .update({ songs: updatedSongs })
-                              .eq('id', anime.id)
-                              .eq('user_id', user!.id);
-                            if (error) throw error;
+                            await updateAnimeFields(anime.id, user!.id, { songs: updatedSongs });
                           }
                         );
                       }}
@@ -810,12 +754,7 @@ export function AnimeDetailModal({
                         await handleUpdateAnime(
                           (anime) => ({ ...anime, quotes: newQuotes }),
                           async (anime) => {
-                            const { error } = await supabase
-                              .from('animes')
-                              .update({ quotes: newQuotes })
-                              .eq('id', anime.id)
-                              .eq('user_id', user!.id);
-                            if (error) throw error;
+                            await updateAnimeFields(anime.id, user!.id, { quotes: newQuotes });
                           }
                         );
                         setNewQuoteText('');
@@ -852,12 +791,9 @@ export function AnimeDetailModal({
                           await handleUpdateAnime(
                             (anime) => ({ ...anime, quotes: updatedQuotes }),
                             async (anime) => {
-                              const { error } = await supabase
-                                .from('animes')
-                                .update({ quotes: updatedQuotes })
-                                .eq('id', anime.id)
-                                .eq('user_id', user!.id);
-                              if (error) throw error;
+                              await updateAnimeFields(anime.id, user!.id, {
+                                quotes: updatedQuotes,
+                              });
                             }
                           );
                         }}
@@ -916,12 +852,7 @@ export function AnimeDetailModal({
                       try {
                         const isLocalId = selectedAnime.id > 1000000;
                         if (!isLocalId) {
-                          const { error } = await supabase
-                            .from('animes')
-                            .delete()
-                            .eq('id', selectedAnime.id)
-                            .eq('user_id', user.id);
-                          if (error) throw error;
+                          await deleteAnime(selectedAnime.id, user.id);
                         }
                       } catch (error) {
                         const normalizedError = normalizeError(error);
