@@ -11,6 +11,8 @@ export default defineConfig({
     include: ['__tests__/**/*.test.{ts,tsx}'],
     coverage: {
       reporter: ['text', 'json', 'html'],
+      // ロジック層のみ計測 (UIコンポーネントのカバレッジは個人開発では費用対効果が低い)
+      include: ['app/lib/**', 'app/utils/**'],
     },
   },
   resolve: {
