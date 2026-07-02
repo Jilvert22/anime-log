@@ -60,12 +60,16 @@ describe('getBroadcastInfo — 新旧同一実装', () => {
   const cases: Array<[string, AniListMedia, { day: number | null; time: string | null }]> = [
     [
       'UTC 金14:30 → JST 金23:30 (同日)',
-      { nextAiringEpisode: { airingAt: 1743777000, timeUntilAiring: 0, episode: 1 } } as AniListMedia,
+      {
+        nextAiringEpisode: { airingAt: 1743777000, timeUntilAiring: 0, episode: 1 },
+      } as AniListMedia,
       { day: 5, time: '23:30' },
     ],
     [
       'UTC 金16:00 → JST 土01:00 (日跨ぎの繰り上げ)',
-      { nextAiringEpisode: { airingAt: 1743782400, timeUntilAiring: 0, episode: 1 } } as AniListMedia,
+      {
+        nextAiringEpisode: { airingAt: 1743782400, timeUntilAiring: 0, episode: 1 },
+      } as AniListMedia,
       { day: 6, time: '01:00' },
     ],
     [
@@ -99,7 +103,10 @@ describe('getOfficialSiteUrl — 旧のみ (Phase 2で統合先へ移設)', () =
   it('type === INFO のリンクを優先', () => {
     const media = {
       ...base,
-      externalLinks: [{ site: 'Twitter', url: 'https://t', type: 'SOCIAL' }, { site: 'x', url: 'https://info', type: 'INFO' }],
+      externalLinks: [
+        { site: 'Twitter', url: 'https://t', type: 'SOCIAL' },
+        { site: 'x', url: 'https://info', type: 'INFO' },
+      ],
     } as AniListMedia;
     expect(oldApi.getOfficialSiteUrl(media)).toBe('https://info');
   });
@@ -145,7 +152,11 @@ describe('searchAnime — 現挙動の固定', () => {
 // --- searchAnimeBySeason (新旧で挙動差あり) ----------------------------------
 
 describe('searchAnimeBySeason — 現挙動の固定', () => {
-  const ok = { data: { Page: { media: [{ id: 1 }], pageInfo: { total: 1, currentPage: 1, hasNextPage: false } } } };
+  const ok = {
+    data: {
+      Page: { media: [{ id: 1 }], pageInfo: { total: 1, currentPage: 1, hasNextPage: false } },
+    },
+  };
 
   it('旧新とも: media と pageInfo を返す', async () => {
     fetchMock.mockResolvedValue(makeResponse(ok));

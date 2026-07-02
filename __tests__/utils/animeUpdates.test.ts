@@ -44,19 +44,20 @@ describe('updateAnimeInSeasons', () => {
   });
 
   it('対象が存在しなければ updatedAnime は null', async () => {
-    const { updatedAnime } = await updateAnimeInSeasons(
-      999,
-      seasons(),
-      (a) => a,
-      null,
-      supabase
-    );
+    const { updatedAnime } = await updateAnimeInSeasons(999, seasons(), (a) => a, null, supabase);
     expect(updatedAnime).toBeNull();
   });
 
   it('ログイン時 + supabaseUpdater 指定なら updater 結果で呼ばれる', async () => {
     const supabaseUpdater = vi.fn().mockResolvedValue(undefined);
-    await updateAnimeInSeasons(1, seasons(), (a) => ({ ...a, rating: 4 }), user, supabase, supabaseUpdater);
+    await updateAnimeInSeasons(
+      1,
+      seasons(),
+      (a) => ({ ...a, rating: 4 }),
+      user,
+      supabase,
+      supabaseUpdater
+    );
     expect(supabaseUpdater).toHaveBeenCalledWith(expect.objectContaining({ id: 1, rating: 4 }));
   });
 
