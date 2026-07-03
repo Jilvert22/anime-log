@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { Anime, Season } from '../../types';
-import { supabase } from '../../lib/supabase';
+import { updateAnimeFields } from '../../lib/api/animes';
 
 export function AddQuoteModal({
   show,
@@ -68,13 +68,7 @@ export function AddQuoteModal({
           // Supabaseを更新（ログイン時のみ）
           if (user) {
             try {
-              const { error } = await supabase
-                .from('animes')
-                .update({ quotes: updatedQuotes })
-                .eq('id', animeId)
-                .eq('user_id', user.id);
-
-              if (error) throw error;
+              await updateAnimeFields(animeId, user.id, { quotes: updatedQuotes });
             } catch (error) {
               console.error('Failed to update quote in Supabase:', error);
             }
@@ -99,13 +93,7 @@ export function AddQuoteModal({
           // Supabaseを更新（ログイン時のみ）
           if (user) {
             try {
-              const { error } = await supabase
-                .from('animes')
-                .update({ quotes: newQuotes })
-                .eq('id', animeId)
-                .eq('user_id', user.id);
-
-              if (error) throw error;
+              await updateAnimeFields(animeId, user.id, { quotes: newQuotes });
             } catch (error) {
               console.error('Failed to add quote to Supabase:', error);
             }

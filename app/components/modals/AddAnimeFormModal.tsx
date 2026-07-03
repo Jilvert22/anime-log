@@ -6,7 +6,7 @@ import type { User } from '@supabase/supabase-js';
 import type { Anime, Season } from '../../types';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
-import { supabase } from '../../lib/supabase';
+import { insertAnimeRows } from '../../lib/api/animes';
 import { translateGenre, sortSeasonsByTime, getSeasonNameWithMonths } from '../../utils/helpers';
 import { availableTags } from '../../constants';
 import { StreamingBadges } from '../common/StreamingBadges';
@@ -405,12 +405,7 @@ export function AddAnimeFormModal({
                             animeToSupabase(anime, seasonName, user.id)
                           );
 
-                          const { error } = await supabase
-                            .from('animes')
-                            .insert(supabaseData)
-                            .select();
-
-                          if (error) throw error;
+                          await insertAnimeRows(supabaseData);
                         } catch (error: unknown) {
                           const errorMessage =
                             error instanceof Error
@@ -773,12 +768,7 @@ export function AddAnimeFormModal({
                           supabaseData.push(animeToSupabase(anime, seasonName, user.id));
                         });
 
-                        const { error } = await supabase
-                          .from('animes')
-                          .insert(supabaseData)
-                          .select();
-
-                        if (error) throw error;
+                        await insertAnimeRows(supabaseData);
                       } catch (error: unknown) {
                         const errorMessage =
                           error instanceof Error
