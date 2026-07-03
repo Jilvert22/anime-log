@@ -9,7 +9,7 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack && node scripts/inject-push-notifications.js",
     "start": "next start",
-    "lint": "eslint . --max-warnings 138",
+    "lint": "eslint . --max-warnings 137",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",

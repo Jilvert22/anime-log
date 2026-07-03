@@ -67,7 +67,10 @@ describe('useAnimeData', () => {
       result.current.reloadAnimeData();
     });
 
-    await waitFor(() => expect(result.current.loadError).toBe(false));
-    expect(result.current.isAnimeDataReady).toBe(true);
+    // 再読み込みの完了 (isAnimeDataReady) を待ってから loadError の解消を確認する。
+    // loadError=false は effect 冒頭で同期的に立つため、これを待つと再取得完了前に
+    // アサーションが通ってしまい races になる。
+    await waitFor(() => expect(result.current.isAnimeDataReady).toBe(true));
+    expect(result.current.loadError).toBe(false);
   });
 });
