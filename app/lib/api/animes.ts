@@ -12,7 +12,14 @@
 'use client';
 
 import { supabase } from '../supabase';
-import { SupabaseError, translateSupabaseError, logError, normalizeError } from './errors';
+import {
+  SupabaseError,
+  DuplicateAnimeError,
+  isUniqueViolation,
+  translateSupabaseError,
+  logError,
+  normalizeError,
+} from './errors';
 import { animeToSupabase } from '../../utils/helpers';
 import type { Anime, SupabaseAnimeRow } from '../../types';
 
@@ -73,6 +80,10 @@ export async function insertAnime(
     const { data, error } = await supabase.from('animes').insert(payload).select();
 
     if (error) {
+      // DB の UNIQUE 制約に引っかかった = すでに追加済み
+      if (isUniqueViolation(error)) {
+        throw new DuplicateAnimeError(undefined, error);
+      }
       throw new SupabaseError(
         translateSupabaseError(error) || 'アニメの追加に失敗しました',
         undefined,
@@ -99,6 +110,9 @@ export async function insertAnimeRows(
     const { data, error } = await supabase.from('animes').insert(rows).select();
 
     if (error) {
+      if (isUniqueViolation(error)) {
+        throw new DuplicateAnimeError(undefined, error);
+      }
       throw new SupabaseError(
         translateSupabaseError(error) || 'アニメの一括追加に失敗しました',
         undefined,

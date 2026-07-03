@@ -58,6 +58,7 @@ import {
   updateAnimeFields,
   deleteAnime,
 } from '../../../app/lib/api/animes';
+import { DuplicateAnimeError } from '../../../app/lib/api/errors';
 import type { Anime } from '../../../app/types';
 
 function anime(overrides: Partial<Anime> = {}): Anime {
@@ -116,6 +117,11 @@ describe('insertAnime', () => {
   it('エラー時は throw する', async () => {
     terminal.error = { message: 'boom' };
     await expect(insertAnime(anime(), '2025春', 'u1')).rejects.toThrow();
+  });
+
+  it('UNIQUE制約違反(23505)は DuplicateAnimeError を throw する', async () => {
+    terminal.error = { code: '23505', message: 'duplicate key value violates unique constraint' };
+    await expect(insertAnime(anime(), '2025春', 'u1')).rejects.toBeInstanceOf(DuplicateAnimeError);
   });
 });
 
