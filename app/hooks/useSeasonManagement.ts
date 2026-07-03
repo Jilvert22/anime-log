@@ -6,9 +6,11 @@ import { shouldShowSeasonStartModal, markSeasonChecked } from '../utils/helpers'
 import type { WatchlistItem } from '../lib/storage/types';
 import { logger } from '../lib/logger';
 import { normalizeError } from '../lib/api/errors';
+import { useFeedback } from '../contexts/FeedbackContext';
 
 export function useSeasonManagement(isLoading: boolean) {
   const storage = useStorage();
+  const { showToast } = useFeedback();
   const [showSeasonEndModal, setShowSeasonEndModal] = useState(false);
   const [previousSeasonItems, setPreviousSeasonItems] = useState<WatchlistItem[]>([]);
 
@@ -30,9 +32,9 @@ export function useSeasonManagement(isLoading: boolean) {
     } catch (error) {
       const normalizedError = normalizeError(error);
       logger.error('積みアニメへの移動に失敗しました', normalizedError, 'useSeasonManagement');
-      alert('積みアニメへの移動に失敗しました');
+      showToast('積みアニメへの移動に失敗しました', 'error');
     }
-  }, [storage, previousSeasonItems]);
+  }, [storage, previousSeasonItems, showToast]);
 
   // 今期の視聴予定アニメを削除
   const handleDeletePreviousSeason = useCallback(async () => {
@@ -48,9 +50,9 @@ export function useSeasonManagement(isLoading: boolean) {
     } catch (error) {
       const normalizedError = normalizeError(error);
       logger.error('削除に失敗しました', normalizedError, 'useSeasonManagement');
-      alert('削除に失敗しました');
+      showToast('削除に失敗しました', 'error');
     }
-  }, [storage, previousSeasonItems]);
+  }, [storage, previousSeasonItems, showToast]);
 
   // 視聴中に移行
   const handleKeepPreviousSeason = useCallback(async () => {
@@ -72,13 +74,13 @@ export function useSeasonManagement(isLoading: boolean) {
     } catch (error) {
       const normalizedError = normalizeError(error);
       logger.error('視聴中への移行に失敗しました', normalizedError, 'useSeasonManagement');
-      alert('視聴中への移行に失敗しました');
+      showToast('視聴中への移行に失敗しました', 'error');
       // エラー時もモーダルを閉じる
       setTimeout(() => {
         setShowSeasonEndModal(false);
       }, 0);
     }
-  }, [storage, previousSeasonItems]);
+  }, [storage, previousSeasonItems, showToast]);
 
   // シーズン開始時のチェック（アプリ起動時）
   // 「来期」が「今期」になった時点で、視聴予定（planned）のアニメをチェック

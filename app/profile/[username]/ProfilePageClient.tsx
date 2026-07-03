@@ -7,6 +7,7 @@ import type { UserProfile } from '../../lib/api';
 import { getProfileByUsername, getPublicAnimes, getFollowCounts, isFollowing } from '../../lib/api';
 import { followUser, unfollowUser } from '../../lib/api';
 import type { User } from '@supabase/supabase-js';
+import { useFeedback } from '../../contexts/FeedbackContext';
 
 // アニメの型定義
 type Anime = {
@@ -33,6 +34,7 @@ export default function ProfilePageClient({
   initialAnimes,
 }: ProfilePageClientProps) {
   const router = useRouter();
+  const { showToast } = useFeedback();
 
   const [profile, setProfile] = useState<UserProfile | null>(initialProfile ?? null);
   const [animes, setAnimes] = useState<Anime[]>(initialAnimes ?? []);
@@ -99,7 +101,7 @@ export default function ProfilePageClient({
       setFollowCounts(counts);
     } catch (error) {
       console.error('Failed to toggle follow:', error);
-      alert('フォロー操作に失敗しました');
+      showToast('フォロー操作に失敗しました', 'error');
     }
   };
 

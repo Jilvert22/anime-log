@@ -8,6 +8,7 @@ import { useAnimeSearchWithStreaming } from './useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../lib/storage/types';
 import type { AniListMediaWithStreaming } from '../lib/api/annict';
 import { getStartSeason } from '../utils/continuingAnime';
+import { useFeedback } from '../contexts/FeedbackContext';
 
 interface UseSeasonSearchParams {
   allAnimes: Anime[];
@@ -24,6 +25,7 @@ export function useSeasonSearch({
   user,
   extractSeriesName,
 }: UseSeasonSearchParams) {
+  const { showToast } = useFeedback();
   const [seasonSearchResults, setSeasonSearchResults] = useState<
     Map<string, AniListMediaWithStreaming[]>
   >(new Map());
@@ -131,14 +133,14 @@ export function useSeasonSearch({
         // 必須フィールドの検証
         if (!result) {
           console.error('検索結果がnullまたはundefinedです');
-          alert('アニメ情報が取得できませんでした');
+          showToast('アニメ情報が取得できませんでした', 'error');
           return;
         }
 
         const anilistId = result.id;
         if (!anilistId || typeof anilistId !== 'number' || isNaN(anilistId)) {
           console.error('無効なAniList ID:', anilistId, result);
-          alert('アニメIDが無効です');
+          showToast('アニメIDが無効です', 'error');
           return;
         }
 
@@ -185,8 +187,9 @@ export function useSeasonSearch({
           } catch (error) {
             console.error('アニメの追加に失敗しました:', error);
             const errorMessage = error instanceof Error ? error.message : '不明なエラー';
-            alert(
-              `アニメの追加に失敗しました${errorMessage !== '不明なエラー' ? `: ${errorMessage}` : ''}`
+            showToast(
+              `アニメの追加に失敗しました${errorMessage !== '不明なエラー' ? `: ${errorMessage}` : ''}`,
+              'error'
             );
             return;
           }
@@ -233,12 +236,13 @@ export function useSeasonSearch({
       } catch (error) {
         console.error('検索結果からのアニメ追加に失敗しました:', error);
         const errorMessage = error instanceof Error ? error.message : '不明なエラー';
-        alert(
-          `アニメの追加に失敗しました${errorMessage !== '不明なエラー' ? `: ${errorMessage}` : ''}`
+        showToast(
+          `アニメの追加に失敗しました${errorMessage !== '不明なエラー' ? `: ${errorMessage}` : ''}`,
+          'error'
         );
       }
     },
-    [user, seasons, setSeasons, extractSeriesName, setSeasonSearchResults]
+    [user, seasons, setSeasons, extractSeriesName, setSeasonSearchResults, showToast]
   );
 
   // 積みアニメに追加
@@ -248,14 +252,14 @@ export function useSeasonSearch({
         // resultオブジェクトが正しく渡されているか確認
         if (!result) {
           console.error('検索結果がnullまたはundefinedです');
-          alert('アニメ情報が取得できませんでした');
+          showToast('アニメ情報が取得できませんでした', 'error');
           return;
         }
 
         const anilistId = result.id;
         if (!anilistId || typeof anilistId !== 'number' || isNaN(anilistId)) {
           console.error('無効なAniList ID:', anilistId, result);
-          alert('アニメIDが無効です');
+          showToast('アニメIDが無効です', 'error');
           return;
         }
 
@@ -310,16 +314,17 @@ export function useSeasonSearch({
             });
           }
         } else {
-          alert('積みアニメの追加に失敗しました');
+          showToast('積みアニメの追加に失敗しました', 'error');
         }
       } catch (error) {
         console.error('積みアニメへの追加に失敗しました:', error);
-        alert(
-          `積みアニメの追加に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`
+        showToast(
+          `積みアニメの追加に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`,
+          'error'
         );
       }
     },
-    [storage, setSeasonSearchResults, setAddedToWatchlistIds]
+    [storage, setSeasonSearchResults, setAddedToWatchlistIds, showToast]
   );
 
   // 来期の視聴予定に追加
@@ -328,7 +333,7 @@ export function useSeasonSearch({
       try {
         if (!result || !result.id) {
           console.error('無効な検索結果オブジェクト:', result);
-          alert('アニメ情報の取得に失敗しました');
+          showToast('アニメ情報の取得に失敗しました', 'error');
           return;
         }
 
@@ -357,16 +362,16 @@ export function useSeasonSearch({
         if (success) {
           // 追加済みIDを更新
           setAddedToWatchlistIds((prev) => new Set(prev).add(result.id));
-          alert('来期の視聴予定に追加しました');
+          showToast('来期の視聴予定に追加しました');
         } else {
-          alert('視聴予定の追加に失敗しました');
+          showToast('視聴予定の追加に失敗しました', 'error');
         }
       } catch (error) {
         console.error('来期積みアニメへの追加に失敗しました:', error);
-        alert('視聴予定の追加に失敗しました');
+        showToast('視聴予定の追加に失敗しました', 'error');
       }
     },
-    [storage, setAddedToWatchlistIds]
+    [storage, setAddedToWatchlistIds, showToast]
   );
 
   return {
