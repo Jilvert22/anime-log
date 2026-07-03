@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getAnimesByUser } from '../lib/api/animes';
 import type { User } from '@supabase/supabase-js';
 import type { Season, Anime } from '../types';
@@ -12,8 +12,14 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
   const [isAnimeDataReady, setIsAnimeDataReady] = useState(false);
+  // Supabase からの読み込みに失敗したか。true のときUIはエラー画面+再試行を出す。
+  const [loadError, setLoadError] = useState(false);
+  // reloadAnimeData() でインクリメントし、読み込み用 useEffect を再実行させる。
+  const [reloadNonce, setReloadNonce] = useState(0);
   const prevSeasonsRef = useRef<string>('');
   const loadCycleRef = useRef(0);
+
+  const reloadAnimeData = useCallback(() => setReloadNonce((n) => n + 1), []);
 
   // 最初のシーズンを展開状態にする
   // useCallbackは不要（この関数はuseEffect内でのみ使用され、依存配列に含めない）
@@ -70,6 +76,7 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
       const normalizedError = normalizeError(error);
       logger.error('Failed to load animes from Supabase', normalizedError, 'useAnimeData');
       setSeasons([]);
+      setLoadError(true);
     } finally {
       if (loadCycleRef.current === loadCycle) {
         setIsAnimeDataReady(true);
@@ -123,6 +130,7 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
     const loadCycle = loadCycleRef.current + 1;
     loadCycleRef.current = loadCycle;
     setIsAnimeDataReady(false);
+    setLoadError(false);
 
     if (isLoading) return;
 
@@ -134,8 +142,9 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
       loadFromLocalStorage(loadCycle);
     }
     // loadFromSupabaseとloadFromLocalStorageは関数内で定義されているため依存配列に含めない
+    // reloadNonceは reloadAnimeData() での明示的な再取得トリガー
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, isLoading]);
+  }, [user, isLoading, reloadNonce]);
 
   // すべてのアニメを取得
   const allAnimes = useMemo(() => seasons.flatMap((season) => season.animes), [seasons]);
@@ -162,5 +171,7 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
     averageRating,
     totalRewatchCount,
     isAnimeDataReady,
+    loadError,
+    reloadAnimeData,
   };
 }

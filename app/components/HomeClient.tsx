@@ -7,6 +7,7 @@ import type { Anime } from '../types';
 import { HomeTab } from './tabs/HomeTab';
 import { Navigation } from './Navigation';
 import { PWAInstallBanner } from './PWAInstallBanner';
+import { ErrorState } from './common/ErrorState';
 
 // 頻繁に使わないモーダルを動的インポート
 const MyPageTab = dynamic(() => import('./tabs/MyPageTab'), {
@@ -96,6 +97,8 @@ function HomeClientInner() {
     allAnimes,
     averageRating,
     totalRewatchCount,
+    loadError,
+    reloadAnimeData,
   } = useAnimeDataContext();
 
   // カウントアニメーションをカスタムフックで管理
@@ -157,34 +160,40 @@ function HomeClientInner() {
 
       {/* メインコンテンツ */}
       <main className="pt-20 max-w-md md:max-w-6xl mx-auto px-4 py-6">
-        {activeTab === 'home' && (
-          <HomeTab
-            homeSubTab={homeSubTab}
-            setHomeSubTab={setHomeSubTab}
-            expandedYears={expandedYears}
-            setExpandedYears={setExpandedYears}
-            onOpenAddForm={actions.openAddForm}
-            setSelectedAnime={setSelectedAnime}
-            user={user}
-            extractSeriesName={extractSeriesName}
-            getSeasonName={getSeasonName}
-            supabaseToAnime={supabaseToAnime}
-          />
-        )}
+        {loadError ? (
+          <ErrorState message="アニメデータの読み込みに失敗しました" onRetry={reloadAnimeData} />
+        ) : (
+          <>
+            {activeTab === 'home' && (
+              <HomeTab
+                homeSubTab={homeSubTab}
+                setHomeSubTab={setHomeSubTab}
+                expandedYears={expandedYears}
+                setExpandedYears={setExpandedYears}
+                onOpenAddForm={actions.openAddForm}
+                setSelectedAnime={setSelectedAnime}
+                user={user}
+                extractSeriesName={extractSeriesName}
+                getSeasonName={getSeasonName}
+                supabaseToAnime={supabaseToAnime}
+              />
+            )}
 
-        {activeTab === 'mypage' && (
-          <MyPageTab
-            allAnimes={allAnimes}
-            seasons={seasons}
-            averageRating={averageRating}
-            favoriteCharacters={favoriteCharacters}
-            setFavoriteCharacters={setFavoriteCharacters}
-            setSeasons={setSeasons}
-            user={user}
-            supabaseClient={supabase}
-            setSelectedAnime={setSelectedAnime}
-            handleLogout={handleLogout}
-          />
+            {activeTab === 'mypage' && (
+              <MyPageTab
+                allAnimes={allAnimes}
+                seasons={seasons}
+                averageRating={averageRating}
+                favoriteCharacters={favoriteCharacters}
+                setFavoriteCharacters={setFavoriteCharacters}
+                setSeasons={setSeasons}
+                user={user}
+                supabaseClient={supabase}
+                setSelectedAnime={setSelectedAnime}
+                handleLogout={handleLogout}
+              />
+            )}
+          </>
         )}
       </main>
 
