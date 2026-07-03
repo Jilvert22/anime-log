@@ -51,7 +51,7 @@ const eslintConfig = defineConfig([
         {
           selector: "CallExpression[callee.property.name='from'] > Literal[value='animes']",
           message:
-            "components/hooks から animes テーブルを直接クエリしないでください。app/lib/api/animes.ts のリポジトリ関数 (getAnimesByUser/insertAnime/updateAnimeFields 等) を使ってください。",
+            'components/hooks から animes テーブルを直接クエリしないでください。app/lib/api/animes.ts のリポジトリ関数 (getAnimesByUser/insertAnime/updateAnimeFields 等) を使ってください。',
         },
       ],
     },
