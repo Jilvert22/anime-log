@@ -30,6 +30,14 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
+  // ネイティブの alert/confirm/prompt を禁止。
+  // ユーザー通知は FeedbackContext の showToast/confirmDialog を使うこと。
+  {
+    files: ['app/**/*.{ts,tsx}'],
+    rules: {
+      'no-alert': 'error',
+    },
+  },
   // React Compiler 系ルールの既存違反 (2026-07時点で15件) は「触るときに直す」方針。
   // error だと CI が通らないため warn に降格し、--max-warnings ラチェットで増加のみ防ぐ。
   // 新規コードでこの警告を増やさないこと。

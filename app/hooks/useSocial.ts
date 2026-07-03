@@ -25,11 +25,13 @@ import {
 } from '../lib/api';
 import { supabaseToAnime } from '../utils/helpers';
 import type { SupabaseAnimeRow } from '../types';
+import { useFeedback } from '../contexts/FeedbackContext';
 
 type FollowStatus = Record<string, boolean>;
 type FollowCounts = { following: number; followers: number };
 
 export function useSocial(user: User | null) {
+  const { showToast } = useFeedback();
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [searchedUsers, setSearchedUsers] = useState<UserProfile[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
@@ -105,30 +107,36 @@ export function useSocial(user: User | null) {
     }
   }, [userSearchQuery, user]);
 
-  const handleViewUserProfile = useCallback(async (userId: string) => {
-    try {
-      const profile = await getPublicProfile(userId);
-      if (!profile) {
-        alert('このユーザーのプロフィールは公開されていません');
-        return;
+  const handleViewUserProfile = useCallback(
+    async (userId: string) => {
+      try {
+        const profile = await getPublicProfile(userId);
+        if (!profile) {
+          showToast('このユーザーのプロフィールは公開されていません', 'error');
+          return;
+        }
+
+        const [animes, following] = await Promise.all([
+          getPublicAnimes(userId),
+          isFollowing(userId),
+        ]);
+
+        setSelectedUserProfile(profile);
+        setSelectedUserAnimes(animes.map((a) => supabaseToAnime(a as SupabaseAnimeRow)));
+        setUserFollowStatus((prev) => ({ ...prev, [userId]: following }));
+        setShowUserProfileModal(true);
+      } catch (error) {
+        console.error('ユーザープロフィールの取得に失敗しました:', error);
+        showToast('プロフィールの取得に失敗しました', 'error');
       }
-
-      const [animes, following] = await Promise.all([getPublicAnimes(userId), isFollowing(userId)]);
-
-      setSelectedUserProfile(profile);
-      setSelectedUserAnimes(animes.map((a) => supabaseToAnime(a as SupabaseAnimeRow)));
-      setUserFollowStatus((prev) => ({ ...prev, [userId]: following }));
-      setShowUserProfileModal(true);
-    } catch (error) {
-      console.error('ユーザープロフィールの取得に失敗しました:', error);
-      alert('プロフィールの取得に失敗しました');
-    }
-  }, []);
+    },
+    [showToast]
+  );
 
   const handleToggleFollow = useCallback(
     async (userId: string) => {
       if (!user) {
-        alert('ログインが必要です');
+        showToast('ログインが必要です', 'error');
         return;
       }
 
@@ -151,10 +159,10 @@ export function useSocial(user: User | null) {
         setFollowCounts(counts);
       } catch (error) {
         console.error('フォロー操作に失敗しました:', error);
-        alert('フォロー操作に失敗しました');
+        showToast('フォロー操作に失敗しました', 'error');
       }
     },
-    [user, userFollowStatus]
+    [user, userFollowStatus, showToast]
   );
 
   return {
