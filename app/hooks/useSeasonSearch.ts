@@ -9,6 +9,7 @@ import type { WatchlistItem } from '../lib/storage/types';
 import type { AniListMediaWithStreaming } from '../lib/api/annict';
 import { getStartSeason } from '../utils/continuingAnime';
 import { useFeedback } from '../contexts/FeedbackContext';
+import { DuplicateAnimeError } from '../lib/api/errors';
 
 interface UseSeasonSearchParams {
   allAnimes: Anime[];
@@ -25,7 +26,7 @@ export function useSeasonSearch({
   user,
   extractSeriesName,
 }: UseSeasonSearchParams) {
-  const { showToast } = useFeedback();
+  const { showToast, confirmDialog } = useFeedback();
   const [seasonSearchResults, setSeasonSearchResults] = useState<
     Map<string, AniListMediaWithStreaming[]>
   >(new Map());
@@ -185,6 +186,16 @@ export function useSeasonSearch({
           try {
             await insertAnime(newAnime, seasonName, user.id);
           } catch (error) {
+            // DB の UNIQUE 制約に引っかかった = すでに追加済み
+            if (error instanceof DuplicateAnimeError) {
+              await confirmDialog({
+                title: 'すでに追加済み',
+                message: 'この作品はすでにあなたのリストにあります。',
+                confirmLabel: 'OK',
+                cancelLabel: '閉じる',
+              });
+              return;
+            }
             console.error('アニメの追加に失敗しました:', error);
             const errorMessage = error instanceof Error ? error.message : '不明なエラー';
             showToast(
@@ -242,7 +253,7 @@ export function useSeasonSearch({
         );
       }
     },
-    [user, seasons, setSeasons, extractSeriesName, setSeasonSearchResults, showToast]
+    [user, seasons, setSeasons, extractSeriesName, setSeasonSearchResults, showToast, confirmDialog]
   );
 
   // 積みアニメに追加

@@ -65,6 +65,30 @@ export class ValidationError extends ApiError {
 }
 
 /**
+ * 重複追加エラー (PostgreSQL 23505 unique_violation を意味づけしたもの)。
+ * DB の UNIQUE 制約により、同じ作品を二重登録しようとしたときに投げる。
+ */
+export class DuplicateAnimeError extends SupabaseError {
+  constructor(message: string = 'すでに追加済みの作品です', originalError?: unknown) {
+    super(message, '23505', originalError);
+    this.name = 'DuplicateAnimeError';
+    Object.setPrototypeOf(this, DuplicateAnimeError.prototype);
+  }
+}
+
+/**
+ * Supabase/PostgreSQL のエラーが unique_violation (23505) かどうかを判定。
+ */
+export function isUniqueViolation(error: unknown): boolean {
+  return (
+    !!error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    (error as { code?: string }).code === '23505'
+  );
+}
+
+/**
  * Supabaseのエラーを日本語メッセージに変換
  */
 export function translateSupabaseError(error: unknown): string {
