@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getAnimeRowId } from '../lib/api/animes';
 import type { User } from '@supabase/supabase-js';
 import type { Review } from '../types';
 
@@ -30,31 +31,19 @@ export function useAnimeReviews(user: User | null) {
       setLoadingReviews(true);
       try {
         // アニメのUUIDを取得（animesテーブルから）
-        const { data: animeData, error: animeError } = await supabase
-          .from('animes')
-          .select('id')
-          .eq('id', animeId)
-          .eq('user_id', user.id)
-          .single();
+        const animeUuid = await getAnimeRowId(animeId, user.id);
 
-        if (animeError || !animeData) {
-          // エラーが空のオブジェクトの場合は詳細をログに出力
-          if (animeError && Object.keys(animeError).length === 0) {
-            console.error(
-              'Failed to find anime: No anime found with id',
-              animeId,
-              'for user',
-              user.id
-            );
-          } else {
-            console.error('Failed to find anime:', animeError || 'No data returned');
-          }
+        if (animeUuid === null) {
+          console.error(
+            'Failed to find anime: No anime found with id',
+            animeId,
+            'for user',
+            user.id
+          );
           setAnimeReviews([]);
           setLoadingReviews(false);
           return;
         }
-
-        const animeUuid = animeData.id;
 
         // レビューを取得
         const { data: reviewsData, error: reviewsError } = await supabase
