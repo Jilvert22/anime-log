@@ -23,7 +23,8 @@ export function AnimeDataProvider({ children }: { children: ReactNode }) {
       animeData.averageRating,
       animeData.totalRewatchCount,
       animeData.isAnimeDataReady,
-      // setState関数は安定した参照のため依存配列に含めない
+      animeData.loadError,
+      // setState関数・reloadAnimeDataは安定した参照のため依存配列に含めない
     ]
   );
 
