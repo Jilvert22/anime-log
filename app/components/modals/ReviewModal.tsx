@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { Anime } from '../../types';
 import { supabase } from '../../lib/supabase';
+import { getAnimeRowId } from '../../lib/api/animes';
 import { INPUT_LIMITS, validateLength, throwIfInvalid } from '../../lib/validation';
 import { ValidationError } from '../../lib/api/errors';
 import { useFeedback } from '../../contexts/FeedbackContext';
@@ -71,19 +72,12 @@ export function ReviewModal({
 
     try {
       // アニメのUUIDを取得
-      const { data: animeData, error: animeError } = await supabase
-        .from('animes')
-        .select('id')
-        .eq('id', selectedAnime.id)
-        .eq('user_id', user.id)
-        .single();
+      const animeUuid = await getAnimeRowId(selectedAnime.id, user.id);
 
-      if (animeError || !animeData) {
-        console.error('Failed to find anime:', animeError);
+      if (animeUuid === null) {
+        console.error('Failed to find anime:', selectedAnime.id);
         return;
       }
-
-      const animeUuid = animeData.id;
 
       // 感想を投稿
       const { data: reviewData, error: reviewError } = await supabase

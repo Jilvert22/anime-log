@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
+import { getAnimesByUser } from '../lib/api/animes';
 import type { User } from '@supabase/supabase-js';
 import type { Season, Anime } from '../types';
 import { supabaseToAnime, sortSeasonsByTime } from '../utils/helpers';
@@ -38,13 +38,7 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
   // useCallbackは不要（この関数はuseEffect内でのみ使用される）
   const loadFromSupabase = async (userId: string, loadCycle: number) => {
     try {
-      const { data, error } = await supabase
-        .from('animes')
-        .select('*')
-        .eq('user_id', userId)
-        .order('id', { ascending: true });
-
-      if (error) throw error;
+      const data = await getAnimesByUser(userId);
 
       if (loadCycleRef.current !== loadCycle) return;
 

@@ -6,6 +6,7 @@ import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useFeedback } from '../../contexts/FeedbackContext';
 import { Spinner } from '../common/Spinner';
+import { getAnimeRowId } from '../../lib/api/animes';
 
 interface AnimeReviewSectionProps {
   animeReviews: Review[];
@@ -170,14 +171,9 @@ export function AnimeReviewSection({
               if (!user) return;
 
               try {
-                const { data: animeData } = await supabase
-                  .from('animes')
-                  .select('id')
-                  .eq('id', selectedAnime.id)
-                  .eq('user_id', user.id)
-                  .single();
+                const animeRowId = await getAnimeRowId(selectedAnime.id, user.id);
 
-                if (!animeData) return;
+                if (animeRowId === null) return;
 
                 if (review.userLiked) {
                   await supabase
@@ -209,14 +205,9 @@ export function AnimeReviewSection({
               if (!user) return;
 
               try {
-                const { data: animeData } = await supabase
-                  .from('animes')
-                  .select('id')
-                  .eq('id', selectedAnime.id)
-                  .eq('user_id', user.id)
-                  .single();
+                const animeRowId = await getAnimeRowId(selectedAnime.id, user.id);
 
-                if (!animeData) return;
+                if (animeRowId === null) return;
 
                 if (review.userHelpful) {
                   await supabase

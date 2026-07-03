@@ -40,6 +40,22 @@ const eslintConfig = defineConfig([
       'react-hooks/preserve-manual-memoization': 'warn',
     },
   },
+  // 逆流防止ガード: components/ と hooks/ から animes テーブルを直接クエリするのを禁止。
+  // DB アクセスは必ず app/lib/api/animes.ts のリポジトリ関数を経由すること
+  // (エラー処理・DB制約違反の集約点を1つに保つため)。
+  {
+    files: ['app/components/**/*.{ts,tsx}', 'app/hooks/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.property.name='from'] > Literal[value='animes']",
+          message:
+            'components/hooks から animes テーブルを直接クエリしないでください。app/lib/api/animes.ts のリポジトリ関数 (getAnimesByUser/insertAnime/updateAnimeFields 等) を使ってください。',
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;
