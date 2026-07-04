@@ -1,0 +1,3 @@
+# staged ファイルに eslint --fix + prettier --write を自動適用。
+# 「整形漏れ」「no-alert/直呼び違反」をコミット前に機械的に止める。
+npx lint-staged
