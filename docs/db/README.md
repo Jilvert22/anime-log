@@ -40,33 +40,30 @@ npx supabase migration new <説明>
 npx supabase db push
 ```
 
-## UNIQUE 制約の追加 (2026-07 の保留作業)
+## UNIQUE 制約 + CHECK 制約 (2026-07-04 適用済み)
 
-`animes` / `watchlist` に `(user_id, anilist_id)` の重複を許す穴があるため、
-DB レベルの UNIQUE 制約を追加する。**必ず順番に実行すること。**
+`animes` / `watchlist` に `(user_id, anilist_id)` の重複を許す穴があったため、
+DB レベルの UNIQUE 制約と基本的な CHECK 制約を追加した。
+正本は [`supabase/migrations/20260704111811_add_unique_and_check_constraints.sql`](../../supabase/migrations/20260704111811_add_unique_and_check_constraints.sql)。
 
-1. **重複チェック** — `docs/db/migrations-pending/01_check_duplicates.sql` を
-   Dashboard の SQL Editor で実行。**0 行なら手順3へ、1行でもあれば手順2へ。**
+適用時の記録:
+1. **重複チェック** — [`legacy/01_check_duplicates.sql`](legacy/01_check_duplicates.sql) を実行 →
+   `animes` で `anilist_id=16498` (進撃の巨人) が同一ユーザーに **56 件**重複を検出
+   (E2E 追加テストの後始末漏れの蓄積とみられる。reviews 紐づきは 0 件)。
+2. **重複修復** — [`legacy/02_repair_duplicates.sql`](legacy/02_repair_duplicates.sql) のロジックで
+   最古 1 件を残して **55 件削除**。`reviews` の CASCADE 消失なし、`watchlist` は重複ゼロで削除なし。
+3. **制約追加** — 上記マイグレーションで UNIQUE インデックス 2 本 + CHECK 制約 3 本を適用。
+   事前確認 (空タイトル / 負の周回数) は全て 0 件を確認済み。
 
-2. **重複修復** — `02_repair_duplicates.sql` を実行。
-   - 末尾は安全のため `ROLLBACK;` になっている。まず実行して削除件数を確認し、
-     問題なければ `ROLLBACK;` を `COMMIT;` に変えて再実行する。
-   - ⚠️ `animes` 削除は `reviews` を CASCADE 削除する。⚠️ `watchlist` 削除は
-     `notification_settings` が参照していると FK 違反になる (現状 ON DELETE 未設定)。
-     ファイル内コメント参照。
-
-3. **制約追加** — `03_add_unique_constraints.sql` を CLI マイグレーション化して push:
-   ```bash
-   npx supabase migration new add_unique_constraints
-   # 生成ファイルに 03 の本文を貼り付け
-   npx supabase db push
-   ```
-   (Dashboard で直接実行してもよい)
-
-4. **(任意) CHECK 制約** — `04_optional_check_constraints.sql`。事前確認クエリが
-   全て 0 件のときのみ追加。
-
-5. 適用が終わったら `migrations-pending/` の該当ファイルを `legacy/` へ移すか削除する。
+### 適用手順で踏んだ罠 (次回の教訓)
+- `supabase db pull` は shadow DB に **Docker Desktop が必須**。未起動だと失敗する。
+  baseline 取り込みは Docker 起動後に別途行う (制約適用自体には不要)。
+- `supabase db push` が既存スキーマを CLI 管理外と見て **「Remote database is up to date」と誤判定**し、
+  SQL を適用しないことがある。その場合は
+  `supabase db query --linked --file <migration>` で直接適用し、
+  `supabase migration repair --status applied <version>` で履歴に記録する
+  (これをしないと次回 push でマイグレーションが再実行され、`ADD CONSTRAINT` が重複エラーで落ちる)。
+- 破壊的 DDL/DML は Claude Code の自動許可分類器がブロックするため、人間がターミナルで実行した。
 
 ## 制約追加後のアプリ挙動
 

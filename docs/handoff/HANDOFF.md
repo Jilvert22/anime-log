@@ -18,8 +18,10 @@ husky pre-commit(自動整形)/pre-push(型)。
 
 ## 途中のこと（再開ポイント）
 
-- **DB UNIQUE 制約は SQL を用意しただけで本番未適用**。`docs/db/migrations-pending/` に
-  01_check / 02_repair / 03_add_unique_constraints / 04_optional がある。→ P2
+- ~~**DB UNIQUE 制約は SQL を用意しただけで本番未適用**~~ → **2026-07-04 適用完了**。
+  UNIQUE 2本 + CHECK 3本を [`supabase/migrations/20260704111811_add_unique_and_check_constraints.sql`](../../supabase/migrations/20260704111811_add_unique_and_check_constraints.sql)
+  で本番に適用。適用前に animes の重複 55 件(進撃の巨人)を除去済み。詳細は [docs/db/README.md](../db/README.md)。
+  残: `supabase db pull` による baseline 取り込みは Docker 未起動で保留(制約適用には不要)。
 - **E2E 3本が未着手**。別タスク `task_11bc8011` として切り出し済み。→ P3
 
 ## 直近の決定と理由
@@ -32,17 +34,14 @@ husky pre-commit(自動整形)/pre-push(型)。
 
 ## 次にやること（P1→P4）
 
-- **P1: Supabase の稼働確認**（数分）
-  [Supabase Dashboard](https://supabase.com/dashboard) でプロジェクトが Active か確認。
-  停止中なら Restore する（keepalive #33 が動いているので、一度復帰すれば以降は自動維持）。
+- ~~**P1: Supabase の稼働確認**~~ ✅ 完了（2026-07-04）。project ref `fskcfnjyyanvzjzsqeju` は
+  `ACTIVE_HEALTHY`。keepalive も 07:50 UTC に成功。Restore 不要。
 
-- **P2: DB UNIQUE 制約の適用**（本プロジェクトの残り本丸）
-  手順は [docs/db/README.md](../db/README.md)。要約:
-  1. `npx supabase login` → `link --project-ref <ref>` → `db pull`
-     （これで「animes の CREATE TABLE がリポジトリに無い」問題も解消）
-  2. `docs/db/migrations-pending/01_check_duplicates.sql` で重複確認 → あれば `02_repair`
-  3. `03_add_unique_constraints.sql` を `supabase migration new` + `db push`（または Dashboard）
-  適用後、同じ作品の二重登録で `DuplicateAnimeError`→確認ダイアログが有効になる。
+- ~~**P2: DB UNIQUE 制約の適用**~~ ✅ 完了（2026-07-04）。UNIQUE 2本 + CHECK 3本を適用。
+  同じ作品の二重登録で `DuplicateAnimeError`→確認ダイアログが有効になった。
+  詳細・踏んだ罠は [docs/db/README.md](../db/README.md)。
+  残タスク: `supabase db pull`（baseline 取り込み、「animes の CREATE TABLE がリポジトリに無い」問題の解消）は
+  **Docker Desktop 起動が前提**で今回保留。制約適用には不要なので優先度は低い。
 
 - **P3: E2E 3本の追加**（`task_11bc8011` のチップから専用セッション推奨）
   積み→視聴済み移動 / 評価・レビュー投稿 / シーズン終了処理。既存 `tests/anime.spec.ts` を踏襲し、
