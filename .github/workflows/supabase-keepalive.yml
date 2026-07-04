@@ -1,0 +1,51 @@
+name: Supabase Keepalive
+
+# Supabase 無料プランは 7 日間アクティビティが無いとプロジェクトを自動停止する。
+# 定期的に軽い REST リクエストを送り、DB にアクティビティを与えて停止を防ぐ。
+#
+# 注意:
+# - これは「稼働中の停止を防ぐ」もの。既に停止済みのプロジェクトは
+#   Supabase ダッシュボードから手動で Restore する必要がある。
+# - GitHub はデフォルトブランチのスケジュールを、リポジトリが 60 日間
+#   無活動だと自動で無効化する。
+
+on:
+  schedule:
+    # 2 日ごと 15:00 UTC (= 翌 00:00 JST)。7 日の猶予に対して十分な余裕。
+    # GitHub の cron は混雑時に遅延・スキップされ得るため、間隔は短めにしている。
+    - cron: '0 15 */2 * *'
+  workflow_dispatch: {} # 手動実行も可能 (動作確認用)
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "::error::NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY secrets が未設定です"
+            exit 1
+          fi
+
+          # animes テーブルに軽いクエリを投げて DB にアクティビティを与える。
+          # RLS で行が返らなくても、クエリ自体は実行されるためアクティビティになる。
+          status=$(curl -s -o /tmp/body.txt -w "%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL}/rest/v1/animes?select=id&limit=1")
+
+          echo "HTTP status: ${status}"
+          # 2xx を成功とみなす (200 空配列 / 206 レンジ応答など)
+          case "${status}" in
+            2*) echo "Supabase keepalive ping 成功" ;;
+            *)
+              echo "::error::予期しないステータス ${status}"
+              cat /tmp/body.txt || true
+              exit 1
+              ;;
+          esac
