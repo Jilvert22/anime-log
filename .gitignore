@@ -61,7 +61,15 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 .env*.local
-.claude/
+
+# Claude Code: 共有する設定 (settings.json / hooks / launch.json) は追跡し、
+# ローカル成果物 (worktrees / 個人設定) は無視する
+.claude/*
+!.claude/settings.json
+!.claude/launch.json
+!.claude/hooks/
+!.claude/hooks/**
+.claude/settings.local.json
 
 # Stitch生成物・デザイン比較画像(ローカル参照用)
 .stitch/generated/

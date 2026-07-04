@@ -15,7 +15,8 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "inject-push": "node scripts/inject-push-notifications.js",
-    "screenshots": "tsx scripts/take-screenshots.ts"
+    "screenshots": "tsx scripts/take-screenshots.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
@@ -44,11 +45,22 @@
     "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
+    "husky": "^9.1.7",
     "jsdom": "^27.4.0",
+    "lint-staged": "^17.0.8",
     "prettier": "3.9.4",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
     "typescript": "^5",
     "vitest": "^4.0.16"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,mjs,json,css}": [
+      "prettier --write"
+    ]
   }
 }
