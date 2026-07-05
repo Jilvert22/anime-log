@@ -76,24 +76,23 @@ export function AnimeDetailModal({
   // Escキーでモーダルを閉じる
   useEscapeKey(() => setSelectedAnime(null));
 
-  // AniList IDから詳細情報を取得（公式HPリンク用）
+  // AniList の作品 ID から詳細情報を取得（公式HPリンク用）。
+  // 作品の同一性は anilistId で判断する（id は二重実態で、ログイン時は UUID 文字列のため
+  // 数値比較では常に外れ、未ログイン時は合成 number が無関係な AniList 作品を誤取得し得た）。
   useEffect(() => {
-    // Anime型のidがAniList IDかどうかを判定（1000000未満の場合はAniList IDの可能性が高い）
-    const id = selectedAnime.id;
-    const isAnilistId = typeof id === 'number' && id < 1000000;
-    if (isAnilistId) {
-      getAnimeDetail(id)
-        .then((detail) => {
-          if (detail) {
-            setAnilistDetail(detail);
-          }
-        })
-        .catch((error) => {
-          const normalizedError = normalizeError(error);
-          logger.error('AniList詳細情報の取得に失敗しました', normalizedError, 'AnimeDetailModal');
-        });
-    }
-  }, [selectedAnime.id]);
+    const anilistId = selectedAnime.anilistId;
+    if (!anilistId) return; // 手動追加・旧データ（anilistId なし）は公式リンク非表示のまま
+    getAnimeDetail(anilistId)
+      .then((detail) => {
+        if (detail) {
+          setAnilistDetail(detail);
+        }
+      })
+      .catch((error) => {
+        const normalizedError = normalizeError(error);
+        logger.error('AniList詳細情報の取得に失敗しました', normalizedError, 'AnimeDetailModal');
+      });
+  }, [selectedAnime.anilistId]);
 
   const handleUpdateAnime = async (
     updater: (anime: Anime) => Anime,
