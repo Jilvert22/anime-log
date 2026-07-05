@@ -1,6 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Anime, Season, User } from '../types';
-import { translateGenre, sortSeasonsByTime, getNextSeason, JA_TO_SEASON } from '../utils/helpers';
+import {
+  translateGenre,
+  sortSeasonsByTime,
+  getNextSeason,
+  JA_TO_SEASON,
+  supabaseToAnime,
+} from '../utils/helpers';
 import { getBroadcastInfo } from '../lib/api/anilist';
 import { insertAnime } from '../lib/api/animes';
 import { useStorage } from './useStorage';
@@ -181,10 +187,17 @@ export function useSeasonSearch({
           streamingSites: result.streamingServices || [],
         };
 
+        // state に入れる作品。ログイン時は insertAnime が返す実 UUID 行で置き換える
+        // (合成 number のまま保持すると、追加直後に getAnimeRowId が UUID を見つけられず
+        //  感想の表示/投稿が silent に失敗する)。
+        let animeToAdd: Anime = newAnime;
+
         // ログインしている場合はSupabaseに保存
         if (user) {
           try {
-            await insertAnime(newAnime, seasonName, user.id);
+            const insertedRow = await insertAnime(newAnime, seasonName, user.id);
+            // 挿入行の実 UUID id を反映。フォールバック行(id なし)経由なら id:0 のままだが従来同様
+            animeToAdd = supabaseToAnime(insertedRow);
           } catch (error) {
             // DB の UNIQUE 制約に引っかかった = すでに追加済み
             if (error instanceof DuplicateAnimeError) {
@@ -212,10 +225,10 @@ export function useSeasonSearch({
         let updatedSeasons: Season[];
 
         if (existingSeasonIndex === -1) {
-          updatedSeasons = [...seasons, { name: seasonName, animes: [newAnime] }];
+          updatedSeasons = [...seasons, { name: seasonName, animes: [animeToAdd] }];
         } else {
           updatedSeasons = seasons.map((s, index) =>
-            index === existingSeasonIndex ? { ...s, animes: [...s.animes, newAnime] } : s
+            index === existingSeasonIndex ? { ...s, animes: [...s.animes, animeToAdd] } : s
           );
         }
 
