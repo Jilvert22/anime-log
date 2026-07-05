@@ -413,15 +413,20 @@ export default function SeasonWatchlistTab() {
         studios: animeData.studios?.nodes?.map((s) => s.name) || [],
       };
 
+      // Supabaseに保存してから挿入行の実 UUID を state に反映する（AniList number id のまま
+      // 保持すると追加直後の getAnimeRowId が null になり感想投稿等が silent 失敗するため）。
+      const insertedRow = await insertAnime(newAnime, seasonName, user.id);
+      const animeToAdd: Anime = { ...newAnime, id: insertedRow.id ?? newAnime.id };
+
       const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
       let updatedSeasons;
 
       if (existingSeasonIndex === -1) {
-        updatedSeasons = [...seasons, { name: seasonName, animes: [newAnime] }];
+        updatedSeasons = [...seasons, { name: seasonName, animes: [animeToAdd] }];
       } else {
         updatedSeasons = seasons.map((season, index) =>
           index === existingSeasonIndex
-            ? { ...season, animes: [...season.animes, newAnime] }
+            ? { ...season, animes: [...season.animes, animeToAdd] }
             : season
         );
       }
@@ -431,8 +436,6 @@ export default function SeasonWatchlistTab() {
       const newExpandedSeasons = new Set(expandedSeasons);
       newExpandedSeasons.add(seasonName);
       setExpandedSeasons(newExpandedSeasons);
-
-      await insertAnime(newAnime, seasonName, user.id);
 
       await storage.removeFromWatchlist(selectedWatchlistItem.anilist_id);
       await loadWatchlist();
