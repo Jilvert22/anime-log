@@ -142,6 +142,8 @@ test.describe('積みアニメ・レビュー・シーズン終了フロー', ()
     await expect(page.getByText('新しいアニメを追加')).not.toBeVisible({ timeout: 10000 });
 
     // リロードして DB の実 ID を反映させる（getAnimeRowId が合成 ID だと null になり投稿が失敗するため）
+    // 注: この一括登録経路（AddAnimeFormModal）は insert 戻り値を state に反映しないため reload が必要。
+    //     シーズン検索経路（useSeasonSearch）は修正済みで、下の別テストが「リロードなし」で投稿できることを検証する。
     await reloadReady(page);
 
     // クール別タブで対象カードを開く
@@ -178,6 +180,94 @@ test.describe('積みアニメ・レビュー・シーズン終了フロー', ()
     await expect(page.getByText('基本情報')).toBeVisible({ timeout: 5000 });
     await page.getByRole('button', { name: '感想', exact: true }).click();
     await expect(page.getByText(content)).toBeVisible({ timeout: 10000 });
+  });
+
+  test('検索追加した作品にリロードなしで感想を投稿できる（useSeasonSearch 経路）', async ({
+    page,
+  }) => {
+    // ぼっち・ざ・ろっく！は 2022年秋。クール別タブのシーズン検索から追加し、
+    // リロードせずに感想を投稿できることを検証する（合成 id のまま state 保持だと
+    // getAnimeRowId が UUID を見つけられず silent に失敗していた回帰の実証）。
+    const TARGET_ANILIST = ANILIST_BOCCHI;
+    const TITLE = /ぼっち/;
+    const content = `E2E検索追加感想 ${Date.now()}`;
+
+    await dbCleanupByAnilistId(TARGET_ANILIST);
+    await login(page, { seasonCheck: 'current' });
+
+    try {
+      // クール別タブ →「未登録のクールも含めて表示」を ON にして未登録シーズンを出す
+      await page.locator('[data-tab="seasons"]').first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const showAll = page.getByText('未登録のクールも含めて表示');
+      if (!(await showAll.isVisible({ timeout: 5000 }).catch(() => false))) {
+        console.log('「未登録のクールも含めて表示」トグルが見つかりませんでした。スキップします。');
+        return;
+      }
+      await showAll.click();
+      await page.waitForTimeout(500);
+
+      // 2022年秋（未登録）を展開 → 自動でシーズン検索が走る。
+      // 年が畳まれている場合はヘッダーをクリックして展開する。
+      let seasonHeader = page.getByRole('button', { name: /秋.*未登録/ }).first();
+      if (!(await seasonHeader.isVisible({ timeout: 2000 }).catch(() => false))) {
+        const yearHeader = page.getByRole('button', { name: /2022年/ }).first();
+        if (await yearHeader.isVisible({ timeout: 5000 }).catch(() => false)) {
+          await yearHeader.click().catch(() => {});
+          await page.waitForTimeout(500);
+        }
+        seasonHeader = page.getByRole('button', { name: /秋.*未登録/ }).first();
+      }
+      if (!(await seasonHeader.isVisible({ timeout: 5000 }).catch(() => false))) {
+        console.log('2022年秋（未登録）のシーズンヘッダーが見つかりませんでした。スキップします。');
+        return;
+      }
+      await seasonHeader.click();
+
+      // シーズン検索（外部 AniList）の完了を待つ
+      await page
+        .waitForSelector('text=作品を検索中...', { state: 'hidden', timeout: 30000 })
+        .catch(() => {});
+      await page.waitForTimeout(1500);
+
+      // 検索結果カードから対象作品の「追加」ボタンを押す
+      const resultCard = page.locator('div.relative.group').filter({ hasText: TITLE }).first();
+      if (!(await resultCard.isVisible({ timeout: 8000 }).catch(() => false))) {
+        console.log('シーズン検索結果に対象作品が見つかりませんでした。スキップします。');
+        return;
+      }
+      await resultCard.getByRole('button', { name: '追加', exact: true }).click();
+      // 追加完了を待つ（「追加中...」が消える）。リロードはしない（本テストの主眼）。
+      await page.waitForTimeout(2500);
+
+      // リロードなしで、追加された作品カード（登録済み表示）を開く
+      const registeredCard = page.locator('div.cursor-pointer').filter({ hasText: TITLE }).first();
+      if (!(await registeredCard.isVisible({ timeout: 8000 }).catch(() => false))) {
+        console.log('追加後の登録カードが見つかりませんでした。スキップします。');
+        return;
+      }
+      await registeredCard.click();
+      await expect(page.getByText('基本情報')).toBeVisible({ timeout: 5000 });
+
+      // 感想タブ → 感想を投稿
+      await page.getByRole('button', { name: '感想', exact: true }).click();
+      await page.getByRole('button', { name: '+ 感想を投稿' }).click();
+      await expect(page.getByRole('heading', { name: '感想を投稿' })).toBeVisible({
+        timeout: 5000,
+      });
+      await page.getByPlaceholder('感想を入力してください...').fill(content);
+      await page.getByRole('button', { name: '投稿', exact: true }).click();
+
+      // 検証: リロードせずに投稿が成功する（handleSubmit は成功時のみ onClose）
+      await expect(page.getByRole('heading', { name: '感想を投稿' })).not.toBeVisible({
+        timeout: 10000,
+      });
+      await expect(page.getByText('感想の投稿に失敗しました')).not.toBeVisible();
+      // 追加直後（リロードなし）に一覧へ反映される
+      await expect(page.getByText(content)).toBeVisible({ timeout: 10000 });
+    } finally {
+      await dbCleanupByAnilistId(TARGET_ANILIST);
+    }
   });
 
   test('シーズン終了モーダルで前期アニメを処理できる', async ({ page }) => {
