@@ -141,8 +141,12 @@ test.describe('積みアニメ・レビュー・シーズン終了フロー', ()
     await page.getByRole('button', { name: /件のアニメを登録/ }).click();
     await expect(page.getByText('新しいアニメを追加')).not.toBeVisible({ timeout: 10000 });
 
-    // リロードしない: 一括登録（AddAnimeFormModal）も insert 戻り値の実 UUID を state に反映するよう
-    // 修正済みのため、追加直後（リロードなし）にそのまま感想を投稿できる。
+    // リロードして DB の実 ID を反映させる。一括登録（AddAnimeFormModal）は insert 戻り値の
+    // 実 UUID を state に反映するよう修正済みで通常はリロード不要だが、共有テストアカウントに
+    // 対象作品が残存（重複）していると insertAnimeRows が 23505 で失敗して合成 ID のままになる。
+    // 冪等性のため、ここでは reload して DB の実 UUID を読み直す。
+    await reloadReady(page);
+
     // クール別タブで対象カードを開く
     await expandAllSeasons(page);
     const card = page.locator('div.cursor-pointer').filter({ hasText: TITLE }).first();
