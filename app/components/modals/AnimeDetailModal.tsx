@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import type { Anime, Season, Review } from '../../types';
+import type { Anime, AnimeId, Season, Review } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { availableTags, ratingLabels } from '../../constants';
@@ -30,7 +30,7 @@ interface AnimeDetailModalProps {
   supabase: SupabaseClient;
   animeReviews: Review[];
   loadingReviews: boolean;
-  loadReviews: (animeId: number) => Promise<void>;
+  loadReviews: (animeId: AnimeId) => Promise<void>;
   reviewFilter: 'all' | 'overall' | 'episode';
   setReviewFilter: (filter: 'all' | 'overall' | 'episode') => void;
   reviewSort: 'newest' | 'likes' | 'helpful';
@@ -79,9 +79,10 @@ export function AnimeDetailModal({
   // AniList IDから詳細情報を取得（公式HPリンク用）
   useEffect(() => {
     // Anime型のidがAniList IDかどうかを判定（1000000未満の場合はAniList IDの可能性が高い）
-    const isAnilistId = selectedAnime.id < 1000000;
+    const id = selectedAnime.id;
+    const isAnilistId = typeof id === 'number' && id < 1000000;
     if (isAnilistId) {
-      getAnimeDetail(selectedAnime.id)
+      getAnimeDetail(id)
         .then((detail) => {
           if (detail) {
             setAnilistDetail(detail);
@@ -608,7 +609,8 @@ export function AnimeDetailModal({
                     // Supabaseから削除（ログイン時のみ）
                     if (user) {
                       try {
-                        const isLocalId = selectedAnime.id > 1000000;
+                        const isLocalId =
+                          typeof selectedAnime.id === 'number' && selectedAnime.id > 1000000;
                         if (!isLocalId) {
                           await deleteAnime(selectedAnime.id, user.id);
                         }

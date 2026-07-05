@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { Anime } from '../types';
+import type { Anime, AnimeId } from '../types';
 
 interface UseModalActionsProps {
   // useModalsから取得したセッター
@@ -14,7 +14,7 @@ interface UseModalActionsProps {
   setShowSongModal: (show: boolean) => void;
   setShowDNAModal: (show: boolean) => void;
   // useFormStatesから取得したセッター
-  setEditingQuote: (quote: { animeId: number; quoteIndex: number } | null) => void;
+  setEditingQuote: (quote: { animeId: AnimeId; quoteIndex: number } | null) => void;
   // HomeClientで直接管理されている状態のセッター
   setSelectedAnime: (anime: Anime | null) => void;
   // その他の依存関係
@@ -80,7 +80,7 @@ export function useModalActions({
   }, [setShowAddQuoteModal, setEditingQuote]);
 
   const editQuote = useCallback(
-    (animeId: number, quoteIndex: number) => {
+    (animeId: AnimeId, quoteIndex: number) => {
       const anime = allAnimes.find((a) => a.id === animeId);
       if (anime?.quotes?.[quoteIndex]) {
         setEditingQuote({ animeId, quoteIndex });

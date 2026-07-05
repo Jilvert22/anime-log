@@ -99,8 +99,11 @@ export function useAnimeData(user: User | null, isLoading: boolean) {
       const parsedSeasons: Season[] = JSON.parse(savedSeasons);
 
       // サンプルデータを検出（IDが1-4のアニメが含まれている場合）
+      // localStorage 経路の id は合成 number のみ。UUID 文字列は typeof で除外する
       const hasSampleData = parsedSeasons.some((season) =>
-        season.animes.some((anime) => anime.id >= 1 && anime.id <= 4)
+        season.animes.some(
+          (anime) => typeof anime.id === 'number' && anime.id >= 1 && anime.id <= 4
+        )
       );
 
       if (hasSampleData) {

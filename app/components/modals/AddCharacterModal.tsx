@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import type { Anime, FavoriteCharacter } from '../../types';
+import type { Anime, AnimeId, FavoriteCharacter } from '../../types';
 import { characterCategories, characterPresetTags } from '../../constants';
 
 export function AddCharacterModal({
@@ -19,7 +19,7 @@ export function AddCharacterModal({
   onSave: (character: FavoriteCharacter) => void;
 }) {
   const [newCharacterName, setNewCharacterName] = useState('');
-  const [newCharacterAnimeId, setNewCharacterAnimeId] = useState<number | null>(null);
+  const [newCharacterAnimeId, setNewCharacterAnimeId] = useState<AnimeId | null>(null);
   const [newCharacterImage, setNewCharacterImage] = useState('👤');
   const [newCharacterCategory, setNewCharacterCategory] = useState('');
   const [newCharacterTags, setNewCharacterTags] = useState<string[]>([]);

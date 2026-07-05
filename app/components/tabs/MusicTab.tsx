@@ -2,7 +2,7 @@
 import { Pencil, Trash2, Heart } from 'lucide-react';
 
 import { useState } from 'react';
-import type { Anime, Season, User } from '../../types';
+import type { Anime, AnimeId, Season, User } from '../../types';
 import { StarRating } from '../StarRating';
 import { useFeedback } from '../../contexts/FeedbackContext';
 import { updateAnimeFields } from '../../lib/api/animes';
@@ -35,7 +35,7 @@ export function MusicTab({
     isFavorite: boolean;
     animeTitle: string;
     type: 'op' | 'ed';
-    animeId: number;
+    animeId: AnimeId;
   }> = [];
 
   allAnimes.forEach((anime) => {

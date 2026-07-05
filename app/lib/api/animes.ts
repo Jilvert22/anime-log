@@ -21,7 +21,7 @@ import {
   normalizeError,
 } from './errors';
 import { animeToSupabase } from '../../utils/helpers';
-import type { Anime, SupabaseAnimeRow } from '../../types';
+import type { Anime, AnimeId, SupabaseAnimeRow } from '../../types';
 
 /**
  * ユーザーの全アニメを取得 (id 昇順)
@@ -53,7 +53,11 @@ export async function getAnimesByUser(userId: string): Promise<SupabaseAnimeRow[
  * 指定 id のアニメ行が存在するか確認し、その id を返す (存在しなければ null)。
  * 感想/いいね系が UUID 相当の実在確認に使う軽量クエリ。
  */
-export async function getAnimeRowId(animeId: number, userId: string): Promise<number | null> {
+export async function getAnimeRowId(animeId: AnimeId, userId: string): Promise<string | null> {
+  // number = ローカル合成 ID / AniList ID。animes.id は uuid 型のため DB に存在し得ない。
+  // （従来は Postgres の uuid parse エラー経由で null になっていた。クエリを省くだけで観測挙動は同一）
+  if (typeof animeId === 'number') return null;
+
   const { data, error } = await supabase
     .from('animes')
     .select('id')
@@ -64,7 +68,7 @@ export async function getAnimeRowId(animeId: number, userId: string): Promise<nu
   if (error || !data) {
     return null;
   }
-  return data.id;
+  return data.id as string;
 }
 
 /**
@@ -132,7 +136,7 @@ export async function insertAnimeRows(
  * user_id を必ず複合条件に含めることで、他人の行を更新できないようにする。
  */
 export async function updateAnimeFields(
-  animeId: number,
+  animeId: AnimeId,
   userId: string,
   patch: Partial<SupabaseAnimeRow>
 ): Promise<void> {
@@ -159,7 +163,7 @@ export async function updateAnimeFields(
 /**
  * アニメを削除する (id + user_id の複合条件)
  */
-export async function deleteAnime(animeId: number, userId: string): Promise<void> {
+export async function deleteAnime(animeId: AnimeId, userId: string): Promise<void> {
   try {
     const { error } = await supabase
       .from('animes')

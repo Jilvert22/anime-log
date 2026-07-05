@@ -3,7 +3,7 @@ import { Pencil, Trash2, Plus } from 'lucide-react';
 
 import { useState, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { Anime, Season, FavoriteCharacter, SupabaseClientType } from '../../../types';
+import type { Anime, AnimeId, Season, FavoriteCharacter, SupabaseClientType } from '../../../types';
 import { characterCategories } from '../../../constants';
 import { MusicTab } from '../MusicTab';
 import { useFeedback } from '../../../contexts/FeedbackContext';
@@ -24,10 +24,10 @@ interface CollectionSectionProps {
   setQuoteSearchQuery: (query: string) => void;
   quoteFilterType: 'all' | 'anime' | 'character';
   setQuoteFilterType: (type: 'all' | 'anime' | 'character') => void;
-  selectedAnimeForFilter: number | null;
-  setSelectedAnimeForFilter: (id: number | null) => void;
+  selectedAnimeForFilter: AnimeId | null;
+  setSelectedAnimeForFilter: (id: AnimeId | null) => void;
   onOpenAddQuoteModal: () => void;
-  onEditQuote: (animeId: number, quoteIndex: number) => void;
+  onEditQuote: (animeId: AnimeId, quoteIndex: number) => void;
   setSelectedAnime: (anime: Anime | null) => void;
   setShowSongModal: (show: boolean) => void;
 }
@@ -117,8 +117,12 @@ export default function CollectionSection(props: CollectionSectionProps) {
 
   // allQuotesListをuseMemoでメモ化
   const allQuotesList = useMemo(() => {
-    const quotes: Array<{ text: string; character?: string; animeTitle: string; animeId: number }> =
-      [];
+    const quotes: Array<{
+      text: string;
+      character?: string;
+      animeTitle: string;
+      animeId: AnimeId;
+    }> = [];
     props.allAnimes.forEach((anime) => {
       anime.quotes?.forEach((quote) => {
         quotes.push({ ...quote, animeTitle: anime.title, animeId: anime.id });

@@ -1,5 +1,12 @@
 // 共通の型
-export type AnimeId = number;
+/**
+ * 作品のローカル識別子。実体は二重:
+ * - ログイン時: Supabase `animes.id`（uuid 型）の **UUID 文字列**
+ * - 未ログイン時: localStorage の **合成 number**（`Math.max(...ids)+1`）
+ *
+ * number id は DB（uuid 型）には存在し得ない。作品の同一性は `anilistId` で判断する。
+ */
+export type AnimeId = string | number;
 export type UserId = string;
 
 // 主題歌の型定義
@@ -79,7 +86,7 @@ export type FavoriteCharacter = {
 
 // Supabaseのanimesテーブルの行型（新規作成時はidが不要）
 export type SupabaseAnimeRow = {
-  id?: number; // 新規作成時はオプショナル
+  id?: string; // animes.id は uuid 型。新規作成時（INSERT payload）はオプショナル
   anilist_id?: number | null;
   user_id: string;
   season_name: string;

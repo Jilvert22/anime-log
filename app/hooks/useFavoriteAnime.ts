@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { AnimeId } from '../types';
 
 export function useFavoriteAnime() {
-  const [favoriteAnimeIds, setFavoriteAnimeIds] = useState<number[]>([]);
+  // localStorage には二重実態の id が入り得る（ログイン作品=UUID 文字列 / 合成=number）
+  const [favoriteAnimeIds, setFavoriteAnimeIds] = useState<AnimeId[]>([]);
 
   // localStorageからfavoriteAnimeIdsを読み込み
   useEffect(() => {

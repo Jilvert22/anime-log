@@ -149,7 +149,7 @@ export function useSeasonSearch({
         const allAnimeIds = seasons
           .flatMap((s) => s.animes)
           .map((a) => a.id)
-          .filter((id) => typeof id === 'number' && !isNaN(id));
+          .filter((id): id is number => typeof id === 'number' && !isNaN(id));
         const maxId = allAnimeIds.length > 0 ? Math.max(...allAnimeIds) : 0;
         const seasonName = `${year}年${season}`;
 

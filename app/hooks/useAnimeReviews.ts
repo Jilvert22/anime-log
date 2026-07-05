@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getAnimeRowId } from '../lib/api/animes';
 import type { User } from '@supabase/supabase-js';
-import type { Review } from '../types';
+import type { AnimeId, Review } from '../types';
 
 export function useAnimeReviews(user: User | null) {
   const [animeReviews, setAnimeReviews] = useState<Review[]>([]);
@@ -15,15 +15,14 @@ export function useAnimeReviews(user: User | null) {
   const [expandedSpoilerReviews, setExpandedSpoilerReviews] = useState<Set<string>>(new Set());
 
   const loadReviews = useCallback(
-    async (animeId: number) => {
+    async (animeId: AnimeId) => {
       if (!user) {
         setAnimeReviews([]);
         return;
       }
 
-      // animeId は型上は number だが、Supabase から読み込んだ作品では実行時に UUID 文字列
-      // (animes.id は uuid 型)。number 限定/isNaN で弾くとその UUID を無効扱いして自分の感想が
-      // 表示されないため、falsy(null/undefined/0/空文字/NaN)だけ弾き、有効な id は通す。
+      // animeId は二重実態（ログイン時=UUID 文字列 / 未ログイン時=合成 number）。number 限定/isNaN で
+      // 弾くと UUID を無効扱いして自分の感想が表示されないため、falsy(null/undefined/0/空文字/NaN)だけ弾く。
       if (!animeId) {
         console.warn('Invalid animeId provided to loadReviews:', animeId);
         setAnimeReviews([]);
