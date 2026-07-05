@@ -373,43 +373,25 @@ export function AddAnimeFormModal({
                         };
                       });
 
-                      // 既存のシーズンを探す、なければ作成してアニメを追加
-                      const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
-                      let updatedSeasons: Season[];
-
-                      if (existingSeasonIndex === -1) {
-                        // 新しいシーズンを作成
-                        updatedSeasons = [...seasons, { name: seasonName, animes: newAnimes }];
-                      } else {
-                        // 既存のシーズンにアニメを追加
-                        updatedSeasons = seasons.map((season, index) =>
-                          index === existingSeasonIndex
-                            ? { ...season, animes: [...season.animes, ...newAnimes] }
-                            : season
-                        );
-                      }
-
-                      // 時系列順にソート
-                      updatedSeasons = sortSeasonsByTime(updatedSeasons);
-
-                      // 新しいシーズンが追加された場合は展開状態にする
-                      const newExpandedSeasons = new Set(expandedSeasons);
-                      if (!seasons.find((s) => s.name === seasonName)) {
-                        newExpandedSeasons.add(seasonName);
-                      } else {
-                        // 既存のシーズンでも展開状態を維持
-                        newExpandedSeasons.add(seasonName);
-                      }
-                      setExpandedSeasons(newExpandedSeasons);
-
-                      // Supabaseに保存（ログイン時のみ）
+                      // Supabaseに保存（ログイン時のみ）。成功時は実 UUID を state に反映する
+                      // (合成 number のまま保持すると追加直後に getAnimeRowId が UUID を見つけられず
+                      //  感想投稿等が silent 失敗するため)。
+                      let animesToAdd = newAnimes;
                       if (user) {
                         try {
                           const supabaseData = newAnimes.map((anime) =>
                             animeToSupabase(anime, seasonName, user.id)
                           );
 
-                          await insertAnimeRows(supabaseData);
+                          const insertedRows = await insertAnimeRows(supabaseData);
+                          // insertAnimeRows は投入順で行を返す。実 UUID を index 対応で反映する
+                          // (行数不一致の異常時は合成 id のまま = 従来挙動を悪化させない)。
+                          if (insertedRows.length === newAnimes.length) {
+                            animesToAdd = newAnimes.map((anime, index) => ({
+                              ...anime,
+                              id: insertedRows[index].id ?? anime.id,
+                            }));
+                          }
                         } catch (error: unknown) {
                           const errorMessage =
                             error instanceof Error
@@ -429,6 +411,35 @@ export function AddAnimeFormModal({
                           );
                         }
                       }
+
+                      // 既存のシーズンを探す、なければ作成してアニメを追加
+                      const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
+                      let updatedSeasons: Season[];
+
+                      if (existingSeasonIndex === -1) {
+                        // 新しいシーズンを作成
+                        updatedSeasons = [...seasons, { name: seasonName, animes: animesToAdd }];
+                      } else {
+                        // 既存のシーズンにアニメを追加
+                        updatedSeasons = seasons.map((season, index) =>
+                          index === existingSeasonIndex
+                            ? { ...season, animes: [...season.animes, ...animesToAdd] }
+                            : season
+                        );
+                      }
+
+                      // 時系列順にソート
+                      updatedSeasons = sortSeasonsByTime(updatedSeasons);
+
+                      // 新しいシーズンが追加された場合は展開状態にする
+                      const newExpandedSeasons = new Set(expandedSeasons);
+                      if (!seasons.find((s) => s.name === seasonName)) {
+                        newExpandedSeasons.add(seasonName);
+                      } else {
+                        // 既存のシーズンでも展開状態を維持
+                        newExpandedSeasons.add(seasonName);
+                      }
+                      setExpandedSeasons(newExpandedSeasons);
 
                       setSeasons(updatedSeasons);
                       handleClose();
@@ -719,10 +730,55 @@ export function AddAnimeFormModal({
                       };
                     });
 
+                    // Supabaseに保存（ログイン時のみ）。成功時は実 UUID を state に反映する
+                    // (合成 number のまま保持すると追加直後に getAnimeRowId が UUID を見つけられず
+                    //  感想投稿等が silent 失敗するため)。
+                    let animesToAdd = newAnimes;
+                    if (user) {
+                      try {
+                        const supabaseData: ReturnType<typeof animeToSupabase>[] = [];
+                        newAnimes.forEach((anime) => {
+                          const result = selectedAnimes.find(
+                            (r) => (r.title?.native || r.title?.romaji) === anime.title
+                          );
+                          let seasonName = '未分類';
+                          if (result?.seasonYear && result?.season) {
+                            seasonName = `${result.seasonYear}年${getSeasonName(result.season)}`;
+                          }
+                          supabaseData.push(animeToSupabase(anime, seasonName, user.id));
+                        });
+
+                        const insertedRows = await insertAnimeRows(supabaseData);
+                        // insertAnimeRows は投入順で行を返す。実 UUID を index 対応で反映する
+                        // (行数不一致の異常時は合成 id のまま = 従来挙動を悪化させない)。
+                        if (insertedRows.length === newAnimes.length) {
+                          animesToAdd = newAnimes.map((anime, index) => ({
+                            ...anime,
+                            id: insertedRows[index].id ?? anime.id,
+                          }));
+                        }
+                      } catch (error: unknown) {
+                        const errorMessage =
+                          error instanceof Error
+                            ? error.message
+                            : (typeof error === 'object' && error !== null && 'message' in error
+                                ? String((error as { message?: string }).message)
+                                : typeof error === 'object' && error !== null && 'details' in error
+                                  ? String((error as { details?: string }).details)
+                                  : typeof error === 'object' && error !== null && 'hint' in error
+                                    ? String((error as { hint?: string }).hint)
+                                    : String(error)) || '不明なエラー';
+                        showToast(
+                          `アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`,
+                          'error'
+                        );
+                      }
+                    }
+
                     // 各アニメを適切なシーズンに追加
                     let updatedSeasons: Season[] = [...seasons];
 
-                    newAnimes.forEach((anime) => {
+                    animesToAdd.forEach((anime) => {
                       // シーズン名を取得（各アニメの情報から）
                       const result = selectedAnimes.find(
                         (r) => (r.title?.native || r.title?.romaji) === anime.title
@@ -748,7 +804,7 @@ export function AddAnimeFormModal({
 
                     // 新しいシーズンが追加された場合は展開状態にする
                     const newExpandedSeasons = new Set(expandedSeasons);
-                    newAnimes.forEach((anime) => {
+                    animesToAdd.forEach((anime) => {
                       const result = selectedAnimes.find(
                         (r) => (r.title?.native || r.title?.romaji) === anime.title
                       );
@@ -763,40 +819,6 @@ export function AddAnimeFormModal({
                       }
                     });
                     setExpandedSeasons(newExpandedSeasons);
-
-                    // Supabaseに保存（ログイン時のみ）
-                    if (user) {
-                      try {
-                        const supabaseData: ReturnType<typeof animeToSupabase>[] = [];
-                        newAnimes.forEach((anime) => {
-                          const result = selectedAnimes.find(
-                            (r) => (r.title?.native || r.title?.romaji) === anime.title
-                          );
-                          let seasonName = '未分類';
-                          if (result?.seasonYear && result?.season) {
-                            seasonName = `${result.seasonYear}年${getSeasonName(result.season)}`;
-                          }
-                          supabaseData.push(animeToSupabase(anime, seasonName, user.id));
-                        });
-
-                        await insertAnimeRows(supabaseData);
-                      } catch (error: unknown) {
-                        const errorMessage =
-                          error instanceof Error
-                            ? error.message
-                            : (typeof error === 'object' && error !== null && 'message' in error
-                                ? String((error as { message?: string }).message)
-                                : typeof error === 'object' && error !== null && 'details' in error
-                                  ? String((error as { details?: string }).details)
-                                  : typeof error === 'object' && error !== null && 'hint' in error
-                                    ? String((error as { hint?: string }).hint)
-                                    : String(error)) || '不明なエラー';
-                        showToast(
-                          `アニメの保存に失敗しました\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`,
-                          'error'
-                        );
-                      }
-                    }
 
                     setSeasons(updatedSeasons);
                     handleClose();

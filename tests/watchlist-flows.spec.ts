@@ -141,11 +141,8 @@ test.describe('積みアニメ・レビュー・シーズン終了フロー', ()
     await page.getByRole('button', { name: /件のアニメを登録/ }).click();
     await expect(page.getByText('新しいアニメを追加')).not.toBeVisible({ timeout: 10000 });
 
-    // リロードして DB の実 ID を反映させる（getAnimeRowId が合成 ID だと null になり投稿が失敗するため）
-    // 注: この一括登録経路（AddAnimeFormModal）は insert 戻り値を state に反映しないため reload が必要。
-    //     シーズン検索経路（useSeasonSearch）は修正済みで、下の別テストが「リロードなし」で投稿できることを検証する。
-    await reloadReady(page);
-
+    // リロードしない: 一括登録（AddAnimeFormModal）も insert 戻り値の実 UUID を state に反映するよう
+    // 修正済みのため、追加直後（リロードなし）にそのまま感想を投稿できる。
     // クール別タブで対象カードを開く
     await expandAllSeasons(page);
     const card = page.locator('div.cursor-pointer').filter({ hasText: TITLE }).first();
