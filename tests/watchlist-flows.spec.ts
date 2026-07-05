@@ -163,16 +163,21 @@ test.describe('積みアニメ・レビュー・シーズン終了フロー', ()
     await page.getByPlaceholder('感想を入力してください...').fill(content);
     await page.getByRole('button', { name: '投稿', exact: true }).click();
 
-    // 検証: 投稿が成功する = 投稿モーダルが閉じ（handleSubmit は成功時のみ onClose する）、
-    // かつエラートーストが出ない。
-    // 注: 投稿自体は成功し reviews 行は作られるが、AnimeReviewSection の一覧には出ない。
-    // これは loadReviews(useAnimeReviews) が animeId を number 限定でバリデートし、
-    // Supabase 由来の作品 id(UUID 文字列)を弾くアプリ側の不整合による（投稿経路の
-    // getAnimeRowId は UUID を受け入れるため投稿は通る）。表示は検証対象にしない。
+    // 検証1: 投稿モーダルが閉じる（handleSubmit は成功時のみ onClose する）+ エラートーストなし
     await expect(page.getByRole('heading', { name: '感想を投稿' })).not.toBeVisible({
       timeout: 10000,
     });
     await expect(page.getByText('感想の投稿に失敗しました')).not.toBeVisible();
+
+    // 検証2: リロード→再度開いて、投稿した本文が感想タブに表示される。
+    // (useAnimeReviews の二重インスタンス統合 + loadReviews の id ガード緩和により、
+    //  投稿した感想が一覧に反映されるようになった修正の実証)
+    await reloadReady(page);
+    await expandAllSeasons(page);
+    await page.locator('div.cursor-pointer').filter({ hasText: TITLE }).first().click();
+    await expect(page.getByText('基本情報')).toBeVisible({ timeout: 5000 });
+    await page.getByRole('button', { name: '感想', exact: true }).click();
+    await expect(page.getByText(content)).toBeVisible({ timeout: 10000 });
   });
 
   test('シーズン終了モーダルで前期アニメを処理できる', async ({ page }) => {

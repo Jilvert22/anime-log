@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { supabase } from '../lib/supabase';
 import type { Anime } from '../types';
@@ -14,7 +14,6 @@ const MyPageTab = dynamic(() => import('./tabs/MyPageTab'), {
   ssr: false,
   loading: () => <div className="animate-pulse text-center py-8">読み込み中...</div>,
 });
-import { useAnimeReviews } from '../hooks/useAnimeReviews';
 import { useAuth } from '../hooks/useAuth';
 import { useUserProfileContext } from '../contexts/UserProfileContext';
 import { useAnimeDataContext } from '../contexts/AnimeDataContext';
@@ -121,26 +120,10 @@ function HomeClientInner() {
     setShowAddCharacterModal: modals.setShowAddCharacterModal,
   });
 
-  // レビュー関連の状態をカスタムフックで管理
-  const { loadReviews } = useAnimeReviews(user);
-
   // ログアウト処理
   const handleLogout = useCallback(async () => {
     await logout();
   }, [logout]);
-
-  const handleReviewPosted = useCallback(async () => {
-    if (selectedAnime) {
-      await loadReviews(selectedAnime.id);
-    }
-  }, [selectedAnime, loadReviews]);
-
-  // アニメが選択されたときに感想を読み込む
-  useEffect(() => {
-    if (selectedAnime) {
-      loadReviews(selectedAnime.id);
-    }
-  }, [selectedAnime?.id, loadReviews]);
 
   // Step 4はマイページのDNAカードを直接表示するため、モーダルは不要
 
@@ -210,7 +193,6 @@ function HomeClientInner() {
         handleMoveToBacklog={handleMoveToBacklog}
         handleDeletePreviousSeason={handleDeletePreviousSeason}
         handleKeepPreviousSeason={handleKeepPreviousSeason}
-        onReviewPosted={handleReviewPosted}
         currentStep={currentStep ?? undefined}
         isActive={isActive}
         skipOnboarding={skipOnboarding}
