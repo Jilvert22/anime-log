@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, Film } from 'lucide-react';
-import type { Anime } from '../../types';
+import type { Anime, AnimeId } from '../../types';
 import { StarRating } from '../StarRating';
 import { useFeedback } from '../../contexts/FeedbackContext';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
@@ -17,8 +17,8 @@ export function FavoriteAnimeModal({
   show: boolean;
   onClose: () => void;
   allAnimes: Anime[];
-  favoriteAnimeIds: number[];
-  setFavoriteAnimeIds: (ids: number[]) => void;
+  favoriteAnimeIds: AnimeId[];
+  setFavoriteAnimeIds: (ids: AnimeId[]) => void;
   onSave?: () => void;
 }) {
   const { showToast } = useFeedback();

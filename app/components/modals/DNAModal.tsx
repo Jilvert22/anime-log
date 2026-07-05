@@ -1,6 +1,6 @@
 'use client';
 
-import type { Anime } from '../../types';
+import type { Anime, AnimeId } from '../../types';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export function DNAModal({
@@ -19,7 +19,7 @@ export function DNAModal({
   show: boolean;
   onClose: () => void;
   allAnimes: Anime[];
-  favoriteAnimeIds: number[];
+  favoriteAnimeIds: AnimeId[];
   count: number;
   averageRating: number;
   totalRewatchCount: number;

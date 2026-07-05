@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Trophy, UserRound, Copy } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
-import type { Anime, Season } from '../../../types';
+import type { Anime, AnimeId, Season } from '../../../types';
 import { otakuTypes } from '../../../constants';
 import DNACardForExport from './DNACardForExport';
 
@@ -41,8 +41,8 @@ interface AnimeDNASectionProps {
   userHandle: string | null;
   userOtakuType: string;
   setUserOtakuType: (type: string) => void;
-  favoriteAnimeIds: number[];
-  setFavoriteAnimeIds: (ids: number[]) => void;
+  favoriteAnimeIds: AnimeId[];
+  setFavoriteAnimeIds: (ids: AnimeId[]) => void;
   averageRating: number;
   setShowFavoriteAnimeModal: (show: boolean) => void;
   onOpenDNAModal: () => void;

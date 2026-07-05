@@ -94,24 +94,32 @@ describe('getAnimesByUser', () => {
   });
 });
 
+const UUID = '550e8400-e29b-41d4-a716-446655440000';
+
 describe('getAnimeRowId', () => {
-  it('存在すれば id を返す', async () => {
-    terminal.data = { id: 42 };
-    await expect(getAnimeRowId(42, 'u1')).resolves.toBe(42);
+  it('存在すれば id (UUID 文字列) を返す', async () => {
+    terminal.data = { id: UUID };
+    await expect(getAnimeRowId(UUID, 'u1')).resolves.toBe(UUID);
   });
 
   it('存在しなければ null (throw しない)', async () => {
     terminal.error = { message: 'not found' };
-    await expect(getAnimeRowId(99, 'u1')).resolves.toBeNull();
+    await expect(getAnimeRowId(UUID, 'u1')).resolves.toBeNull();
+  });
+
+  it('number 入力 (合成 ID / AniList ID) は DB を呼ばず null を返す', async () => {
+    // animes.id は uuid 型のため number は存在し得ない。無駄なクエリを省く早期 return。
+    await expect(getAnimeRowId(42, 'u1')).resolves.toBeNull();
+    expect(fromMock).not.toHaveBeenCalled();
   });
 });
 
 describe('insertAnime', () => {
-  it('animes テーブルに insert する', async () => {
-    terminal.data = [{ id: 7, title: 'テスト作品' }];
+  it('animes テーブルに insert し、挿入後の行 (UUID id) を返す', async () => {
+    terminal.data = [{ id: UUID, title: 'テスト作品' }];
     const row = await insertAnime(anime(), '2025春', 'u1');
     expect(fromMock).toHaveBeenCalledWith('animes');
-    expect(row).toMatchObject({ id: 7 });
+    expect(row).toMatchObject({ id: UUID });
   });
 
   it('エラー時は throw する', async () => {
@@ -132,6 +140,12 @@ describe('updateAnimeFields', () => {
     expect(fromMock).toHaveBeenCalledWith('animes');
   });
 
+  it('UUID 文字列 id でも解決する (widening 済みシグネチャの固定)', async () => {
+    terminal.error = null;
+    await expect(updateAnimeFields(UUID, 'u1', { rating: 5 })).resolves.toBeUndefined();
+    expect(fromMock).toHaveBeenCalledWith('animes');
+  });
+
   it('エラー時は throw する', async () => {
     terminal.error = { message: 'boom' };
     await expect(updateAnimeFields(5, 'u1', { rating: 5 })).rejects.toThrow();
@@ -139,6 +153,12 @@ describe('updateAnimeFields', () => {
 });
 
 describe('deleteAnime', () => {
+  it('UUID 文字列 id で削除できる (widening 済みシグネチャの固定)', async () => {
+    terminal.error = null;
+    await expect(deleteAnime(UUID, 'u1')).resolves.toBeUndefined();
+    expect(fromMock).toHaveBeenCalledWith('animes');
+  });
+
   it('エラー時は throw する', async () => {
     terminal.error = { message: 'boom' };
     await expect(deleteAnime(5, 'u1')).rejects.toThrow();

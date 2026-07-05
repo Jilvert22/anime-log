@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, memo } from 'react';
 import Image from 'next/image';
 import { Film } from 'lucide-react';
-import type { Anime } from '../../types';
+import type { Anime, AnimeId } from '../../types';
 
 // サムネイルのみのカード
 const ThumbnailCard = memo(function ThumbnailCard({
@@ -16,7 +16,7 @@ const ThumbnailCard = memo(function ThumbnailCard({
   anime: Anime;
   onClick?: (anime: Anime) => void;
   selected: boolean;
-  onSelect: (id: number) => void;
+  onSelect: (id: AnimeId) => void;
   selectionMode: boolean;
 }) {
   const [imageError, setImageError] = useState(false);
@@ -80,9 +80,9 @@ const ThumbnailCard = memo(function ThumbnailCard({
 
 // フォルダの型定義
 type Folder = {
-  id: number;
+  id: number; // フォルダ自身の識別子（Date.now()）。作品 id ではない
   name: string;
-  animeIds: number[];
+  animeIds: AnimeId[];
 };
 
 export function GalleryTab({
@@ -96,7 +96,7 @@ export function GalleryTab({
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [sortType, setSortType] = useState<'rating' | 'rewatch' | 'title'>('rating');
   const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedAnimeIds, setSelectedAnimeIds] = useState<Set<number>>(new Set());
+  const [selectedAnimeIds, setSelectedAnimeIds] = useState<Set<AnimeId>>(new Set());
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
@@ -120,7 +120,7 @@ export function GalleryTab({
     }
   }, [allAnimes, sortType, selectedFolder]);
 
-  const toggleSelection = useCallback((animeId: number) => {
+  const toggleSelection = useCallback((animeId: AnimeId) => {
     setSelectedAnimeIds((prev) => {
       const newSelected = new Set(prev);
       if (newSelected.has(animeId)) {

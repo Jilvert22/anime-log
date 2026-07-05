@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { Anime, Season } from '../../types';
+import type { Anime, AnimeId, Season } from '../../types';
 import { updateAnimeFields } from '../../lib/api/animes';
 
 export function AddQuoteModal({
@@ -21,7 +21,7 @@ export function AddQuoteModal({
   seasons: Season[];
   setSeasons: (seasons: Season[]) => void;
   user: User | null;
-  editingQuote: { animeId: number; quoteIndex: number } | null;
+  editingQuote: { animeId: AnimeId; quoteIndex: number } | null;
   onSave: () => void;
 }) {
   const [newQuoteAnimeId, setNewQuoteAnimeId] = useState<number | null>(null);

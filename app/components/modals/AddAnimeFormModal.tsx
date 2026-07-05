@@ -300,8 +300,12 @@ export function AddAnimeFormModal({
                       const selectedAnimes = seasonSearchResults.filter((r) =>
                         selectedSeasonAnimeIds.has(r.id)
                       );
+                      // 合成 id は number のみ。ログイン時の UUID 文字列を除外して maxId を計算する
                       const maxId = Math.max(
-                        ...seasons.flatMap((s) => s.animes).map((a) => a.id),
+                        ...seasons
+                          .flatMap((s) => s.animes)
+                          .map((a) => a.id)
+                          .filter((id): id is number => typeof id === 'number' && !isNaN(id)),
                         0
                       );
 
@@ -622,7 +626,14 @@ export function AddAnimeFormModal({
                     const selectedAnimes = searchResults.filter((r) =>
                       selectedSearchAnimeIds.has(r.id)
                     );
-                    const maxId = Math.max(...seasons.flatMap((s) => s.animes).map((a) => a.id), 0);
+                    // 合成 id は number のみ。ログイン時の UUID 文字列を除外して maxId を計算する
+                    const maxId = Math.max(
+                      ...seasons
+                        .flatMap((s) => s.animes)
+                        .map((a) => a.id)
+                        .filter((id): id is number => typeof id === 'number' && !isNaN(id)),
+                      0
+                    );
 
                     // 既存のアニメタイトルを取得（重複チェック用）
                     const existingTitles = new Set(

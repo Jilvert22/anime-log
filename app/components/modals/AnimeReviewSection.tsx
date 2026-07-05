@@ -1,7 +1,7 @@
 'use client';
 
 import { Heart, UserRound, AlertTriangle, ChevronRight } from 'lucide-react';
-import type { Review, Anime } from '../../types';
+import type { Review, Anime, AnimeId } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useFeedback } from '../../contexts/FeedbackContext';
@@ -22,7 +22,7 @@ interface AnimeReviewSectionProps {
   user: User | null;
   selectedAnime: Anime;
   supabase: SupabaseClient;
-  loadReviews: (animeId: number) => Promise<void>;
+  loadReviews: (animeId: AnimeId) => Promise<void>;
   setShowReviewModal: (show: boolean) => void;
 }
 

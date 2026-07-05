@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { FavoriteCharacter } from '../types';
+import type { AnimeId, FavoriteCharacter } from '../types';
 
 export function useFormStates() {
   // キャラクター関連のフォーム状態
@@ -9,12 +9,13 @@ export function useFormStates() {
   const [characterFilter, setCharacterFilter] = useState<string | null>(null);
 
   // 名言関連のフォーム状態
-  const [editingQuote, setEditingQuote] = useState<{ animeId: number; quoteIndex: number } | null>(
-    null
-  );
+  const [editingQuote, setEditingQuote] = useState<{
+    animeId: AnimeId;
+    quoteIndex: number;
+  } | null>(null);
   const [quoteSearchQuery, setQuoteSearchQuery] = useState('');
   const [quoteFilterType, setQuoteFilterType] = useState<'all' | 'anime' | 'character'>('all');
-  const [selectedAnimeForFilter, setSelectedAnimeForFilter] = useState<number | null>(null);
+  const [selectedAnimeForFilter, setSelectedAnimeForFilter] = useState<AnimeId | null>(null);
 
   return {
     // キャラクター関連

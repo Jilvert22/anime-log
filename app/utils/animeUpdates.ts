@@ -1,4 +1,4 @@
-import type { Anime, Season } from '../types';
+import type { Anime, AnimeId, Season } from '../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -13,7 +13,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  * @returns 更新されたシーズン配列と更新されたアニメ
  */
 export async function updateAnimeInSeasons(
-  animeId: number,
+  animeId: AnimeId,
   seasons: Season[],
   updater: (anime: Anime) => Anime,
   user: User | null,
