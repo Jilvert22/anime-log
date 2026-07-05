@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import type { Anime, Season, FavoriteCharacter, SupabaseAnimeRow } from '../types';
 import type { User } from '@supabase/supabase-js';
@@ -120,7 +121,6 @@ interface HomeModalsProps {
   handleMoveToBacklog: () => Promise<void>;
   handleDeletePreviousSeason: () => Promise<void>;
   handleKeepPreviousSeason: () => Promise<void>;
-  onReviewPosted: () => Promise<void>;
   currentStep?: number | null;
   isActive?: boolean;
   skipOnboarding?: () => void;
@@ -142,7 +142,6 @@ export function HomeModals({
   handleMoveToBacklog,
   handleDeletePreviousSeason,
   handleKeepPreviousSeason,
-  onReviewPosted,
   currentStep,
   isActive,
   skipOnboarding,
@@ -187,6 +186,19 @@ export function HomeModals({
     setExpandedSpoilerReviews,
     loadReviews,
   } = useAnimeReviews(user);
+
+  // 取得と表示のインスタンス分離を解消するため、レビュー状態はHomeModals側に一本化する
+  useEffect(() => {
+    if (selectedAnime) {
+      loadReviews(selectedAnime.id);
+    }
+  }, [selectedAnime?.id, loadReviews]);
+
+  const handleReviewPosted = useCallback(async () => {
+    if (selectedAnime) {
+      await loadReviews(selectedAnime.id);
+    }
+  }, [selectedAnime, loadReviews]);
 
   // TODO: SNS機能実装時にuseSocialを有効化
   // 現在はダミー値を使用（フォロー/フォロワー機能は未実装）
@@ -273,7 +285,7 @@ export function HomeModals({
         user={user}
         userName={userName}
         userIcon={userIcon}
-        onReviewPosted={onReviewPosted}
+        onReviewPosted={handleReviewPosted}
       />
 
       <SettingsModal

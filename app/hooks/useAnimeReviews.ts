@@ -21,8 +21,10 @@ export function useAnimeReviews(user: User | null) {
         return;
       }
 
-      // animeIdのバリデーション
-      if (!animeId || typeof animeId !== 'number' || isNaN(animeId)) {
+      // animeId は型上は number だが、Supabase から読み込んだ作品では実行時に UUID 文字列
+      // (animes.id は uuid 型)。number 限定/isNaN で弾くとその UUID を無効扱いして自分の感想が
+      // 表示されないため、falsy(null/undefined/0/空文字/NaN)だけ弾き、有効な id は通す。
+      if (!animeId) {
         console.warn('Invalid animeId provided to loadReviews:', animeId);
         setAnimeReviews([]);
         return;
@@ -77,7 +79,7 @@ export function useAnimeReviews(user: User | null) {
 
           const reviews: Review[] = reviewsData.map((r) => ({
             id: r.id,
-            animeId: animeId, // 数値IDを保持
+            animeId: animeId,
             userId: r.user_id,
             userName: r.user_name,
             userIcon: r.user_icon,
