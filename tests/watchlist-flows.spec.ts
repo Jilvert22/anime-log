@@ -108,6 +108,23 @@ test.describe('積みアニメ・レビュー・シーズン終了フロー', ()
     // 検証: クール別タブに現れる
     await expandAllSeasons(page);
     await expect(page.getByText(TITLE).first()).toBeVisible({ timeout: 5000 });
+
+    // 検証: 移動直後（リロードなし）にその作品へ感想を投稿できる。
+    // (視聴済み移動が insert 戻り値の実 UUID を state に反映するようになった修正の実証。
+    //  AniList number id のまま保持していた頃は getAnimeRowId が null で silent 失敗していた。)
+    const reviewText = `E2E移動後感想 ${Date.now()}`;
+    await page.locator('div.cursor-pointer').filter({ hasText: TITLE }).first().click();
+    await expect(page.getByText('基本情報')).toBeVisible({ timeout: 5000 });
+    await page.getByRole('button', { name: '感想', exact: true }).click();
+    await page.getByRole('button', { name: '+ 感想を投稿' }).click();
+    await expect(page.getByRole('heading', { name: '感想を投稿' })).toBeVisible({ timeout: 5000 });
+    await page.getByPlaceholder('感想を入力してください...').fill(reviewText);
+    await page.getByRole('button', { name: '投稿', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '感想を投稿' })).not.toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText('感想の投稿に失敗しました')).not.toBeVisible();
+    await expect(page.getByText(reviewText)).toBeVisible({ timeout: 10000 });
   });
 
   test('アニメに感想（レビュー）を投稿できる', async ({ page }) => {

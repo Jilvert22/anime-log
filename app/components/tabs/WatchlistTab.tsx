@@ -4,7 +4,7 @@ import { useFeedback } from '../../contexts/FeedbackContext';
 
 import { useState, useCallback, useEffect, memo, useMemo } from 'react';
 import Image from 'next/image';
-import type { Anime, Season, User, AniListSearchResult } from '../../types';
+import type { Anime, Season, User, AniListSearchResult, SupabaseAnimeRow } from '../../types';
 import {
   searchAnime,
   searchAnimeBySeason,
@@ -342,18 +342,35 @@ export function WatchlistTab({
         studios: animeData.studios?.nodes?.map((s) => s.name) || [],
       };
 
+      // Supabaseに保存。成功時は挿入行の実 UUID を state に反映する
+      // (AniList number id のまま保持すると、追加直後に getAnimeRowId が UUID を見つけられず
+      //  感想投稿等が silent 失敗するため)。
+      let insertedRow: SupabaseAnimeRow | undefined;
+      try {
+        insertedRow = await insertAnime(newAnime, seasonName, user.id);
+      } catch (error: unknown) {
+        console.error('アニメの保存に失敗しました:', error);
+        const errorMessage = error instanceof Error ? error.message : 'アニメの保存に失敗しました';
+        showToast(
+          `アニメの保存に失敗しました${errorMessage !== 'アニメの保存に失敗しました' ? `: ${errorMessage}` : ''}`,
+          'error'
+        );
+        return;
+      }
+      const animeToAdd: Anime = { ...newAnime, id: insertedRow.id ?? newAnime.id };
+
       // シーズンに追加
       const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
       let updatedSeasons: Season[];
 
       if (existingSeasonIndex === -1) {
         // 新しいシーズンを作成
-        updatedSeasons = [...seasons, { name: seasonName, animes: [newAnime] }];
+        updatedSeasons = [...seasons, { name: seasonName, animes: [animeToAdd] }];
       } else {
         // 既存のシーズンに追加
         updatedSeasons = seasons.map((season, index) =>
           index === existingSeasonIndex
-            ? { ...season, animes: [...season.animes, newAnime] }
+            ? { ...season, animes: [...season.animes, animeToAdd] }
             : season
         );
       }
@@ -369,19 +386,6 @@ export function WatchlistTab({
         newExpandedSeasons.add(seasonName);
       }
       setExpandedSeasons(newExpandedSeasons);
-
-      // Supabaseに保存
-      try {
-        await insertAnime(newAnime, seasonName, user.id);
-      } catch (error: unknown) {
-        console.error('アニメの保存に失敗しました:', error);
-        const errorMessage = error instanceof Error ? error.message : 'アニメの保存に失敗しました';
-        showToast(
-          `アニメの保存に失敗しました${errorMessage !== 'アニメの保存に失敗しました' ? `: ${errorMessage}` : ''}`,
-          'error'
-        );
-        return;
-      }
 
       // シーズンを更新
       setSeasons(updatedSeasons);
@@ -568,6 +572,9 @@ export function WatchlistTab({
     const selectedItems = watchlist.filter((item) => ids.includes(item.id));
 
     try {
+      // ループを跨いで蓄積する。従来はループ内で組んだ updatedSeasons を捨て、ループ後に元の
+      // seasons を再代入していたため、移動した作品がリロードまで一覧に出ない別バグがあった。
+      let accumulated: Season[] = seasons;
       for (const item of selectedItems) {
         // AniListからアニメ情報を取得
         const { searchAnime } = await import('../../lib/api/anilist');
@@ -599,34 +606,34 @@ export function WatchlistTab({
           studios: animeData.studios?.nodes?.map((s) => s.name) || [],
         };
 
-        // シーズンに追加
-        const existingSeasonIndex = seasons.findIndex((s) => s.name === seasonName);
-        let updatedSeasons: Season[];
-
-        if (existingSeasonIndex === -1) {
-          updatedSeasons = [...seasons, { name: seasonName, animes: [newAnime] }];
-        } else {
-          updatedSeasons = seasons.map((season, index) =>
-            index === existingSeasonIndex
-              ? { ...season, animes: [...season.animes, newAnime] }
-              : season
-          );
-        }
-
-        // Supabaseに保存
+        // Supabaseに保存。成功時のみ挿入行の実 UUID を反映して state に蓄積する
+        // (AniList number id のまま保持すると追加直後の getAnimeRowId が null になる)。
+        let insertedRow: SupabaseAnimeRow | undefined;
         try {
-          await insertAnime(newAnime, seasonName, user.id);
+          insertedRow = await insertAnime(newAnime, seasonName, user.id);
         } catch (error) {
           console.error('アニメの保存に失敗しました:', error);
+        }
+        if (insertedRow) {
+          const animeToAdd: Anime = { ...newAnime, id: insertedRow.id ?? newAnime.id };
+          const existingSeasonIndex = accumulated.findIndex((s) => s.name === seasonName);
+          if (existingSeasonIndex === -1) {
+            accumulated = [...accumulated, { name: seasonName, animes: [animeToAdd] }];
+          } else {
+            accumulated = accumulated.map((season, index) =>
+              index === existingSeasonIndex
+                ? { ...season, animes: [...season.animes, animeToAdd] }
+                : season
+            );
+          }
         }
 
         // 積みアニメから削除
         await storage.removeFromWatchlist(item.anilist_id);
       }
 
-      // シーズンを更新
-      const updatedSeasons = sortSeasonsByTime(seasons);
-      setSeasons(updatedSeasons);
+      // シーズンを更新（蓄積した実 UUID 付きの結果を反映）
+      setSeasons(sortSeasonsByTime(accumulated));
 
       // リストを更新
       await loadWatchlist();
