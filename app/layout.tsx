@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { M_PLUS_Rounded_1c, Poppins } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
-import { GoogleAnalytics } from '@next/third-parties/google';
+import { GoogleAnalytics } from './components/analytics/GoogleAnalytics';
 import { Providers } from './providers';
 import { JsonLd } from './components/seo/JsonLd';
 import { siteStructuredData } from './lib/seo/structuredData';
@@ -105,11 +105,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   // GA4測定ID。NEXT_PUBLIC_GA_MEASUREMENT_ID未設定（dev/preview）ではGAを読み込まない
-  // = 本番環境のみ計測。開示のみ・同意バナー無しの方針（IPはGA4既定で匿名化）。
-  // 注: /profile/[username] のusernameはpage_pathとしてGAに送信されるが、既に公開
-  // プロフィール・URL・sitemap・OGPで公開済みの公開ハンドルのため許容（マスクしない）。
-  // 将来センシティブな情報になる場合はパスマスクを検討。
-  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  // = 本番環境のみ計測。開示のみ・同意バナー無しの方針（IPは位置情報判定後に破棄）。
+  // 注: /profile/[username]・/share/[username] のusernameはPII（Google公式ポリシーで
+  // GA送信禁止）のため、GoogleAnalyticsコンポーネント内でpage_path/page_titleを
+  // マスクしてから手動送信する（自動計測のsend_page_viewは無効化）。
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
 
   return (
     <html lang="ja" className={`${mPlusRounded.variable} ${poppins.variable}`}>
@@ -124,7 +124,7 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         {/* Analyticsは既に最適化されているが、必要に応じて遅延読み込み可能 */}
         <Analytics />
-        {gaId && <GoogleAnalytics gaId={gaId} />}
+        {gaId && /^G-/.test(gaId) && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   );
