@@ -1,5 +1,6 @@
 /**
- * GA4 に送信する page_path / page_title から PII（ユーザー名）を除去するための純粋関数群。
+ * GA4 に送信する page_path / page_location / page_referrer / page_title から
+ * PII（ユーザー名）を除去するための純粋関数群。
  *
  * `/profile/{username}` と `/share/{username}` の username 部分は Google の公式ポリシー上
  * GA へ送信禁止の PII に該当するため、`[username]` に置換してから GA へ送る。
@@ -28,4 +29,34 @@ export function maskTitle(pathname: string, title: string): string {
   }
 
   return title;
+}
+
+/**
+ * GA4 へ送る page_location（絶対URL）をマスクする。
+ * pathname は maskPath でマスクし、クエリ文字列・フラグメントは PII 混入や URL 肥大化を
+ * 避けるため常に除去する。href の解析に失敗する場合（空文字・相対URL等）は空文字を返す。
+ */
+export function maskLocationHref(href: string): string {
+  if (!href) {
+    return '';
+  }
+
+  try {
+    const url = new URL(href);
+    url.pathname = maskPath(url.pathname);
+    url.search = '';
+    url.hash = '';
+    return url.toString();
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * GA4 へ送る page_referrer をマスクする。ルールは maskLocationHref と同じ
+ * （自サイトの /profile/{username}・/share/{username} からの遷移はマスクし、
+ * 外部サイトのリファラはホスト・パスをそのまま、クエリ・フラグメントのみ除去する）。
+ */
+export function maskReferrer(ref: string): string {
+  return maskLocationHref(ref);
 }
