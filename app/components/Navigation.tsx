@@ -64,8 +64,10 @@ export function Navigation({
     <header className="fixed top-0 left-0 right-0 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50">
       <div className="h-full max-w-7xl mx-auto px-4 relative flex items-center">
         {/* 左：ロゴ */}
+        {/* モバイルでは視覚非表示だが DOM に残す（sr-only）。
+            display:none だとモバイルファーストインデックスでサイト唯一の H1 が消える */}
         <h1
-          className="hidden sm:block text-xl font-bold tracking-tight"
+          className="sr-only sm:not-sr-only sm:block text-xl font-bold tracking-tight"
           style={{
             background: 'linear-gradient(135deg, #667eea 0%, #e879d4 50%, #f093fb 100%)',
             WebkitBackgroundClip: 'text',
