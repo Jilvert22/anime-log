@@ -7,12 +7,17 @@ import { siteStructuredData } from './lib/seo/structuredData';
 import './globals.css';
 
 // M PLUS Rounded 1c（日本語用）
+// CJK フォントは Google Fonts 側が subset 分割に対応しておらず、subsets 指定は効かない
+// （常に全 unicode-range チャンクが返る）。そのため preload すると 126 unicode-range ×
+// 4 ウェイト = 371 ファイル・4.8MB（ページ総重量の 93%）が preload + レンダーブロッキング
+// で取得され、LCP が大幅に悪化する（本番モバイル Lighthouse で LCP≈27秒の主因）。
+// preload はデフォルト true のため明示的に false を指定し、ブラウザ標準の遅延読込
+// （実際に表示するグリフを含むチャンクのみ取得）に任せる。
 const mPlusRounded = M_PLUS_Rounded_1c({
   weight: ['400', '500', '700', '800'],
-  subsets: ['latin'],
   display: 'swap',
   variable: '--font-rounded',
-  preload: true, // フォントのプリロードを有効化
+  preload: false,
   fallback: ['system-ui', 'arial'], // フォールバックフォント
 });
 
