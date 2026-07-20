@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/app/lib/supabase/server';
 import ProfilePageClient from './ProfilePageClient';
 import { JsonLd } from '@/app/components/seo/JsonLd';
 import { getSiteUrl } from '@/app/lib/env';
+import { breadcrumbListJsonLd } from '@/app/lib/seo/structuredData';
 import type { UserProfile } from '@/app/lib/api';
 
 // オタクタイプID→ラベルのマッピング
@@ -165,6 +166,17 @@ export default async function ProfilePage({ params }: Props) {
   return (
     <>
       {profile && <JsonLd data={buildProfileJsonLd(siteUrl, username, profile, animes)} />}
+      {profile && (
+        <JsonLd
+          data={breadcrumbListJsonLd([
+            { name: 'ホーム', url: siteUrl },
+            {
+              name: `${profile.username}のプロフィール`,
+              url: `${siteUrl}/profile/${encodeURIComponent(username)}`,
+            },
+          ])}
+        />
+      )}
       <ProfilePageClient
         key={username}
         username={username}

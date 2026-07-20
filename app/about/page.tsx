@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import AboutClient from './AboutClient';
 import { JsonLd } from '../components/seo/JsonLd';
 import { faqPageJsonLd } from '../lib/seo/aboutFaq';
+import { breadcrumbListJsonLd } from '../lib/seo/structuredData';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://animelog.jp';
 
@@ -35,6 +36,9 @@ export default function AboutPage() {
   return (
     <>
       <JsonLd data={faqPageJsonLd()} />
+      <JsonLd
+        data={breadcrumbListJsonLd([{ name: 'ホーム', url: siteUrl }, { name: 'アニメログとは' }])}
+      />
       <AboutClient />
     </>
   );
