@@ -65,6 +65,8 @@ export type BreadcrumbItem = {
 /**
  * パンくずリストの構造化データ。items はホーム→現在ページの順で渡す。
  * 各要素は表示中のパンくずUIと一致させること（架空の階層を追加しない）。
+ * 通常はこの関数を直接呼ばず、app/components/seo/Breadcrumb.tsx 経由で
+ * 可視パンくずUIと同時出力する（表示とJSON-LDのドリフト防止のため）。
  */
 export function breadcrumbListJsonLd(items: BreadcrumbItem[]): JsonLdObject {
   return {

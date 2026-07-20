@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { createServerSupabaseClient } from '@/app/lib/supabase/server';
 import ProfilePageClient from './ProfilePageClient';
 import { JsonLd } from '@/app/components/seo/JsonLd';
+import { Breadcrumb } from '@/app/components/seo/Breadcrumb';
 import { getSiteUrl } from '@/app/lib/env';
-import { breadcrumbListJsonLd } from '@/app/lib/seo/structuredData';
 import type { UserProfile } from '@/app/lib/api';
 
 // オタクタイプID→ラベルのマッピング
@@ -166,22 +166,22 @@ export default async function ProfilePage({ params }: Props) {
   return (
     <>
       {profile && <JsonLd data={buildProfileJsonLd(siteUrl, username, profile, animes)} />}
-      {profile && (
-        <JsonLd
-          data={breadcrumbListJsonLd([
-            { name: 'ホーム', url: siteUrl },
-            {
-              name: `${profile.username}のプロフィール`,
-              url: `${siteUrl}/profile/${encodeURIComponent(username)}`,
-            },
-          ])}
-        />
-      )}
       <ProfilePageClient
         key={username}
         username={username}
         initialProfile={profile}
         initialAnimes={animes}
+        breadcrumb={
+          profile && (
+            <Breadcrumb
+              items={[
+                { name: 'ホーム', url: siteUrl },
+                // 現在ページ(プロフィール)は url を持たせない(常に aria-current 表示)
+                { name: `${profile.username}のプロフィール` },
+              ]}
+            />
+          )
+        }
       />
     </>
   );

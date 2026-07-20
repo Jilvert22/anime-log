@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
@@ -26,12 +27,16 @@ interface ProfilePageClientProps {
   // 渡されない場合（後方互換）はクライアントで取得する。
   initialProfile?: UserProfile | null;
   initialAnimes?: Anime[];
+  // ページ最上部に表示する可視パンくず(app/profile/[username]/page.tsx から Server Component として渡される)。
+  // このページに固定ヘッダーは無いため、ヘッダー分のオフセットは不要。
+  breadcrumb?: ReactNode;
 }
 
 export default function ProfilePageClient({
   username,
   initialProfile,
   initialAnimes,
+  breadcrumb,
 }: ProfilePageClientProps) {
   const router = useRouter();
   const { showToast } = useFeedback();
@@ -135,6 +140,8 @@ export default function ProfilePageClient({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* このページに固定ヘッダーは無いため、パンくずはページ最上部にそのまま表示する */}
+      {breadcrumb}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* ヘッダー */}
         <div className="mb-8">
