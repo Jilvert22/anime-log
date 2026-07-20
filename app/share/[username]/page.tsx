@@ -50,6 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: 'プロフィールが見つかりません | アニメログ',
       description: 'アニメログでアニメ視聴記録を管理しよう',
+      robots: { index: false, follow: true },
     };
   }
 
