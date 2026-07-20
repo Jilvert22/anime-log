@@ -55,3 +55,28 @@ export function softwareApplicationJsonLd(siteUrl: string): JsonLdObject {
 export function siteStructuredData(siteUrl: string): JsonLdObject[] {
   return [websiteJsonLd(siteUrl), organizationJsonLd(siteUrl), softwareApplicationJsonLd(siteUrl)];
 }
+
+export type BreadcrumbItem = {
+  name: string;
+  /** 絶対URL。省略時はitemを出さない（schema.org仕様上、末尾＝自ページのitemは省略可） */
+  url?: string;
+};
+
+/**
+ * パンくずリストの構造化データ。items はホーム→現在ページの順で渡す。
+ * 各要素は表示中のパンくずUIと一致させること（架空の階層を追加しない）。
+ * 通常はこの関数を直接呼ばず、app/components/seo/Breadcrumb.tsx 経由で
+ * 可視パンくずUIと同時出力する（表示とJSON-LDのドリフト防止のため）。
+ */
+export function breadcrumbListJsonLd(items: BreadcrumbItem[]): JsonLdObject {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      ...(item.url ? { item: item.url } : {}),
+    })),
+  };
+}

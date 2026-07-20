@@ -1,16 +1,24 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Footer } from '../components/common/Footer';
 import { SimpleHeader } from '../components/common/SimpleHeader';
 import { ABOUT_FAQ } from '../lib/seo/aboutFaq';
 
-export default function AboutClient() {
+type AboutClientProps = {
+  /** ヘッダー直下に表示する可視パンくず(app/about/page.tsx から Server Component として渡される) */
+  breadcrumb: ReactNode;
+};
+
+export default function AboutClient({ breadcrumb }: AboutClientProps) {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0f]">
       <SimpleHeader />
+      {/* SimpleHeader は fixed のためフローから外れる。mt-14 で固定ヘッダー(h-14)の高さ分クリアする */}
+      <div className="mt-14">{breadcrumb}</div>
       {/* ヒーローセクション */}
-      <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white to-gray-50 dark:from-[#0a0a0f] dark:to-gray-900">
+      <section className="pt-8 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white to-gray-50 dark:from-[#0a0a0f] dark:to-gray-900">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* 左側: テキスト */}
