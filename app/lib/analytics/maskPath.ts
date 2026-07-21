@@ -60,3 +60,31 @@ export function maskLocationHref(href: string): string {
 export function maskReferrer(ref: string): string {
   return maskLocationHref(ref);
 }
+
+/**
+ * Vercel Analytics / Speed Insights の beforeSend が渡す `url` フィールドをマスクする。
+ * Speed Insights は route を `/profile/[username]` にマスクするが、別途 `url` フィールドで
+ * username 入りの生パスを送るため（Vercel 公式ドキュメントの Data collected 参照）、
+ * GA4 と同じ PII 方針でここでマスクする。
+ *
+ * この url は絶対URL・相対 pathname のどちらの形式もあり得るため両対応する
+ * （maskLocationHref は絶対URL専用で、pathname を渡すと空文字になり全 url が失われる）。
+ * pathname の username を `[username]` に置換し、クエリ・フラグメントは除去する。
+ */
+export function maskVercelUrl(url: string): string {
+  if (!url) {
+    return url;
+  }
+
+  try {
+    const parsed = new URL(url);
+    parsed.pathname = maskPath(parsed.pathname);
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString();
+  } catch {
+    // 相対 pathname（+ クエリ・フラグメント）の場合
+    const pathname = url.split(/[?#]/)[0];
+    return maskPath(pathname);
+  }
+}
