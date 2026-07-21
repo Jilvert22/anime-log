@@ -7,7 +7,7 @@ import { faqPageJsonLd } from '../lib/seo/aboutFaq';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://animelog.jp';
 
 export const metadata: Metadata = {
-  title: 'アニメログとは - あのクール、何見てたっけ？がすぐわかる | アニメログ',
+  title: 'アニメログとは - あのクール、何見てたっけ？がすぐわかる',
   description:
     'アニメ視聴履歴を記録・管理するWebアプリ。クール別管理、積みアニメ、DNAカード生成など。ログイン不要で今すぐ使える。',
   metadataBase: new URL(siteUrl),

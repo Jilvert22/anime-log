@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'プライバシーポリシー | アニメログ',
+  title: 'プライバシーポリシー',
   description:
     'アニメログのプライバシーポリシー。収集する情報、利用目的、データの保管・削除について。',
   alternates: {

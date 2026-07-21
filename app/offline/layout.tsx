@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 // オフライン時の PWA フォールバック。検索インデックス対象外にし、
 // layout の `/` canonical 継承（誤り）を自ページに上書きする。
 export const metadata: Metadata = {
-  title: 'オフライン | アニメログ',
+  title: 'オフライン',
   description: 'インターネット接続がありません。',
   alternates: {
     canonical: '/offline',
