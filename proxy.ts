@@ -18,16 +18,18 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallback: 
 }
 
 export async function proxy(request: NextRequest) {
-  // Vercel 本番エイリアス(*.vercel.app)や不変デプロイURLへ来たアクセスを、
-  // 正規ドメイン(animelog.jp)へ 308 で寄せて重複URLを実体レベルで塞ぐ。
+  // 正規ホスト(animelog.jp)以外へ来た本番アクセスを apex へ 308 で寄せ、
+  // 重複URLを実体レベルで塞ぐ。対象:
+  //   - Vercel 本番エイリアス(*.vercel.app)/不変デプロイURL(anime-log-<hash>-<team>.vercel.app)
+  //   - www.animelog.jp（apex へ未正規化だった別口の重複）
   // - 本番デプロイ限定（VERCEL_ENV === 'production'）。プレビューは
   //   VERCEL_ENV === 'preview' なので対象外＝プレビュー確認は今まで通り動く。
-  // - 対象は `.vercel.app` ホストのみ。animelog.jp / www は素通し。
+  // - apex 自身(host === CANONICAL_HOST)は素通し＝リダイレクトループしない。
   // Supabase の認証更新より前に早期 return する（飛ばす先で更新すれば十分）。
   // Host は大文字小文字非区別かつポート付き(:443)の場合があるため、
   // ポートを落として小文字化してから判定する（大文字ホスト等の取りこぼし防止）。
   const host = request.headers.get('host')?.split(':')[0].toLowerCase();
-  if (process.env.VERCEL_ENV === 'production' && host && host.endsWith('.vercel.app')) {
+  if (process.env.VERCEL_ENV === 'production' && host && host !== CANONICAL_HOST) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.protocol = 'https';
     redirectUrl.hostname = CANONICAL_HOST;
