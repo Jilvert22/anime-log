@@ -5,6 +5,9 @@ import { getSupabaseEnv } from './app/lib/env';
 // VercelのProxyタイムアウトより短くし、認証更新の遅延で画面表示を止めない。
 const PROXY_TIMEOUT_MS = 8000;
 
+// 正規（canonical）ホスト。metadataBase / canonical タグと揃える。
+const CANONICAL_HOST = 'animelog.jp';
+
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> {
   return Promise.race([
     promise,
@@ -15,6 +18,24 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallback: 
 }
 
 export async function proxy(request: NextRequest) {
+  // Vercel 本番エイリアス(*.vercel.app)や不変デプロイURLへ来たアクセスを、
+  // 正規ドメイン(animelog.jp)へ 308 で寄せて重複URLを実体レベルで塞ぐ。
+  // - 本番デプロイ限定（VERCEL_ENV === 'production'）。プレビューは
+  //   VERCEL_ENV === 'preview' なので対象外＝プレビュー確認は今まで通り動く。
+  // - 対象は `.vercel.app` ホストのみ。animelog.jp / www は素通し。
+  // Supabase の認証更新より前に早期 return する（飛ばす先で更新すれば十分）。
+  // Host は大文字小文字非区別かつポート付き(:443)の場合があるため、
+  // ポートを落として小文字化してから判定する（大文字ホスト等の取りこぼし防止）。
+  const host = request.headers.get('host')?.split(':')[0].toLowerCase();
+  if (process.env.VERCEL_ENV === 'production' && host && host.endsWith('.vercel.app')) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.protocol = 'https';
+    redirectUrl.hostname = CANONICAL_HOST;
+    redirectUrl.port = '';
+    // 308: 恒久リダイレクト かつ メソッド/ボディを保持
+    return NextResponse.redirect(redirectUrl, 308);
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
