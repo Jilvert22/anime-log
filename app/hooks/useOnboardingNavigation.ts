@@ -25,7 +25,22 @@ export function useOnboardingNavigation({
   // 初回訪問時にオンボーディングを自動開始
   useEffect(() => {
     if (!isCompleted && !isActive) {
-      // 少し遅延して開始（ページ読み込み完了後）
+      // 固定遅延（setTimeout）で出すとコーチマークの吹き出しテキストが
+      // メインコンテンツより後に大きくペイントされ、モバイルの LCP を
+      // 奪ってしまう。requestIdleCallback でブラウザがアイドルになる
+      // までオンボーディング開始を後ろ倒しにする（timeout 付きで、
+      // アイドルが来なくても最大 2.5 秒で必ず発火させる）。
+      if (typeof window.requestIdleCallback === 'function') {
+        const idleId = window.requestIdleCallback(
+          () => {
+            startOnboarding();
+          },
+          { timeout: 2500 }
+        );
+        return () => window.cancelIdleCallback(idleId);
+      }
+
+      // requestIdleCallback 非対応環境（Safari 等）向けのフォールバック
       const timer = setTimeout(() => {
         startOnboarding();
       }, 1500);
