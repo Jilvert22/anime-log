@@ -41,17 +41,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# PWA
+# PWA（next-pwa の生成物・ビルドで再生成される）
 public/sw.js
 public/workbox-*.js
+public/fallback-*.js
 public/sw.js.map
 public/workbox-*.js.map
-
-# PWA
-public/sw.js
-public/workbox-*.js
-public/sw.js.map
-public/workbox-*.js.map
+public/fallback-*.js.map
 
 # Playwright
 node_modules/
