@@ -63,9 +63,15 @@ const pwaConfig = withPWA({
   // next/font の M PLUS Rounded サブセットは 500ファイル超あり、全ページで
   // 使うわけではないのに SW install 時に一括ダウンロードされて帯域と
   // キャッシュを浪費していた。オンライン中に一度要求された woff2 は下記
-  // runtimeCaching #6(CacheFirst・専用 fonts 枠)が遅延キャッシュするため再訪時は
+  // runtimeCaching #5(CacheFirst・専用 fonts 枠)が遅延キャッシュするため再訪時は
   // 利用できるが、未取得分はオフラインでは system font にフォールバックする。
   buildExcludes: [/\.woff2$/],
+  // オフライン時、キャッシュ未ヒットのページ遷移に自前の /offline を返す
+  //（ブラウザ標準のエラー画面の代わり）。next-pwa 5.6 は App Router の
+  // app/offline/page.tsx を自動検出しないため fallbacks で明示する。
+  fallbacks: {
+    document: '/offline',
+  },
   runtimeCaching: [
     // 1. AniList画像 - CacheFirst（30日キャッシュ）
     {
@@ -97,25 +103,16 @@ const pwaConfig = withPWA({
         },
       },
     },
-    // 3. AniList API - NetworkFirst（短いタイムアウト）
-    {
-      urlPattern: /^https:\/\/graphql\.anilist\.co\/.*/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'anilist-api',
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 24 * 60 * 60, // 1日
-        },
-        networkTimeoutSeconds: 5,
-      },
-    },
-    // 4. Supabase API - NetworkOnly（認証・データ同期）
+    // 3. Supabase API - NetworkOnly（認証・データ同期）
     {
       urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
       handler: 'NetworkOnly',
+      // fallbacks 有効時、next-pwa は全ルールに handlerDidError を注入する際
+      // c.options を参照するため、options 無しだとビルドが落ちる。
+      // document 以外（API fetch）には /offline を返さないので挙動は不変。
+      options: {},
     },
-    // 5. Google Fonts - CacheFirst
+    // 4. Google Fonts - CacheFirst
     {
       urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
       handler: 'CacheFirst',
@@ -127,8 +124,8 @@ const pwaConfig = withPWA({
         },
       },
     },
-    // 6. フォント（woff2）- CacheFirst（専用枠）
-    // next/font のサブセットはハッシュ付きURL＝内容不変。JS/CSS(#7)と cache を
+    // 5. フォント（woff2）- CacheFirst（専用枠）
+    // next/font のサブセットはハッシュ付きURL＝内容不変。JS/CSS(#6)と cache を
     // 分けることで、多数の woff2 サブセットが JS/CSS 枠を LRU 退避させる/される
     // 相互干渉を防ぐ。runtime で一度取得したフォントは長期(1年)保持する。
     {
@@ -145,7 +142,7 @@ const pwaConfig = withPWA({
         },
       },
     },
-    // 7. 静的アセット（JS/CSS）- StaleWhileRevalidate
+    // 6. 静的アセット（JS/CSS）- StaleWhileRevalidate
     {
       urlPattern: /\.(?:js|css)$/i,
       handler: 'StaleWhileRevalidate',
@@ -157,7 +154,7 @@ const pwaConfig = withPWA({
         },
       },
     },
-    // 8. 同一オリジンのページ - NetworkFirst
+    // 7. 同一オリジンのページ - NetworkFirst
     {
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin && !url.pathname.startsWith('/api/'),
@@ -171,7 +168,7 @@ const pwaConfig = withPWA({
         networkTimeoutSeconds: 5,
       },
     },
-    // 9. フォールバック（その他）- NetworkFirst
+    // 8. フォールバック（その他）- NetworkFirst
     {
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',
