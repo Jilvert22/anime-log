@@ -4,6 +4,7 @@ import {
   maskPath,
   maskReferrer,
   maskTitle,
+  maskVercelUrl,
 } from '../../../app/lib/analytics/maskPath';
 
 describe('maskPath', () => {
@@ -127,5 +128,40 @@ describe('maskReferrer', () => {
 
   it('空文字は空文字を返す', () => {
     expect(maskReferrer('')).toBe('');
+  });
+});
+
+describe('maskVercelUrl', () => {
+  it('絶対URLの /profile/{username} をマスクしクエリ・フラグメントを除去する', () => {
+    expect(maskVercelUrl('https://animelog.jp/profile/Jilvert?x=1#a')).toBe(
+      'https://animelog.jp/profile/[username]'
+    );
+  });
+
+  it('絶対URLの /share/{username} をマスクする', () => {
+    expect(maskVercelUrl('https://animelog.jp/share/Abc123')).toBe(
+      'https://animelog.jp/share/[username]'
+    );
+  });
+
+  it('絶対URLのマスク対象外パスはクエリのみ除去する', () => {
+    expect(maskVercelUrl('https://animelog.jp/about?utm=x')).toBe('https://animelog.jp/about');
+  });
+
+  it('相対 pathname の /profile/{username} も空文字にせずマスクする', () => {
+    // maskLocationHref は空文字を返すが、maskVercelUrl は pathname を保持してマスクする
+    expect(maskVercelUrl('/profile/Jilvert')).toBe('/profile/[username]');
+  });
+
+  it('相対 pathname に付いたクエリ・フラグメントは除去する', () => {
+    expect(maskVercelUrl('/share/Abc123?ref=x#top')).toBe('/share/[username]');
+  });
+
+  it('相対 pathname のマスク対象外パスはそのまま返す', () => {
+    expect(maskVercelUrl('/about')).toBe('/about');
+  });
+
+  it('空文字は空文字を返す', () => {
+    expect(maskVercelUrl('')).toBe('');
   });
 });

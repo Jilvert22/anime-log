@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { M_PLUS_Rounded_1c, Poppins } from 'next/font/google';
-import { Analytics } from '@vercel/analytics/next';
 import { GoogleAnalytics } from './components/analytics/GoogleAnalytics';
+import { VercelInsights } from './components/analytics/VercelInsights';
 import { Providers } from './providers';
 import { JsonLd } from './components/seo/JsonLd';
 import { siteStructuredData } from './lib/seo/structuredData';
@@ -128,8 +128,9 @@ export default function RootLayout({
       <body className="font-mixed antialiased">
         <JsonLd data={siteStructuredData(siteUrl)} />
         <Providers>{children}</Providers>
-        {/* Analyticsは既に最適化されているが、必要に応じて遅延読み込み可能 */}
-        <Analytics />
+        {/* Vercel Analytics + Speed Insights（Core Web Vitals のフィールド計測）。
+            どちらも beforeSend で url の username をマスクして送信する。 */}
+        <VercelInsights />
         {gaId && /^G-[A-Z0-9]+$/.test(gaId) && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
