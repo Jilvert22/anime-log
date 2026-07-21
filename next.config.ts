@@ -63,7 +63,7 @@ const pwaConfig = withPWA({
   // next/font の M PLUS Rounded サブセットは 500ファイル超あり、全ページで
   // 使うわけではないのに SW install 時に一括ダウンロードされて帯域と
   // キャッシュを浪費していた。オンライン中に一度要求された woff2 は下記
-  // runtimeCaching #6(StaleWhileRevalidate)が遅延キャッシュするため再訪時は
+  // runtimeCaching #6(CacheFirst・専用 fonts 枠)が遅延キャッシュするため再訪時は
   // 利用できるが、未取得分はオフラインでは system font にフォールバックする。
   buildExcludes: [/\.woff2$/],
   runtimeCaching: [
@@ -127,9 +127,27 @@ const pwaConfig = withPWA({
         },
       },
     },
-    // 6. 静的アセット（JS/CSS/フォント）- StaleWhileRevalidate
+    // 6. フォント（woff2）- CacheFirst（専用枠）
+    // next/font のサブセットはハッシュ付きURL＝内容不変。JS/CSS(#7)と cache を
+    // 分けることで、多数の woff2 サブセットが JS/CSS 枠を LRU 退避させる/される
+    // 相互干渉を防ぐ。runtime で一度取得したフォントは長期(1年)保持する。
     {
-      urlPattern: /\.(?:js|css|woff2?)$/i,
+      urlPattern: /\.woff2?$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'fonts',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 1年（内容不変のため長期）
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+      },
+    },
+    // 7. 静的アセット（JS/CSS）- StaleWhileRevalidate
+    {
+      urlPattern: /\.(?:js|css)$/i,
       handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'static-assets',
@@ -139,7 +157,7 @@ const pwaConfig = withPWA({
         },
       },
     },
-    // 7. 同一オリジンのページ - NetworkFirst
+    // 8. 同一オリジンのページ - NetworkFirst
     {
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin && !url.pathname.startsWith('/api/'),
@@ -153,7 +171,7 @@ const pwaConfig = withPWA({
         networkTimeoutSeconds: 5,
       },
     },
-    // 8. フォールバック（その他）- NetworkFirst
+    // 9. フォールバック（その他）- NetworkFirst
     {
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',
