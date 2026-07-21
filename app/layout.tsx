@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { M_PLUS_Rounded_1c, Poppins } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { GoogleAnalytics } from './components/analytics/GoogleAnalytics';
 import { Providers } from './providers';
 import { JsonLd } from './components/seo/JsonLd';
@@ -130,6 +131,8 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         {/* Analyticsは既に最適化されているが、必要に応じて遅延読み込み可能 */}
         <Analytics />
+        {/* Speed Insights: Core Web Vitals(LCP/CLS/INP等)のフィールド計測 */}
+        <SpeedInsights />
         {gaId && /^G-[A-Z0-9]+$/.test(gaId) && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
