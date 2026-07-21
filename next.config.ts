@@ -59,6 +59,13 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development', // 開発環境では無効化
+  // フォント(woff2)を install 時プリキャッシュから除外する。
+  // next/font の M PLUS Rounded サブセットは 500ファイル超あり、全ページで
+  // 使うわけではないのに SW install 時に一括ダウンロードされて帯域と
+  // キャッシュを浪費していた。オンライン中に一度要求された woff2 は下記
+  // runtimeCaching #6(StaleWhileRevalidate)が遅延キャッシュするため再訪時は
+  // 利用できるが、未取得分はオフラインでは system font にフォールバックする。
+  buildExcludes: [/\.woff2$/],
   runtimeCaching: [
     // 1. AniList画像 - CacheFirst（30日キャッシュ）
     {
