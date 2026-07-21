@@ -25,6 +25,9 @@ export async function proxy(request: NextRequest) {
   // - 本番デプロイ限定（VERCEL_ENV === 'production'）。プレビューは
   //   VERCEL_ENV === 'preview' なので対象外＝プレビュー確認は今まで通り動く。
   // - apex 自身(host === CANONICAL_HOST)は素通し＝リダイレクトループしない。
+  // ※ fail-closed 設計（apex 以外は全て 308）。将来 Vercel の production に別の
+  //   正規ドメイン（短縮リンク/キャンペーン用など）を追加する場合、この条件が
+  //   自動でそれを apex へ飛ばす。残したいドメインは CANONICAL_HOST 側で許可すること。
   // Supabase の認証更新より前に早期 return する（飛ばす先で更新すれば十分）。
   // Host は大文字小文字非区別かつポート付き(:443)の場合があるため、
   // ポートを落として小文字化してから判定する（大文字ホスト等の取りこぼし防止）。
