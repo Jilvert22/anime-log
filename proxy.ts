@@ -24,7 +24,9 @@ export async function proxy(request: NextRequest) {
   //   VERCEL_ENV === 'preview' なので対象外＝プレビュー確認は今まで通り動く。
   // - 対象は `.vercel.app` ホストのみ。animelog.jp / www は素通し。
   // Supabase の認証更新より前に早期 return する（飛ばす先で更新すれば十分）。
-  const host = request.headers.get('host');
+  // Host は大文字小文字非区別かつポート付き(:443)の場合があるため、
+  // ポートを落として小文字化してから判定する（大文字ホスト等の取りこぼし防止）。
+  const host = request.headers.get('host')?.split(':')[0].toLowerCase();
   if (process.env.VERCEL_ENV === 'production' && host && host.endsWith('.vercel.app')) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.protocol = 'https';
