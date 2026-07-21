@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { M_PLUS_Rounded_1c, Poppins } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { GoogleAnalytics } from './components/analytics/GoogleAnalytics';
 import { Providers } from './providers';
 import { JsonLd } from './components/seo/JsonLd';
 import { siteStructuredData } from './lib/seo/structuredData';
@@ -103,6 +104,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // GA4測定ID。NEXT_PUBLIC_GA_MEASUREMENT_ID未設定（dev/preview）ではGAを読み込まない
+  // = 本番環境のみ計測。開示のみ・同意バナー無しの方針（IPは位置情報判定後に破棄）。
+  // 注: /profile/[username]・/share/[username] のusernameはPII（Google公式ポリシーで
+  // GA送信禁止）のため、GoogleAnalyticsコンポーネント内でgtag('config')の引数自体に
+  // マスク済みのpage_location/page_referrer/page_titleを渡す。session_start/first_visit等の
+  // 自動イベントもconfig時点のコンテキストを継承するため、これらもマスク対象になる。
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+
   return (
     <html lang="ja" className={`${mPlusRounded.variable} ${poppins.variable}`}>
       <head>
@@ -116,6 +125,7 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         {/* Analyticsは既に最適化されているが、必要に応じて遅延読み込み可能 */}
         <Analytics />
+        {gaId && /^G-[A-Z0-9]+$/.test(gaId) && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   );

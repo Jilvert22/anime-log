@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-bold text-white dark:text-white font-mixed">
             アニメログ プライバシーポリシー
           </h1>
-          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">最終更新日：2026年6月</p>
+          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">最終更新日：2026年7月</p>
         </div>
 
         {/* コンテンツ */}
@@ -134,9 +134,30 @@ export default function PrivacyPage() {
               本サービスは、アニメ情報の取得にAniList
               APIを利用しています。AniListへのデータ送信は、アニメの検索・情報取得に必要な範囲に限られ、ユーザーの個人情報は送信されません。
             </p>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
               また、サービスの改善のためにアクセス解析ツール「Vercel
               Analytics」を利用しています。これはCookieを使用せず、ページの閲覧状況やアプリのインストール操作などを匿名で集計するもので、個人を特定する情報は収集しません。
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              さらに、サービス改善のためにGoogleアナリティクス（GA4）を利用しています。GA4はCookieを用いて、ページの閲覧状況などの利用状況を統計的に収集します。IPアドレスは、位置情報（国・地域など）の判定に一時的に利用された後、記録・保存される前に破棄されます。個人を特定する目的では利用しません。収集したデータはGoogleの
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#e879d4] hover:underline"
+              >
+                プライバシーポリシー
+              </a>
+              に従って取り扱われます。ブラウザの設定や、Googleが提供する
+              <a
+                href="https://tools.google.com/dlpage/gaoptout"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#e879d4] hover:underline"
+              >
+                オプトアウトアドオン
+              </a>
+              により、計測を無効にすることもできます。
             </p>
           </section>
 
@@ -170,7 +191,7 @@ export default function PrivacyPage() {
               第8条（Cookieについて）
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              本サービスでは、ログイン状態の維持のためにCookieを使用しています。ブラウザの設定でCookieを無効にすると、一部の機能が利用できなくなる場合があります。
+              本サービスでは、ログイン状態の維持のためにCookieを使用しています。また、アクセス解析（Googleアナリティクス）のためのCookieも使用します。これらは無効にしても、ログイン以外の主要な機能への影響はありません。ブラウザの設定でCookieを無効にすると、一部の機能が利用できなくなる場合があります。
             </p>
           </section>
 
