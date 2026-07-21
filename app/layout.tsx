@@ -35,9 +35,12 @@ const poppins = Poppins({
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://animelog.jp';
 
 export const metadata: Metadata = {
-  title: 'アニメログ - あなたのアニメ視聴記録',
+  title: {
+    default: 'アニメログ - 見たアニメをクール別に記録できる視聴管理アプリ',
+    template: '%s | アニメログ',
+  },
   description:
-    'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。視聴傾向の分析、感想の記録、積みアニメ管理など。',
+    '見たアニメをクール別に記録・管理できる無料の視聴管理アプリ。作品ごとの評価や感想を残せるほか、今期・来期に見たいアニメの視聴予定もまとめて管理できます。ログイン不要で今すぐ使えます。',
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: '/',
@@ -72,8 +75,9 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
   },
   openGraph: {
-    title: 'アニメログ - あなたのアニメ視聴記録',
-    description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。',
+    title: 'アニメログ - 見たアニメをクール別に記録できる視聴管理アプリ',
+    description:
+      '見たアニメをクール別に記録・管理できる無料の視聴管理アプリ。作品ごとの評価や感想を残せるほか、今期・来期に見たいアニメの視聴予定もまとめて管理できます。ログイン不要で今すぐ使えます。',
     url: siteUrl,
     siteName: 'アニメログ',
     images: [
@@ -89,8 +93,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'アニメログ - あなたのアニメ視聴記録',
-    description: 'アニメの視聴記録を管理し、あなただけのANIME DNAカードを作成しよう。',
+    title: 'アニメログ - 見たアニメをクール別に記録できる視聴管理アプリ',
+    description:
+      '見たアニメをクール別に記録・管理できる無料の視聴管理アプリ。作品ごとの評価や感想を残せるほか、今期・来期に見たいアニメの視聴予定もまとめて管理できます。ログイン不要で今すぐ使えます。',
     images: ['/api/og'],
   },
 };

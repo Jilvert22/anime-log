@@ -16,6 +16,7 @@ export function websiteJsonLd(siteUrl: string): JsonLdObject {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: APP_NAME,
+    alternateName: ['AnimeLog', 'アニログ'],
     url: siteUrl,
     inLanguage: 'ja',
     description: APP_DESCRIPTION,
@@ -27,6 +28,7 @@ export function organizationJsonLd(siteUrl: string): JsonLdObject {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: APP_NAME,
+    alternateName: ['AnimeLog', 'アニログ'],
     url: siteUrl,
     logo: `${siteUrl}/icons/icon-512x512.png`,
   };

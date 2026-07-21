@@ -88,7 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!profile) {
     // 非公開/存在しないプロフィールはインデックスさせない
     return {
-      title: 'プロフィールが見つかりません | アニメログ',
+      title: 'プロフィールが見つかりません',
       description: 'アニメログでアニメ視聴記録を管理しよう',
       alternates: { canonical },
       robots: { index: false, follow: true },
@@ -98,16 +98,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const displayName = profile.username;
   const otakuType = profile.otaku_type_custom || getOtakuTypeLabel(profile.otaku_type);
 
-  const title = `${displayName}のプロフィール | アニメログ`;
+  const pageTitle = `${displayName}のプロフィール`;
+  const socialTitle = `${displayName}のプロフィール | アニメログ`;
   const description = `${displayName}さん（${otakuType}）のアニメ視聴記録とANIME DNA`;
   const ogImageUrl = `${siteUrl}/api/og?username=${encodeURIComponent(username)}`;
 
   return {
-    title,
+    title: pageTitle,
     description,
     alternates: { canonical },
     openGraph: {
-      title,
+      title: socialTitle,
       description,
       images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `${displayName}のプロフィール` }],
       type: 'profile',
@@ -115,7 +116,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: socialTitle,
       description,
       images: [ogImageUrl],
     },
