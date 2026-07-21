@@ -86,12 +86,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .single();
 
   if (!profile) {
-    // 非公開/存在しないプロフィールはインデックスさせない
+    // 非公開/存在しないプロフィールはインデックスさせない。
+    // og/twitter を明示しないとルート layout のトップページ向け文言を
+    // 継承するため、not-found 専用のフォールバックを設定する。
+    const notFoundTitle = 'プロフィールが見つかりません | アニメログ';
+    const notFoundDescription = 'アニメログでアニメ視聴記録を管理しよう';
+    const defaultOgImage = `${siteUrl}/api/og`;
     return {
       title: 'プロフィールが見つかりません',
-      description: 'アニメログでアニメ視聴記録を管理しよう',
+      description: notFoundDescription,
       alternates: { canonical },
       robots: { index: false, follow: true },
+      openGraph: {
+        title: notFoundTitle,
+        description: notFoundDescription,
+        url: canonical,
+        images: [{ url: defaultOgImage, width: 1200, height: 630, alt: 'アニメログ' }],
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: notFoundTitle,
+        description: notFoundDescription,
+        images: [defaultOgImage],
+      },
     };
   }
 
