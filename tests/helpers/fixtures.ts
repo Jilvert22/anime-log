@@ -67,6 +67,9 @@ export const test = base.extend<{ anime: AnimeFixture }>({
 export { expect };
 export async function expandAllSeasons(page: Page) {
   await page.locator('[data-tab="seasons"]').first().click();
+  await expect(page.getByRole('button', { name: /\d{4}年.*作品/ }).first()).toBeVisible({
+    timeout: 15000,
+  });
   const expand = page.getByRole('button', { name: '全て展開', exact: true });
   if (await expand.isVisible()) await expand.click();
 }

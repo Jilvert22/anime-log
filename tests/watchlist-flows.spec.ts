@@ -49,6 +49,9 @@ test('投稿した感想が再読み込み後も残る', async ({ page, anime })
 test('クールの検索から追加した作品にリロードなしで感想を投稿できる', async ({ page, anime }) => {
   await login(page);
   await page.getByText('未登録のクールも含めて表示', { exact: true }).click();
+  await page
+    .getByRole('button', { name: new RegExp(`${new Date().getFullYear()}年.*作品`) })
+    .click();
   // 固定の作品・年度に依存せず、表示された未登録クールから検索する。
   const season = page.getByRole('button', { name: /(冬|春|夏|秋).*未登録/ }).first();
   await expect(season).toBeVisible();
