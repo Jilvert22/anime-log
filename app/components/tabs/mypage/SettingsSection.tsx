@@ -13,8 +13,9 @@ import {
   Wrench,
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
-import { getSession, signOut, updateEmail, updatePassword } from '../../../lib/api';
+import { updateEmail, updatePassword } from '../../../lib/api';
 import { repairWatchlistSeasons } from '../../../lib/api/watchlist';
+import { useAccountDeletion } from '../../../hooks/useAccountDeletion';
 import { useAuth } from '../../../hooks/useAuth';
 import { usePWAInstall } from '../../../hooks/usePWAInstall';
 import { track } from '@vercel/analytics/react';
@@ -91,9 +92,14 @@ export default function SettingsSection({
 }: SettingsSectionProps) {
   const { user } = useAuth();
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
+  const {
+    showDeleteConfirm,
+    setShowDeleteConfirm,
+    deleteLoading,
+    deleteError,
+    setDeleteError,
+    handleDeleteAccount,
+  } = useAccountDeletion(user);
   const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
   const [showPWAInstallModal, setShowPWAInstallModal] = useState(false);
 
@@ -123,44 +129,6 @@ export default function SettingsSection({
   const [repairLoading, setRepairLoading] = useState(false);
   const [repairError, setRepairError] = useState('');
   const [repairSuccess, setRepairSuccess] = useState('');
-
-  const handleDeleteAccount = async () => {
-    setDeleteError('');
-    setDeleteLoading(true);
-
-    try {
-      // 認証トークンを取得
-      const session = await getSession();
-      if (!session) {
-        throw new Error('認証が必要です');
-      }
-
-      const response = await fetch('/api/delete-account', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'アカウントの削除に失敗しました');
-      }
-
-      // 成功時は即座にリダイレクト（エラーハンドリングをスキップ）
-      await signOut();
-      window.location.href = '/';
-      return; // これ以降の処理を実行しない
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'アカウントの削除に失敗しました';
-      setDeleteError(errorMessage);
-      setDeleteLoading(false);
-    }
-  };
 
   const handleEmailChange = async () => {
     setChangeError('');

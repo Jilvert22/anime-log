@@ -93,3 +93,8 @@ CLIの `--version` も管理用telemetryファイルへ書き込みを行うた�
 `20260907000200_moderation.sql` を同じ依頼範囲でCLI適用した。ローカルの権限・非表示・復元・送信上限・同時操作テストと本番のメタデータ照合後、DDLと履歴登録を1トランザクションで実行。lock_timeout=5s、statement_timeout=60s、PostgREST再読込を使用。
 
 4テーブルのRLS、追加制限ポリシー7件、フォローの同時操作を保護するトリガー、公開ビュー、運営RPCの一般ユーザー実行不可、通報の非公開権限を適用後に確認。実ユーザーへの通報・ブロック・フォロー解除・投稿非表示は実施していない。[運営手順と監査資料](../MODERATION_REVIEW.md)を参照。
+
+
+## 2026-09-07: アカウント削除連鎖（CLI適用済み）
+
+`20260907000300_account_deletion_cascade.sql`。animes、followsの双方、notification_settingsの所有者とwatchlist参照、旧profiles、push_subscriptionsの外部キー7件にON DELETE CASCADEを設定。Auth削除時に関連データを一括削除できるようにした。ローカルの削除・ロールバック試験後、DDLと履歴を1トランザクションで適用。既存データの削除は実施していない。[修正と検証](../ACCOUNT_DELETION_REVIEW.md)を参照。
