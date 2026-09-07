@@ -25,3 +25,12 @@ package-lock.json
 
 # SQL (Prettier非対応)
 *.sql
+
+# Android のローカルキャッシュ・成果物・署名情報
+android/.gradle/
+android/**/build/
+android/.secrets/
+android/local.properties
+
+# Supabase CLI の生成キャッシュ
+supabase/.temp/
