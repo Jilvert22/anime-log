@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Secrets are supplied only to the build process, never stored in the project.
+def releaseStore = providers.environmentVariable('ANIMELOG_KEYSTORE')
+def releaseAlias = providers.environmentVariable('ANIMELOG_KEY_ALIAS')
+def releaseStorePassword = providers.environmentVariable('ANIMELOG_STORE_PASSWORD')
+def releaseKeyPassword = providers.environmentVariable('ANIMELOG_KEY_PASSWORD')
+def signingInputs = [releaseStore, releaseAlias, releaseStorePassword, releaseKeyPassword]
+if (signingInputs.any { it.isPresent() } && !signingInputs.every { it.isPresent() }) {
+    throw new GradleException('All four ANIMELOG signing variables are required together.')
+}
+
+android {
+    namespace = 'jp.animelog.twa'
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = 'jp.animelog.twa'
+        minSdk = 23
+        targetSdk = 36
+        versionCode = 2
+        versionName = '1.0.1'
+    }
+
+    signingConfigs {
+        if (releaseStore.isPresent()) {
+            release {
+                storeFile = file(releaseStore.get())
+                keyAlias = releaseAlias.get()
+                storePassword = releaseStorePassword.get()
+                keyPassword = releaseKeyPassword.get()
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            if (releaseStore.isPresent()) {
+                signingConfig = signingConfigs.release
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.3'
+}

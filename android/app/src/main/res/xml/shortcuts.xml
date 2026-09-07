@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 7.0以前はランチャーショートカット非対応。API 25以降で別リソースを使用。 -->
+<shortcuts />

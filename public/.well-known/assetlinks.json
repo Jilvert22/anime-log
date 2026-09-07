@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "jp.animelog.twa",
       "sha256_cert_fingerprints": [
-        "46:AC:C1:F5:8E:E6:5B:B7:E9:E6:66:84:BC:6B:90:7C:45:EB:C4:0B:21:66:6D:90:00:CB:15:6E:DA:82:D3:D0"
+        "46:AC:C1:F5:8E:E6:5B:B7:E9:E6:66:84:BC:6B:90:7C:45:EB:C4:0B:21:66:6D:90:00:CB:15:6E:DA:82:D3:D0",
+        "0F:4E:8A:13:3D:70:2B:9A:00:27:AE:ED:48:8D:94:5E:20:FB:64:39:E0:6B:07:FC:26:0B:45:53:F3:59:05:3E"
       ]
     }
   }
