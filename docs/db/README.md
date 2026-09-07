@@ -94,6 +94,11 @@ CLIの `--version` も管理用telemetryファイルへ書き込みを行うた�
 
 4テーブルのRLS、追加制限ポリシー7件、フォローの同時操作を保護するトリガー、公開ビュー、運営RPCの一般ユーザー実行不可、通報の非公開権限を適用後に確認。実ユーザーへの通報・ブロック・フォロー解除・投稿非表示は実施していない。[運営手順と監査資料](../MODERATION_REVIEW.md)を参照。
 
+
+## 2026-09-07: アカウント削除連鎖（CLI適用済み）
+
+`20260907000300_account_deletion_cascade.sql`。animes、followsの双方、notification_settingsの所有者とwatchlist参照、旧profiles、push_subscriptionsの外部キー7件にON DELETE CASCADEを設定。Auth削除時に関連データを一括削除できるようにした。ローカルの削除・ロールバック試験後、DDLと履歴を1トランザクションで適用。既存データの削除は実施していない。[修正と検証](../ACCOUNT_DELETION_REVIEW.md)を参照。
+
 ## 2026-09-07: 感想投稿直後の取得（CLI適用済み）
 
 `20260907000400_moderation_review_returning.sql` を、所有者から旧AGENTSの人間適用記載より優先する明示的な許可を受けて本番へ適用した。`moderation_reviews_read` の本人判定を現在行の `user_id = auth.uid()` で行い、INSERT/UPDATE RETURNINGとの互換性を保つ。STABLE関数内で新規行を再検索することによる拒否を防ぐ。他者の表示条件は維持する。
