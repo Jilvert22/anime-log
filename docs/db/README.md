@@ -98,3 +98,9 @@ CLIの `--version` も管理用telemetryファイルへ書き込みを行うた�
 ## 2026-09-07: アカウント削除連鎖（CLI適用済み）
 
 `20260907000300_account_deletion_cascade.sql`。animes、followsの双方、notification_settingsの所有者とwatchlist参照、旧profiles、push_subscriptionsの外部キー7件にON DELETE CASCADEを設定。Auth削除時に関連データを一括削除できるようにした。ローカルの削除・ロールバック試験後、DDLと履歴を1トランザクションで適用。既存データの削除は実施していない。[修正と検証](../ACCOUNT_DELETION_REVIEW.md)を参照。
+
+## 2026-09-07: 感想投稿直後の取得（CLI適用済み）
+
+`20260907000400_moderation_review_returning.sql` を、所有者から旧AGENTSの人間適用記載より優先する明示的な許可を受けて本番へ適用した。`moderation_reviews_read` の本人判定を現在行の `user_id = auth.uid()` で行い、INSERT/UPDATE RETURNINGとの互換性を保つ。STABLE関数内で新規行を再検索することによる拒否を防ぐ。他者の表示条件は維持する。
+
+適用後にポリシー式、version=20260907000400の履歴、INSERTの本人限定チェックが維持されていることを確認。ローカルでは補正前の再現失敗、補正後の投稿・更新取得と既存の権限・同時操作テストが成功。CIは補正後の本番DBを使って再検証する。

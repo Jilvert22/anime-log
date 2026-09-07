@@ -8,6 +8,7 @@ import { HomeTab } from './tabs/HomeTab';
 import { Navigation } from './Navigation';
 import { PWAInstallBanner } from './PWAInstallBanner';
 import { ErrorState } from './common/ErrorState';
+import { Spinner } from './common/Spinner';
 
 // 頻繁に使わないモーダルを動的インポート
 const MyPageTab = dynamic(() => import('./tabs/MyPageTab'), {
@@ -149,7 +150,10 @@ function HomeClientInner() {
       />
 
       {/* メインコンテンツ */}
-      <main className="pt-20 max-w-md md:max-w-6xl mx-auto px-4 py-6">
+      <main
+        aria-busy={isLoading || !isAnimeDataReady}
+        className="pt-20 max-w-md md:max-w-6xl mx-auto px-4 py-6"
+      >
         {saveError && (
           <div
             role="alert"
@@ -178,7 +182,9 @@ function HomeClientInner() {
             </button>
           </div>
         )}
-        {loadError ? (
+        {isLoading || !isAnimeDataReady ? (
+          <Spinner label="視聴記録を読み込み中…" className="py-12" />
+        ) : loadError ? (
           <ErrorState message="アニメデータの読み込みに失敗しました" onRetry={reloadAnimeData} />
         ) : (
           <>
