@@ -18,6 +18,6 @@ test('追加したアニメを削除するとDBと再読み込み後の画面か
   await expect(page.getByText('基本情報', { exact: true })).not.toBeVisible();
   await expect.poll(() => dbAnimeCount(anime.id)).toBe(0);
   await page.reload();
-  await expandAllSeasons(page);
+  await page.locator('[data-tab="seasons"]').first().click();
   await expect(page.getByText(anime.title, { exact: true })).toHaveCount(0);
 });
