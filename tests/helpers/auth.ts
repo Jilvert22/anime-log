@@ -102,5 +102,6 @@ export async function login(
     .last()
     .click();
   await expect(page.locator('input[type="email"]')).not.toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('main')).toHaveAttribute('aria-busy', 'false', { timeout: 15000 });
   await expect(page.locator('[data-onboarding="step-1"]')).toBeVisible({ timeout: 15000 });
 }
