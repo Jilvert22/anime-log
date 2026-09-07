@@ -4,26 +4,21 @@ import { supabase } from '../supabase';
 import type { IStorageService, WatchlistItem } from './types';
 import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
 import { getSeasonWatchlist as apiGetSeasonWatchlist } from '../api/watchlist';
+import { getWatchlist as apiGetWatchlist } from '../api/watchlist';
+import { saveWatchlistProgress } from '../api/watchlistProgress';
+import type { WatchlistProgress } from '../api/types';
 
 export class SupabaseStorageService implements IStorageService {
   async getWatchlist(): Promise<WatchlistItem[]> {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return [];
+    return apiGetWatchlist();
+  }
 
-    const { data, error } = await supabase
-      .from('watchlist')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Failed to get watchlist:', error);
-      return [];
-    }
-
-    return (data || []) as WatchlistItem[];
+  async saveWatchlistProgress(
+    id: string,
+    progress: WatchlistProgress,
+    expected: WatchlistProgress
+  ): Promise<WatchlistItem> {
+    return saveWatchlistProgress(id, progress, expected);
   }
 
   async addToWatchlist(item: {

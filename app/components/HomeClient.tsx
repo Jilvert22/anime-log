@@ -8,6 +8,7 @@ import { HomeTab } from './tabs/HomeTab';
 import { Navigation } from './Navigation';
 import { PWAInstallBanner } from './PWAInstallBanner';
 import { ErrorState } from './common/ErrorState';
+import { Spinner } from './common/Spinner';
 
 // 頻繁に使わないモーダルを動的インポート
 const MyPageTab = dynamic(() => import('./tabs/MyPageTab'), {
@@ -34,11 +35,15 @@ import { ModalProvider, useModalContext } from '../contexts/ModalContext';
 import { OnboardingOverlay } from './onboarding/OnboardingOverlay';
 import { useOnboardingContext } from '../contexts/OnboardingContext';
 import { HomeModals } from './HomeModals';
+import { QuickStart } from './onboarding/QuickStart';
+import { downloadText, recordsToJson } from '../lib/records/export';
+import { useFeedback } from '../contexts/FeedbackContext';
 
 // Server Componentで取得した初期データを受け取る場合はここに Props 型を追加する
 
 // 内側のコンポーネント（ModalProvider内でuseModalContextを使用）
 function HomeClientInner() {
+  const { showToast } = useFeedback();
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
 
@@ -98,6 +103,9 @@ function HomeClientInner() {
     totalRewatchCount,
     loadError,
     reloadAnimeData,
+    isAnimeDataReady,
+    saveError,
+    retrySave,
   } = useAnimeDataContext();
 
   // カウントアニメーションをカスタムフックで管理
@@ -142,11 +150,55 @@ function HomeClientInner() {
       />
 
       {/* メインコンテンツ */}
-      <main className="pt-20 max-w-md md:max-w-6xl mx-auto px-4 py-6">
-        {loadError ? (
+      <main
+        aria-busy={isLoading || !isAnimeDataReady}
+        className="pt-20 max-w-md md:max-w-6xl mx-auto px-4 py-6"
+      >
+        {saveError && (
+          <div
+            role="alert"
+            className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950"
+          >
+            <p>端末に記録を保存できませんでした。画面の記録はまだ保存されていません。</p>
+            <button type="button" onClick={retrySave} className="mt-2 underline">
+              保存を再試行
+            </button>
+            <button
+              type="button"
+              className="mt-2 ml-4 underline"
+              onClick={() => {
+                try {
+                  downloadText(
+                    recordsToJson(seasons, []),
+                    'animelog-unsaved-records.json',
+                    'application/json'
+                  );
+                } catch {
+                  showToast('未保存の記録を書き出せませんでした', 'error');
+                }
+              }}
+            >
+              未保存の視聴記録を書き出す
+            </button>
+          </div>
+        )}
+        {isLoading || !isAnimeDataReady ? (
+          <Spinner label="視聴記録を読み込み中…" className="py-12" />
+        ) : loadError ? (
           <ErrorState message="アニメデータの読み込みに失敗しました" onRetry={reloadAnimeData} />
         ) : (
           <>
+            {activeTab === 'home' && isAnimeDataReady && !isLoading && (
+              <QuickStart
+                count={allAnimes.length}
+                onAdd={() => {
+                  skipOnboarding();
+                  setHomeSubTab('seasons');
+                  actions.openAddForm();
+                }}
+                onViewCard={() => setActiveTab('mypage')}
+              />
+            )}
             {activeTab === 'home' && (
               <HomeTab
                 homeSubTab={homeSubTab}

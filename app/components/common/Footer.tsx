@@ -28,6 +28,12 @@ export function Footer() {
         </Link>
         <span>|</span>
         <span className="font-mixed">
+          <Link href="/delete-account" className="hover:text-[#e879d4]">
+            アカウント削除
+          </Link>
+        </span>
+        <span>|</span>
+        <span className="font-mixed">
           データ提供:{' '}
           <a
             href="https://anilist.co"

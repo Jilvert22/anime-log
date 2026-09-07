@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
 import { getSession, signOut, onAuthStateChange } from '../lib/api';
 import type { User } from '@supabase/supabase-js';
 import { logger } from '../lib/logger';
@@ -13,19 +12,20 @@ export function useAuth() {
 
   useEffect(() => {
     let mounted = true;
+    let authChanged = false;
 
     // 現在のセッションを確認
     const initSession = async () => {
       try {
         const session = await getSession();
-        if (mounted) {
+        if (mounted && !authChanged) {
           setUser(session?.user ?? null);
           setIsLoading(false);
         }
       } catch (error) {
         const normalizedError = normalizeError(error);
         logger.error('Failed to get session', normalizedError, 'useAuth');
-        if (mounted) {
+        if (mounted && !authChanged) {
           setIsLoading(false);
         }
       }
@@ -34,15 +34,12 @@ export function useAuth() {
     initSession();
 
     // 認証状態の変化を監視
-    const unsubscribe = onAuthStateChange((event, session) => {
+    const unsubscribe = onAuthStateChange((_event, session) => {
+      authChanged = true;
       if (mounted) {
         const newUser = session?.user ?? null;
         setUser(newUser);
         setIsLoading(false);
-        // ログアウト時（ユーザーがnullになった時）にlocalStorageをクリア
-        if (!newUser && event === 'SIGNED_OUT') {
-          localStorage.removeItem('animeSeasons');
-        }
       }
     });
 
@@ -55,8 +52,6 @@ export function useAuth() {
   const handleLogout = useCallback(async (): Promise<boolean> => {
     try {
       await signOut();
-      // ログアウト時にlocalStorageのアニメデータをクリア
-      localStorage.removeItem('animeSeasons');
       return true;
     } catch (error) {
       const normalizedError = normalizeError(error);

@@ -32,6 +32,7 @@ export function supabaseToAnime(row: SupabaseAnimeRow): Anime {
   return {
     id: row.id ?? 0, // row.id は UUID 文字列。無いのは insertAnime のフォールバック行のみ（0 は falsy で loadReviews のガードに弾かれる既存セーフティ）
     anilistId: row.anilist_id ?? undefined,
+    importKey: row.import_key ?? undefined,
     title: row.title,
     image: row.image ?? '', // nullの場合は空文字列に変換
     rating: row.rating ?? 0, // nullの場合は0に変換

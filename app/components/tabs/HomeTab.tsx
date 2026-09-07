@@ -3,8 +3,17 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useRef, useEffect } from 'react';
 import { Star, ChevronDown, Plus } from 'lucide-react';
-import type { Anime, Season, User, SupabaseAnimeRow, AniListSearchResult } from '../../types';
+import type {
+  Anime,
+  Season,
+  User,
+  SupabaseAnimeRow,
+  AniListSearchResult,
+  HomeSubTab,
+} from '../../types';
 import { AnimeCard } from '../AnimeCard';
+import { HomeTabs } from './HomeTabs';
+const WatchingTab = dynamic(() => import('./WatchingTab'), { ssr: false });
 
 // タブコンポーネントを動的インポート（初期表示タブ以外）
 const GalleryTab = dynamic(
@@ -51,8 +60,8 @@ export function HomeTab({
   getSeasonName,
   supabaseToAnime,
 }: {
-  homeSubTab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season';
-  setHomeSubTab: (tab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => void;
+  homeSubTab: HomeSubTab;
+  setHomeSubTab: (tab: HomeSubTab) => void;
   expandedYears: Set<string>;
   setExpandedYears: (years: Set<string>) => void;
   onOpenAddForm: () => void;
@@ -148,7 +157,7 @@ export function HomeTab({
 
   // タブ切り替えハンドラーをメモ化
   const handleTabChange = useCallback(
-    (tabId: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => {
+    (tabId: HomeSubTab) => {
       setHomeSubTab(tabId);
     },
     [setHomeSubTab]
@@ -172,29 +181,8 @@ export function HomeTab({
 
   return (
     <>
-      {/* サブタブ */}
-      <div className="flex gap-2 md:gap-3 mb-4 overflow-x-auto pb-2 scrollbar-hide">
-        {[
-          { id: 'seasons', label: 'クール別' },
-          { id: 'watchlist', label: '積みアニメ' },
-          { id: 'current-season', label: '来期視聴予定' },
-          { id: 'series', label: 'シリーズ' },
-          { id: 'gallery', label: 'ギャラリー' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id as typeof homeSubTab)}
-            data-tab={tab.id}
-            className={`px-4 md:px-6 py-2 rounded-full text-sm md:text-base font-medium whitespace-nowrap transition-all ${
-              homeSubTab === tab.id
-                ? 'bg-[#e879d4] text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <HomeTabs selected={homeSubTab} onSelect={handleTabChange} />
+      {homeSubTab === 'watching' && <WatchingTab onNavigate={setHomeSubTab} />}
 
       {homeSubTab === 'seasons' && (
         <>

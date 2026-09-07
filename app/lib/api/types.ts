@@ -34,7 +34,13 @@ export type Follow = {
 /**
  * ウォッチリストアイテム型
  */
-export type WatchlistItem = {
+export type WatchlistProgress = {
+  watched_episodes: number;
+  total_episodes: number | null;
+};
+
+export type WatchlistItem = Partial<WatchlistProgress> & {
+  import_key?: string;
   id: string;
   user_id: string;
   anilist_id: number;
