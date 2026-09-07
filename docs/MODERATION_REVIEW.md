@@ -57,3 +57,10 @@ node scripts/moderation.mjs resolve <通報UUID> restore '再確認により非�
 ## 公開前に残ること
 
 所有者側Claudeの別セッション監査、ログインした実機での最終確認、画面の公開、運営者によるキュー確認開始が残る。Androidの実機・署名・Play提出・Data Safety更新は別途必要。SQL適用済みと、利用者向け公開済みを区別する。
+
+
+## 追加の統合テストで判明した補正（本番未適用）
+
+実Supabaseで既存クライアントのINSERT RETURNINGを検証し、moderation_reviews_readのSTABLE関数から保存直後の新規行が見えず、本人の感想投稿を拒否する問題を確認した。`20260907000400_moderation_review_returning.sql` は現在行のuser_idとauth.uid()で本人を直接判定する補正。他者の表示条件は維持する。
+
+ローカルで補正前の失敗と補正後のINSERT/UPDATE RETURNING成功を確認し、従来の匿名・ブロック・運営権限・同時操作テストも成功。本番適用は自動承認レビューが旧AGENTSの人間適用指示を理由に2回拒否したため未実施。現在の既存クライアントで感想投稿が拒否されるケースがあり、この補正の適用が必要。明示的な適用許可を得た後、CLI適用とCI再実行を行う。

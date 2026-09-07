@@ -25,10 +25,13 @@ CREATE POLICY helpful_read ON review_helpful FOR SELECT USING(true);
 CREATE POLICY helpful_insert ON review_helpful FOR INSERT WITH CHECK(user_id=auth.uid());
 GRANT SELECT ON user_profiles,animes,reviews,follows,review_likes,review_helpful TO anon,authenticated;
 GRANT INSERT,DELETE ON follows,review_likes,review_helpful TO authenticated;
-GRANT UPDATE ON reviews TO authenticated;
+GRANT UPDATE, INSERT, DELETE ON reviews TO authenticated;
+CREATE POLICY review_insert ON reviews FOR INSERT WITH CHECK(user_id=auth.uid());
+CREATE POLICY review_delete ON reviews FOR DELETE USING(user_id=auth.uid());
 CREATE VIEW public_animes AS SELECT a.id,a.user_id,a.season_name,a.title,a.image,a.rating,a.anilist_id,a.created_at FROM animes a JOIN user_profiles p ON p.id=a.user_id WHERE p.is_public=true AND a.watched=true;
 GRANT SELECT ON public_animes TO anon,authenticated;
 \ir ../../supabase/migrations/20260907000200_moderation.sql
+\ir ../../supabase/migrations/20260907000400_moderation_review_returning.sql
 -- Three synthetic users; A/B public, C private but has public review.
 INSERT INTO auth.users SELECT (repeat(n::text,8)||'-1111-4111-8111-111111111111')::uuid FROM generate_series(1,3)n;
 INSERT INTO user_profiles SELECT id,'User '||left(id::text,1),'Bio',left(id::text,1)<>'3' FROM auth.users;
@@ -38,6 +41,13 @@ INSERT INTO follows(follower_id,following_id) VALUES ('11111111-1111-4111-8111-1
 SET ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false);
 DO $$ DECLARE a uuid:=auth.uid(); b uuid:='22222222-1111-4111-8111-111111111111'; report uuid; BEGIN
+  DECLARE inserted uuid;
+  BEGIN
+    INSERT INTO reviews(id,user_id,user_name,content,anime_title) VALUES(gen_random_uuid(),a,'自分','新しい感想','作品') RETURNING id INTO inserted;
+    IF inserted IS NULL THEN RAISE EXCEPTION 'own INSERT RETURNING failed'; END IF;
+    UPDATE reviews SET content='更新' WHERE id=inserted RETURNING id INTO inserted;
+    DELETE FROM reviews WHERE id=inserted;
+  END;
   report:=submit_content_report(a,'review',b,'spam','補足');
   IF report<>submit_content_report(a,'review',b,'other','retry') THEN RAISE EXCEPTION 'duplicate report'; END IF;
   PERFORM submit_content_report(a,'user',b,'harassment','');
