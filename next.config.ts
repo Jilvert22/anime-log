@@ -154,6 +154,14 @@ const pwaConfig = withPWA({
         },
       },
     },
+    // 閲覧者の権限やブロック関係に依存するレスポンスをSWで再利用しない。
+    // Cache-ControlだけではWorkboxのCache APIへの保存を防げない。
+    {
+      urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
+        sameOrigin && /^\/(?:profile|share|api)(?:\/|$)/.test(url.pathname),
+      handler: 'NetworkOnly',
+      options: {},
+    },
     // 7. 同一オリジンのページ - NetworkFirst
     {
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>

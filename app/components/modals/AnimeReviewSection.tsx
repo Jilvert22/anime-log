@@ -1,16 +1,16 @@
 'use client';
 
-import { Heart, UserRound, AlertTriangle, ChevronRight } from 'lucide-react';
 import type { Review, Anime, AnimeId } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { useFeedback } from '../../contexts/FeedbackContext';
 import { Spinner } from '../common/Spinner';
-import { getAnimeRowId } from '../../lib/api/animes';
+import { ReviewItem } from './reviews/ReviewItem';
+import { useModeration } from '../../contexts/ModerationContext';
 
-interface AnimeReviewSectionProps {
+export interface AnimeReviewSectionProps {
   animeReviews: Review[];
   loadingReviews: boolean;
+  reviewLoadError?: string | null;
   reviewFilter: 'all' | 'overall' | 'episode';
   setReviewFilter: (filter: 'all' | 'overall' | 'episode') => void;
   reviewSort: 'newest' | 'likes' | 'helpful';
@@ -29,6 +29,7 @@ interface AnimeReviewSectionProps {
 export function AnimeReviewSection({
   animeReviews,
   loadingReviews,
+  reviewLoadError,
   reviewFilter,
   setReviewFilter,
   reviewSort,
@@ -39,14 +40,14 @@ export function AnimeReviewSection({
   setExpandedSpoilerReviews,
   user,
   selectedAnime,
-  supabase,
   loadReviews,
   setShowReviewModal,
 }: AnimeReviewSectionProps) {
-  const { confirmDialog } = useFeedback();
+  const { blockedIds } = useModeration();
 
   // フィルタリング
   const filteredReviews = animeReviews.filter((review) => {
+    if (blockedIds.has(review.userId)) return false;
     if (reviewFilter === 'overall' && review.type !== 'overall') return false;
     if (reviewFilter === 'episode' && review.type !== 'episode') return false;
     if (userSpoilerHidden && review.containsSpoiler) return false;
@@ -79,202 +80,6 @@ export function AnimeReviewSection({
       episodeGroups.get(review.episodeNumber)!.push(review);
     }
   });
-
-  const ReviewItem = ({ review }: { review: Review }) => {
-    const isExpanded = expandedSpoilerReviews.has(review.id);
-    const shouldCollapse = review.containsSpoiler && !isExpanded;
-
-    return (
-      <div
-        className={`bg-gray-50 dark:bg-gray-700 rounded-lg p-4 ${
-          review.containsSpoiler ? 'border-l-4 border-yellow-500' : ''
-        }`}
-      >
-        {/* ネタバレ警告 */}
-        {review.containsSpoiler && (
-          <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-xs px-3 py-2 rounded mb-2 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden />
-            <span>ネタバレを含む感想です</span>
-          </div>
-        )}
-
-        {/* ユーザー情報 */}
-        <div className="flex items-center gap-2 mb-2">
-          {review.userIcon &&
-          (review.userIcon.startsWith('http://') ||
-            review.userIcon.startsWith('https://') ||
-            review.userIcon.startsWith('data:')) ? (
-            <img
-              src={review.userIcon}
-              alt="アイコン"
-              className="w-6 h-6 rounded-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent) {
-                  const span = document.createElement('span');
-                  span.className = 'text-xl';
-                  span.textContent = '👤'; // DOM直接操作のonErrorフォールバック(React外のためアイコン化対象外)
-                  parent.insertBefore(span, target);
-                }
-              }}
-            />
-          ) : review.userIcon ? (
-            <span className="text-xl">{review.userIcon}</span>
-          ) : (
-            <UserRound className="w-6 h-6 text-gray-400" aria-hidden />
-          )}
-          <span className="font-bold text-sm dark:text-white">{review.userName}</span>
-          <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-            {new Date(review.createdAt).toLocaleDateString('ja-JP')}
-          </span>
-        </div>
-
-        {/* 感想本文（折りたたみ可能） */}
-        {shouldCollapse ? (
-          <button
-            onClick={() => {
-              const newSet = new Set(expandedSpoilerReviews);
-              newSet.add(review.id);
-              setExpandedSpoilerReviews(newSet);
-            }}
-            className="w-full text-left text-sm text-[#e879d4] dark:text-[#e879d4] hover:underline py-2"
-          >
-            <span className="inline-flex items-center gap-1">
-              <ChevronRight className="w-4 h-4" aria-hidden />
-              クリックして展開
-            </span>
-          </button>
-        ) : (
-          <>
-            <p className="text-sm dark:text-white mb-3 whitespace-pre-wrap">{review.content}</p>
-            {review.containsSpoiler && (
-              <button
-                onClick={() => {
-                  const newSet = new Set(expandedSpoilerReviews);
-                  newSet.delete(review.id);
-                  setExpandedSpoilerReviews(newSet);
-                }}
-                className="text-xs text-gray-500 dark:text-gray-400 hover:underline"
-              >
-                ▲ 折りたたむ
-              </button>
-            )}
-          </>
-        )}
-
-        {/* いいね・役に立った */}
-        <div className="flex items-center gap-4 mt-3">
-          <button
-            onClick={async () => {
-              if (!user) return;
-
-              try {
-                const animeRowId = await getAnimeRowId(selectedAnime.id, user.id);
-
-                if (animeRowId === null) return;
-
-                if (review.userLiked) {
-                  await supabase
-                    .from('review_likes')
-                    .delete()
-                    .eq('review_id', review.id)
-                    .eq('user_id', user.id);
-                } else {
-                  await supabase.from('review_likes').insert({
-                    review_id: review.id,
-                    user_id: user.id,
-                  });
-                }
-
-                loadReviews(selectedAnime.id);
-              } catch (error) {
-                console.error('Failed to toggle like:', error);
-              }
-            }}
-            className={`flex items-center gap-1 text-sm ${
-              review.userLiked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            <Heart className={`w-4 h-4 ${review.userLiked ? 'fill-current' : ''}`} aria-hidden />
-            <span>{review.likes}</span>
-          </button>
-          <button
-            onClick={async () => {
-              if (!user) return;
-
-              try {
-                const animeRowId = await getAnimeRowId(selectedAnime.id, user.id);
-
-                if (animeRowId === null) return;
-
-                if (review.userHelpful) {
-                  await supabase
-                    .from('review_helpful')
-                    .delete()
-                    .eq('review_id', review.id)
-                    .eq('user_id', user.id);
-                } else {
-                  await supabase.from('review_helpful').insert({
-                    review_id: review.id,
-                    user_id: user.id,
-                  });
-                }
-
-                loadReviews(selectedAnime.id);
-              } catch (error) {
-                console.error('Failed to toggle helpful:', error);
-              }
-            }}
-            className={`flex items-center gap-1 text-sm ${
-              review.userHelpful ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            <span>👍</span>
-            <span>{review.helpfulCount}</span>
-          </button>
-
-          {/* 自分の感想の場合、編集・削除ボタン */}
-          {user && review.userId === user.id && (
-            <div className="ml-auto flex gap-2">
-              <button
-                onClick={() => {
-                  setShowReviewModal(true);
-                }}
-                className="text-xs text-[#e879d4] dark:text-[#e879d4] hover:underline"
-              >
-                編集
-              </button>
-              <button
-                onClick={async () => {
-                  if (
-                    !(await confirmDialog({
-                      message: 'この感想を削除しますか？',
-                      danger: true,
-                      confirmLabel: '削除',
-                    }))
-                  )
-                    return;
-
-                  try {
-                    await supabase.from('reviews').delete().eq('id', review.id);
-
-                    loadReviews(selectedAnime.id);
-                  } catch (error) {
-                    console.error('Failed to delete review:', error);
-                  }
-                }}
-                className="text-xs text-red-500 hover:underline"
-              >
-                削除
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-4">
@@ -327,7 +132,14 @@ export function AnimeReviewSection({
       )}
 
       {/* 感想一覧 */}
-      {loadingReviews ? (
+      {reviewLoadError ? (
+        <div role="alert" className="text-sm text-red-600">
+          <p>{reviewLoadError}</p>
+          <button onClick={() => void loadReviews(selectedAnime.id)} className="underline py-2">
+            再試行
+          </button>
+        </div>
+      ) : loadingReviews ? (
         <div className="flex items-center justify-center py-8">
           <Spinner label="読み込み中..." />
         </div>
@@ -339,7 +151,18 @@ export function AnimeReviewSection({
               <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">全体感想</h4>
               <div className="space-y-3">
                 {overallReviews.map((review) => (
-                  <ReviewItem key={review.id} review={review} />
+                  <ReviewItem
+                    key={review.id}
+                    review={review}
+                    {...{
+                      expandedSpoilerReviews,
+                      setExpandedSpoilerReviews,
+                      user,
+                      selectedAnime,
+                      loadReviews,
+                      setShowReviewModal,
+                    }}
+                  />
                 ))}
               </div>
             </div>
@@ -358,7 +181,18 @@ export function AnimeReviewSection({
                     </h5>
                     <div className="space-y-3">
                       {reviews.map((review) => (
-                        <ReviewItem key={review.id} review={review} />
+                        <ReviewItem
+                          key={review.id}
+                          review={review}
+                          {...{
+                            expandedSpoilerReviews,
+                            setExpandedSpoilerReviews,
+                            user,
+                            selectedAnime,
+                            loadReviews,
+                            setShowReviewModal,
+                          }}
+                        />
                       ))}
                     </div>
                   </div>

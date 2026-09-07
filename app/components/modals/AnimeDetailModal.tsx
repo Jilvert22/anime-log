@@ -30,6 +30,7 @@ interface AnimeDetailModalProps {
   supabase: SupabaseClient;
   animeReviews: Review[];
   loadingReviews: boolean;
+  reviewLoadError?: string | null;
   loadReviews: (animeId: AnimeId) => Promise<void>;
   reviewFilter: 'all' | 'overall' | 'episode';
   setReviewFilter: (filter: 'all' | 'overall' | 'episode') => void;
@@ -52,6 +53,7 @@ export function AnimeDetailModal({
   supabase,
   animeReviews,
   loadingReviews,
+  reviewLoadError,
   loadReviews,
   reviewFilter,
   setReviewFilter,
@@ -644,6 +646,7 @@ export function AnimeDetailModal({
           <AnimeReviewSection
             animeReviews={animeReviews}
             loadingReviews={loadingReviews}
+            reviewLoadError={reviewLoadError}
             reviewFilter={reviewFilter}
             setReviewFilter={setReviewFilter}
             reviewSort={reviewSort}

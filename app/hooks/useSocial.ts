@@ -25,6 +25,7 @@ import {
 } from '../lib/api';
 import { supabaseToAnime } from '../utils/helpers';
 import type { SupabaseAnimeRow } from '../types';
+import { MODERATION_CHANGED, type ModerationChange } from '../lib/moderation/types';
 import { useFeedback } from '../contexts/FeedbackContext';
 
 type FollowStatus = Record<string, boolean>;
@@ -43,6 +44,34 @@ export function useSocial(user: User | null) {
   const [showFollowListModal, setShowFollowListModal] = useState(false);
   const [followListType, setFollowListType] = useState<'following' | 'followers'>('following');
   const [followListUsers, setFollowListUsers] = useState<UserProfile[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const refresh = (event: Event) => {
+      const { ownerId, blockedId } = (event as CustomEvent<ModerationChange>).detail;
+      if (ownerId !== user?.id) return;
+      if (blockedId) {
+        setSearchedUsers((items) => items.filter((item) => item.id !== blockedId));
+        setFollowListUsers((items) => items.filter((item) => item.id !== blockedId));
+        setUserFollowStatus((previous) => ({ ...previous, [blockedId]: false }));
+        setShowUserProfileModal(false);
+        setSelectedUserProfile(null);
+        setSelectedUserAnimes([]);
+      }
+      getFollowCounts(ownerId)
+        .then((counts) => {
+          if (active) setFollowCounts(counts);
+        })
+        .catch(() => {
+          if (active) showToast('フォロー数を再取得できませんでした', 'error');
+        });
+    };
+    window.addEventListener(MODERATION_CHANGED, refresh);
+    return () => {
+      active = false;
+      window.removeEventListener(MODERATION_CHANGED, refresh);
+    };
+  }, [user?.id, showToast]);
 
   // ログイン時にフォロー数を読み込む
   useEffect(() => {

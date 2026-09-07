@@ -17,7 +17,7 @@ export default function TermsPage() {
           <h1 className="text-3xl font-bold text-white dark:text-white font-mixed">
             アニメログ 利用規約
           </h1>
-          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">最終更新日：2026年1月</p>
+          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">最終更新日：2026年9月7日</p>
         </div>
 
         {/* コンテンツ */}
@@ -56,7 +56,9 @@ export default function TermsPage() {
               第4条（アカウント登録）
             </h2>
             <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <li>本サービスの利用にはアカウント登録が必要です。</li>
+              <li>
+                端末内の視聴記録は登録せず利用できます。クラウド保存、感想投稿、通報・ブロックにはアカウント登録が必要です。
+              </li>
               <li>登録時には正確な情報を入力してください。</li>
               <li>
                 アカウントの管理責任はユーザー本人にあります。パスワードの第三者への共有はお控えください。
@@ -74,7 +76,9 @@ export default function TermsPage() {
             </p>
             <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 leading-relaxed ml-4">
               <li>法令または公序良俗に反する行為</li>
-              <li>他のユーザーへの嫌がらせ、誹謗中傷</li>
+              <li>他のユーザーへの嫌がらせ、誹謗中傷、差別や脅迫</li>
+              <li>性的に露骨な内容、児童の性的搾取に関する内容</li>
+              <li>著作権など他者の権利を侵害する投稿、スパムや詐欺</li>
               <li>虚偽の情報を登録・投稿する行為</li>
               <li>本サービスの運営を妨害する行為</li>
               <li>不正アクセス、システムへの攻撃</li>
@@ -119,6 +123,7 @@ export default function TermsPage() {
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               運営者は、ユーザーが本規約に違反した場合、事前の通知なくアカウントを停止または削除できるものとします。
+              公開プロフィールや感想の「通報・ブロック」から問題を通報できます。運営者は内容を確認し、違反する投稿やプロフィールを非表示にするなどの対応を行います。ブロックするとログイン中の双方の表示・フォローを制限します。ログアウトした人による公開ページの閲覧は制限できません。
             </p>
           </section>
 
