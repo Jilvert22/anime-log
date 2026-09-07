@@ -175,6 +175,15 @@ export default function PrivacyPage() {
           </section>
 
           <section>
+            <h2 className="text-xl font-bold text-[#6b5b6e] dark:text-white mb-3">
+              通報・ブロックに関する情報
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              通報時には送信者と対象者のID、理由・補足、対象となるプロフィールや感想の内容を保存し、運営による確認と対応に利用します。通報内容や送信者情報を相手へ通知・公開しません。ブロック関係も一般公開しません。運営の対応内容は記録します。関連するアカウントを削除すると、そのアカウントに紐づく通報・ブロックと対応記録も削除します。
+            </p>
+          </section>
+
+          <section>
             <h2 className="text-xl font-bold text-[#6b5b6e] dark:text-white mb-3 font-mixed">
               第7条（データの削除）
             </h2>

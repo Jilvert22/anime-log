@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
         </div>
       </div>,
       {
+        headers: { 'Cache-Control': 'private, no-store' },
         width: 1200,
         height: 630,
       }
@@ -95,6 +96,7 @@ export async function GET(request: NextRequest) {
         </div>
       </div>,
       {
+        headers: { 'Cache-Control': 'private, no-store' },
         width: 1200,
         height: 630,
       }
@@ -193,6 +195,7 @@ export async function GET(request: NextRequest) {
       </div>
     </div>,
     {
+      headers: { 'Cache-Control': 'private, no-store' },
       width: 1200,
       height: 630,
     }

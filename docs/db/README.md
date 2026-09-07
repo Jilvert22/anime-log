@@ -86,3 +86,10 @@ DB レベルの UNIQUE 制約と基本的な CHECK 制約を追加した。
 `supabase db query --linked --file` で2件を一つのトランザクションにまとめ、同じトランザクションで `supabase_migrations.schema_migrations` にversion/name/statementsを登録。lock_timeout=5s、statement_timeout=60sを設定し、スキーマキャッシュの再読み込みも通知した。適用後に4列、2インデックス、CHECK制約、関数のSECURITY INVOKER、authenticated実行可・anon実行不可、履歴2件を確認した。既存視聴記録の削除・更新は行っていない。
 
 CLIの `--version` も管理用telemetryファイルへ書き込みを行うため、ファイルシステム制限下では権限付き実行が必要だった。これは承認拒否ではなくサンドボックスの書き込み制限だった。
+
+
+## 2026-09-07: 通報・ブロック（CLI適用済み）
+
+`20260907000200_moderation.sql` を同じ依頼範囲でCLI適用した。ローカルの権限・非表示・復元・送信上限・同時操作テストと本番のメタデータ照合後、DDLと履歴登録を1トランザクションで実行。lock_timeout=5s、statement_timeout=60s、PostgREST再読込を使用。
+
+4テーブルのRLS、追加制限ポリシー7件、フォローの同時操作を保護するトリガー、公開ビュー、運営RPCの一般ユーザー実行不可、通報の非公開権限を適用後に確認。実ユーザーへの通報・ブロック・フォロー解除・投稿非表示は実施していない。[運営手順と監査資料](../MODERATION_REVIEW.md)を参照。

@@ -1,13 +1,23 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import { getAnimeRowId } from '../lib/api/animes';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { getAnimeReviews } from '../lib/api/reviews';
+import { MODERATION_CHANGED, type ModerationChange } from '../lib/moderation/types';
 import type { User } from '@supabase/supabase-js';
 import type { AnimeId, Review } from '../types';
 
 export function useAnimeReviews(user: User | null) {
-  const [animeReviews, setAnimeReviews] = useState<Review[]>([]);
+  const owner = user?.id ?? null;
+  const currentOwner = useRef(owner);
+  currentOwner.current = owner;
+  const request = useRef({ version: 0 });
+  const lastAnime = useRef<AnimeId | null>(null);
+  const [reviewState, setReviewState] = useState<{ owner: string | null; rows: Review[] }>({
+    owner: null,
+    rows: [],
+  });
+  const animeReviews = reviewState.owner === owner ? reviewState.rows : [];
+  const [reviewLoadError, setReviewLoadError] = useState<string | null>(null);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<'all' | 'overall' | 'episode'>('all');
   const [reviewSort, setReviewSort] = useState<'newest' | 'likes' | 'helpful'>('newest');
@@ -16,102 +26,58 @@ export function useAnimeReviews(user: User | null) {
 
   const loadReviews = useCallback(
     async (animeId: AnimeId) => {
-      if (!user) {
-        setAnimeReviews([]);
+      const ticket = ++request.current.version;
+      lastAnime.current = animeId;
+      setReviewLoadError(null);
+      if (!user || !animeId) {
+        setReviewState({ owner, rows: [] });
+        setLoadingReviews(false);
         return;
       }
-
-      // animeId は二重実態（ログイン時=UUID 文字列 / 未ログイン時=合成 number）。number 限定/isNaN で
-      // 弾くと UUID を無効扱いして自分の感想が表示されないため、falsy(null/undefined/0/空文字/NaN)だけ弾く。
-      if (!animeId) {
-        console.warn('Invalid animeId provided to loadReviews:', animeId);
-        setAnimeReviews([]);
-        return;
-      }
-
       setLoadingReviews(true);
       try {
-        // アニメのUUIDを取得（animesテーブルから）
-        const animeUuid = await getAnimeRowId(animeId, user.id);
-
-        if (animeUuid === null) {
-          console.error(
-            'Failed to find anime: No anime found with id',
-            animeId,
-            'for user',
-            user.id
-          );
-          setAnimeReviews([]);
-          setLoadingReviews(false);
-          return;
+        const rows = await getAnimeReviews(animeId, user);
+        if (ticket === request.current.version && currentOwner.current === owner)
+          setReviewState({ owner, rows });
+      } catch {
+        if (ticket === request.current.version && currentOwner.current === owner) {
+          setReviewState({ owner, rows: [] });
+          setReviewLoadError('感想を読み込めませんでした。もう一度お試しください。');
         }
-
-        // レビューを取得
-        const { data: reviewsData, error: reviewsError } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('anime_id', animeUuid)
-          .order('created_at', { ascending: false });
-
-        if (reviewsError) throw reviewsError;
-
-        // 現在のユーザーがいいね/役に立ったを押したか確認
-        if (reviewsData && reviewsData.length > 0) {
-          const reviewIds = reviewsData.map((r) => r.id);
-
-          // いいね情報を取得
-          const { data: likesData } = await supabase
-            .from('review_likes')
-            .select('review_id')
-            .in('review_id', reviewIds)
-            .eq('user_id', user.id);
-
-          // 役に立った情報を取得
-          const { data: helpfulData } = await supabase
-            .from('review_helpful')
-            .select('review_id')
-            .in('review_id', reviewIds)
-            .eq('user_id', user.id);
-
-          const likedReviewIds = new Set(likesData?.map((l) => l.review_id) || []);
-          const helpfulReviewIds = new Set(helpfulData?.map((h) => h.review_id) || []);
-
-          const reviews: Review[] = reviewsData.map((r) => ({
-            id: r.id,
-            animeId: animeId,
-            userId: r.user_id,
-            userName: r.user_name,
-            userIcon: r.user_icon,
-            type: r.type as 'overall' | 'episode',
-            episodeNumber: r.episode_number || undefined,
-            content: r.content,
-            containsSpoiler: r.contains_spoiler,
-            spoilerHidden: r.spoiler_hidden,
-            likes: r.likes || 0,
-            helpfulCount: r.helpful_count || 0,
-            createdAt: r.created_at,
-            updatedAt: r.updated_at,
-            userLiked: likedReviewIds.has(r.id),
-            userHelpful: helpfulReviewIds.has(r.id),
-          }));
-
-          setAnimeReviews(reviews);
-        } else {
-          setAnimeReviews([]);
-        }
-      } catch (error) {
-        console.error('Failed to load reviews:', error);
-        setAnimeReviews([]);
       } finally {
-        setLoadingReviews(false);
+        if (ticket === request.current.version && currentOwner.current === owner)
+          setLoadingReviews(false);
       }
     },
-    [user]
+    [user, owner]
   );
+
+  useEffect(() => {
+    const lifecycle = request.current;
+    lifecycle.version++;
+    setReviewState({ owner, rows: [] });
+    lastAnime.current = null;
+    setLoadingReviews(false);
+    setReviewLoadError(null);
+    return () => {
+      lifecycle.version++;
+    };
+  }, [owner]);
+  useEffect(() => {
+    const refresh = (event: Event) => {
+      if ((event as CustomEvent<ModerationChange>).detail.ownerId !== owner) return;
+      request.current.version++;
+      setReviewState({ owner, rows: [] });
+      if (lastAnime.current !== null) void loadReviews(lastAnime.current);
+    };
+    window.addEventListener(MODERATION_CHANGED, refresh);
+    return () => window.removeEventListener(MODERATION_CHANGED, refresh);
+  }, [owner, loadReviews]);
 
   return {
     animeReviews,
     loadingReviews,
+    reviewLoadError,
     reviewFilter,
     setReviewFilter,
     reviewSort,

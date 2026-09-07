@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Metadata } from 'next';
 import { createServerSupabaseClient } from '@/app/lib/supabase/server';
 import ProfilePageClient from './ProfilePageClient';

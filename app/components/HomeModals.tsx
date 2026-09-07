@@ -176,6 +176,7 @@ export function HomeModals({
   const {
     animeReviews,
     loadingReviews,
+    reviewLoadError,
     reviewFilter,
     setReviewFilter,
     reviewSort,
@@ -348,6 +349,7 @@ export function HomeModals({
           supabase={supabase}
           animeReviews={animeReviews}
           loadingReviews={loadingReviews}
+          reviewLoadError={reviewLoadError}
           loadReviews={loadReviews}
           reviewFilter={reviewFilter}
           setReviewFilter={setReviewFilter}

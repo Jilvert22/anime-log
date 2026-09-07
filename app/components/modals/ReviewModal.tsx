@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { Anime } from '../../types';
-import { supabase } from '../../lib/supabase';
-import { getAnimeRowId } from '../../lib/api/animes';
+import { createReview } from '../../lib/api/reviews';
 import { INPUT_LIMITS, validateLength, throwIfInvalid } from '../../lib/validation';
 import { ValidationError } from '../../lib/api/errors';
 import { useFeedback } from '../../contexts/FeedbackContext';
@@ -33,9 +32,14 @@ export function ReviewModal({
   const [newReviewEpisodeNumber, setNewReviewEpisodeNumber] = useState<number | undefined>(
     undefined
   );
+  const [accepted, setAccepted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
   const { showToast } = useFeedback();
 
   const handleClose = () => {
+    if (lock.current) return;
+    setAccepted(false);
     onClose();
     setNewReviewContent('');
     setNewReviewContainsSpoiler(false);
@@ -49,7 +53,7 @@ export function ReviewModal({
   if (!show || !selectedAnime) return null;
 
   const handleSubmit = async () => {
-    if (!newReviewContent.trim() || !user || !selectedAnime) return;
+    if (lock.current || !accepted || !newReviewContent.trim() || !user || !selectedAnime) return;
 
     if (reviewMode === 'episode' && !newReviewEpisodeNumber) {
       showToast('話数を入力してください', 'error');
@@ -70,38 +74,27 @@ export function ReviewModal({
       return;
     }
 
+    lock.current = true;
+    setBusy(true);
     try {
-      // アニメのUUIDを取得
-      const animeUuid = await getAnimeRowId(selectedAnime.id, user.id);
-
-      if (animeUuid === null) {
-        console.error('Failed to find anime:', selectedAnime.id);
-        return;
-      }
-
-      // 感想を投稿
-      const { data: reviewData, error: reviewError } = await supabase
-        .from('reviews')
-        .insert({
-          anime_id: animeUuid,
-          // 将来の作品単位の感想集約用（reviewsは公開・animesは非公開のためdenormalize）
-          anilist_id: selectedAnime.anilistId ?? null,
-          anime_title: selectedAnime.title,
-          user_id: user.id,
-          user_name: userName,
-          user_icon: userIcon,
-          type: reviewMode,
-          episode_number: reviewMode === 'episode' ? newReviewEpisodeNumber : null,
-          content: newReviewContent.trim(),
-          contains_spoiler: newReviewContainsSpoiler,
-        })
-        .select()
-        .single();
-
-      if (reviewError) throw reviewError;
+      await createReview({
+        anime: selectedAnime,
+        expectedOwner: user.id,
+        userName,
+        userIcon,
+        type: reviewMode,
+        episode: newReviewEpisodeNumber,
+        content: newReviewContent,
+        containsSpoiler: newReviewContainsSpoiler,
+      });
+      setAccepted(false);
 
       // 感想を再読み込み
-      await onReviewPosted();
+      try {
+        await onReviewPosted();
+      } catch {
+        showToast('投稿は保存しました。一覧を再読み込みしてください', 'error');
+      }
 
       // モーダルを閉じる
       onClose();
@@ -111,7 +104,10 @@ export function ReviewModal({
       setReviewMode('overall');
     } catch (error) {
       console.error('Failed to post review:', error);
-      showToast('感想の投稿に失敗しました', 'error');
+      showToast(error instanceof Error ? error.message : '感想の投稿に失敗しました', 'error');
+    } finally {
+      lock.current = false;
+      setBusy(false);
     }
   };
 
@@ -210,6 +206,20 @@ export function ReviewModal({
           </label>
         </div>
 
+        <label className="flex items-start gap-2 text-sm mb-4 dark:text-gray-200">
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(e) => setAccepted(e.target.checked)}
+            className="mt-1"
+          />
+          <span>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline">
+              利用規約・禁止事項
+            </a>
+            に同意して感想を公開します。嫌がらせ、権利侵害、性的な内容やスパムは禁止です。
+          </span>
+        </label>
         {/* ボタン */}
         <div className="flex gap-3">
           <button
@@ -221,11 +231,14 @@ export function ReviewModal({
           <button
             onClick={handleSubmit}
             disabled={
-              !newReviewContent.trim() || (reviewMode === 'episode' && !newReviewEpisodeNumber)
+              busy ||
+              !accepted ||
+              !newReviewContent.trim() ||
+              (reviewMode === 'episode' && !newReviewEpisodeNumber)
             }
             className="flex-1 bg-[#e879d4] text-white py-3 rounded-xl font-bold hover:bg-[#f09fe3] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            投稿
+            {busy ? '投稿中…' : '投稿'}
           </button>
         </div>
       </div>
