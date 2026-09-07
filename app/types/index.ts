@@ -8,6 +8,8 @@
  */
 export type AnimeId = string | number;
 export type UserId = string;
+export type HomeSubTab =
+  'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season' | 'watching';
 
 // 主題歌の型定義
 export type Song = {
@@ -45,6 +47,7 @@ export type Review = {
 
 // アニメの型定義
 export type Anime = {
+  importKey?: string;
   id: AnimeId;
   /** AniListの作品ID（作品単位の集約キー）。検索から追加した作品に入る。手動/旧データはundefined */
   anilistId?: number;
@@ -86,6 +89,7 @@ export type FavoriteCharacter = {
 
 // Supabaseのanimesテーブルの行型（新規作成時はidが不要）
 export type SupabaseAnimeRow = {
+  import_key?: string | null;
   id?: string; // animes.id は uuid 型。新規作成時（INSERT payload）はオプショナル
   anilist_id?: number | null;
   user_id: string;

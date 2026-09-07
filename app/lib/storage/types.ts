@@ -1,8 +1,10 @@
 // ストレージサービスの共通型定義
 
 import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
+import type { WatchlistProgress } from '../api/types';
 
-export type WatchlistItem = {
+export type WatchlistItem = Partial<WatchlistProgress> & {
+  import_key?: string;
   id: string;
   user_id?: string; // localStorageの場合は不要
   anilist_id: number;
@@ -29,6 +31,11 @@ export type WatchlistItem = {
 export interface IStorageService {
   // Watchlist操作
   getWatchlist(): Promise<WatchlistItem[]>;
+  saveWatchlistProgress(
+    id: string,
+    progress: WatchlistProgress,
+    expected: WatchlistProgress
+  ): Promise<WatchlistItem>;
   addToWatchlist(item: {
     anilist_id: number;
     title: string;

@@ -4,6 +4,8 @@ import type { IStorageService, WatchlistItem } from './types';
 import type { WatchlistStatus, WatchlistStatusValue } from '../watchlist/status';
 import { logger } from '../logger';
 import { normalizeError } from '../api/errors';
+import { validateProgress } from '../watchlist/progress';
+import type { WatchlistProgress } from '../api/types';
 
 const WATCHLIST_KEY = 'anime_watchlist';
 
@@ -17,11 +19,18 @@ export class LocalStorageService implements IStorageService {
 
     try {
       const data = localStorage.getItem(WATCHLIST_KEY);
-      return data ? JSON.parse(data) : [];
+      const items = data ? JSON.parse(data) : [];
+      if (
+        !Array.isArray(items) ||
+        items.some((item) => !item || typeof item.id !== 'string' || typeof item.title !== 'string')
+      ) {
+        throw new Error('積みアニメの保存形式を読み取れません');
+      }
+      return items;
     } catch (error) {
       const normalizedError = normalizeError(error);
       logger.error('Failed to read from localStorage', normalizedError, 'LocalStorageService');
-      return [];
+      throw normalizedError;
     }
   }
 
@@ -33,11 +42,34 @@ export class LocalStorageService implements IStorageService {
     } catch (error) {
       const normalizedError = normalizeError(error);
       logger.error('Failed to save to localStorage', normalizedError, 'LocalStorageService');
+      throw normalizedError;
     }
   }
 
   async getWatchlist(): Promise<WatchlistItem[]> {
     return this.getWatchlistFromStorage();
+  }
+
+  async saveWatchlistProgress(
+    id: string,
+    progress: WatchlistProgress,
+    expected: WatchlistProgress
+  ): Promise<WatchlistItem> {
+    validateProgress(progress);
+    const items = this.getWatchlistFromStorage();
+    const index = items.findIndex((item) => item.id === id);
+    if (
+      index < 0 ||
+      items[index].status === 'completed' ||
+      (items[index].watched_episodes ?? 0) !== expected.watched_episodes ||
+      (items[index].total_episodes ?? null) !== expected.total_episodes
+    ) {
+      throw new Error('記録が変更されています。再読み込みしてください。');
+    }
+    const updated: WatchlistItem = { ...items[index], ...progress, status: 'watching' };
+    items[index] = updated;
+    this.saveWatchlistToStorage(items);
+    return updated;
   }
 
   async addToWatchlist(item: {

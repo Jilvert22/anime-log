@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import type { HomeSubTab } from '../types';
 import { useOnboardingContext } from '../contexts/OnboardingContext';
 
 /**
@@ -18,75 +19,19 @@ export function useOnboardingNavigation({
 }: {
   activeTab: 'home' | 'mypage';
   setActiveTab: (tab: 'home' | 'mypage') => void;
-  setHomeSubTab: (tab: 'seasons' | 'series' | 'gallery' | 'watchlist' | 'current-season') => void;
+  setHomeSubTab: (tab: HomeSubTab) => void;
 }) {
-  const { currentStep, isActive, isCompleted, startOnboarding } = useOnboardingContext();
+  const { currentStep, isActive } = useOnboardingContext();
 
-  // 初回訪問時にオンボーディングを自動開始
-  useEffect(() => {
-    if (!isCompleted && !isActive) {
-      // 固定遅延（setTimeout）で出すとコーチマークの吹き出しテキストが
-      // メインコンテンツより後に大きくペイントされ、モバイルの LCP を
-      // 奪ってしまう。requestIdleCallback でブラウザがアイドルになる
-      // までオンボーディング開始を後ろ倒しにする（timeout 付きで、
-      // アイドルが来なくても最大 2.5 秒で必ず発火させる）。
-      if (typeof window.requestIdleCallback === 'function') {
-        const idleId = window.requestIdleCallback(
-          () => {
-            startOnboarding();
-          },
-          { timeout: 2500 }
-        );
-        return () => window.cancelIdleCallback(idleId);
-      }
-
-      // requestIdleCallback 非対応環境（Safari 等）向けのフォールバック
-      const timer = setTimeout(() => {
-        startOnboarding();
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [isCompleted, isActive, startOnboarding]);
+  // 初回は QuickStart から実際の登録へ案内する。機能ツアーはヘルプから任意で開始。
 
   // オンボーディングステップに応じてタブを切り替え
   useEffect(() => {
     if (!isActive || !currentStep) return;
 
-    // Step 2: 積みアニメタブに切り替え
-    if (currentStep === 2) {
-      // まずホームタブに切り替え（まだの場合）
-      if (activeTab !== 'home') {
-        setActiveTab('home');
-        // タブ切り替えを待ってからサブタブを切り替え
-        setTimeout(() => {
-          setHomeSubTab('watchlist');
-        }, 300);
-      } else {
-        // 既にホームタブの場合はすぐにサブタブを切り替え
-        setHomeSubTab('watchlist');
-      }
-    }
-
-    // Step 3: 来期視聴予定タブに切り替え
-    if (currentStep === 3) {
-      // まずホームタブに切り替え（まだの場合）
-      if (activeTab !== 'home') {
-        setActiveTab('home');
-        // タブ切り替えを待ってからサブタブを切り替え
-        setTimeout(() => {
-          setHomeSubTab('current-season');
-        }, 300);
-      } else {
-        // 既にホームタブの場合はすぐにサブタブを切り替え
-        setHomeSubTab('current-season');
-      }
-    }
-
-    // Step 4: マイページタブに切り替え
-    if (currentStep === 4) {
-      if (activeTab !== 'mypage') {
-        setActiveTab('mypage');
-      }
-    }
+    if (currentStep === 1) setHomeSubTab('seasons');
+    if (currentStep === 2) setHomeSubTab('watchlist');
+    if (currentStep === 3) setHomeSubTab('current-season');
+    if (currentStep === 4 && activeTab !== 'mypage') setActiveTab('mypage');
   }, [currentStep, isActive, activeTab, setActiveTab, setHomeSubTab]);
 }

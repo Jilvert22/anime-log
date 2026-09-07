@@ -12,7 +12,7 @@ export function AnimeDataProvider({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
   const animeData = useAnimeData(user, isLoading);
 
-  // valueをメモ化（setState関数はReactが保証する安定した参照のため依存配列から除外）
+  // setSeasonsは保存先・読み込み世代で変わるため依存に含める。通常のsetStateは安定参照。
   // オブジェクト全体をメモ化することで、不要な再レンダリングを防止
   const value = useMemo(
     () => animeData,
@@ -24,6 +24,8 @@ export function AnimeDataProvider({ children }: { children: ReactNode }) {
       animeData.totalRewatchCount,
       animeData.isAnimeDataReady,
       animeData.loadError,
+      animeData.saveError,
+      animeData.setSeasons,
       // setState関数・reloadAnimeDataは安定した参照のため依存配列に含めない
     ]
   );

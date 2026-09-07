@@ -9,6 +9,9 @@ import SettingsSection from './mypage/SettingsSection';
 import { Footer } from '../common/Footer';
 import { useUserProfileContext } from '../../contexts/UserProfileContext';
 import { useModalContext } from '../../contexts/ModalContext';
+import { RecordImportPanel } from './mypage/RecordImportPanel';
+import { RecordExportSection } from './mypage/RecordExportSection';
+import { RecapPreview } from './mypage/RecapPreview';
 
 interface MyPageTabProps {
   allAnimes: Anime[];
@@ -57,6 +60,10 @@ export default function MyPageTab(props: MyPageTabProps) {
         setShowFavoriteAnimeModal={modals.setShowFavoriteAnimeModal}
         onOpenDNAModal={() => modals.setShowDNAModal(true)}
       />
+
+      <RecapPreview seasons={props.seasons} />
+      <RecordExportSection />
+      <RecordImportPanel />
 
       {/* 統計・傾向とコレクション（同じレイヤー） */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

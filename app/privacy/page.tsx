@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-bold text-white dark:text-white font-mixed">
             アニメログ プライバシーポリシー
           </h1>
-          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">最終更新日：2026年7月</p>
+          <p className="text-sm text-white/80 dark:text-gray-400 mt-2">最終更新日：2026年9月</p>
         </div>
 
         {/* コンテンツ */}
@@ -136,7 +136,7 @@ export default function PrivacyPage() {
             </p>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
               また、サービスの改善のためにアクセス解析ツール「Vercel
-              Analytics」を利用しています。これはCookieを使用せず、ページの閲覧状況やアプリのインストール操作などを匿名で集計するもので、個人を特定する情報は収集しません。
+              Analytics」を利用しています。これはCookieを使用せず、ページの閲覧状況やアプリのインストール操作、追加機能への関心などを匿名で集計するもので、個人を特定する情報は収集しません。追加機能への関心の集計に作品名や感想は送信しません。
             </p>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               さらに、サービス改善のためにGoogleアナリティクス（GA4）を利用しています。GA4はCookieを用いて、ページの閲覧状況などの利用状況を統計的に収集します。IPアドレスは、位置情報（国・地域など）の判定に一時的に利用された後、記録・保存される前に破棄されます。個人を特定する目的では利用しません。収集したデータはGoogleの
@@ -169,7 +169,7 @@ export default function PrivacyPage() {
               <li>ユーザーデータはSupabase（クラウドサービス）上に保管されます。</li>
               <li>パスワードは暗号化して保存され、運営者を含め誰も閲覧できません。</li>
               <li>
-                データへのアクセスはユーザーごとに制限されており、他のユーザーのデータにはアクセスできません。
+                非公開の記録には所有者ごとのアクセス制限を設けています。公開設定のプロフィール・視聴作品一覧や投稿した感想は、他のユーザーやログアウトした人も閲覧できます。
               </li>
             </ol>
           </section>
@@ -180,6 +180,12 @@ export default function PrivacyPage() {
             </h2>
             <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 leading-relaxed">
               <li>ユーザーは、設定画面からいつでもアカウントを削除できます。</li>
+              <li>
+                <Link href="/delete-account" className="underline">
+                  アカウントとデータの削除手順
+                </Link>
+                は、ブラウザからも確認できます。
+              </li>
               <li>
                 アカウント削除時、ユーザーに紐づくすべてのデータ（プロフィール、視聴履歴、感想、積みアニメ等）は完全に削除されます。
               </li>

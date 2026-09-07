@@ -47,7 +47,7 @@
       "name": "視聴中アニメ",
       "short_name": "視聴中",
       "description": "視聴中のアニメを表示",
-      "url": "/?tab=watchlist",
+      "url": "/?tab=watching",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
