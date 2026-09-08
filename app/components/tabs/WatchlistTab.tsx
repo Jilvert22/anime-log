@@ -12,6 +12,7 @@ import {
   type AniListMedia,
 } from '../../lib/api/anilist';
 import { useStorage } from '../../hooks/useStorage';
+import { AnimeSearchError } from '../common/AnimeSearchError';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../../lib/storage/types';
 import { insertAnime } from '../../lib/api/animes';
@@ -151,6 +152,8 @@ export function WatchlistTab({
     searchBySeason,
     searchByTitle,
     isLoading: isStreamingSearchLoading,
+    error: searchError,
+    clearError,
   } = useAnimeSearchWithStreaming();
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -685,6 +688,7 @@ export function WatchlistTab({
           <div className="flex gap-2 mb-3">
             <button
               onClick={() => {
+                clearError();
                 setSearchMode('name');
                 setSearchResults([]);
               }}
@@ -698,6 +702,7 @@ export function WatchlistTab({
             </button>
             <button
               onClick={() => {
+                clearError();
                 setSearchMode('season');
                 setSearchResults([]);
               }}
@@ -785,6 +790,15 @@ export function WatchlistTab({
             </div>
           )}
 
+          {searchError && !isSearching && !isStreamingSearchLoading && (
+            <AnimeSearchError
+              message={searchError}
+              onRetry={() => {
+                if (searchMode === 'name') void handleSearchAnime();
+                else void handleSearchBySeason();
+              }}
+            />
+          )}
           {/* 検索結果 */}
           {searchResults.length > 0 && (
             <div className="space-y-2 max-h-60 overflow-y-auto">

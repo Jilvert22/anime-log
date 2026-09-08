@@ -142,6 +142,16 @@ describe('searchAnime', () => {
     await expect(searchAnime('x')).resolves.toEqual([]);
   });
 
+  it('明示的な検索ではHTTP 403を0件へ変換せず呼び出し元へ返す', async () => {
+    fetchMock.mockResolvedValue({ ...makeResponse({}), ok: false, status: 403 });
+    await expect(searchAnime('x', { throwOnError: true })).rejects.toThrow();
+  });
+
+  it('明示的な検索でも正常な0件は成功として返す', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [] } } }));
+    await expect(searchAnime('x', { throwOnError: true })).resolves.toEqual([]);
+  });
+
   it('空文字クエリは通信せず即 [] (新実装由来のショートサーキット)', async () => {
     await expect(searchAnime('   ')).resolves.toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -169,6 +179,14 @@ describe('searchAnimeBySeason', () => {
       media: [{ id: 1 }],
       pageInfo: { total: 1, currentPage: 1, hasNextPage: false },
     });
+  });
+
+  it('クール検索も明示的な検索ではGraphQLエラーを伝える', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ errors: [{ message: 'unavailable' }] }));
+    await expect(
+      searchAnimeBySeason('SPRING', 2025, 1, 50, { throwOnError: true })
+    ).rejects.toThrow();
+    await expect(searchAnimeBySeason('SPRING', 2025)).resolves.toMatchObject({ media: [] });
   });
 
   it('和集合: 継続判定用の status/startDate/endDate を取得する (新実装由来)', async () => {

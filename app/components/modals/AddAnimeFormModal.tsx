@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
 import type { Anime, Season } from '../../types';
+import { AnimeSearchError } from '../common/AnimeSearchError';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import type { AniListMediaWithStreaming } from '../../lib/api/annict';
 import { insertAnimeRows } from '../../lib/api/animes';
@@ -59,6 +60,7 @@ export function AddAnimeFormModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<AniListMediaWithStreaming[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [selectedSearchAnimeIds, setSelectedSearchAnimeIds] = useState<Set<number>>(new Set());
   const [selectedSeason, setSelectedSeason] = useState<
     'SPRING' | 'SUMMER' | 'FALL' | 'WINTER' | null
@@ -70,11 +72,15 @@ export function AddAnimeFormModal({
     searchBySeason,
     searchByTitle,
     isLoading: isStreamingSearchLoading,
+    error: searchError,
+    clearError,
   } = useAnimeSearchWithStreaming();
   const { showToast } = useFeedback();
 
   const handleClose = () => {
     onClose();
+    clearError();
+    setHasSearched(false);
     setSearchQuery('');
     setSearchResults([]);
     setSelectedSearchAnimeIds(new Set());
@@ -94,6 +100,8 @@ export function AddAnimeFormModal({
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
+    setHasSearched(true);
+    setSelectedSearchAnimeIds(new Set());
     setSearchResults([]);
 
     try {
@@ -121,7 +129,10 @@ export function AddAnimeFormModal({
         {/* モード切り替えタブ */}
         <div className="flex gap-2 mb-4">
           <button
-            onClick={() => setAddModalMode('search')}
+            onClick={() => {
+              clearError();
+              setAddModalMode('search');
+            }}
             className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
               addModalMode === 'search'
                 ? 'bg-[#e879d4] text-white'
@@ -131,7 +142,10 @@ export function AddAnimeFormModal({
             タイトル検索
           </button>
           <button
-            onClick={() => setAddModalMode('season')}
+            onClick={() => {
+              clearError();
+              setAddModalMode('season');
+            }}
             className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
               addModalMode === 'season'
                 ? 'bg-[#e879d4] text-white'
@@ -141,6 +155,21 @@ export function AddAnimeFormModal({
             クール検索
           </button>
         </div>
+
+        {searchError && !isSearching && !isStreamingSearchLoading && (
+          <AnimeSearchError
+            message={searchError}
+            onRetry={() => {
+              if (addModalMode === 'search') void handleSearch();
+              else if (selectedSeason) {
+                setSelectedSeasonAnimeIds(new Set());
+                void searchBySeason(selectedSeason, selectedYear, 1, 50)
+                  .then(setSeasonSearchResults)
+                  .catch(() => setSeasonSearchResults([]));
+              }
+            }}
+          />
+        )}
 
         {/* クール検索モード */}
         {addModalMode === 'season' && (
@@ -602,14 +631,18 @@ export function AddAnimeFormModal({
             )}
 
             {/* 検索結果がない場合のメッセージ */}
-            {searchResults.length === 0 && !isSearching && searchQuery.trim() && (
-              <div className="mb-4 text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400">検索結果が見つかりませんでした</p>
-                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                  別のキーワードで検索してください
-                </p>
-              </div>
-            )}
+            {hasSearched &&
+              !searchError &&
+              searchResults.length === 0 &&
+              !isSearching &&
+              searchQuery.trim() && (
+                <div className="mb-4 text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400">検索結果が見つかりませんでした</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                    別のキーワードで検索してください
+                  </p>
+                </div>
+              )}
 
             {/* 検索前のメッセージ */}
             {searchResults.length === 0 && !isSearching && !searchQuery.trim() && (
