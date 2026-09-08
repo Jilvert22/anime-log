@@ -101,7 +101,10 @@ async function queryAniList<T>(query: string, variables: Record<string, unknown>
 /**
  * アニメを検索
  */
-export async function searchAnime(query: string): Promise<AniListMedia[]> {
+export async function searchAnime(
+  query: string,
+  options: { throwOnError?: boolean } = {}
+): Promise<AniListMedia[]> {
   try {
     if (!query || !query.trim()) {
       return [];
@@ -158,6 +161,7 @@ export async function searchAnime(query: string): Promise<AniListMedia[]> {
     return data.Page?.media || [];
   } catch (error) {
     logError(error, 'searchAnime');
+    if (options.throwOnError) throw normalizeError(error);
     // エラーが発生しても空配列を返す（既存の動作を維持）
     return [];
   }
@@ -170,7 +174,8 @@ export async function searchAnimeBySeason(
   season: 'SPRING' | 'SUMMER' | 'FALL' | 'WINTER',
   seasonYear: number,
   page: number = 1,
-  perPage: number = 50
+  perPage: number = 50,
+  options: { throwOnError?: boolean } = {}
 ): Promise<{
   media: AniListMedia[];
   pageInfo: {
@@ -269,6 +274,7 @@ export async function searchAnimeBySeason(
     };
   } catch (error) {
     logError(error, 'searchAnimeBySeason');
+    if (options.throwOnError) throw normalizeError(error);
     // エラーが発生しても空の結果を返す（既存の動作を維持）
     return {
       media: [],

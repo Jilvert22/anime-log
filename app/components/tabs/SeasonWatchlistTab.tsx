@@ -5,6 +5,7 @@ import { useFeedback } from '../../contexts/FeedbackContext';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { useStorage } from '../../hooks/useStorage';
+import { AnimeSearchError } from '../common/AnimeSearchError';
 import { useAnimeSearchWithStreaming } from '../../hooks/useAnimeSearchWithStreaming';
 import { useAnimeDataContext } from '../../contexts/AnimeDataContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -81,7 +82,7 @@ export default function SeasonWatchlistTab() {
   const [isLoadingAnime, setIsLoadingAnime] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const { searchBySeason } = useAnimeSearchWithStreaming();
+  const { searchBySeason, error: searchError } = useAnimeSearchWithStreaming();
 
   // 選択されたシーズンの視聴予定アニメを読み込む
   const loadWatchlist = useCallback(async () => {
@@ -723,6 +724,8 @@ export default function SeasonWatchlistTab() {
             <div className="flex items-center justify-center py-12">
               <Spinner label="読み込み中..." />
             </div>
+          ) : searchError ? (
+            <AnimeSearchError message={searchError} onRetry={() => void loadSeasonAnime()} />
           ) : displayedAnime.length > 0 ? (
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {displayedAnime.map((anime) => (

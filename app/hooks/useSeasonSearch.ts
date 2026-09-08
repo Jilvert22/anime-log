@@ -10,7 +10,7 @@ import {
 import { getBroadcastInfo } from '../lib/api/anilist';
 import { insertAnime } from '../lib/api/animes';
 import { useStorage } from './useStorage';
-import { useAnimeSearchWithStreaming } from './useAnimeSearchWithStreaming';
+import { ANIME_SEARCH_ERROR, useAnimeSearchWithStreaming } from './useAnimeSearchWithStreaming';
 import type { WatchlistItem } from '../lib/storage/types';
 import type { AniListMediaWithStreaming } from '../lib/api/annict';
 import { getStartSeason } from '../utils/continuingAnime';
@@ -104,6 +104,7 @@ export function useSeasonSearch({
         return Promise.resolve();
       } catch (error) {
         console.error('シーズンアニメ検索に失敗しました:', error);
+        showToast(ANIME_SEARCH_ERROR, 'error');
         return Promise.resolve();
       } finally {
         setLoadingSeasons((prev) => {
@@ -113,7 +114,7 @@ export function useSeasonSearch({
         });
       }
     },
-    [loadingSeasons, seasonSearchResults, allAnimes, searchBySeason]
+    [loadingSeasons, seasonSearchResults, allAnimes, searchBySeason, showToast]
   );
 
   // 登録済みクールの検索ハンドラー（useCallbackでメモ化）

@@ -12,6 +12,9 @@ import {
 } from '../lib/api/annict';
 import { isContinuingAnime, getPreviousSeason } from '../utils/continuingAnime';
 
+export const ANIME_SEARCH_ERROR =
+  '作品検索に接続できませんでした。通信環境を確認し、時間をおいて再試行してください。登録済みの記録は引き続き利用できます。';
+
 type SeasonType = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
 
 /**
@@ -93,6 +96,7 @@ export function useAnimeSearchWithStreaming() {
       const cacheKey = `season:${year}:${season}:${page}:${perPage}`;
 
       // キャッシュから取得を試みる
+      setError(null);
       const cached = getFromCache(cacheKey);
       if (cached) {
         return cached;
@@ -106,11 +110,11 @@ export function useAnimeSearchWithStreaming() {
         const prev = getPreviousSeason({ year, season });
 
         const [anilistResults, prevAnilistResults, annictResults] = await Promise.all([
-          searchAnimeBySeason(season, year, page, perPage),
+          searchAnimeBySeason(season, year, page, perPage, { throwOnError: true }),
           // 連続2クール作品候補として前シーズン開始の作品も取得
           // 1ページ目のみ取得 (人気順なので継続候補は上位に集中)
           page === 1
-            ? searchAnimeBySeason(prev.season, prev.year, 1, perPage)
+            ? searchAnimeBySeason(prev.season, prev.year, 1, perPage, { throwOnError: true })
             : Promise.resolve({
                 media: [] as AniListMedia[],
                 pageInfo: { total: 0, currentPage: 1, hasNextPage: false },
@@ -144,8 +148,7 @@ export function useAnimeSearchWithStreaming() {
 
         return flagged;
       } catch (err) {
-        const message = err instanceof Error ? err.message : '検索に失敗しました';
-        setError(message);
+        setError(ANIME_SEARCH_ERROR);
         throw err;
       } finally {
         setIsLoading(false);
@@ -165,6 +168,7 @@ export function useAnimeSearchWithStreaming() {
     const cacheKey = `title:${normalizedTitle}`;
 
     // キャッシュから取得を試みる
+    setError(null);
     const cached = getFromCache(cacheKey);
     if (cached) {
       return cached;
@@ -175,7 +179,7 @@ export function useAnimeSearchWithStreaming() {
 
     try {
       const [anilistResults, annictResults] = await Promise.all([
-        searchAnime(normalizedTitle),
+        searchAnime(normalizedTitle, { throwOnError: true }),
         searchAnnictByTitle(normalizedTitle, 20).catch((err) => {
           console.warn('Annict title search failed:', err);
           return [];
@@ -189,18 +193,20 @@ export function useAnimeSearchWithStreaming() {
 
       return mergedResults;
     } catch (err) {
-      const message = err instanceof Error ? err.message : '検索に失敗しました';
-      setError(message);
+      setError(ANIME_SEARCH_ERROR);
       throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  const clearError = useCallback(() => setError(null), []);
+
   return {
     searchBySeason,
     searchByTitle,
     isLoading,
     error,
+    clearError,
   };
 }
