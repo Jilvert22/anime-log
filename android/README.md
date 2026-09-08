@@ -6,7 +6,7 @@
 |---|---|
 | package / namespace | `jp.animelog.twa` |
 | 起動URL | `https://animelog.jp/` |
-| versionCode / versionName | `3` / `1.0.2` |
+| versionCode / versionName | `4` / `1.0.3` |
 | min / compile / target SDK | `23` / `36` / `36` |
 | Android Gradle Plugin / Gradle | `9.0.1` / `9.1.0` |
 | Android Browser Helper | `2.7.3` |
@@ -34,7 +34,7 @@ cd android
 ## 設定の意図と検証
 
 - ランチャーアイコンは既存の`public/icons/`からコピー。変更時はWeb/Android両方を更新する。
-- Adaptive Iconは既存のmaskable画像を前景の中央72/108領域に配置する。背景に画像全体を直接貼ると、Androidのマスクで図柄が拡大・切り抜きされるため、前景に各辺1/6の余白と不透明な背景を設ける。参照: [AdaptiveIconDrawable](https://developer.android.com/reference/android/graphics/drawable/AdaptiveIconDrawable)。
+- Adaptive Iconは既存のmaskable画像を前景に配置し、不透明な背景を設ける。背景に画像全体を直接貼ると、Androidの108→72のマスクで図柄が拡大・切り抜きされる。1.0.2の各辺1/6の余白では実機で小さくなりすぎたため、1.0.3では12.5%へ調整し、図柄を前版より12.5%拡大した。参照: [AdaptiveIconDrawable](https://developer.android.com/reference/android/graphics/drawable/AdaptiveIconDrawable)。
 - Android 7.1以降の「視聴中」ショートカットは`/?tab=watching`を開く。
 - TWA非対応ブラウザではCustom Tabsにフォールバックする。
 - 通知のネイティブ委譲サービスは追加していない。通知はWeb/ブラウザ側の許可に依存し、実機での確認が必要。
