@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive layers are 108 units wide; their visible viewport is 72 units.
+     Keep the existing PWA maskable artwork inside that viewport (18/108 per side).
+     Insets are fractions so the padding also scales with launcher icon size. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@mipmap/ic_maskable"
+    android:inset="16.666667%" />
