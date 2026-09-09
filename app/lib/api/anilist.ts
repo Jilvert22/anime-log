@@ -7,9 +7,12 @@ import { fetchWithRetry, parseJsonResponse, checkResponseStatus } from './client
 import { NetworkError, logError, normalizeError } from './errors';
 
 const ANILIST_API = 'https://graphql.anilist.co';
+// AniListの成人向け判定にはEcchiが含まれないため、ジャンルも除外する。
+const CATALOG_FILTER = 'isAdult: false, genre_not_in: ["Ecchi", "Hentai"]';
 
 export type AniListMedia = {
   id: number;
+  isAdult?: boolean;
   title: {
     native: string | null;
     romaji: string | null;
@@ -65,6 +68,14 @@ export type AniListMedia = {
   endDate?: { year: number | null; month: number | null; day?: number | null } | null;
 };
 
+function isAllowedCatalogMedia(media: AniListMedia): boolean {
+  return (
+    media.isAdult === false &&
+    Array.isArray(media.genres) &&
+    !media.genres.some((genre) => genre === 'Ecchi' || genre === 'Hentai')
+  );
+}
+
 /**
  * AniList GraphQL APIにリクエストを送信
  */
@@ -113,7 +124,8 @@ export async function searchAnime(
     const graphqlQuery = `
       query ($search: String) {
         Page(page: 1, perPage: 10) {
-          media(search: $search, type: ANIME) {
+          media(search: $search, type: ANIME, ${CATALOG_FILTER}) {
+            isAdult
             id
             title {
               native
@@ -158,7 +170,7 @@ export async function searchAnime(
       search: query,
     });
 
-    return data.Page?.media || [];
+    return (data.Page?.media || []).filter(isAllowedCatalogMedia);
   } catch (error) {
     logError(error, 'searchAnime');
     if (options.throwOnError) throw normalizeError(error);
@@ -193,7 +205,8 @@ export async function searchAnimeBySeason(
             currentPage
             hasNextPage
           }
-          media(season: $season, seasonYear: $seasonYear, type: ANIME, sort: POPULARITY_DESC) {
+          media(season: $season, seasonYear: $seasonYear, type: ANIME, sort: POPULARITY_DESC, ${CATALOG_FILTER}) {
+            isAdult
             id
             title {
               native
@@ -265,7 +278,7 @@ export async function searchAnimeBySeason(
     });
 
     return {
-      media: data.Page?.media || [],
+      media: (data.Page?.media || []).filter(isAllowedCatalogMedia),
       pageInfo: data.Page?.pageInfo || {
         total: 0,
         currentPage: page,
@@ -379,7 +392,8 @@ export function getOfficialSiteUrl(media: AniListMedia): string | null {
 export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | null> {
   const graphqlQuery = `
     query ($id: Int) {
-      Media(id: $id, type: ANIME) {
+      Media(id: $id, type: ANIME, ${CATALOG_FILTER}) {
+        isAdult
         id
         title {
           native
@@ -429,7 +443,7 @@ export async function getAnimeDetail(anilistId: number): Promise<AniListMedia | 
     const data = await queryAniList<{ Media: AniListMedia | null }>(graphqlQuery, {
       id: anilistId,
     });
-    return data.Media ?? null;
+    return data.Media && isAllowedCatalogMedia(data.Media) ? data.Media : null;
   } catch (error) {
     logError(error, 'getAnimeDetail');
     return null;

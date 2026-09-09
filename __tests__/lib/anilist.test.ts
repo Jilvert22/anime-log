@@ -133,8 +133,10 @@ describe('getOfficialSiteUrl', () => {
 
 describe('searchAnime', () => {
   it('成功時に media 配列を返す', async () => {
-    fetchMock.mockResolvedValue(makeResponse({ data: { Page: { media: [{ id: 1 }] } } }));
-    await expect(searchAnime('鬼滅')).resolves.toEqual([{ id: 1 }]);
+    fetchMock.mockResolvedValue(
+      makeResponse({ data: { Page: { media: [{ id: 1, isAdult: false, genres: [] }] } } })
+    );
+    await expect(searchAnime('鬼滅')).resolves.toEqual([{ id: 1, isAdult: false, genres: [] }]);
   });
 
   it('API エラー時は空配列 (握りつぶし)', async () => {
@@ -169,14 +171,17 @@ describe('searchAnime', () => {
 describe('searchAnimeBySeason', () => {
   const ok = {
     data: {
-      Page: { media: [{ id: 1 }], pageInfo: { total: 1, currentPage: 1, hasNextPage: false } },
+      Page: {
+        media: [{ id: 1, isAdult: false, genres: [] }],
+        pageInfo: { total: 1, currentPage: 1, hasNextPage: false },
+      },
     },
   };
 
   it('media と pageInfo を返す', async () => {
     fetchMock.mockResolvedValue(makeResponse(ok));
     await expect(searchAnimeBySeason('SPRING', 2025)).resolves.toEqual({
-      media: [{ id: 1 }],
+      media: [{ id: 1, isAdult: false, genres: [] }],
       pageInfo: { total: 1, currentPage: 1, hasNextPage: false },
     });
   });
@@ -203,8 +208,10 @@ describe('searchAnimeBySeason', () => {
 
 describe('getAnimeDetail', () => {
   it('Media を返す', async () => {
-    fetchMock.mockResolvedValue(makeResponse({ data: { Media: { id: 42 } } }));
-    await expect(getAnimeDetail(42)).resolves.toEqual({ id: 42 });
+    fetchMock.mockResolvedValue(
+      makeResponse({ data: { Media: { id: 42, isAdult: false, genres: [] } } })
+    );
+    await expect(getAnimeDetail(42)).resolves.toEqual({ id: 42, isAdult: false, genres: [] });
   });
 
   it('見つからない (Media: null) 場合は null', async () => {
@@ -215,5 +222,44 @@ describe('getAnimeDetail', () => {
   it('API エラー時は null', async () => {
     fetchMock.mockResolvedValue(makeResponse({ errors: [{ message: 'boom' }] }));
     await expect(getAnimeDetail(1)).resolves.toBeNull();
+  });
+});
+
+describe('公開カタログのコンテンツ制限', () => {
+  const allowed = { id: 10, isAdult: false, genres: ['Action'] };
+  const restricted = [
+    { id: 11, isAdult: true, genres: [] },
+    { id: 12, isAdult: false, genres: ['Comedy', 'Ecchi'] },
+    { id: 13, isAdult: false, genres: ['Hentai'] },
+    { id: 14, genres: [] },
+    { id: 15, isAdult: false },
+  ];
+
+  it.each(['title', 'season'] as const)(
+    '%s検索はAPIにも除外条件を渡し、制限対象や分類欠落を返さない',
+    async (mode) => {
+      const pageInfo = { total: 6, currentPage: 1, hasNextPage: true };
+      fetchMock.mockResolvedValue(
+        makeResponse({ data: { Page: { media: [allowed, ...restricted], pageInfo } } })
+      );
+      const result =
+        mode === 'title' ? await searchAnime('作品') : await searchAnimeBySeason('SPRING', 2026);
+      expect(Array.isArray(result) ? result : result.media).toEqual([allowed]);
+      if (!Array.isArray(result)) expect(result.pageInfo).toEqual(pageInfo);
+      expect(lastQuery(fetchMock)).toContain('isAdult: false');
+      expect(lastQuery(fetchMock)).toContain('genre_not_in: ["Ecchi", "Hentai"]');
+    }
+  );
+
+  it.each(restricted)('ID指定でも制限作品 $id の詳細を返さない', async (media) => {
+    fetchMock.mockResolvedValue(makeResponse({ data: { Media: media } }));
+    await expect(getAnimeDetail(media.id)).resolves.toBeNull();
+    expect(lastQuery(fetchMock)).toContain('isAdult: false');
+    expect(lastQuery(fetchMock)).toContain('genre_not_in: ["Ecchi", "Hentai"]');
+  });
+
+  it('分類済みの一般作品は詳細を維持する', async () => {
+    fetchMock.mockResolvedValue(makeResponse({ data: { Media: allowed } }));
+    await expect(getAnimeDetail(allowed.id)).resolves.toEqual(allowed);
   });
 });
