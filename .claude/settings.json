@@ -10,6 +10,17 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\" && node scripts/check-doc-budget.mjs --summary 2>/dev/null || true",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "permissions": {

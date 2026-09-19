@@ -25,7 +25,7 @@ case "$file_path" in
         for allowed in $allowlist; do
           [ "$base" = "$allowed" ] && exit 0
         done
-        echo "ルート直下への新規 .md 作成は禁止です。分析/レポート系は docs/ 配下 (docs/archive, docs/ops, docs/specs 等) に置いてください。" >&2
+        echo "ルート直下への新規 .md 作成は禁止です。分析/レポート系は docs/ 配下 (docs/ops, docs/specs 等。docs/archive は文書予算チェックで禁止) に置いてください。" >&2
         exit 2
         ;;
     esac
