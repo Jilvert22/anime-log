@@ -42,7 +42,7 @@ export const UNTRACKED_NOTE_TARGETS = [
 // 2026-09-20 時点: 棚卸し（docs/archive/ 32本・docs/email/EMAIL_TEMPLATES.md の重複1本の削除）は
 // 権限システムにより本セッションでは実行できず未着手。この値は棚卸し未実施の現状の実測値であり、
 // オーナーが棚卸しを実行した後は再測定して入れ直すこと。
-export const LAST_PRUNE = { date: '2026-09-20', docsBytes: 432106 };
+export const LAST_PRUNE = { date: '2026-09-20', docsBytes: 180527 };
 export const GROWTH_NOTE_RATIO = 1.15;
 export const LARGE_DOC_BYTES = 200_000;
 
