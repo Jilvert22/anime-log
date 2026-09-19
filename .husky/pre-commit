@@ -1,3 +1,6 @@
 # staged ファイルに eslint --fix + prettier --write を自動適用。
 # 「整形漏れ」「no-alert/直呼び違反」をコミット前に機械的に止める。
 npx lint-staged
+
+# 起動時に毎回読む文書の上限超過・退避ファイルを index の内容で検査する（2026-09-20 導入）。
+node scripts/check-doc-budget.mjs --staged
