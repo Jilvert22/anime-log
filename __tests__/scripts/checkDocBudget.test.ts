@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -11,6 +11,7 @@ import {
   STARTUP_BUDGET,
   STARTUP_TOTAL_BUDGET,
   UNTRACKED_NOTE_TARGETS,
+  defaultRoot,
   inspectBudget,
   isArchiveFile,
   main,
@@ -159,6 +160,29 @@ describe('退避ファイル判定', () => {
       inspectBudget(root, { staged: false }).fails.some((f) => f.includes('docs/archive/old.md'))
     ).toBe(false);
   });
+
+  it('isArchiveFile は大文字小文字を区別しない（macOS の大文字小文字を区別しないFS対策）', () => {
+    expect(isArchiveFile('docs/Archive/a.md')).toBe(true);
+    expect(isArchiveFile('docs/ARCHIVE/b.md')).toBe(true);
+    expect(isArchiveFile('DOCS/archive/c.md')).toBe(true);
+    expect(isArchiveFile('docs/HANDOFF/HANDOFF-2026-07-22.MD')).toBe(true);
+    expect(isArchiveFile('docs/handoff/handoff-2026-07-22.md')).toBe(true);
+    // 似ているが違うパスは検出しない
+    expect(isArchiveFile('docs/archived/a.md')).toBe(false);
+    expect(isArchiveFile('docs/handoff/HANDOFF.md')).toBe(false);
+  });
+
+  it('docs/Archive/（大文字小文字違い）配下のファイルも git 管理されていれば fail', () => {
+    const root = makeRepo();
+    put(root, 'docs/Archive/OLD.md', 10);
+    add(root, 'docs/Archive/OLD.md');
+    expect(
+      inspectBudget(root, { staged: false }).fails.some((f) => f.includes('docs/Archive/OLD.md'))
+    ).toBe(true);
+    expect(
+      inspectBudget(root, { staged: true }).fails.some((f) => f.includes('docs/Archive/OLD.md'))
+    ).toBe(true);
+  });
 });
 
 describe('--staged は index を見る（作業ツリーではない）', () => {
@@ -293,12 +317,80 @@ describe('引数なし・--staged は git が失敗したら握りつぶさず e
   });
 });
 
+describe('main() の戻り値（fail 時に 0 を返す変異を検出する）', () => {
+  it('main(["--staged"], root): 上限超過なら1・問題なしなら0', () => {
+    const root = makeRepo();
+    const limit = STARTUP_BUDGET['CLAUDE.md'];
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    put(root, 'CLAUDE.md', limit);
+    add(root, 'CLAUDE.md');
+    expect(main(['--staged'], root)).toBe(0);
+
+    put(root, 'CLAUDE.md', limit + 1);
+    add(root, 'CLAUDE.md');
+    expect(main(['--staged'], root)).toBe(1);
+
+    logSpy.mockRestore();
+  });
+
+  it('main([], root)（作業ツリー）: 上限超過なら1・問題なしなら0', () => {
+    const root = makeRepo();
+    const limit = STARTUP_BUDGET['CLAUDE.md'];
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    put(root, 'CLAUDE.md', limit);
+    add(root, 'CLAUDE.md');
+    expect(main([], root)).toBe(0);
+
+    put(root, 'CLAUDE.md', limit + 1);
+    add(root, 'CLAUDE.md');
+    expect(main([], root)).toBe(1);
+
+    logSpy.mockRestore();
+  });
+
+  it('main(["--staged"], root): 退避ファイルが index にあれば1', () => {
+    const root = makeRepo();
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    expect(main(['--staged'], root)).toBe(0);
+    put(root, 'docs/archive/x.md', 10);
+    add(root, 'docs/archive/x.md');
+    expect(main(['--staged'], root)).toBe(1);
+    logSpy.mockRestore();
+  });
+});
+
 describe('引数の検証', () => {
   it('--staged と --summary の併用はエラー（exit 2）', () => {
     const root = makeRepo();
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(main(['--staged', '--summary'], root)).toBe(2);
     errSpy.mockRestore();
+  });
+
+  it('未知の引数はモード判定より前に exit 2 で止める', () => {
+    const root = makeRepo();
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(main(['--stage'], root)).toBe(2);
+    expect(main(['--staged', '--bogus'], root)).toBe(2);
+    expect(main(['--summary', '--bogus'], root)).toBe(2);
+    errSpy.mockRestore();
+  });
+});
+
+describe('defaultRoot（import.meta.dirname に依存しない）', () => {
+  it('スクリプトの親ディレクトリ（プロジェクトルート）を返す', () => {
+    const root = defaultRoot();
+    expect(existsSync(path.join(root, 'package.json'))).toBe(true);
+    expect(existsSync(path.join(root, 'scripts/check-doc-budget.mjs'))).toBe(true);
+  });
+
+  it('root を渡さなくても --summary は defaultRoot 経由で例外を投げない', () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    expect(() => main(['--summary'])).not.toThrow();
+    expect(main(['--summary'])).toBe(0);
+    logSpy.mockRestore();
   });
 });
 

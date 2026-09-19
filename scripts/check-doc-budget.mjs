@@ -13,7 +13,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 // 起動文書ごとの上限 bytes。
 export const STARTUP_BUDGET = {
@@ -27,9 +27,16 @@ export const STARTUP_TOTAL_BUDGET = 40000;
 // 退避ディレクトリ（旧版の全文複製を置かない）。
 export const ARCHIVE_DIRS = ['docs/archive/'];
 // docs/handoff/HANDOFF-2026-07-22.md のような日付付き複製も退避ファイルとして扱う。
-const ARCHIVE_HANDOFF_COPY = /^docs\/handoff\/HANDOFF-[^/]+\.md$/;
-export const isArchiveFile = (name) =>
-  ARCHIVE_DIRS.some((dir) => name.startsWith(dir)) || ARCHIVE_HANDOFF_COPY.test(name);
+const ARCHIVE_HANDOFF_COPY = /^docs\/handoff\/HANDOFF-[^/]+\.md$/i;
+// macOS は既定で大文字小文字を区別しないファイルシステムのため、docs/Archive/ のような
+// 表記ゆれも同じファイルとして扱われ得る。判定も大文字小文字を区別しない。
+export const isArchiveFile = (name) => {
+  const lower = name.toLowerCase();
+  return (
+    ARCHIVE_DIRS.some((dir) => lower.startsWith(dir.toLowerCase())) ||
+    ARCHIVE_HANDOFF_COPY.test(name)
+  );
+};
 
 // 存在するのに未追跡なら note する起動文書。
 export const UNTRACKED_NOTE_TARGETS = [
@@ -39,14 +46,18 @@ export const UNTRACKED_NOTE_TARGETS = [
 ];
 
 // 前回の棚卸し時点の docs/ 配下 git 管理 .md 合計バイト数。
-// 2026-09-20 時点: 棚卸し（docs/archive/ 32本・docs/email/EMAIL_TEMPLATES.md の重複1本の削除）は
-// 権限システムにより本セッションでは実行できず未着手。この値は棚卸し未実施の現状の実測値であり、
-// オーナーが棚卸しを実行した後は再測定して入れ直すこと。
+// 2026-09-20 の棚卸し（docs/archive/ 32本と重複 EMAIL_TEMPLATES の削除）後の
+// docs/ 配下 git 管理 .md の実測値。
 export const LAST_PRUNE = { date: '2026-09-20', docsBytes: 180527 };
 export const GROWTH_NOTE_RATIO = 1.15;
 export const LARGE_DOC_BYTES = 200_000;
 
-export const defaultRoot = () => path.resolve(import.meta.dirname, '..');
+// import.meta.dirname は Node 20.11 未満では未定義(Node 20.0〜20.10 のギャップ対策)。
+// import.meta.url は ESM なら常に使えるので、そちらからスクリプトの場所を導く。
+// 注意: `new URL('..', import.meta.url)` の形は Vite/vitest が静的解析でアセットURLへ
+// 書き換えてしまう(dev サーバ相対の http: URL になり fileURLToPath が例外を投げる)ため、
+// fileURLToPath(import.meta.url) 単体 + path.dirname で親ディレクトリを求める。
+export const defaultRoot = () => path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 const git = (root, ...args) =>
   execFileSync('git', args, {
@@ -125,7 +136,17 @@ export function inspectBudget(root, { staged = false } = {}) {
   return { fails, notes, total, docsBytes };
 }
 
-export function main(argv, root = defaultRoot()) {
+const KNOWN_FLAGS = ['--staged', '--summary'];
+
+// root は明示的に渡さない限り未確定のまま関数に入り、defaultRoot() の評価は
+// 各モードの try の中で行う（Node 20.0〜20.10 で import.meta.dirname が無い環境や、
+// その他の予期しない失敗でも --summary の「例外を握りつぶして exit 0」を守るため）。
+export function main(argv, root) {
+  const unknown = argv.filter((arg) => !KNOWN_FLAGS.includes(arg));
+  if (unknown.length) {
+    console.error(`check-doc-budget: 不明な引数: ${unknown.join(', ')}`);
+    return 2;
+  }
   const staged = argv.includes('--staged');
   const summary = argv.includes('--summary');
   if (staged && summary) {
@@ -134,7 +155,8 @@ export function main(argv, root = defaultRoot()) {
   }
   if (summary) {
     try {
-      const { fails, notes } = inspectBudget(root, { staged: false });
+      const effectiveRoot = root ?? defaultRoot();
+      const { fails, notes } = inspectBudget(effectiveRoot, { staged: false });
       const lines = [];
       if (fails.length) lines.push(`[doc-budget] 上限超過 ${fails.length} 件: ${fails[0]}`);
       if (notes.length) lines.push(`[doc-budget] ${notes[0]}`);
@@ -145,7 +167,8 @@ export function main(argv, root = defaultRoot()) {
     return 0;
   }
   try {
-    const { fails, notes, total, docsBytes } = inspectBudget(root, { staged });
+    const effectiveRoot = root ?? defaultRoot();
+    const { fails, notes, total, docsBytes } = inspectBudget(effectiveRoot, { staged });
     for (const note of notes) console.log(`note: ${note}`);
     for (const fail of fails) console.log(`✗ ${fail}`);
     if (fails.length) {
