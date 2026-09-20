@@ -48,7 +48,7 @@ export const UNTRACKED_NOTE_TARGETS = [
 // 前回の棚卸し時点の docs/ 配下 git 管理 .md 合計バイト数。
 // 2026-09-20 の棚卸し（docs/archive/ 32本と重複 EMAIL_TEMPLATES の削除）後の
 // docs/ 配下 git 管理 .md の実測値。
-export const LAST_PRUNE = { date: '2026-09-20', docsBytes: 180527 };
+export const LAST_PRUNE = { date: '2026-09-20', docsBytes: 208318 };
 export const GROWTH_NOTE_RATIO = 1.15;
 export const LARGE_DOC_BYTES = 200_000;
 
