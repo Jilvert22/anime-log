@@ -20,9 +20,10 @@ export const STARTUP_BUDGET = {
   'CLAUDE.md': 6500,
   'PROJECT.md': 19000,
   'docs/handoff/HANDOFF.md': 16000,
+  'docs/handoff/NEXT_SESSION_PROMPT.md': 2000,
 };
 // 合計上限。1本ごとの上限の和より小さく、どれかを増やせば他を削る必要がある値。
-export const STARTUP_TOTAL_BUDGET = 40000;
+export const STARTUP_TOTAL_BUDGET = 42000;
 
 // 退避ディレクトリ（旧版の全文複製を置かない）。
 export const ARCHIVE_DIRS = ['docs/archive/'];
@@ -39,11 +40,9 @@ export const isArchiveFile = (name) => {
 };
 
 // 存在するのに未追跡なら note する起動文書。
-export const UNTRACKED_NOTE_TARGETS = [
-  'docs/handoff/NEXT_SESSION_PROMPT.md',
-  'RELEASE_HANDOFF.md',
-  'AGENTS.md',
-];
+// AGENTS.md は CLAUDE.md の複製をオーナーが意図して未追跡で置いているので対象にしない。
+// 起動文書は全部追跡済みになったので対象は空。未追跡の起動文書が再び現れたらここに足す。
+export const UNTRACKED_NOTE_TARGETS = [];
 
 // 前回の棚卸し時点の docs/ 配下 git 管理 .md 合計バイト数。
 // 2026-09-20 の棚卸し（docs/archive/ 32本と重複 EMAIL_TEMPLATES の削除）後の
@@ -81,7 +80,10 @@ const sizeOf = (root, staged, name) => {
 const kb = (bytes) => `${Math.round(bytes / 1000)}KB`;
 
 // root を明示的に受け取る（テストが一時 git リポジトリを差し替えられるようにするため）。
-export function inspectBudget(root, { staged = false } = {}) {
+export function inspectBudget(
+  root,
+  { staged = false, untrackedTargets = UNTRACKED_NOTE_TARGETS } = {}
+) {
   const fails = [];
   const notes = [];
   let total = 0;
@@ -125,7 +127,7 @@ export function inspectBudget(root, { staged = false } = {}) {
         .join(', ')}`
     );
   }
-  const untracked = UNTRACKED_NOTE_TARGETS.filter(
+  const untracked = untrackedTargets.filter(
     (name) => existsSync(path.join(root, name)) && !git(root, 'ls-files', '-z', '--', name)
   );
   if (untracked.length) {

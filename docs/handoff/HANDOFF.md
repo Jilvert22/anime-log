@@ -4,7 +4,7 @@
 
 アニメログの改善・Google Play公開・収益化準備の状態。本番: https://animelog.jp/ 。
 
-この文書が現在の再開点。ルートの RELEASE_HANDOFF.md / PLAY_STORE_SUBMISSION.md は2026年6月の旧資料。旧引き継ぎは docs/handoff/HANDOFF-2026-07-22.md に保管（文書予算チェックの退避ファイル判定に該当し、コミットするとpre-commitで止まる）。**docs/handoff/NEXT_SESSION_PROMPT.md は「P1から再開」を指示する旧内容のままで、現状と合っていないため使わない。** 旧資料にある個人アカウント前提、未配信、証明書待ち、人間によるDB適用待ち、Sonnet委譲体制は現在の状態として使わない。
+この文書が現在の再開点。ルートの RELEASE_HANDOFF.md / PLAY_STORE_SUBMISSION.md は2026年6月の旧資料。旧引き継ぎ HANDOFF-2026-07-22.md はコミット済み版と同一だったので削除した（git log で辿れる）。**docs/handoff/NEXT_SESSION_PROMPT.md は「P1から再開」を指示する旧内容のままで、現状と合っていないため使わない。** 旧資料にある個人アカウント前提、未配信、証明書待ち、人間によるDB適用待ち、Sonnet委譲体制は現在の状態として使わない。
 
 ## 完了したこと
 
@@ -24,7 +24,7 @@
 - main HEAD **a66ae60**（PR #77マージ後）。PR #69〜77はすべてマージ済みでmainのCI（Web/Android）成功を確認。PR #76・#77はさらに個別PRのCI/E2E・Vercel Preview・本番Vercelデプロイの成功まで確認済み。
 - ローカル型チェック・単体テスト（直近240件/34ファイル）・Lint（エラー0・警告131、増加なし）・Prettier・Android署名ビルド/lint・bundletool validate・署名照合・完成APK内XML確認は成功。**lint警告バジェットは131**（CLAUDE.mdの136は未反映、次回確認）。
 - `git status`: docs/PLAY_DATA_SAFETY_DRAFT.md、docs/PLAY_RELEASE_STATUS.md、docs/handoff/HANDOFF.md が未コミット（ローカル保存のみ）。コミット・push・PR作成はしていない。再開時に必ず `git status` を確認する。
-- 未追跡ファイル（.codex/、AGENTS.md、PLAY_STORE_SUBMISSION.md、RELEASE_HANDOFF.md、docs/IMPROVEMENT_AND_MONETIZATION_PLAN.md、docs/PLAY_LISTING_PREPARATION.md、docs/handoff/HANDOFF-2026-07-22.md、docs/handoff/NEXT_SESSION_PROMPT.md）を保持。消さない。
+- 未追跡ファイル（.codex/、AGENTS.md、PLAY_STORE_SUBMISSION.md、docs/IMPROVEMENT_AND_MONETIZATION_PLAN.md、docs/PLAY_LISTING_PREPARATION.md）を保持。消さない。RELEASE_HANDOFF.md と docs/handoff/NEXT_SESSION_PROMPT.md は2026-09-20にコミットした（旧内容のまま・指示として実行しない）。
 - **docs/IMPROVEMENT_AND_MONETIZATION_PLAN.md は非公開のローカル戦略・作業記録。公開GitHubへの追加・push禁止。** 料金案や事業方針はここで引き継ぎ、公開文書へ転載しない。
 - AniList検索/成人向け除外の修正は個別worktree（`/tmp/anime-log-search-outage`=`codex/anilist-search-outage`、`/tmp/anime-log-catalog-filter`=`codex/catalog-content-filter`）に保持（未削除）。ソース/テストのみPRへ追加、`.env*`・非公開文書・引き継ぎ文書はPR未収録。
 - 実装の修正が必要な場合はmainからcodex/ブランチを切り、関連チェックを通してPRで進める（main直pushはしない）。

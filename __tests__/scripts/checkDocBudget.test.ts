@@ -52,8 +52,9 @@ describe('起動文書の上限（発注文の値と一致すること）', () =
       'CLAUDE.md': 6500,
       'PROJECT.md': 19000,
       'docs/handoff/HANDOFF.md': 16000,
+      'docs/handoff/NEXT_SESSION_PROMPT.md': 2000,
     });
-    expect(STARTUP_TOTAL_BUDGET).toBe(40000);
+    expect(STARTUP_TOTAL_BUDGET).toBe(42000);
   });
 
   it('個別上限の合計は合計上限より大きい（合計チェックが意味を持つ値）', () => {
@@ -103,7 +104,7 @@ describe('合計上限', () => {
       left -= size;
     }
     add(root, ...names);
-    // 個別上限の合計(41500) > 合計上限(40000) なので、貪欲に詰めれば必ずどこかに余りが残る。
+    // 個別上限の合計(43500) > 合計上限(42000) なので、貪欲に詰めれば必ずどこかに余りが残る。
     expect(left).toBe(0);
     expect(inspectBudget(root, { staged: false }).fails).toEqual([]);
 
@@ -242,15 +243,17 @@ describe('note（引数なしのみ。--staged では出さない）', () => {
     expect(result.notes.some((n) => n.includes('前回の棚卸し'))).toBe(false);
   });
 
-  for (const target of UNTRACKED_NOTE_TARGETS) {
+  // UNTRACKED_NOTE_TARGETS は空にもなりうる（起動文書が全部追跡済みのとき）。
+  // 空でも note の経路が壊れていないことを確かめるため、対象を注入して試す。
+  for (const target of [...UNTRACKED_NOTE_TARGETS, 'docs/handoff/NEXT_SESSION_PROMPT.md']) {
     it(`未追跡の起動文書 ${target} が存在すれば note・tracked なら出さない`, () => {
       const root = makeRepo();
       put(root, target, 10);
-      const untrackedResult = inspectBudget(root, { staged: false });
+      const untrackedResult = inspectBudget(root, { staged: false, untrackedTargets: [target] });
       expect(untrackedResult.notes.some((n) => n.includes(target))).toBe(true);
 
       add(root, target);
-      const trackedResult = inspectBudget(root, { staged: false });
+      const trackedResult = inspectBudget(root, { staged: false, untrackedTargets: [target] });
       expect(trackedResult.notes.some((n) => n.includes(target))).toBe(false);
     });
   }
