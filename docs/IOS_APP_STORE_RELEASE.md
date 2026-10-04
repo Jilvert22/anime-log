@@ -1,11 +1,11 @@
 # iOS / App Store 公開準備
 
-更新: 2026-10-04。現状はiOS基盤の実装・検証段階。署名、Apple登録、TestFlight、審査提出、公開は未実施。
+更新: 2026-10-04。iOS基盤の実装・検証とApple側のアプリ登録を完了。署名、TestFlight、審査提出、公開は未実施。[ドラフトPR #78](https://github.com/Jilvert22/anime-log/pull/78)。
 
 ## 構成
 
 - `mobile/` はWebの依存関係から分離したCapacitor 8.5.2プロジェクト。Node 22以上、Xcode 26以上、iOS 15以上。初版の対象端末はiPhone。
-- Bundle ID候補は `jp.animelog.ios`。Apple側の登録・利用可否は未確認。App Store Connectでアプリを作成する前に確定する。
+- Bundle IDは `jp.animelog.ios`。RASIDEのApple Developerで登録済み。App Store ConnectのアプリIDは `6818929236`、SKUは `animelog-ios`、プライマリ言語は日本語。
 - Capacitorはローカルの `www/index.html` を同梱して起動。独立した `WKWebView` に `https://animelog.jp/` を表示する。Capacitorの `server.url` は使わない。
 - リモートWebViewは独立したconfigurationと永続data storeを使用し、CapacitorのJavaScript/native bridgeを渡さない。将来のAPNsやPreferences連携は追加の権限設計が必要。
 - Webサーバー・Supabase・既存同一オリジンAPIを維持する。Next.jsの静的export、Cookie認証・削除APIのCORS緩和、本番DB変更は行っていない。
@@ -53,8 +53,8 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swiftc \
 
 | 項目 | 検収内容 | 状態 |
 | --- | --- | --- |
-| Appleアカウント | Developer Program加入・契約・個人/組織・販売者名を確認 | ユーザー回答待ち |
-| Bundle IDと署名 | `jp.animelog.ios` の利用可否、Team設定、証明書・プロビジョニング | 未確認 |
+| Appleアカウント | Developer Program加入・契約・個人/組織・販売者名を確認 | RASIDEのログインとApp ID登録を確認。契約・販売者名の最終確認は残る |
+| Bundle IDと署名 | `jp.animelog.ios` の利用可否、Team設定、証明書・プロビジョニング | Bundle ID登録済み。開発用証明書1件あり。配布署名・プロビジョニング未確認 |
 | アイコン | 現在は生成テンプレート。正式な1024pxのApp Store用アイコンに差し替え | 未実施 |
 | ログイン | 新規登録・既存ログイン・ログアウト・再起動後のセッション | 未検証 |
 | メール帰還 | メール確認・パスワードリセットがSafariで開く場合のPKCE/Cookie分離とアプリ復帰 | 未検証・公開前必須 |
@@ -80,6 +80,17 @@ HTTPS等の標準暗号のみを使う現在の基盤では `ITSAppUsesNonExempt
 - 独立Codex監査の起動経路指摘を修正。Capacitorの非表示rootとは別の表示コンテナを用意し、シミュレーターで修正を確認。再監査で未解決の重大問題なし。
 - Webアプリ本体・既存依存関係・本番DBは変更していない。`.env*` は読まず、既存の未コミット変更を保持。
 
+## Apple側の登録・保存結果
+
+- ユーザーがGitHubへの送信とドラフトPR作成を明示承認し、`codex/ios-app-store` をpush、[PR #78](https://github.com/Jilvert22/anime-log/pull/78)を作成。コミット `8077998` のCI（test / Vercel / Preview Comments）は成功。
+- Chromeの既存ログインを利用し、他アプリの作業タブとは別タブでRASIDEのDeveloper Portalに `Anime Log iOS / jp.animelog.ios` を登録。一覧への反映を確認。追加の任意capabilityは選択していない。
+- [App Store Connectのアニメログ](https://appstoreconnect.apple.com/apps/6818929236/distribution/ios/version/inflight)を作成し、iOS 1.0「提出準備中」を確認。ビルド・スクリーンショットは未アップロード。
+- 概要（下記説明案）、キーワード、既存のお問い合わせフォームURL、マーケティングURL `https://animelog.jp/` を保存。リリースは手動に設定。審査用に追加・審査提出・公開は行っていない。
+- キーワード: `アニメ,視聴記録,視聴管理,感想,評価,積みアニメ,クール,シーズン,振り返り`。
+- 問い合わせフォームを読み取りで確認。バグ報告・返信先の任意入力ができる。回答の送信やフォームの編集は行っていない。
+- ローカルの署名証明書を名前と有効性のみ確認し、Apple Developmentが1件有効。秘密鍵・パスワード・APIキーは読み出していない。新しい証明書は発行していない。
+- 操作結果のスクリーンショットはローカルの `/tmp/animelog-appstore-created.png`。他アプリの設定・価格・配信は変更していない。
+
 ## ストア掲載文のドラフト
 
 名称: アニメログ
@@ -104,7 +115,7 @@ HTTPS等の標準暗号のみを使う現在の基盤では `ITSAppUsesNonExempt
 
 プライバシーURL候補: https://animelog.jp/privacy
 
-サポートURL: 問い合わせ手段が利用できるページを確認して確定する。
+サポートURL（保存済み）: https://docs.google.com/forms/d/e/1FAIpQLScfwMPJs8-qazTa9kfnDU6b4gqRLJVleDJkDgeCFDeuJjlxUQ/viewform
 
 年齢区分: 公開感想・プロフィールと検索できる作品を含め、Appleの質問票に実態で回答。Playの年齢設定を転記しない。
 
