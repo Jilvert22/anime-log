@@ -1,0 +1,11 @@
+node_modules/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+ios/App/CapApp-SPM/.build/
+ios/App/CapApp-SPM/Package.resolved
+ios/**/xcuserdata/
+ios/**/DerivedData/
+build/
+*.ipa
+*.xcarchive
