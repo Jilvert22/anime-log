@@ -1,6 +1,6 @@
 # iOS / App Store 公開準備
 
-更新: 2026-10-05。正式アイコン入り1.0（ビルド1）の内部TestFlightアップロード・Apple側処理が完了。「テスト準備完了」を確認し、手動配信の内部グループへ割り当て済み。ご本人への招待は承認済み。Appleのログイン期限切れのため再認証待ちで、送信は未実施。審査提出・一般公開は未実施。[ドラフトPR #78](https://github.com/Jilvert22/anime-log/pull/78)。
+更新: 2026-10-05。正式アイコン入り1.0（ビルド1）の内部TestFlightアップロード・Apple側処理が完了。「テスト準備完了」を確認し、手動配信の内部グループへ割り当て済み。ご本人への招待を送信し、Apple側の「招待済み」を確認。実機インストール・検収は未完了。審査提出・一般公開は未実施。[ドラフトPR #78](https://github.com/Jilvert22/anime-log/pull/78)。
 
 ## 構成
 
@@ -83,7 +83,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 | 有料機能見本 | `RecapPreview` の料金案と未販売見本が審査上の未完成機能に見えないよう公開方針を決める | 未決 |
 | プライバシー | Webを含むGA4・Vercel・Supabaseの収集実態とApp Privacy、必要なPrivacy Manifest・ATT判定 | 未確定 |
 | 端末操作 | ノッチ、ホームバー、キーボード、横画面、文字拡大、VoiceOver、低速・オフライン復帰 | 未検証 |
-| TestFlight | 署名版を配布し、実機検収を記録 | 1.0(1)の内部専用アップロード・処理完了、内部グループへ割り当て済み。招待・実機検収は残る |
+| TestFlight | 署名版を配布し、実機検収を記録 | 1.0(1)の内部専用アップロード・処理完了、内部グループへ割り当て済み。本人へ招待済み。実機インストール・検収は残る |
 
 HTTPS等の標準暗号のみを使う現在の基盤では `ITSAppUsesNonExemptEncryption=false` を設定。独自暗号や依存SDKを追加した際は輸出コンプライアンスを再評価する。Privacy ManifestとApp StoreのApp Privacy回答は別物なので、片方で代用しない。
 
@@ -105,7 +105,7 @@ HTTPS等の標準暗号のみを使う現在の基盤では `ITSAppUsesNonExempt
 ## Apple側の登録・保存結果
 
 - 正式アイコン入りの1.0（ビルド1）を内部TestFlight専用としてアップロード。Xcodeログで `Upload succeeded`、`EXPORT SUCCEEDED`、Apple側パッケージ処理開始を確認。最終Archiveは `/tmp/animelog-testflight-final.xcarchive`、アップロードログは `/tmp/animelog-ios-upload.log`。App Store審査には使用できない内部専用ビルド。
-- 内部グループ「アニメログ実機検証」を作成。自動配信はオフ、テスターは未追加。2026-10-05にご本人への招待メールの承認を得た。Appleのログインが期限切れになり、再認証待ちで未送信。他ユーザーを招待していない。
+- 内部グループ「アニメログ実機検証」を作成。自動配信はオフ。2026-10-05にご本人への招待メールの承認を得て、再ログイン後に本人1名を追加。Apple側で「招待済み」と同日の日付を確認。他ユーザーを招待していない。証拠画像はローカルの `/tmp/animelog-testflight-invited.png`。招待先メールアドレスはGitへ記録しない。
 - App Store ConnectのiOSビルド一覧で、正式アイコン付きの1.0（ビルド1）「内部」「テスト準備完了」を確認。グループ追加メニューで「アニメログ実機検証」が選択済みとなり、割り当て成功を確認。
 - ユーザーがGitHubへの送信とドラフトPR作成を明示承認し、`codex/ios-app-store` をpush、[PR #78](https://github.com/Jilvert22/anime-log/pull/78)を作成。コミット `8077998` のCI（test / Vercel / Preview Comments）は成功。
 - Chromeの既存ログインを利用し、他アプリの作業タブとは別タブでRASIDEのDeveloper Portalに `Anime Log iOS / jp.animelog.ios` を登録。一覧への反映を確認。追加の任意capabilityは選択していない。
