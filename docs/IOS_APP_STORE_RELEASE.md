@@ -71,7 +71,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 | --- | --- | --- |
 | Appleアカウント | Developer Program加入・契約・個人/組織・販売者名を確認 | RASIDEのログインとApp ID登録を確認。契約・販売者名の最終確認は残る |
 | Bundle IDと署名 | `jp.animelog.ios` の利用可否、Team設定、証明書・プロビジョニング | 登録済みTeamで署名Archiveと内部配布用export成功。Apple側アップロード検証は残る |
-| アイコン | 現在は生成テンプレート。正式な1024pxのApp Store用アイコンに差し替え | 未実施 |
+| アイコン | 承認済みの正式な1024pxのApp Store用アイコンに差し替え | 完了。RGB・透過なし。旧テンプレートを除去 |
 | ログイン | 新規登録・既存ログイン・ログアウト・再起動後のセッション | 未検証 |
 | メール帰還 | メール確認・パスワードリセットがSafariで開く場合のPKCE/Cookie分離とアプリ復帰 | 未検証・公開前必須 |
 | ゲスト記録 | 保存・終了・再起動・更新・同期と取り込み。localStorageの耐久性は保証しない | シミュレーターで検索・1作品追加・終了後再起動の保存を確認。長期保存、取り込み、実機は未検収 |
@@ -89,6 +89,8 @@ HTTPS等の標準暗号のみを使う現在の基盤では `ITSAppUsesNonExempt
 
 ## 今回の検証結果
 
+- ユーザー承認のiOSアイコン案を通常の画像処理で1024pxへ変換し、`mobile/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-ios-1024.png` に保存。図柄を再生成せず、RGB・透過なしを確認。組み込み後の署名Archiveも成功し、旧アイコンによるunassigned child警告を解消。
+- アイコン案は組み込みimage_genで既存のmaskableアイコンから作成。仕様は「白いDNAとフレームの図柄・中央配置を保持し、青・紫・ピンクのグラデーションを角まで広げた不透明な正方形。文字・縁・透過なし」。生成結果1254pxから承認を得てサイズのみ変換した。
 - 登録済みRASIDE TeamでRelease / iOSの署名付きArchiveが成功。`app-store-connect`、`testFlightInternalTestingOnly=true` の配布exportも成功。これはApple側のアップロード・処理完了を代替しない。ローカル検証出力は `/tmp/animelog-testflight.xcarchive` と `/tmp/animelog-testflight-export`。
 - Archive中のBundle ID、1.0(1)、カメラ用途説明、Capacitor/Cordova両SDKのPrivacy Manifest同梱を確認。Webのデータ収集を「なし」と判断するものではない。
 - カメラ用途説明を追加し、起動画面をテンプレート画像から静的な無地UIViewへ変更。独立Codexの差分監査で問題なし。カメラ許可・拒否は実機で確認する。
