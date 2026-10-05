@@ -1,0 +1,10 @@
+{
+  "appId": "jp.animelog.ios",
+  "appName": "アニメログ",
+  "webDir": "www",
+  "loggingBehavior": "debug",
+  "ios": {
+    "preferredContentMode": "mobile",
+    "webContentsDebuggingEnabled": false
+  }
+}
