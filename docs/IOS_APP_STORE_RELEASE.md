@@ -70,7 +70,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 | 項目 | 検収内容 | 状態 |
 | --- | --- | --- |
 | Appleアカウント | Developer Program加入・契約・個人/組織・販売者名を確認 | RASIDEのログインとApp ID登録を確認。契約・販売者名の最終確認は残る |
-| Bundle IDと署名 | `jp.animelog.ios` の利用可否、Team設定、証明書・プロビジョニング | 登録済みTeamで署名Archiveと内部配布用export成功。Apple側アップロード検証は残る |
+| Bundle IDと署名 | `jp.animelog.ios` の利用可否、Team設定、証明書・プロビジョニング | 登録済みTeamで署名Archive・Appleへの内部TestFlightアップロード・処理完了を確認 |
 | アイコン | 承認済みの正式な1024pxのApp Store用アイコンに差し替え | 完了。RGB・透過なし。旧テンプレートを除去 |
 | ログイン | 新規登録・既存ログイン・ログアウト・再起動後のセッション | 2026-10-05、ユーザーが実機ログイン成功を報告。新規登録・ログアウトは未検収 |
 | メール帰還 | メール確認・パスワードリセットがSafariで開く場合のPKCE/Cookie分離とアプリ復帰 | 未検証・公開前必須 |
@@ -109,7 +109,7 @@ HTTPS等の標準暗号のみを使う現在の基盤では `ITSAppUsesNonExempt
 - App Store ConnectのiOSビルド一覧で、正式アイコン付きの1.0（ビルド1）「内部」「テスト準備完了」を確認。グループ追加メニューで「アニメログ実機検証」が選択済みとなり、割り当て成功を確認。
 - ユーザーがGitHubへの送信とドラフトPR作成を明示承認し、`codex/ios-app-store` をpush、[PR #78](https://github.com/Jilvert22/anime-log/pull/78)を作成。コミット `8077998` のCI（test / Vercel / Preview Comments）は成功。
 - Chromeの既存ログインを利用し、他アプリの作業タブとは別タブでRASIDEのDeveloper Portalに `Anime Log iOS / jp.animelog.ios` を登録。一覧への反映を確認。追加の任意capabilityは選択していない。
-- [App Store Connectのアニメログ](https://appstoreconnect.apple.com/apps/6818929236/distribution/ios/version/inflight)を作成し、iOS 1.0「提出準備中」を確認。ビルド・スクリーンショットは未アップロード。
+- [App Store Connectのアニメログ](https://appstoreconnect.apple.com/apps/6818929236/distribution/ios/version/inflight)を作成し、iOS 1.0「提出準備中」を確認。登録時点ではビルド・スクリーンショット未アップロード。現在は内部TestFlightビルドを送信済みで、App Store審査用ビルド・スクリーンショットの提出は残る。
 - 概要（下記説明案）、キーワード、既存のお問い合わせフォームURL、マーケティングURL `https://animelog.jp/` を保存。リリースは手動に設定。審査用に追加・審査提出・公開は行っていない。
 - キーワード: `アニメ,視聴記録,視聴管理,感想,評価,積みアニメ,クール,シーズン,振り返り`。
 - 問い合わせフォームを読み取りで確認。バグ報告・返信先の任意入力ができる。回答の送信やフォームの編集は行っていない。
