@@ -1,6 +1,6 @@
 # iOS / App Store 公開準備
 
-更新: 2026-10-05。正式アイコン入り1.0（ビルド1）の内部TestFlightアップロード・Apple側処理が完了。「テスト準備完了」を確認し、手動配信の内部グループへ割り当て済み。ご本人への招待を送信し、Apple側の「招待済み」を確認。実機インストール・検収は未完了。審査提出・一般公開は未実施。[ドラフトPR #78](https://github.com/Jilvert22/anime-log/pull/78)。
+更新: 2026-10-05。正式アイコン入り1.0（ビルド1）の内部TestFlightアップロード・Apple側処理が完了。「テスト準備完了」を確認し、手動配信の内部グループへ割り当て済み。ご本人への招待を送信し、Apple側の「招待済み」を確認。実機起動、ログイン、作品追加、終了後再起動の記録保持をユーザーが確認。その他の検収は継続中。審査提出・一般公開は未実施。[ドラフトPR #78](https://github.com/Jilvert22/anime-log/pull/78)。
 
 ## 構成
 
@@ -72,7 +72,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 | Appleアカウント | Developer Program加入・契約・個人/組織・販売者名を確認 | RASIDEのログインとApp ID登録を確認。契約・販売者名の最終確認は残る |
 | Bundle IDと署名 | `jp.animelog.ios` の利用可否、Team設定、証明書・プロビジョニング | 登録済みTeamで署名Archiveと内部配布用export成功。Apple側アップロード検証は残る |
 | アイコン | 承認済みの正式な1024pxのApp Store用アイコンに差し替え | 完了。RGB・透過なし。旧テンプレートを除去 |
-| ログイン | 新規登録・既存ログイン・ログアウト・再起動後のセッション | 未検証 |
+| ログイン | 新規登録・既存ログイン・ログアウト・再起動後のセッション | 2026-10-05、ユーザーが実機ログイン成功を報告。新規登録・ログアウトは未検収 |
 | メール帰還 | メール確認・パスワードリセットがSafariで開く場合のPKCE/Cookie分離とアプリ復帰 | 未検証・公開前必須 |
 | ゲスト記録 | 保存・終了・再起動・更新・同期と取り込み。localStorageの耐久性は保証しない | シミュレーターで検索・1作品追加・終了後再起動の保存を確認。長期保存、取り込み、実機は未検収 |
 | 中核フロー | 検索・作品追加・進捗・評価・感想・積みアニメ・シーズン切替・統計 | 未検証 |
@@ -83,7 +83,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 | 有料機能見本 | `RecapPreview` の料金案と未販売見本が審査上の未完成機能に見えないよう公開方針を決める | 未決 |
 | プライバシー | Webを含むGA4・Vercel・Supabaseの収集実態とApp Privacy、必要なPrivacy Manifest・ATT判定 | 未確定 |
 | 端末操作 | ノッチ、ホームバー、キーボード、横画面、文字拡大、VoiceOver、低速・オフライン復帰 | 未検証 |
-| TestFlight | 署名版を配布し、実機検収を記録 | 1.0(1)の内部専用アップロード・処理完了、内部グループへ割り当て済み。本人へ招待済み。実機インストール・検収は残る |
+| TestFlight | 署名版を配布し、実機検収を記録 | 1.0(1)の内部専用アップロード・処理完了、内部グループへ割り当て済み。本人へ招待済み。ユーザーが実機起動・ログイン・作品追加・終了後再起動の記録保持を確認。その他検収は残る |
 
 HTTPS等の標準暗号のみを使う現在の基盤では `ITSAppUsesNonExemptEncryption=false` を設定。独自暗号や依存SDKを追加した際は輸出コンプライアンスを再評価する。Privacy ManifestとApp StoreのApp Privacy回答は別物なので、片方で代用しない。
 
@@ -94,13 +94,13 @@ HTTPS等の標準暗号のみを使う現在の基盤では `ITSAppUsesNonExempt
 - 登録済みRASIDE TeamでRelease / iOSの署名付きArchiveが成功。`app-store-connect`、`testFlightInternalTestingOnly=true` の配布exportも成功。これはApple側のアップロード・処理完了を代替しない。ローカル検証出力は `/tmp/animelog-testflight.xcarchive` と `/tmp/animelog-testflight-export`。
 - Archive中のBundle ID、1.0(1)、カメラ用途説明、Capacitor/Cordova両SDKのPrivacy Manifest同梱を確認。Webのデータ収集を「なし」と判断するものではない。
 - カメラ用途説明を追加し、起動画面をテンプレート画像から静的な無地UIViewへ変更。独立Codexの差分監査で問題なし。カメラ許可・拒否は実機で確認する。
-- 未ログインのシミュレーターで作品検索・1作品追加を操作し、プロセス終了・再起動後も1作品が残ることを確認。検索ボタンが右端に一部はみ出す既存Web表示を確認し、公開前に修正・再検収する。証拠画像: `/tmp/animelog-ios-guest-relaunch.png`。
+- 未ログインのシミュレーターで作品検索・1作品追加を操作し、プロセス終了・再起動後も1作品が残ることを確認。検索ボタンが右端に一部はみ出す既存Web表示を確認。入力欄のmin-widthとボタンの縮小・改行制約を修正し、抽出した実クラスとTailwind CSSの検証ページで320/375/402/768px幅の枠内表示を確認。本番への反映とiOSでの最終確認は残る。証拠画像: `/tmp/animelog-ios-guest-relaunch.png`。
 - Xcode 27でDebug / iOS Simulator、Release / iOSの未署名ビルドが成功。Releaseビルドは署名済みArchiveやAppleへの提出検証を代替しない。
 - iPhone 18 Pro / iOS 27シミュレーターへインストール・起動し、本番Webのゲストホームとネイティブ操作バーを画面で確認。スクリーンショットはローカルの `/tmp/animelog-ios-home.png`。操作フロー全体・実機検収は未完了。
 - 遷移ポリシーの23チェックが成功。Web側は型検査、35ファイル・273テスト、lintが成功。lintは既存131警告で増加なし。
 - 追加ファイルのPrettier検査と `git diff --check` を実施。
 - 独立Codex監査の起動経路指摘を修正。Capacitorの非表示rootとは別の表示コンテナを用意し、シミュレーターで修正を確認。再監査で未解決の重大問題なし。
-- Webアプリ本体・既存依存関係・本番DBは変更していない。`.env*` は読まず、既存の未コミット変更を保持。
+- Web側の変更は検索欄のCSSクラス2箇所のみ。既存依存関係・本番DBは変更していない。`.env*` は読まず、既存の未コミット変更を保持。
 
 ## Apple側の登録・保存結果
 
