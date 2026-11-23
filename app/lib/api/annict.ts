@@ -1,7 +1,7 @@
 // app/lib/api/annict.ts
 /**
  * Annict API関連
- * GraphQL APIのラッパー関数（API Route経由）
+ * 作品検索と放送・配信情報の変換（API Route経由）
  */
 
 import { NetworkError, logError, normalizeError } from './errors';
@@ -11,49 +11,20 @@ import type { AniListMedia } from './anilist';
 // 型定義
 // ============================================
 
-export type AnnictMedia = 'TV' | 'OVA' | 'MOVIE' | 'WEB' | 'OTHER';
-
-export type AnnictChannel = {
-  name: string;
-};
-
 export type AnnictProgram = {
   startedAt: string;
-  channel: AnnictChannel;
-};
-
-export type AnnictCast = {
-  character: {
-    name: string;
-  };
-  person: {
-    name: string;
-  };
+  channel: { name: string };
 };
 
 export type AnnictWork = {
-  annictId: number;
   title: string;
-  titleKana: string;
-  media: AnnictMedia;
-  officialSiteUrl: string | null;
-  twitterHashtag: string | null;
-  programs: {
-    nodes: AnnictProgram[];
-  };
-  casts?: {
-    nodes: AnnictCast[];
-  };
+  programs: { nodes: AnnictProgram[] };
 };
 
-export type AnnictSearchResult = {
-  searchWorks: {
-    nodes: AnnictWork[];
-    pageInfo?: {
-      hasNextPage: boolean;
-      endCursor: string | null;
-    };
-  };
+export type AnnictSearchRequest = {
+  kind: 'title' | 'season';
+  term: string;
+  first: number;
 };
 
 // ============================================
@@ -146,147 +117,47 @@ export function extractBroadcastTime(programs: AnnictProgram[]): string | null {
 // API関数
 // ============================================
 
-/**
- * Annict GraphQL APIにリクエストを送信（API Route経由）
- */
-async function queryAnnict<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
+const RATE_LIMIT_MESSAGE = 'Annict の検索が混み合っています。しばらくしてからお試しください';
+let retryAfterUntil = 0;
+
+async function searchAnnict(search: AnnictSearchRequest): Promise<AnnictWork[]> {
+  if (Date.now() < retryAfterUntil) throw new NetworkError(RATE_LIMIT_MESSAGE);
+
   try {
     const response = await fetch('/api/annict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, variables }),
+      body: JSON.stringify(search),
     });
 
-    if (!response.ok) {
-      // 500エラーの場合は詳細なエラーメッセージを取得
-      let errorMessage = `Annict API エラー: ${response.status}`;
-      try {
-        const errorData = await response.json().catch(() => null);
-        if (errorData?.message) {
-          errorMessage = `Annict API エラー: ${response.status} - ${errorData.message}`;
-        }
-      } catch {
-        // JSON解析に失敗した場合はデフォルトメッセージを使用
+    if (response.status === 429) {
+      const seconds = Number(response.headers.get('Retry-After'));
+      if (Number.isSafeInteger(seconds) && seconds > 0) {
+        retryAfterUntil = Math.max(retryAfterUntil, Date.now() + seconds * 1000);
       }
-      throw new NetworkError(errorMessage);
+      throw new NetworkError(RATE_LIMIT_MESSAGE);
+    }
+    if (!response.ok) {
+      throw new NetworkError('Annict の作品検索に失敗しました');
     }
 
-    const data = await response.json();
-
-    if (data.errors && data.errors.length > 0) {
-      const errorMessages = data.errors.map((e: { message: string }) => e.message).join(', ');
-      throw new NetworkError(`Annict API エラー: ${errorMessages}`);
+    const { works } = await response.json();
+    if (!Array.isArray(works)) {
+      throw new NetworkError('Annict の検索結果を取得できませんでした');
     }
-
-    if (!data.data) {
-      throw new NetworkError('Annict API からデータが返されませんでした');
-    }
-
-    return data.data;
+    return works;
   } catch (error) {
-    logError(error, 'queryAnnict');
+    logError(error, 'searchAnnict');
     throw normalizeError(error);
   }
 }
 
-/**
- * シーズン別にアニメを検索
- * @param season シーズン文字列（例: "2025-winter"）
- * @param first 取得件数（デフォルト: 50）
- */
-export async function searchAnnictBySeason(
-  season: string,
-  first: number = 50
-): Promise<AnnictWork[]> {
-  const query = `
-    query SearchWorks($season: [String!], $first: Int) {
-      searchWorks(seasons: $season, first: $first) {
-        nodes {
-          annictId
-          title
-          titleKana
-          media
-          officialSiteUrl
-          twitterHashtag
-          programs {
-            nodes {
-              startedAt
-              channel {
-                name
-              }
-            }
-          }
-          casts {
-            nodes {
-              character {
-                name
-              }
-              person {
-                name
-              }
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  const data = await queryAnnict<AnnictSearchResult>(query, {
-    season: [season],
-    first,
-  });
-
-  return data.searchWorks.nodes;
+export function searchAnnictBySeason(season: string, first = 50): Promise<AnnictWork[]> {
+  return searchAnnict({ kind: 'season', term: season, first });
 }
 
-/**
- * タイトルでアニメを検索
- * @param title 検索するタイトル
- * @param first 取得件数（デフォルト: 10）
- */
-export async function searchAnnictByTitle(
-  title: string,
-  first: number = 10
-): Promise<AnnictWork[]> {
-  const query = `
-    query SearchWorks($titles: [String!]!, $first: Int) {
-      searchWorks(titles: $titles, first: $first) {
-        nodes {
-          annictId
-          title
-          titleKana
-          media
-          officialSiteUrl
-          twitterHashtag
-          programs {
-            nodes {
-              startedAt
-              channel {
-                name
-              }
-            }
-          }
-          casts {
-            nodes {
-              character {
-                name
-              }
-              person {
-                name
-              }
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  const data = await queryAnnict<AnnictSearchResult>(query, {
-    titles: [title],
-    first,
-  });
-
-  return data.searchWorks.nodes;
+export function searchAnnictByTitle(title: string, first = 10): Promise<AnnictWork[]> {
+  return searchAnnict({ kind: 'title', term: title, first });
 }
 
 /**
@@ -388,7 +259,6 @@ export type AniListMediaWithStreaming = AniListMedia & {
   synopsisJa?: string | null; // 日本語あらすじ
   synopsisSource?: string | null; // あらすじ出典
   broadcastTime?: string | null; // 放送日時（Annictから取得）
-  casts?: { character: string; actor: string }[]; // キャスト情報
   // 連続2クール: 検索対象シーズンに継続中の作品 (前シーズン開始)
   isContinuing?: boolean;
 };
@@ -432,12 +302,6 @@ export async function mergeWithAnnictData(
 
     // 3. マッチしたAnnictデータを統合
     if (matchedAnnict) {
-      const casts =
-        matchedAnnict.casts?.nodes?.map((cast) => ({
-          character: cast.character?.name || '',
-          actor: cast.person?.name || '',
-        })) || [];
-
       results.push({
         ...anilist,
         streamingServices: extractStreamingServices(matchedAnnict.programs.nodes),
@@ -445,7 +309,6 @@ export async function mergeWithAnnictData(
         synopsisJa: undefined,
         synopsisSource: undefined,
         broadcastTime: extractBroadcastTime(matchedAnnict.programs.nodes),
-        casts: casts.length > 0 ? casts : undefined,
       });
     } else {
       results.push({ ...anilist });
